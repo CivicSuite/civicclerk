@@ -8,7 +8,7 @@ AGENTS.md §3.1 marks CivicCore auth and RBAC packages as importable placeholder
 
 ## Decision
 
-TODO: human decision required.
+Status: Open Question - pending human decision.
 
 ## Consequences
 

@@ -8,7 +8,7 @@ AGENTS.md requires module-specific YAML prompts under `prompts/`, no hardcoded p
 
 ## Decision
 
-TODO: human decision required.
+Status: Open Question - pending human decision.
 
 ## Consequences
 

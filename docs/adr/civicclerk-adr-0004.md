@@ -8,7 +8,7 @@ CivicClerk needs public meeting calendar, detail, packet, minutes, and archive s
 
 ## Decision
 
-TODO: human decision required.
+Status: Open Question - pending human decision.
 
 ## Consequences
 

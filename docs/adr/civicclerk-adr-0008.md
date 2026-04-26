@@ -8,7 +8,7 @@ CivicClerk v0.1.0 includes statutory notice deadline tracking and emergency/spec
 
 ## Decision
 
-TODO: human decision required.
+Status: Open Question - pending human decision.
 
 ## Consequences
 

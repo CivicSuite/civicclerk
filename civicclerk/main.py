@@ -5,9 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from civicclerk import __version__
-
-
-CIVICCORE_VERSION = "0.2.0"
+from civiccore import __version__ as CIVICCORE_VERSION
 
 app = FastAPI(
     title="CivicClerk",

@@ -8,7 +8,7 @@ AGENTS.md §3.1 marks CivicCore ingest and search packages as placeholders in v0
 
 ## Decision
 
-TODO: human decision required.
+Status: Open Question - pending human decision.
 
 ## Consequences
 

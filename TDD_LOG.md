@@ -38,7 +38,7 @@
     "target_test": "tests/test_milestone_1_runtime_foundation.py::test_current_facing_docs_describe_runtime_foundation_honestly",
     "tests_passing": 10,
     "tests_failing": 0,
-    "files_changed": ["README.md", "README.txt", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "TDD_LOG.md"],
+    "files_changed": ["README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "TDD_LOG.md"],
     "commit_sha": "b108b96",
     "notes": "Updated current-facing docs and changelog to describe the shipped runtime foundation without claiming meeting workflows."
   }

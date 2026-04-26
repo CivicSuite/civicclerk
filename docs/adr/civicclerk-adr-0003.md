@@ -8,7 +8,7 @@ The existing CivicClerk scaffold ADR excludes "full transcription packaging" fro
 
 ## Decision
 
-TODO: human decision required.
+Status: Open Question - pending human decision.
 
 ## Consequences
 

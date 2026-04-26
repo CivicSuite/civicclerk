@@ -134,7 +134,6 @@ def test_placeholder_import_gate_passes_for_runtime_source() -> None:
 def test_current_facing_docs_describe_runtime_foundation_honestly() -> None:
     docs = {
         "README.md": (ROOT / "README.md").read_text(encoding="utf-8"),
-        "README.txt": (ROOT / "README.txt").read_text(encoding="utf-8"),
         "USER-MANUAL.md": (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8"),
         "docs/index.html": (ROOT / "docs" / "index.html").read_text(encoding="utf-8"),
     }

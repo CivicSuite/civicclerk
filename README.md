@@ -28,7 +28,7 @@ This repository now ships the CivicClerk runtime foundation. Meeting workflows a
 
 Shipped in this runtime foundation:
 
-- project README and plain-text README
+- project README
 - user manual with non-technical, IT/technical, and architecture sections
 - GitHub Pages landing page at `docs/index.html`
 - contributing, support, security, code of conduct, issue templates, and PR template
@@ -83,5 +83,5 @@ python scripts/check-civiccore-placeholder-imports.py
 
 ## License
 
-Code: Apache License 2.0.  
-Documentation: CC BY 4.0 unless otherwise stated.
+Code: Apache License 2.0; see `LICENSE-CODE`.  
+Documentation: CC BY 4.0 unless otherwise stated; see `LICENSE-DOCS`.

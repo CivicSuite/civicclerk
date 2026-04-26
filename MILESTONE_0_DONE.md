@@ -47,7 +47,7 @@ Milestone 0 reconciled the CivicClerk scaffold against the upstream CivicSuite u
 
 ## Deferred Items
 
-None for Milestone 0. The ADR files intentionally contain `TODO: human decision required`; that is the deliverable for unresolved scope decisions, not a deferral of Milestone 0 work.
+None for Milestone 0. The ADR files intentionally mark open questions as pending human decisions; that is the deliverable for unresolved scope decisions, not a deferral of Milestone 0 work.
 
 ## Verification
 

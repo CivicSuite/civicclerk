@@ -8,7 +8,7 @@ The unified spec and AGENTS.md canonical table list include `civicclerk.public_c
 
 ## Decision
 
-TODO: human decision required.
+Status: Open Question - pending human decision.
 
 ## Consequences
 

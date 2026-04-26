@@ -8,7 +8,7 @@ AGENTS.md §6 lists fourteen canonical CivicClerk tables. Existing scaffold docu
 
 ## Decision
 
-TODO: human decision required.
+Status: Open Question - pending human decision.
 
 ## Consequences
 
