@@ -43,7 +43,7 @@
       <div class="eyebrow">CivicSuite runtime foundation</div>
       <h1>CivicClerk</h1>
       <p>CivicClerk is planned municipal meeting software for agendas, packets, notices, minutes, motions, votes, and public meeting archives.</p>
-      <p class="status">Status: runtime foundation. IT staff can smoke-check the FastAPI app, but meeting workflows are not implemented yet.</p>
+      <p class="status">Status: runtime foundation plus canonical schema and Alembic scaffolding. IT staff can smoke-check the FastAPI app and inspect the schema plan, but meeting workflows are not implemented yet.</p>
     </section>
 
     <section class="grid" aria-label="Product overview">
@@ -53,7 +53,7 @@
       </article>
       <article class="card">
         <h2>For IT</h2>
-        <p>Runtime foundation stack: FastAPI, <code>civiccore==0.2.0</code>, pytest, docs verification, and placeholder-import CI gates. Planned local services include PostgreSQL 17, Redis 7.2, Celery, Ollama, and nginx-served React.</p>
+        <p>Runtime foundation stack: FastAPI, <code>civiccore==0.2.0</code>, canonical schema metadata, Alembic migration scaffold, pytest, docs verification, and placeholder-import CI gates. Planned local services include PostgreSQL 17, Redis 7.2, Celery, Ollama, and nginx-served React.</p>
       </article>
       <article class="card">
         <h2>For residents</h2>
@@ -63,7 +63,7 @@
 
     <section>
       <h2>What ships today</h2>
-      <p>Documentation, governance files, issue templates, discussion seeds, a docs verification gate, a placeholder-import gate, Python package metadata, and a FastAPI runtime foundation with root and health endpoints.</p>
+      <p>Documentation, governance files, issue templates, discussion seeds, a docs verification gate, a placeholder-import gate, Python package metadata, a FastAPI runtime foundation with root and health endpoints, and canonical schema/Alembic scaffolding.</p>
       <p><a href="../README.md">Read the README</a> · <a href="../USER-MANUAL.md">Read the manual</a></p>
     </section>
   </main>

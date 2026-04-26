@@ -38,10 +38,11 @@ draft language, but staff remain in control.
 
 ### Current status
 
-CivicClerk currently ships a runtime foundation. IT staff can import and
-serve `civicclerk.main:app`, call `/`, and call `/health`. Clerks cannot
-yet create meetings, agendas, packets, notices, votes, or minutes in the
-product.
+CivicClerk currently ships a runtime foundation plus canonical schema
+metadata and Alembic migration scaffolding. IT staff can import and serve
+`civicclerk.main:app`, call `/`, call `/health`, and inspect the
+`civicclerk` schema plan. Clerks cannot yet create meetings, agendas,
+packets, notices, votes, or minutes in the product.
 
 ## Part 2: IT and Technical Overview
 
@@ -95,20 +96,24 @@ CivicClerk owns meeting workflows. It should not become:
 
 ### Initial data model sketch
 
+Milestone 2 defines the canonical schema and Alembic migration foundation
+for these CivicClerk tables. It does not ship agenda lifecycle enforcement
+or meeting workflow behavior.
+
 - `meeting_bodies`
 - `meetings`
-- `agenda_sections`
 - `agenda_items`
-- `agenda_item_attachments`
-- `packet_versions`
-- `notice_requirements`
-- `notice_postings`
+- `staff_reports`
 - `motions`
 - `votes`
-- `minutes_drafts`
-- `minute_citations`
 - `public_comments`
-- `adoption_events`
+- `notices`
+- `minutes`
+- `transcripts`
+- `action_items`
+- `packet_versions`
+- `ordinances_adopted`
+- `closed_sessions`
 
 ### Architecture sketch
 

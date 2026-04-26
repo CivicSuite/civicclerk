@@ -59,8 +59,18 @@
     "tests_passing": 19,
     "tests_failing": 1,
     "files_changed": ["civicclerk/migrations/alembic.ini", "civicclerk/migrations/env.py", "civicclerk/migrations/versions/civicclerk_0001_schema.py", "TDD_LOG.md"],
-    "commit_sha": "5e6cf6e",
+    "commit_sha": "3386c2d",
     "notes": "Added CivicClerk Alembic scaffold and idempotent first migration for the fourteen canonical tables."
+  },
+  {
+    "milestone": 2,
+    "iteration": 3,
+    "target_test": "tests/test_milestone_2_schema_and_migrations.py::test_docs_and_changelog_record_schema_milestone_without_claiming_lifecycle_behavior",
+    "tests_passing": 20,
+    "tests_failing": 0,
+    "files_changed": ["CHANGELOG.md", "USER-MANUAL.md", "docs/index.html", "TDD_LOG.md"],
+    "commit_sha": "e3717c0",
+    "notes": "Updated current-facing docs and changelog to describe schema and Alembic scaffolding without claiming lifecycle behavior."
   }
 ]
 ```

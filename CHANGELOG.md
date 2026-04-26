@@ -4,6 +4,11 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Added
+- Milestone 2 canonical schema and Alembic migration scaffold for the
+  fourteen CivicClerk tables. This is schema foundation only; agenda and
+  meeting lifecycle enforcement has not shipped.
+
 ## [0.1.0.dev0] - 2026-04-26
 
 ### Added
