@@ -49,8 +49,18 @@
     "tests_passing": 5,
     "tests_failing": 15,
     "files_changed": ["civicclerk/models.py", "TDD_LOG.md"],
-    "commit_sha": "9e052fc",
+    "commit_sha": "c1eb0a3",
     "notes": "Added canonical SQLAlchemy table metadata for all fourteen CivicClerk tables using CivicCore Base."
+  },
+  {
+    "milestone": 2,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_2_schema_and_migrations.py::test_alembic_scaffold_exists_for_civicclerk_schema_chain",
+    "tests_passing": 19,
+    "tests_failing": 1,
+    "files_changed": ["civicclerk/migrations/alembic.ini", "civicclerk/migrations/env.py", "civicclerk/migrations/versions/civicclerk_0001_schema.py", "TDD_LOG.md"],
+    "commit_sha": "5e6cf6e",
+    "notes": "Added CivicClerk Alembic scaffold and idempotent first migration for the fourteen canonical tables."
   }
 ]
 ```
