@@ -41,6 +41,16 @@
     "files_changed": ["README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "TDD_LOG.md"],
     "commit_sha": "b108b96",
     "notes": "Updated current-facing docs and changelog to describe the shipped runtime foundation without claiming meeting workflows."
+  },
+  {
+    "milestone": 2,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_2_schema_and_migrations.py::test_canonical_table_models_exist_and_no_tables_are_missing_or_extra",
+    "tests_passing": 5,
+    "tests_failing": 15,
+    "files_changed": ["civicclerk/models.py", "TDD_LOG.md"],
+    "commit_sha": "9e052fc",
+    "notes": "Added canonical SQLAlchemy table metadata for all fourteen CivicClerk tables using CivicCore Base."
   }
 ]
 ```
