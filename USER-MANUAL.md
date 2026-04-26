@@ -1,7 +1,7 @@
 # CivicClerk User Manual
 
-Status: scaffold manual  
-Version: `0.0.0`
+Status: runtime foundation manual  
+Version: `0.1.0.dev0`
 
 ## Part 1: Non-Technical Overview
 
@@ -38,8 +38,10 @@ draft language, but staff remain in control.
 
 ### Current status
 
-CivicClerk is not installable yet. This repository is the starting
-scaffold for the module.
+CivicClerk currently ships a runtime foundation. IT staff can import and
+serve `civicclerk.main:app`, call `/`, and call `/health`. Clerks cannot
+yet create meetings, agendas, packets, notices, votes, or minutes in the
+product.
 
 ## Part 2: IT and Technical Overview
 
@@ -49,16 +51,16 @@ CivicClerk will follow the CivicSuite deployment pattern:
 
 - local Docker-based deployment
 - PostgreSQL 17 + pgvector
-- Redis + Celery
+- Redis 7.2 + Celery + Celery Beat
 - FastAPI backend
 - React frontend
-- Ollama/Gemma 4 for local LLM inference through `civiccore.llm`
+- Ollama/Gemma 4 for local LLM inference through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - no runtime cloud dependency
 - no telemetry
 
 ### Planned dependency
 
-The first runtime version should pin to civiccore `>=0.2.0,<0.3.0`.
+The runtime foundation pins to civiccore `==0.2.0`.
 
 ### Security posture
 
@@ -70,13 +72,15 @@ The first runtime version should pin to civiccore `>=0.2.0,<0.3.0`.
 
 ### Verification
 
-This scaffold ships with:
+This runtime foundation ships with:
 
 ```bash
+python -m pytest
 bash scripts/verify-docs.sh
+python scripts/check-civiccore-placeholder-imports.py
 ```
 
-Runtime test gates will be added before code ships.
+Runtime test gates now run in CI. Meeting-workflow tests are added in later milestones.
 
 ## Part 3: Architecture Reference
 
