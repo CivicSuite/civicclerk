@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import ast
+from contextlib import nullcontext
 import importlib
+import os
 from pathlib import Path
 
 import pytest
+import sqlalchemy as sa
+from alembic import command
+from alembic.config import Config
+from alembic.runtime.environment import EnvironmentContext
 from sqlalchemy import ForeignKeyConstraint
 
 
@@ -145,8 +151,77 @@ def test_alembic_env_runs_civiccore_baseline_first_and_uses_separate_version_tab
 
     assert "civiccore.migrations.runner" in text
     assert "upgrade_to_head" in text
+    assert "_database_url()" in text
+    assert "_run_civiccore_migrations(section[\"sqlalchemy.url\"])" in text
     assert "version_table=\"alembic_version_civicclerk\"" in text or "version_table = \"alembic_version_civicclerk\"" in text
     assert "target_metadata = Base.metadata" in text
+
+
+def test_alembic_command_boots_with_one_database_url_source(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise Alembic's env.py path, not just source text.
+
+    PostgreSQL-only DDL is covered by the migration source and later container
+    gates. This smoke test proves the env bootstrap no longer fails before
+    migrations start: one Config URL feeds both CivicClerk's engine and
+    CivicCore's runner.
+    """
+    seen: dict[str, object] = {"configured": False, "ran": False}
+    db_url = "postgresql+psycopg2://clerk:test@localhost:5432/civicclerk_test"
+
+    class FakeConnection:
+        def __enter__(self) -> "FakeConnection":
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+    class FakeEngine:
+        def connect(self) -> FakeConnection:
+            return FakeConnection()
+
+    def fake_engine_from_config(
+        section: dict[str, object],
+        prefix: str,
+        poolclass: type[object],
+    ) -> FakeEngine:
+        seen["engine_url"] = section["sqlalchemy.url"]
+        seen["prefix"] = prefix
+        seen["poolclass"] = poolclass
+        return FakeEngine()
+
+    def fake_configure(self: EnvironmentContext, **kwargs: object) -> None:
+        seen["configured"] = True
+        seen["version_table"] = kwargs["version_table"]
+
+    def fake_run_migrations(self: EnvironmentContext, **kwargs: object) -> None:
+        seen["ran"] = True
+
+    def fake_begin_transaction(self: EnvironmentContext) -> nullcontext[None]:
+        return nullcontext()
+
+    def fake_civiccore_upgrade_to_head() -> None:
+        seen["civiccore_url"] = os.environ["DATABASE_URL"]
+
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setattr(sa, "engine_from_config", fake_engine_from_config)
+    monkeypatch.setattr(EnvironmentContext, "configure", fake_configure)
+    monkeypatch.setattr(EnvironmentContext, "begin_transaction", fake_begin_transaction)
+    monkeypatch.setattr(EnvironmentContext, "run_migrations", fake_run_migrations)
+    monkeypatch.setattr(
+        "civiccore.migrations.runner.upgrade_to_head",
+        fake_civiccore_upgrade_to_head,
+    )
+
+    cfg = Config(str(ROOT / "civicclerk" / "migrations" / "alembic.ini"))
+    cfg.set_main_option("sqlalchemy.url", db_url)
+
+    command.upgrade(cfg, "head")
+
+    assert seen["engine_url"] == db_url
+    assert seen["civiccore_url"] == db_url
+    assert seen["version_table"] == "alembic_version_civicclerk"
+    assert seen["configured"] is True
+    assert seen["ran"] is True
 
 
 def test_first_migration_declares_revision_and_creates_all_canonical_tables_idempotently() -> None:

@@ -11,14 +11,15 @@ Milestone 2 added the CivicClerk canonical schema and Alembic migration scaffold
 - No foreign keys target CivicCore placeholder packages or unreleased CivicCore shared tables.
 - CivicClerk Alembic scaffold exists under `civicclerk/migrations`.
 - Alembic env runs the CivicCore migration baseline before CivicClerk migrations.
+- Alembic env boots from one database URL source and passes that same URL to CivicCore.
 - CivicClerk uses a separate `alembic_version_civicclerk` version table.
 - First migration creates the `civicclerk` schema and the fourteen canonical tables with idempotent create-table guards.
 - Current-facing docs and CHANGELOG describe the canonical schema and Alembic scaffold without claiming lifecycle/workflow behavior.
 
 ## Test Counts
 
-- Total automated pytest count: 20 passed, 0 skipped, 0 xfail.
-- Milestone 2 schema/migration tests: 10 passed.
+- Total automated pytest count: 21 passed, 0 skipped, 0 xfail.
+- Milestone 2 schema/migration tests: 11 passed.
 - Existing Milestone 1 runtime-foundation tests: 10 passed.
 
 ## TDD Iterations
@@ -26,6 +27,7 @@ Milestone 2 added the CivicClerk canonical schema and Alembic migration scaffold
 - Iteration 1: `c1eb0a3` - canonical table metadata green.
 - Iteration 2: `3386c2d` - Alembic schema scaffold green.
 - Iteration 3: `7ea3afa` - schema milestone docs green.
+- Audit fix: Alembic URL boot path now has an executable `command.upgrade()` smoke test; README and root endpoint now point to Milestone 3 as next.
 
 ## Deferred Items
 

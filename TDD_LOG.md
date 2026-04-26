@@ -69,7 +69,7 @@
     "tests_passing": 20,
     "tests_failing": 0,
     "files_changed": ["CHANGELOG.md", "USER-MANUAL.md", "docs/index.html", "TDD_LOG.md"],
-    "commit_sha": "e3717c0",
+    "commit_sha": "7ea3afa",
     "notes": "Updated current-facing docs and changelog to describe schema and Alembic scaffolding without claiming lifecycle behavior."
   }
 ]
