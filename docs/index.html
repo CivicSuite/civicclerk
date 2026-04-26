@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CivicClerk</title>
+  <style>
+    :root {
+      --ink: #17201b;
+      --muted: #53635b;
+      --paper: #f8f4ea;
+      --panel: #ffffff;
+      --line: #d8d0c1;
+      --accent: #2f6f5e;
+      --warn: #8a5a16;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(47,111,94,.18), transparent 34rem),
+        linear-gradient(180deg, var(--paper), #efe7d8);
+      line-height: 1.55;
+    }
+    main { max-width: 1040px; margin: 0 auto; padding: 56px 22px; }
+    .hero { border: 1px solid var(--line); background: rgba(255,255,255,.74); padding: 38px; border-radius: 28px; }
+    .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { font-size: clamp(2.4rem, 8vw, 5.5rem); line-height: .95; margin: 14px 0 18px; }
+    h2 { margin-top: 34px; font-size: 1.5rem; }
+    p { max-width: 74ch; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-top: 24px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+    .status { color: var(--warn); font-weight: 700; }
+    a { color: var(--accent); }
+    code { background: #eadfca; padding: 2px 5px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">CivicSuite module scaffold</div>
+      <h1>CivicClerk</h1>
+      <p>CivicClerk is planned municipal meeting software for agendas, packets, notices, minutes, motions, votes, and public meeting archives.</p>
+      <p class="status">Status: not installable yet. This repository is the professional scaffold and MVP planning baseline.</p>
+    </section>
+
+    <section class="grid" aria-label="Product overview">
+      <article class="card">
+        <h2>For clerks</h2>
+        <p>Create meetings, collect agenda items, assemble packets, track posting deadlines, and draft minutes with source citations.</p>
+      </article>
+      <article class="card">
+        <h2>For IT</h2>
+        <p>Planned local-first stack: FastAPI, React, PostgreSQL, Redis, Celery, Ollama, and <code>civiccore</code>.</p>
+      </article>
+      <article class="card">
+        <h2>For residents</h2>
+        <p>Planned public pages will clearly label posted agendas, packets, approved minutes, and archived meeting records.</p>
+      </article>
+    </section>
+
+    <section>
+      <h2>What ships today</h2>
+      <p>Documentation, governance files, issue templates, discussion seeds, and a docs verification gate. Runtime code begins in the first MVP sprint.</p>
+      <p><a href="../README.md">Read the README</a> · <a href="../USER-MANUAL.md">Read the manual</a></p>
+    </section>
+  </main>
+</body>
+</html>
