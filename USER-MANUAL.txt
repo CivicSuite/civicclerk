@@ -1,8 +1,8 @@
 CivicClerk User Manual
 ======================
 
-Status: scaffold manual
-Version: 0.0.0
+Status: runtime foundation manual
+Version: 0.1.0.dev0
 
 Part 1: Non-Technical Overview
 ------------------------------
@@ -24,8 +24,9 @@ The intended workflow is:
 7. Draft minutes with citations.
 8. Publish approved materials.
 
-CivicClerk is not installable yet. This repository is the starting
-scaffold.
+CivicClerk ships a runtime foundation. IT staff can serve
+civicclerk.main:app and call / or /health. Clerks cannot yet use the
+product for meeting, agenda, packet, notice, vote, or minutes work.
 
 Part 2: IT and Technical Overview
 ---------------------------------
@@ -33,12 +34,14 @@ Part 2: IT and Technical Overview
 Planned stack:
 - Docker-based local deployment
 - PostgreSQL 17 + pgvector
-- Redis + Celery
+- Redis 7.2 + Celery + Celery Beat
 - FastAPI backend
 - React frontend
-- Ollama/Gemma 4 through civiccore.llm
+- Ollama/Gemma 4 through civiccore.llm, selected by CIVICCORE_LLM_PROVIDER=ollama
 - no telemetry
 - no runtime cloud dependency
+
+Runtime dependency: civiccore==0.2.0.
 
 Part 3: Architecture Reference
 ------------------------------
