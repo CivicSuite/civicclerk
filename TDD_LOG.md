@@ -1,4 +1,4 @@
-# TDD Log
+﻿# TDD Log
 
 ```json
 [
@@ -41,6 +41,46 @@
     "files_changed": ["README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "TDD_LOG.md"],
     "commit_sha": "b108b96",
     "notes": "Updated current-facing docs and changelog to describe the shipped runtime foundation without claiming meeting workflows."
+  },
+  {
+    "milestone": 2,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_2_schema_and_migrations.py::test_canonical_table_models_exist_and_no_tables_are_missing_or_extra",
+    "tests_passing": 5,
+    "tests_failing": 15,
+    "files_changed": ["civicclerk/models.py", "TDD_LOG.md"],
+    "commit_sha": "c1eb0a3",
+    "notes": "Added canonical SQLAlchemy table metadata for all fourteen CivicClerk tables using CivicCore Base."
+  },
+  {
+    "milestone": 2,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_2_schema_and_migrations.py::test_alembic_scaffold_exists_for_civicclerk_schema_chain",
+    "tests_passing": 19,
+    "tests_failing": 1,
+    "files_changed": ["civicclerk/migrations/alembic.ini", "civicclerk/migrations/env.py", "civicclerk/migrations/versions/civicclerk_0001_schema.py", "TDD_LOG.md"],
+    "commit_sha": "3386c2d",
+    "notes": "Added CivicClerk Alembic scaffold and idempotent first migration for the fourteen canonical tables."
+  },
+  {
+    "milestone": 2,
+    "iteration": 3,
+    "target_test": "tests/test_milestone_2_schema_and_migrations.py::test_docs_and_changelog_record_schema_milestone_without_claiming_lifecycle_behavior",
+    "tests_passing": 20,
+    "tests_failing": 0,
+    "files_changed": ["CHANGELOG.md", "USER-MANUAL.md", "docs/index.html", "TDD_LOG.md"],
+    "commit_sha": "7ea3afa",
+    "notes": "Updated current-facing docs and changelog to describe schema and Alembic scaffolding without claiming lifecycle behavior."
+  },
+  {
+    "milestone": 2,
+    "iteration": "audit-fix",
+    "target_test": "tests/test_milestone_2_schema_and_migrations.py::test_alembic_command_upgrades_real_pgvector_database",
+    "tests_passing": 21,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/migrations/env.py", "civicclerk/migrations/guards.py", "civicclerk/migrations/versions/civicclerk_0001_schema.py", "tests/test_milestone_2_schema_and_migrations.py", "pyproject.toml", "TDD_LOG.md"],
+    "commit_sha": "fd77804",
+    "notes": "Fixed Alembic runtime path by running CivicCore migrations in an isolated process, added schema-aware create-table guard, and replaced mocked migration smoke with a pgvector-backed integration test."
   }
 ]
 ```

@@ -24,9 +24,9 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-This repository now ships the CivicClerk runtime foundation. Meeting workflows are not implemented yet.
+This repository now ships the CivicClerk runtime and schema foundation. Meeting workflows are not implemented yet.
 
-Shipped in this runtime foundation:
+Shipped in this foundation:
 
 - project README
 - user manual with non-technical, IT/technical, and architecture sections
@@ -38,11 +38,12 @@ Shipped in this runtime foundation:
 - FastAPI application import path at `civicclerk.main:app`
 - root endpoint that explains the current product state
 - `/health` endpoint for IT staff
+- canonical SQLAlchemy metadata for the fourteen CivicClerk tables
+- Alembic scaffold and first idempotent migration for the `civicclerk` schema
 
 Not shipped yet:
 
 - frontend app
-- database migrations
 - installer
 - release artifact
 - public portal
@@ -69,7 +70,7 @@ CivicClerk follows the CivicSuite pattern:
 - Ollama / Gemma 4 through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - local data ownership, no runtime telemetry, no cloud inference
 
-The runtime foundation is intentionally thin. Schema, migrations, lifecycle rules, UI, and AI workflows land in later milestones after their tests.
+The foundation is intentionally thin. Canonical schema and Alembic scaffolding are present; lifecycle rules, UI, and AI workflows land in later milestones after their tests. The next milestone is agenda item lifecycle enforcement.
 
 ## Verification
 

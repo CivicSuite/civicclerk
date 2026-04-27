@@ -85,9 +85,9 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["name"] == "CivicClerk"
-    assert payload["status"] == "runtime foundation"
+    assert payload["status"] == "schema foundation"
     assert "not implemented yet" in payload["message"].lower()
-    assert payload["next_step"] == "Milestone 2: canonical schema and Alembic migrations"
+    assert payload["next_step"] == "Milestone 3: agenda item lifecycle enforcement"
 
 
 @pytest.mark.asyncio
