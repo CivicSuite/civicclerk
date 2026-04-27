@@ -1,4 +1,4 @@
-﻿# TDD Log
+# TDD Log
 
 ```json
 [
@@ -199,7 +199,7 @@
     "tests_passing": 319,
     "tests_failing": 0,
     "files_changed": ["civicclerk/main.py", "tests/test_milestone_6_motion_vote_action_capture.py", "TDD_LOG.md", "MILESTONE_6_DONE.md"],
-    "commit_sha": "pending",
+    "commit_sha": "86ae644",
     "notes": "Required action items to reference a captured source motion so the shipped action-item claim cannot create unlinked outcomes."
   }
 ]
