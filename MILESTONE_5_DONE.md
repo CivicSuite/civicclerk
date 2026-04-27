@@ -35,7 +35,7 @@ Version: `0.1.0.dev0`
 
 - `74f7dd3` - failing Milestone 5 packet/notice compliance contract.
 - `b14dfa8` - packet snapshot and notice compliance runtime implementation, docs, and browser QA screenshots.
-- Pending final evidence commit - milestone done file and TDD log update.
+- `639ed51` - milestone done file and TDD log update.
 
 ## Verification Snapshot
 
