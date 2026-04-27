@@ -26,6 +26,7 @@ required=(
   docs/roadmap/mvp-plan.md
   prompts/minutes_draft.yaml
   scripts/run-prompt-evals.py
+  scripts/verify-release.sh
   scripts/verify-browser-qa.py
   docs/architecture/ADR-0001-mvp-boundary.md
   docs/adr/civicclerk-adr-0001.md

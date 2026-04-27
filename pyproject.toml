@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "civicclerk"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "CivicClerk runtime foundation for municipal meeting, agenda, packet, and minutes workflows."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,3 +29,20 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["civicclerk"]
+force-include = { "prompts" = "prompts" }
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "civicclerk",
+  "prompts",
+  "scripts",
+  "tests",
+  "README.md",
+  "CHANGELOG.md",
+  "USER-MANUAL.md",
+  "LICENSE-CODE",
+  "LICENSE-DOCS",
+]

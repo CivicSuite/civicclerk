@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  verify-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install CivicCore release wheel
+        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/v0.2.0/civiccore-0.2.0-py3-none-any.whl
+      - name: Install package and test dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Verify release
+        run: bash scripts/verify-release.sh
+      - name: Upload release build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: civicclerk-release-dist
+          path: dist/*
+      - name: Publish GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "CivicClerk $GITHUB_REF_NAME" \
+            --notes "CivicClerk $GITHUB_REF_NAME runtime foundation release. Built by the release workflow after verify-release.sh passed." \
+            --verify-tag

@@ -1,7 +1,7 @@
 # CivicClerk User Manual
 
-Status: accessibility and browser QA gate foundation manual  
-Version: `0.1.0.dev0`
+Status: CivicClerk v0.1.0 runtime foundation manual  
+Version: `0.1.0`
 
 ## Part 1: Non-Technical Overview
 
@@ -46,7 +46,8 @@ action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA, and accessibility/browser QA gates. IT
+NovusAGENDA, accessibility/browser QA gates, and CivicClerk v0.1.0 release
+artifacts. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 create draft agenda items and meetings, version packet snapshots, test
 allowed/rejected notice compliance postings, capture motions, capture
@@ -120,7 +121,9 @@ Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports with source
 provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
-contrast, and console checks.
+contrast, and console checks. Milestone 12 synchronizes version surfaces,
+builds release artifacts and checksums, and publishes CivicClerk v0.1.0
+paired with `civiccore==0.2.0`.
 
 ## Part 3: Architecture Reference
 

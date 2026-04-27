@@ -4,6 +4,8 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-04-26
+
 ### Added
 - Milestone 11 accessibility and browser QA gates.
 - Browser QA state fixture covering loading, success, empty, error, and
