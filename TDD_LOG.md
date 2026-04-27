@@ -129,7 +129,7 @@
     "tests_passing": 298,
     "tests_failing": 0,
     "files_changed": ["README.md", "docs/index.html", "docs/screenshots/milestone4-desktop.png", "docs/screenshots/milestone4-mobile.png", "MILESTONE_4_DONE.md", "TDD_LOG.md"],
-    "commit_sha": "0eb7b70",
+    "commit_sha": "908588b",
     "notes": "Captured desktop/mobile browser QA evidence, fixed mobile landing-page clipping found during QA, and recorded Milestone 4 completion evidence."
   }
 ]
