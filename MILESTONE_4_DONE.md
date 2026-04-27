@@ -34,14 +34,20 @@ Version: `0.1.0.dev0`
 - `e3b3d74` - failing Milestone 4 meeting lifecycle contract.
 - `c04466e` - meeting lifecycle runtime implementation and current-facing docs.
 - `908588b` - milestone done file, TDD log update, browser QA screenshots, and mobile landing-page clipping fix.
+- Pending audit-fix commit - normalized `meeting_type` before statutory-basis checks and added mixed-case bypass regressions.
 
 ## Verification Snapshot
 
 - Targeted Milestone 4/root contract run: `153 passed`.
-- Full suite: `298 passed`.
+- Full suite after audit fix: `303 passed`.
 - `bash scripts/verify-docs.sh`: `VERIFY-DOCS: PASSED`.
 - `python scripts/check-civiccore-placeholder-imports.py`: `PLACEHOLDER-IMPORT-CHECK: PASSED (10 source files scanned)`.
 - `python -m ruff check .`: `All checks passed!`.
+- Auditor reproducer values now reject as required:
+  - `Emergency SCHEDULED -> NOTICED`: `False 422`
+  - `SPECIAL SCHEDULED -> NOTICED`: `False 422`
+  - `Closed_Session PACKET_POSTED -> IN_PROGRESS`: `False 422`
+  - `Executive PACKET_POSTED -> IN_PROGRESS`: `False 422`
 - Desktop landing-page screenshot captured at `docs/screenshots/milestone4-desktop.png`.
 - Mobile landing-page screenshot captured at `docs/screenshots/milestone4-mobile.png`; the mobile clipping found during QA was fixed before this milestone was marked complete.
 

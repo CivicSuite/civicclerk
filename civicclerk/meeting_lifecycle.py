@@ -36,6 +36,7 @@ SPECIAL_TRANSITIONS = {
 KNOWN_STATUSES = (*MEETING_LIFECYCLE, CANCELLED_STATUS)
 EMERGENCY_NOTICE_TYPES = {"emergency", "special"}
 CLOSED_SESSION_TYPES = {"closed_session", "executive"}
+KNOWN_MEETING_TYPES = {"regular", *EMERGENCY_NOTICE_TYPES, *CLOSED_SESSION_TYPES}
 
 
 @dataclass(frozen=True)
@@ -73,7 +74,7 @@ class MeetingStore:
         meeting = MeetingRecord(
             id=str(uuid4()),
             title=title,
-            meeting_type=meeting_type,
+            meeting_type=normalize_meeting_type(meeting_type),
         )
         self._meetings[meeting.id] = meeting
         return meeting
@@ -116,12 +117,13 @@ def validate_meeting_transition(
     statutory_basis: str | None,
 ) -> TransitionResult:
     """Validate one meeting lifecycle transition and produce an audit entry."""
+    normalized_meeting_type = normalize_meeting_type(meeting_type)
     base_entry = {
         "meeting_id": meeting_id,
         "actor": actor,
         "from_status": from_status,
         "to_status": to_status,
-        "meeting_type": meeting_type,
+        "meeting_type": normalized_meeting_type,
     }
     if statutory_basis:
         base_entry["statutory_basis"] = statutory_basis
@@ -142,16 +144,16 @@ def validate_meeting_transition(
             "unknown requested meeting status",
         )
 
-    if meeting_type in EMERGENCY_NOTICE_TYPES and from_status == "SCHEDULED" and to_status == "NOTICED":
+    if normalized_meeting_type in EMERGENCY_NOTICE_TYPES and from_status == "SCHEDULED" and to_status == "NOTICED":
         if not statutory_basis:
             return _rejected(
                 base_entry,
                 422,
-                f"{meeting_type.title()} meetings require a statutory basis before notice is posted.",
+                f"{normalized_meeting_type.title()} meetings require a statutory basis before notice is posted.",
                 "missing statutory basis for emergency or special meeting notice",
             )
 
-    if meeting_type in CLOSED_SESSION_TYPES and from_status == "PACKET_POSTED" and to_status == "IN_PROGRESS":
+    if normalized_meeting_type in CLOSED_SESSION_TYPES and from_status == "PACKET_POSTED" and to_status == "IN_PROGRESS":
         if not statutory_basis:
             return _rejected(
                 base_entry,
@@ -184,6 +186,11 @@ def validate_meeting_transition(
     )
 
 
+def normalize_meeting_type(meeting_type: str) -> str:
+    """Normalize user-provided meeting type labels before compliance checks."""
+    return meeting_type.strip().lower()
+
+
 def _rejected(
     base_entry: dict[str, str],
     http_status: int,
@@ -205,6 +212,7 @@ def _rejected(
 __all__ = [
     "CANCELLED_STATUS",
     "KNOWN_STATUSES",
+    "KNOWN_MEETING_TYPES",
     "MEETING_LIFECYCLE",
     "SPECIAL_TRANSITIONS",
     "VALID_TRANSITIONS",

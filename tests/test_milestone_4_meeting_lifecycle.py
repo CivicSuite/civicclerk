@@ -102,6 +102,27 @@ def test_emergency_and_special_meetings_require_statutory_basis_for_notice(
     )
 
 
+@pytest.mark.parametrize("meeting_type", ["Emergency", "SPECIAL"])
+def test_emergency_and_special_meeting_type_casing_cannot_bypass_notice_basis(
+    meeting_type: str,
+) -> None:
+    from civicclerk.meeting_lifecycle import validate_meeting_transition
+
+    result = validate_meeting_transition(
+        meeting_id="meeting-123",
+        from_status="SCHEDULED",
+        to_status="NOTICED",
+        actor="clerk@example.gov",
+        meeting_type=meeting_type,
+        statutory_basis=None,
+    )
+
+    assert result.allowed is False
+    assert result.http_status == 422
+    assert "statutory basis" in result.message.lower()
+    assert result.audit_entry["meeting_type"] == meeting_type.lower()
+
+
 def test_closed_executive_session_requires_statutory_basis_before_in_progress() -> None:
     from civicclerk.meeting_lifecycle import validate_meeting_transition
 
@@ -130,6 +151,27 @@ def test_closed_executive_session_requires_statutory_basis_before_in_progress() 
     assert accepted.audit_entry["statutory_basis"] == (
         "Personnel matter under state closed-session statute."
     )
+
+
+@pytest.mark.parametrize("meeting_type", ["Closed_Session", "Executive"])
+def test_closed_executive_meeting_type_casing_cannot_bypass_session_basis(
+    meeting_type: str,
+) -> None:
+    from civicclerk.meeting_lifecycle import validate_meeting_transition
+
+    result = validate_meeting_transition(
+        meeting_id="meeting-123",
+        from_status="PACKET_POSTED",
+        to_status="IN_PROGRESS",
+        actor="clerk@example.gov",
+        meeting_type=meeting_type,
+        statutory_basis=None,
+    )
+
+    assert result.allowed is False
+    assert result.http_status == 422
+    assert "statutory basis" in result.message.lower()
+    assert result.audit_entry["meeting_type"] == meeting_type.lower()
 
 
 @pytest.mark.asyncio
@@ -237,6 +279,32 @@ async def test_api_closed_session_precondition_returns_actionable_422() -> None:
         assert "statutory basis" in rejected.json()["detail"]["message"].lower()
         current = await client.get(f"/meetings/{meeting_id}")
         assert current.json()["status"] == "PACKET_POSTED"
+
+
+@pytest.mark.asyncio
+async def test_api_meeting_type_casing_cannot_bypass_statutory_basis() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        created = await client.post(
+            "/meetings",
+            json={
+                "title": "Emergency Meeting",
+                "meeting_type": "Emergency",
+            },
+        )
+        assert created.status_code == 201
+        meeting_id = created.json()["id"]
+        assert created.json()["meeting_type"] == "emergency"
+
+        rejected = await client.post(
+            f"/meetings/{meeting_id}/transitions",
+            json={
+                "to_status": "NOTICED",
+                "actor": "clerk@example.gov",
+            },
+        )
+
+        assert rejected.status_code == 422
+        assert "statutory basis" in rejected.json()["detail"]["message"].lower()
 
 
 @pytest.mark.asyncio

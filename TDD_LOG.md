@@ -131,6 +131,16 @@
     "files_changed": ["README.md", "docs/index.html", "docs/screenshots/milestone4-desktop.png", "docs/screenshots/milestone4-mobile.png", "MILESTONE_4_DONE.md", "TDD_LOG.md"],
     "commit_sha": "908588b",
     "notes": "Captured desktop/mobile browser QA evidence, fixed mobile landing-page clipping found during QA, and recorded Milestone 4 completion evidence."
+  },
+  {
+    "milestone": 4,
+    "iteration": "audit-fix",
+    "target_test": "tests/test_milestone_4_meeting_lifecycle.py::test_emergency_and_special_meeting_type_casing_cannot_bypass_notice_basis",
+    "tests_passing": 303,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/meeting_lifecycle.py", "tests/test_milestone_4_meeting_lifecycle.py", "TDD_LOG.md", "MILESTONE_4_DONE.md"],
+    "commit_sha": "pending",
+    "notes": "Normalized meeting_type before statutory-basis guardrails and added regression coverage for mixed-case emergency, special, closed-session, and executive meeting types."
   }
 ]
 ```
