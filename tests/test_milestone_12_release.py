@@ -97,5 +97,8 @@ def test_release_workflow_and_docs_reference_v010_release() -> None:
 
     assert "v*" in workflow
     assert "bash scripts/verify-release.sh" in workflow
+    assert "contents: write" in workflow
+    assert "gh release create" in workflow
+    assert "dist/*" in workflow
     assert "civicclerk v0.1.0" in docs
     assert "civiccore==0.2.0" in docs
