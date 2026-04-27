@@ -4,12 +4,13 @@
 
 Milestone 12 closes the CivicClerk v0.1.0 runtime-foundation sprint. It synchronizes the release version surfaces, adds the release gate and GitHub release workflow, verifies the package build, and preserves browser QA evidence for the user-facing landing page.
 
-## Commits
+## Key Commits
 
 - `9b6914e` - `test(milestone-12): define release contract`
 - `bd7fbae` - `chore(milestone-12): prepare v0.1.0 release`
 - `d798bb0` - `fix(milestone-12): publish GitHub release assets`
 - `85eca40` - `docs(milestone-12): record release-publish workflow`
+- `9bd8d24` - `fix(milestone-12): make release checksums reproducible`
 
 ## Version Surfaces
 
