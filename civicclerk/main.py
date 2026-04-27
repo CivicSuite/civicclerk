@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from civicclerk import __version__
 from civicclerk.agenda_lifecycle import AgendaItemStore
 from civicclerk.meeting_lifecycle import MeetingStore
+from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
 from civicclerk.packet_notice import NoticeStore, PacketStore, evaluate_notice_compliance
 from civiccore import __version__ as CIVICCORE_VERSION
@@ -25,6 +26,7 @@ meetings = MeetingStore()
 packet_snapshots = PacketStore()
 notices = NoticeStore()
 motion_votes = MotionVoteStore()
+minutes_drafts = MinutesDraftStore()
 
 
 class AgendaItemCreate(BaseModel):
@@ -93,18 +95,37 @@ class ActionItemCreate(BaseModel):
     source_motion_id: str | None = Field(default=None, min_length=1)
 
 
+class SourceMaterialCreate(BaseModel):
+    source_id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+
+
+class MinutesSentenceCreate(BaseModel):
+    text: str = Field(min_length=1)
+    citations: list[str] = Field(default_factory=list)
+
+
+class MinutesDraftCreate(BaseModel):
+    model: str = Field(min_length=1)
+    prompt_version: str = Field(min_length=1)
+    human_approver: str = Field(min_length=1)
+    source_materials: list[SourceMaterialCreate] = Field(min_length=1)
+    sentences: list[MinutesSentenceCreate] = Field(min_length=1)
+
+
 @app.get("/")
 async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "motion vote action foundation",
+        "status": "minutes citation foundation",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
-            "enforcement are online with immutable motion, vote, and action-item capture; "
-            "minutes, archive, and UI workflows are not implemented yet."
+            "enforcement are online with immutable motion, vote, action-item, and citation-gated "
+            "minutes draft capture; archive and UI workflows are not implemented yet."
         ),
-        "next_step": "Milestone 7: minutes drafting with sentence citations",
+        "next_step": "Milestone 8: public meeting calendar, detail, and archive",
     }
 
 
@@ -458,6 +479,72 @@ async def list_action_items(meeting_id: str) -> dict[str, list[dict]]:
             for action_item in motion_votes.list_action_items(meeting_id)
         ]
     }
+
+
+@app.post("/meetings/{meeting_id}/minutes/drafts", status_code=201)
+async def create_minutes_draft(meeting_id: str, payload: MinutesDraftCreate) -> dict:
+    """Create an AI-assisted minutes draft only when every sentence is cited."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    result = minutes_drafts.create_draft(
+        meeting_id=meeting_id,
+        model=payload.model,
+        prompt_version=payload.prompt_version,
+        human_approver=payload.human_approver,
+        source_materials=[
+            SourceMaterial(
+                source_id=source.source_id,
+                label=source.label,
+                text=source.text,
+            )
+            for source in payload.source_materials
+        ],
+        sentences=[
+            MinutesSentence(
+                text=sentence.text,
+                citations=tuple(sentence.citations),
+            )
+            for sentence in payload.sentences
+        ],
+    )
+    if not hasattr(result, "public_dict"):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": result.message,
+                "fix": result.fix,
+            },
+        )
+    return result.public_dict()
+
+
+@app.get("/meetings/{meeting_id}/minutes/drafts")
+async def list_minutes_drafts(meeting_id: str) -> dict[str, list[dict]]:
+    """List citation-gated minutes drafts for a meeting."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return {
+        "drafts": [
+            draft.public_dict()
+            for draft in minutes_drafts.list_drafts(meeting_id)
+        ]
+    }
+
+
+@app.post("/minutes/{minute_id}/post")
+async def reject_automatic_minutes_posting(minute_id: str) -> None:
+    """Reject automatic public posting of AI-drafted minutes."""
+    if minutes_drafts.get_draft(minute_id) is None:
+        raise HTTPException(status_code=404, detail="Minutes draft not found.")
+    raise HTTPException(
+        status_code=409,
+        detail={
+            "message": "AI-drafted minutes cannot be posted automatically.",
+            "fix": "Review, cite-check, and adopt minutes through a human approval workflow before public posting.",
+        },
+    )
 
 
 def _evaluate_notice_or_404(
