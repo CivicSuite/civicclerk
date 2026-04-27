@@ -341,6 +341,16 @@
     "files_changed": [".github/workflows/release.yml", "tests/test_milestone_12_release.py"],
     "commit_sha": "d798bb0",
     "notes": "Tightened the tag-triggered release workflow so it publishes dist artifacts to a GitHub Release with contents:write permissions after verify-release.sh passes."
+  },
+  {
+    "milestone": 12,
+    "iteration": 4,
+    "target_test": "bash scripts/verify-release.sh",
+    "tests_passing": 350,
+    "tests_failing": 0,
+    "files_changed": ["scripts/verify-release.sh", "TDD_LOG.md", "MILESTONE_12_DONE.md"],
+    "commit_sha": "pending",
+    "notes": "Made release builds reproducible with SOURCE_DATE_EPOCH so the generated sdist checksum remains stable across repeated release-gate runs."
   }
 ]
 ```

@@ -9,6 +9,7 @@ Milestone 12 closes the CivicClerk v0.1.0 runtime-foundation sprint. It synchron
 - `9b6914e` - `test(milestone-12): define release contract`
 - `bd7fbae` - `chore(milestone-12): prepare v0.1.0 release`
 - `d798bb0` - `fix(milestone-12): publish GitHub release assets`
+- `85eca40` - `docs(milestone-12): record release-publish workflow`
 
 ## Version Surfaces
 
@@ -34,14 +35,14 @@ The tag-triggered release workflow runs the release gate, uploads `dist/*` as a 
 ## Release Artifacts
 
 - `dist/civicclerk-0.1.0-py3-none-any.whl` - 29,673 bytes
-- `dist/civicclerk-0.1.0.tar.gz` - 43,942 bytes
+- `dist/civicclerk-0.1.0.tar.gz` - 43,993 bytes
 - `dist/SHA256SUMS.txt` - 192 bytes
 
 Checksums:
 
 ```text
 b929f7d9cd42c51d7ac813b41dcb3c969190689f99fea87b2acf99d046c86684  civicclerk-0.1.0-py3-none-any.whl
-e5eda63d2badf5179273c4871758dfd65ca1a3b4b2632e6facfb5506a46d5124  civicclerk-0.1.0.tar.gz
+ea1379c0cdccabb92a7a6d0c412ad8a1d977461a783cbbe801a40a44f2e1ca26  civicclerk-0.1.0.tar.gz
 ```
 
 ## Browser QA Evidence

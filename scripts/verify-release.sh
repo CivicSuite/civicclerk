@@ -67,6 +67,7 @@ echo "==> clean dist"
 rm -rf dist
 
 echo "==> build"
+export SOURCE_DATE_EPOCH=1777161600
 "$PYTHON" -m build
 
 echo "==> checksums"
