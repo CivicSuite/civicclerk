@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CivicClerk Browser QA States</title>
+  <style>
+    :root {
+      --paper: #fbf6eb;
+      --ink: #1f2a24;
+      --panel: #fffaf0;
+      --accent: #245d51;
+      --warning: #8a4b08;
+      --danger: #8b1e1e;
+      --line: #d7c7aa;
+    }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #f7ecd8, #e6f0e8);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+    a, button { color: var(--accent); }
+    a:focus-visible, button:focus-visible {
+      outline: 4px solid #153d35;
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .state-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      min-height: 190px;
+      padding: 20px;
+      box-shadow: 0 18px 40px rgba(31, 42, 36, 0.12);
+    }
+    .state-card strong { display: block; margin-bottom: 8px; }
+    .error { border-color: var(--danger); }
+    .warning { border-color: var(--warning); }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 4px solid #c9d8d2;
+      border-top-color: var(--accent);
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+  <main aria-label="CivicClerk browser QA state fixtures">
+    <h1>CivicClerk Browser QA States</h1>
+    <p>These fixtures document the required rendered states for browser QA before frontend or landing-page changes merge.</p>
+    <section class="grid" aria-label="Required UI states">
+      <article class="state-card" data-state="loading" aria-live="polite">
+        <strong>Loading</strong>
+        <div class="spinner" aria-label="Loading meeting data"></div>
+        <p>Loading public meeting records. If this takes more than 30 seconds, check the local API service.</p>
+      </article>
+      <article class="state-card" data-state="success">
+        <strong>Success</strong>
+        <p>Public meeting records loaded. Posted agendas, packets, approved minutes, and source provenance are visible.</p>
+        <a href="../index.html">Return to landing page</a>
+      </article>
+      <article class="state-card" data-state="empty">
+        <strong>Empty</strong>
+        <p>No public meeting records are posted yet.</p>
+        <p>How to fix: publish a public archive record after minutes are approved.</p>
+      </article>
+      <article class="state-card error" data-state="error" role="alert">
+        <strong>Error</strong>
+        <p>Unable to load connector import data.</p>
+        <p>How to fix: retry the local import with the required meeting title and scheduled time fields.</p>
+      </article>
+      <article class="state-card warning" data-state="partial">
+        <strong>Partial</strong>
+        <p>Some agenda items imported without department names.</p>
+        <p>How to fix: review the source export and add missing department metadata before packet assembly.</p>
+      </article>
+    </section>
+    <p><button type="button">Keyboard focus target</button></p>
+  </main>
+</body>
+</html>

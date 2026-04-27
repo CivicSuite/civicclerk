@@ -1,6 +1,6 @@
 # CivicClerk User Manual
 
-Status: local-first connector import foundation manual  
+Status: accessibility and browser QA gate foundation manual  
 Version: `0.1.0.dev0`
 
 ## Part 1: Non-Technical Overview
@@ -44,9 +44,9 @@ meeting lifecycle enforcement, packet snapshot versioning, notice
 compliance enforcement, immutable motion capture, immutable vote capture,
 action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
-endpoints, a prompt YAML library and offline evaluation harness, and
+endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA. IT
+NovusAGENDA, and accessibility/browser QA gates. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 create draft agenda items and meetings, version packet snapshots, test
 allowed/rejected notice compliance postings, capture motions, capture
@@ -118,6 +118,9 @@ harness that runs with `CIVICCORE_LLM_PROVIDER=ollama` and outbound network
 blocked before prompt changes merge. Milestone 10 adds local-first
 Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports with source
 provenance and actionable errors, without requiring outbound runtime calls.
+Milestone 11 adds browser QA evidence and a CI gate for loading, success,
+empty, error, and partial states plus keyboard navigation, focus states,
+contrast, and console checks.
 
 ## Part 3: Architecture Reference
 
@@ -144,7 +147,8 @@ filtering for anonymous and under-privileged users. Milestone 9 moves
 policy-bearing prompt text into YAML and adds an evaluation harness.
 Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. Full UI screens remain
-planned work.
+planned work, but browser QA gates now verify the required state fixtures
+and accessibility evidence before browser-visible changes merge.
 
 - `meeting_bodies`
 - `meetings`

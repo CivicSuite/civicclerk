@@ -18,12 +18,15 @@ required=(
   SUPPORT.md
   .gitignore
   docs/index.html
+  docs/browser-qa/milestone11-checklist.md
+  docs/browser-qa/states.html
   docs/github-discussions-seed.md
   docs/RECONCILIATION.md
   docs/MILESTONES.md
   docs/roadmap/mvp-plan.md
   prompts/minutes_draft.yaml
   scripts/run-prompt-evals.py
+  scripts/verify-browser-qa.py
   docs/architecture/ADR-0001-mvp-boundary.md
   docs/adr/civicclerk-adr-0001.md
   docs/adr/civicclerk-adr-0002.md

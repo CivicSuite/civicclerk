@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 11 accessibility and browser QA gates.
+- Browser QA state fixture covering loading, success, empty, error, and
+  partial states.
+- CI browser QA evidence gate for keyboard, focus, contrast, console, and
+  screenshot artifacts.
 - Milestone 10 local-first connector/import normalization.
 - Granicus, Legistar, PrimeGov, and NovusAGENDA meeting import support from
   local export payloads.
@@ -58,6 +63,8 @@ All notable changes to CivicClerk are documented here.
   CivicCore migrations run against the same configured database URL.
 
 ### Changed
+- README, user manual, landing page, and root endpoint now describe the
+  shipped browser QA gate foundation and point reviewers to Milestone 12.
 - README, user manual, landing page, and root endpoint now describe the
   shipped connector import foundation and point reviewers to Milestone 11.
 - README, user manual, landing page, and root endpoint now describe the

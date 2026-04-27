@@ -23,6 +23,8 @@ jobs:
         run: bash scripts/verify-docs.sh
       - name: Check CivicCore placeholder imports
         run: python scripts/check-civiccore-placeholder-imports.py
+      - name: Verify browser QA evidence
+        run: python scripts/verify-browser-qa.py
       - name: Run prompt eval harness
         env:
           CIVICCORE_LLM_PROVIDER: ollama
