@@ -8,8 +8,8 @@ All notable changes to CivicClerk are documented here.
 - Milestone 2 canonical schema and Alembic migration scaffold for the
   fourteen CivicClerk tables. This is schema foundation only; agenda and
   meeting lifecycle enforcement has not shipped.
-- Executable Alembic env smoke coverage proving CivicClerk and CivicCore
-  migrations receive the same configured database URL.
+- pgvector-backed Alembic integration coverage proving CivicClerk and
+  CivicCore migrations run against the same configured database URL.
 
 ### Changed
 - README and root endpoint now describe the shipped schema foundation and

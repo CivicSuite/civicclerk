@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import ast
-from contextlib import nullcontext
 import importlib
-import os
 from pathlib import Path
+import subprocess
+import time
+import uuid
 
 import pytest
-import sqlalchemy as sa
 from alembic import command
 from alembic.config import Config
-from alembic.runtime.environment import EnvironmentContext
-from sqlalchemy import ForeignKeyConstraint
+from sqlalchemy import ForeignKeyConstraint, create_engine, text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -153,75 +152,90 @@ def test_alembic_env_runs_civiccore_baseline_first_and_uses_separate_version_tab
     assert "upgrade_to_head" in text
     assert "_database_url()" in text
     assert "_run_civiccore_migrations(section[\"sqlalchemy.url\"])" in text
+    assert "subprocess.run" in text
     assert "version_table=\"alembic_version_civicclerk\"" in text or "version_table = \"alembic_version_civicclerk\"" in text
     assert "target_metadata = Base.metadata" in text
 
 
-def test_alembic_command_boots_with_one_database_url_source(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Exercise Alembic's env.py path, not just source text.
-
-    PostgreSQL-only DDL is covered by the migration source and later container
-    gates. This smoke test proves the env bootstrap no longer fails before
-    migrations start: one Config URL feeds both CivicClerk's engine and
-    CivicCore's runner.
-    """
-    seen: dict[str, object] = {"configured": False, "ran": False}
-    db_url = "postgresql+psycopg2://clerk:test@localhost:5432/civicclerk_test"
-
-    class FakeConnection:
-        def __enter__(self) -> "FakeConnection":
-            return self
-
-        def __exit__(self, *args: object) -> None:
-            return None
-
-    class FakeEngine:
-        def connect(self) -> FakeConnection:
-            return FakeConnection()
-
-    def fake_engine_from_config(
-        section: dict[str, object],
-        prefix: str,
-        poolclass: type[object],
-    ) -> FakeEngine:
-        seen["engine_url"] = section["sqlalchemy.url"]
-        seen["prefix"] = prefix
-        seen["poolclass"] = poolclass
-        return FakeEngine()
-
-    def fake_configure(self: EnvironmentContext, **kwargs: object) -> None:
-        seen["configured"] = True
-        seen["version_table"] = kwargs["version_table"]
-
-    def fake_run_migrations(self: EnvironmentContext, **kwargs: object) -> None:
-        seen["ran"] = True
-
-    def fake_begin_transaction(self: EnvironmentContext) -> nullcontext[None]:
-        return nullcontext()
-
-    def fake_civiccore_upgrade_to_head() -> None:
-        seen["civiccore_url"] = os.environ["DATABASE_URL"]
-
-    monkeypatch.delenv("DATABASE_URL", raising=False)
-    monkeypatch.setattr(sa, "engine_from_config", fake_engine_from_config)
-    monkeypatch.setattr(EnvironmentContext, "configure", fake_configure)
-    monkeypatch.setattr(EnvironmentContext, "begin_transaction", fake_begin_transaction)
-    monkeypatch.setattr(EnvironmentContext, "run_migrations", fake_run_migrations)
-    monkeypatch.setattr(
-        "civiccore.migrations.runner.upgrade_to_head",
-        fake_civiccore_upgrade_to_head,
+def test_alembic_command_upgrades_real_pgvector_database(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Run the actual operator migration path against disposable Postgres."""
+    name = f"civicclerk-m2-{uuid.uuid4().hex[:12]}"
+    subprocess.run(
+        [
+            "docker",
+            "run",
+            "--name",
+            name,
+            "-e",
+            "POSTGRES_PASSWORD=postgres",
+            "-e",
+            "POSTGRES_USER=postgres",
+            "-e",
+            "POSTGRES_DB=civicclerk_test",
+            "-p",
+            "5432",
+            "-d",
+            "pgvector/pgvector:pg17",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
     )
 
-    cfg = Config(str(ROOT / "civicclerk" / "migrations" / "alembic.ini"))
-    cfg.set_main_option("sqlalchemy.url", db_url)
+    try:
+        mapped = subprocess.run(
+            ["docker", "port", name, "5432/tcp"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        port = mapped.rsplit(":", maxsplit=1)[-1]
+        db_url = f"postgresql+psycopg2://postgres:postgres@localhost:{port}/civicclerk_test"
+        engine = create_engine(db_url)
 
-    command.upgrade(cfg, "head")
+        deadline = time.monotonic() + 30
+        while True:
+            try:
+                with engine.connect() as connection:
+                    connection.execute(text("select 1"))
+                break
+            except Exception:
+                if time.monotonic() > deadline:
+                    raise
+                time.sleep(1)
 
-    assert seen["engine_url"] == db_url
-    assert seen["civiccore_url"] == db_url
-    assert seen["version_table"] == "alembic_version_civicclerk"
-    assert seen["configured"] is True
-    assert seen["ran"] is True
+        monkeypatch.setenv("DATABASE_URL", db_url)
+        cfg = Config(str(ROOT / "civicclerk" / "migrations" / "alembic.ini"))
+
+        command.upgrade(cfg, "head")
+        command.upgrade(cfg, "head")
+
+        with engine.connect() as connection:
+            civiccore_revision = connection.execute(
+                text("select version_num from alembic_version_civiccore")
+            ).scalar_one()
+            civicclerk_revision = connection.execute(
+                text("select version_num from alembic_version_civicclerk")
+            ).scalar_one()
+            civicclerk_tables = set(
+                connection.execute(
+                    text(
+                        """
+                        select table_name
+                        from information_schema.tables
+                        where table_schema = 'civicclerk'
+                        """
+                    )
+                ).scalars()
+            )
+
+        assert civiccore_revision == "civiccore_0002_llm"
+        assert civicclerk_revision == "civicclerk_0001_schema"
+        assert civicclerk_tables == set(CANONICAL_TABLES)
+    finally:
+        subprocess.run(["docker", "rm", "-f", name], check=False, capture_output=True, text=True)
 
 
 def test_first_migration_declares_revision_and_creates_all_canonical_tables_idempotently() -> None:
@@ -252,8 +266,8 @@ def test_docs_and_changelog_record_schema_milestone_without_claiming_lifecycle_b
     manual = (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8").lower()
     landing = (ROOT / "docs" / "index.html").read_text(encoding="utf-8").lower()
 
-    for text in [changelog, manual, landing]:
-        assert "canonical schema" in text
-        assert "alembic" in text
-        assert "agenda lifecycle enforcement shipped" not in text
-        assert "meeting workflows are implemented" not in text
+    for document_text in [changelog, manual, landing]:
+        assert "canonical schema" in document_text
+        assert "alembic" in document_text
+        assert "agenda lifecycle enforcement shipped" not in document_text
+        assert "meeting workflows are implemented" not in document_text

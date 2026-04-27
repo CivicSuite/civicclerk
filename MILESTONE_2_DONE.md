@@ -11,7 +11,8 @@ Milestone 2 added the CivicClerk canonical schema and Alembic migration scaffold
 - No foreign keys target CivicCore placeholder packages or unreleased CivicCore shared tables.
 - CivicClerk Alembic scaffold exists under `civicclerk/migrations`.
 - Alembic env runs the CivicCore migration baseline before CivicClerk migrations.
-- Alembic env boots from one database URL source and passes that same URL to CivicCore.
+- Alembic env boots from one database URL source and runs CivicCore first
+  in an isolated process against the same URL.
 - CivicClerk uses a separate `alembic_version_civicclerk` version table.
 - First migration creates the `civicclerk` schema and the fourteen canonical tables with idempotent create-table guards.
 - Current-facing docs and CHANGELOG describe the canonical schema and Alembic scaffold without claiming lifecycle/workflow behavior.
@@ -27,7 +28,9 @@ Milestone 2 added the CivicClerk canonical schema and Alembic migration scaffold
 - Iteration 1: `c1eb0a3` - canonical table metadata green.
 - Iteration 2: `3386c2d` - Alembic schema scaffold green.
 - Iteration 3: `7ea3afa` - schema milestone docs green.
-- Audit fix: Alembic URL boot path now has an executable `command.upgrade()` smoke test; README and root endpoint now point to Milestone 3 as next.
+- Audit fix: Alembic URL boot path now has an executable pgvector-backed
+  `command.upgrade()` integration test; README and root endpoint now point
+  to Milestone 3 as next.
 
 ## Deferred Items
 
@@ -36,5 +39,6 @@ None for Milestone 2. Milestone 3 remains agenda item lifecycle enforcement and 
 ## Verification
 
 - `python -m pytest -q` passed.
+- `python -m pytest tests\test_milestone_2_schema_and_migrations.py::test_alembic_command_upgrades_real_pgvector_database -q` passed against `pgvector/pgvector:pg17`.
 - `bash scripts/verify-docs.sh` passed.
 - `python scripts/check-civiccore-placeholder-imports.py` passed.

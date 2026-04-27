@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from logging.config import fileConfig
 import os
+import subprocess
+import sys
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from civicclerk.models import Base
-import civiccore.migrations.runner as civiccore_runner
 
 
 config = context.config
@@ -30,16 +31,18 @@ def _database_url() -> str:
 
 
 def _run_civiccore_migrations(url: str) -> None:
-    """Run CivicCore first against the same database URL as CivicClerk."""
-    previous = os.environ.get("DATABASE_URL")
-    os.environ["DATABASE_URL"] = url
-    try:
-        civiccore_runner.upgrade_to_head()
-    finally:
-        if previous is None:
-            os.environ.pop("DATABASE_URL", None)
-        else:
-            os.environ["DATABASE_URL"] = previous
+    """Run CivicCore first without nesting Alembic EnvironmentContext proxies."""
+    env = os.environ.copy()
+    env["DATABASE_URL"] = url
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from civiccore.migrations.runner import upgrade_to_head; upgrade_to_head()",
+        ],
+        env=env,
+        check=True,
+    )
 
 
 def run_migrations_offline() -> None:

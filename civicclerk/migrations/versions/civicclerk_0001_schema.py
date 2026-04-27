@@ -6,7 +6,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-from civiccore.migrations.guards import idempotent_create_table
+from civicclerk.migrations.guards import idempotent_create_table
 
 
 revision = "civicclerk_0001_schema"
