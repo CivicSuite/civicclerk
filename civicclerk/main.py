@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from civicclerk import __version__
 from civicclerk.agenda_lifecycle import AgendaItemStore
+from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_lifecycle import MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
@@ -130,15 +131,17 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "prompt evaluation foundation",
+        "status": "connector import foundation",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
             "minutes draft capture plus permission-aware public calendar and archive endpoints; "
-            "prompt YAML and offline evaluation gates now protect policy-bearing prompt changes; "
+            "prompt YAML and offline evaluation gates protect policy-bearing prompt changes; "
+            "local-first Granicus, Legistar, PrimeGov, and NovusAGENDA imports now normalize "
+            "source provenance; "
             "full UI workflows are not implemented yet."
         ),
-        "next_step": "Milestone 10: connectors and imports",
+        "next_step": "Milestone 11: accessibility and browser QA gates",
     }
 
 
@@ -582,6 +585,24 @@ async def publish_public_record(
         include_closed=can_view_closed_sessions("clerk")
         and record.visibility != "public"
     )
+
+
+@app.post("/imports/{connector_name}/meetings", status_code=201)
+async def import_connector_meeting(connector_name: str, payload: dict) -> dict:
+    """Import a local connector export payload without outbound network calls."""
+    try:
+        return import_meeting_payload(
+            connector_name=connector_name,
+            payload=payload,
+        ).public_dict()
+    except ConnectorImportError as error:
+        status_code = 404 if connector_name.strip().lower() not in {
+            "granicus",
+            "legistar",
+            "novusagenda",
+            "primegov",
+        } else 422
+        raise HTTPException(status_code=status_code, detail=error.public_dict()) from error
 
 
 @app.get("/public/meetings")

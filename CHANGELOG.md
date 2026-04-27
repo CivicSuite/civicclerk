@@ -5,6 +5,12 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 10 local-first connector/import normalization.
+- Granicus, Legistar, PrimeGov, and NovusAGENDA meeting import support from
+  local export payloads.
+- Source provenance on imported meetings and agenda items.
+- Actionable connector import errors for unsupported connectors and malformed
+  local payloads.
 - Milestone 9 prompt YAML library and evaluation harness.
 - YAML-backed `minutes_draft@0.1.0` prompt with required variable enforcement.
 - Offline prompt evaluation script that runs with `CIVICCORE_LLM_PROVIDER=ollama`
@@ -52,6 +58,8 @@ All notable changes to CivicClerk are documented here.
   CivicCore migrations run against the same configured database URL.
 
 ### Changed
+- README, user manual, landing page, and root endpoint now describe the
+  shipped connector import foundation and point reviewers to Milestone 11.
 - README, user manual, landing page, and root endpoint now describe the
   shipped prompt evaluation foundation and point reviewers to Milestone 10.
 - README, user manual, landing page, and root endpoint now describe the
