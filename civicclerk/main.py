@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from civicclerk import __version__
 from civicclerk.agenda_lifecycle import AgendaItemStore
 from civicclerk.meeting_lifecycle import MeetingStore
+from civicclerk.motion_vote import MotionVoteStore
 from civicclerk.packet_notice import NoticeStore, PacketStore, evaluate_notice_compliance
 from civiccore import __version__ as CIVICCORE_VERSION
 
@@ -23,6 +24,7 @@ agenda_items = AgendaItemStore()
 meetings = MeetingStore()
 packet_snapshots = PacketStore()
 notices = NoticeStore()
+motion_votes = MotionVoteStore()
 
 
 class AgendaItemCreate(BaseModel):
@@ -60,17 +62,49 @@ class NoticeComplianceRequest(BaseModel):
     approved_by: str | None = Field(default=None, min_length=1)
 
 
+class MotionCreate(BaseModel):
+    text: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    agenda_item_id: str | None = Field(default=None, min_length=1)
+
+
+class MotionCorrectionCreate(BaseModel):
+    text: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+
+
+class VoteCreate(BaseModel):
+    voter_name: str = Field(min_length=1)
+    vote: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+
+
+class VoteCorrectionCreate(BaseModel):
+    vote: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+
+
+class ActionItemCreate(BaseModel):
+    description: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    assigned_to: str | None = Field(default=None, min_length=1)
+    source_motion_id: str | None = Field(default=None, min_length=1)
+
+
 @app.get("/")
 async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "packet notice foundation",
+        "status": "motion vote action foundation",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
-            "enforcement are online; vote, minutes, archive, and UI workflows are not implemented yet."
+            "enforcement are online with immutable motion, vote, and action-item capture; "
+            "minutes, archive, and UI workflows are not implemented yet."
         ),
-        "next_step": "Milestone 6: motion, vote, and action-item capture",
+        "next_step": "Milestone 7: minutes drafting with sentence citations",
     }
 
 
@@ -264,6 +298,159 @@ async def post_notice(
             },
         )
     return notices.create(result).public_dict()
+
+
+@app.post("/meetings/{meeting_id}/motions", status_code=201)
+async def capture_motion(meeting_id: str, payload: MotionCreate) -> dict:
+    """Capture an immutable motion for a meeting."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return motion_votes.capture_motion(
+        meeting_id=meeting_id,
+        agenda_item_id=payload.agenda_item_id,
+        text=payload.text,
+        actor=payload.actor,
+    ).public_dict()
+
+
+@app.get("/meetings/{meeting_id}/motions")
+async def list_motions(meeting_id: str) -> dict[str, list[dict]]:
+    """List captured motions and correction records for a meeting."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return {
+        "motions": [
+            motion.public_dict()
+            for motion in motion_votes.list_motions(meeting_id)
+        ]
+    }
+
+
+@app.put("/motions/{motion_id}")
+@app.patch("/motions/{motion_id}")
+async def reject_motion_mutation(motion_id: str) -> None:
+    """Reject edits to captured motions; corrections must be append-only."""
+    if motion_votes.get_motion(motion_id) is None:
+        raise HTTPException(status_code=404, detail="Motion not found.")
+    raise HTTPException(
+        status_code=409,
+        detail={
+            "message": "Captured motions are immutable.",
+            "fix": "Use POST /motions/{motion_id}/corrections to add a correction record that references the original motion.",
+        },
+    )
+
+
+@app.post("/motions/{motion_id}/corrections", status_code=201)
+async def correct_motion(motion_id: str, payload: MotionCorrectionCreate) -> dict:
+    """Create an append-only correction record for a captured motion."""
+    correction = motion_votes.correct_motion(
+        original_motion_id=motion_id,
+        text=payload.text,
+        actor=payload.actor,
+        reason=payload.reason,
+    )
+    if correction is None:
+        raise HTTPException(status_code=404, detail="Motion not found.")
+    return correction.public_dict()
+
+
+@app.post("/motions/{motion_id}/votes", status_code=201)
+async def capture_vote(motion_id: str, payload: VoteCreate) -> dict:
+    """Capture an immutable vote for a motion."""
+    if motion_votes.get_motion(motion_id) is None:
+        raise HTTPException(status_code=404, detail="Motion not found.")
+    return motion_votes.capture_vote(
+        motion_id=motion_id,
+        voter_name=payload.voter_name,
+        vote=payload.vote,
+        actor=payload.actor,
+    ).public_dict()
+
+
+@app.get("/motions/{motion_id}/votes")
+async def list_votes(motion_id: str) -> dict[str, list[dict]]:
+    """List captured votes and correction records for a motion."""
+    if motion_votes.get_motion(motion_id) is None:
+        raise HTTPException(status_code=404, detail="Motion not found.")
+    return {
+        "votes": [
+            vote.public_dict()
+            for vote in motion_votes.list_votes(motion_id)
+        ]
+    }
+
+
+@app.put("/votes/{vote_id}")
+@app.patch("/votes/{vote_id}")
+async def reject_vote_mutation(vote_id: str) -> None:
+    """Reject edits to captured votes; corrections must be append-only."""
+    if motion_votes.get_vote(vote_id) is None:
+        raise HTTPException(status_code=404, detail="Vote not found.")
+    raise HTTPException(
+        status_code=409,
+        detail={
+            "message": "Captured votes are immutable.",
+            "fix": "Use POST /votes/{vote_id}/corrections to add a correction record that references the original vote.",
+        },
+    )
+
+
+@app.post("/votes/{vote_id}/corrections", status_code=201)
+async def correct_vote(vote_id: str, payload: VoteCorrectionCreate) -> dict:
+    """Create an append-only correction record for a captured vote."""
+    correction = motion_votes.correct_vote(
+        original_vote_id=vote_id,
+        vote=payload.vote,
+        actor=payload.actor,
+        reason=payload.reason,
+    )
+    if correction is None:
+        raise HTTPException(status_code=404, detail="Vote not found.")
+    return correction.public_dict()
+
+
+@app.post("/meetings/{meeting_id}/action-items", status_code=201)
+async def create_action_item(meeting_id: str, payload: ActionItemCreate) -> dict:
+    """Create an action item linked to a meeting outcome."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    if payload.source_motion_id is not None:
+        source_motion = motion_votes.get_motion(payload.source_motion_id)
+        if source_motion is None:
+            raise HTTPException(status_code=404, detail="Source motion not found.")
+        if source_motion.meeting_id != meeting_id:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "message": "Action item source motion belongs to a different meeting.",
+                    "fix": "Use a motion captured for this meeting, or create the action item without source_motion_id and document the source in the description.",
+                },
+            )
+    return motion_votes.create_action_item(
+        meeting_id=meeting_id,
+        description=payload.description,
+        assigned_to=payload.assigned_to,
+        source_motion_id=payload.source_motion_id,
+        actor=payload.actor,
+    ).public_dict()
+
+
+@app.get("/meetings/{meeting_id}/action-items")
+async def list_action_items(meeting_id: str) -> dict[str, list[dict]]:
+    """List action items linked to a meeting."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return {
+        "action_items": [
+            action_item.public_dict()
+            for action_item in motion_votes.list_action_items(meeting_id)
+        ]
+    }
 
 
 def _evaluate_notice_or_404(
