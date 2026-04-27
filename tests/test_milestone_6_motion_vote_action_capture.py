@@ -215,6 +215,31 @@ async def test_action_item_rejects_motion_from_different_meeting_with_actionable
     assert "Use a motion captured for this meeting" in detail["fix"]
 
 
+@pytest.mark.asyncio
+async def test_action_item_requires_source_motion_with_actionable_error() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        meeting = await client.post(
+            "/meetings",
+            json={
+                "title": "Missing Source Meeting",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-05T19:00:00Z",
+            },
+        )
+        rejected = await client.post(
+            f"/meetings/{meeting.json()['id']}/action-items",
+            json={
+                "description": "Do something not tied to an outcome.",
+                "actor": "clerk@example.gov",
+            },
+        )
+
+    assert rejected.status_code == 422
+    detail = rejected.json()["detail"]
+    assert detail["message"] == "Action items must reference a captured meeting outcome."
+    assert "Capture the related motion first" in detail["fix"]
+
+
 def test_docs_record_motion_vote_action_scope_without_claiming_minutes_or_archive_behavior() -> None:
     docs = {
         "README.md": (ROOT / "README.md").read_text(encoding="utf-8"),

@@ -418,18 +418,25 @@ async def create_action_item(meeting_id: str, payload: ActionItemCreate) -> dict
     meeting = meetings.get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
-    if payload.source_motion_id is not None:
-        source_motion = motion_votes.get_motion(payload.source_motion_id)
-        if source_motion is None:
-            raise HTTPException(status_code=404, detail="Source motion not found.")
-        if source_motion.meeting_id != meeting_id:
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "message": "Action item source motion belongs to a different meeting.",
-                    "fix": "Use a motion captured for this meeting, or create the action item without source_motion_id and document the source in the description.",
-                },
-            )
+    if payload.source_motion_id is None:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Action items must reference a captured meeting outcome.",
+                "fix": "Capture the related motion first, then send its id as source_motion_id.",
+            },
+        )
+    source_motion = motion_votes.get_motion(payload.source_motion_id)
+    if source_motion is None:
+        raise HTTPException(status_code=404, detail="Source motion not found.")
+    if source_motion.meeting_id != meeting_id:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Action item source motion belongs to a different meeting.",
+                "fix": "Use a motion captured for this meeting as source_motion_id.",
+            },
+        )
     return motion_votes.create_action_item(
         meeting_id=meeting_id,
         description=payload.description,

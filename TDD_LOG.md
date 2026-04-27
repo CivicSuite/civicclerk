@@ -191,6 +191,16 @@
     "files_changed": ["civicclerk/motion_vote.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone6-desktop.png", "docs/screenshots/milestone6-mobile.png"],
     "commit_sha": "7b4d813",
     "notes": "Implemented immutable motion and vote capture, append-only correction endpoints, action-item capture linked to source motions, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting minutes, archive, UI, or AI workflow scope."
+  },
+  {
+    "milestone": 6,
+    "iteration": "audit-fix",
+    "target_test": "tests/test_milestone_6_motion_vote_action_capture.py::test_action_item_requires_source_motion_with_actionable_error",
+    "tests_passing": 319,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/main.py", "tests/test_milestone_6_motion_vote_action_capture.py", "TDD_LOG.md", "MILESTONE_6_DONE.md"],
+    "commit_sha": "pending",
+    "notes": "Required action items to reference a captured source motion so the shipped action-item claim cannot create unlinked outcomes."
   }
 ]
 ```

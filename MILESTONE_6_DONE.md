@@ -11,6 +11,7 @@ Status: complete on branch `milestone-6-motion-vote-action-capture`
 - Direct `PUT` and `PATCH` attempts against captured votes return `409 Conflict` with an actionable correction path.
 - Vote corrections are append-only records that reference the original vote through `correction_of_id`.
 - Action items can be created for meetings and linked to source motions as meeting outcomes.
+- Action items reject missing source motions with an actionable `422` response.
 - Action items reject source motions from other meetings with an actionable `422` response.
 - The root endpoint, README, user manual, landing page, and changelog now describe the shipped motion/vote/action foundation and point to Milestone 7.
 
@@ -25,8 +26,8 @@ Status: complete on branch `milestone-6-motion-vote-action-capture`
 
 ## Verification Snapshot
 
-- `python -m pytest --collect-only -q`: `318 tests collected in 0.71s`
-- `python -m pytest -q`: `318 passed in 6.14s`
+- `python -m pytest --collect-only -q`: `319 tests collected in 0.75s`
+- `python -m pytest -q`: `319 passed in 6.25s`
 - `bash scripts/verify-docs.sh`: `VERIFY-DOCS: PASSED`
 - `python scripts/check-civiccore-placeholder-imports.py`: `PLACEHOLDER-IMPORT-CHECK: PASSED (12 source files scanned)`
 - `python -m ruff check .`: `All checks passed!`
