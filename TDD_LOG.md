@@ -291,6 +291,26 @@
     "files_changed": ["civicclerk/connectors.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone10-desktop.png", "docs/screenshots/milestone10-mobile.png"],
     "commit_sha": "a9450bd",
     "notes": "Implemented local-first connector import normalization with source provenance, actionable connector errors, API endpoint, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting live sync, full UI, or database-backed connector persistence scope."
+  },
+  {
+    "milestone": 11,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_11_accessibility_browser_qa.py",
+    "tests_passing": 0,
+    "tests_failing": 5,
+    "files_changed": ["tests/test_milestone_11_accessibility_browser_qa.py"],
+    "commit_sha": "9e957e0",
+    "notes": "Added failing browser QA gate contract covering required rendered states, keyboard/focus/contrast/console checks, screenshot evidence, CI gate wiring, landing-page focus style, and docs accuracy."
+  },
+  {
+    "milestone": 11,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_11_accessibility_browser_qa.py tests/test_milestone_1_runtime_foundation.py",
+    "tests_passing": 15,
+    "tests_failing": 0,
+    "files_changed": [".github/workflows/ci.yml", "docs/browser-qa/milestone11-checklist.md", "docs/browser-qa/states.html", "docs/screenshots/milestone11-browser-qa-desktop.png", "docs/screenshots/milestone11-browser-qa-mobile.png", "scripts/verify-browser-qa.py", "scripts/verify-docs.sh", "docs/index.html", "README.md", "USER-MANUAL.md", "CHANGELOG.md", "civicclerk/main.py", "tests/test_milestone_1_runtime_foundation.py"],
+    "commit_sha": "032fe48",
+    "notes": "Implemented browser QA fixture, gate script, CI wiring, focus-visible styling, current-facing docs, root endpoint update, and desktop/mobile screenshot evidence without starting release/version-bump scope."
   }
 ]
 ```
