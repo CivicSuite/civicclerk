@@ -171,6 +171,26 @@
     "files_changed": ["civicclerk/main.py", "tests/test_milestone_5_packet_notice_compliance.py", "TDD_LOG.md", "MILESTONE_5_DONE.md"],
     "commit_sha": "7295f56",
     "notes": "Rejected timezone-naive scheduled_start values with actionable 422 responses before notice compliance comparisons can crash."
+  },
+  {
+    "milestone": 6,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_6_motion_vote_action_capture.py",
+    "tests_passing": 0,
+    "tests_failing": 5,
+    "files_changed": ["tests/test_milestone_6_motion_vote_action_capture.py"],
+    "commit_sha": "131ae4a",
+    "notes": "Added failing motion, vote, and action-item capture contract covering immutable captured records, append-only corrections, action-item source links, actionable errors, API behavior, and docs accuracy."
+  },
+  {
+    "milestone": 6,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_6_motion_vote_action_capture.py tests/test_milestone_1_runtime_foundation.py",
+    "tests_passing": 15,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/motion_vote.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone6-desktop.png", "docs/screenshots/milestone6-mobile.png"],
+    "commit_sha": "7b4d813",
+    "notes": "Implemented immutable motion and vote capture, append-only correction endpoints, action-item capture linked to source motions, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting minutes, archive, UI, or AI workflow scope."
   }
 ]
 ```
