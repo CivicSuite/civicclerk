@@ -251,6 +251,26 @@
     "files_changed": ["civicclerk/public_archive.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone8-desktop.png", "docs/screenshots/milestone8-mobile.png"],
     "commit_sha": "e8aa7ab",
     "notes": "Implemented permission-aware public meeting calendar, public detail, and archive search endpoints with closed-session filtering, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting prompt YAML, evaluation, full UI, or database-backed archive persistence scope."
+  },
+  {
+    "milestone": 9,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_9_prompt_yaml_evals.py",
+    "tests_passing": 0,
+    "tests_failing": 6,
+    "files_changed": ["tests/test_milestone_9_prompt_yaml_evals.py"],
+    "commit_sha": "27accb8",
+    "notes": "Added failing prompt YAML and evaluation harness contract covering YAML loading/rendering, minutes prompt-version enforcement, offline eval execution, CI wiring, no hardcoded policy prompt strings, and docs accuracy."
+  },
+  {
+    "milestone": 9,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_9_prompt_yaml_evals.py tests/test_milestone_7_minutes_citations.py tests/test_milestone_1_runtime_foundation.py",
+    "tests_passing": 22,
+    "tests_failing": 0,
+    "files_changed": [".github/workflows/ci.yml", "civicclerk/prompt_library.py", "civicclerk/prompt_evals.py", "civicclerk/minutes.py", "civicclerk/main.py", "prompts/minutes_draft.yaml", "scripts/run-prompt-evals.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "tests/test_milestone_7_minutes_citations.py", "docs/screenshots/milestone9-desktop.png", "docs/screenshots/milestone9-mobile.png"],
+    "commit_sha": "dfddc2b",
+    "notes": "Implemented the YAML prompt library, offline prompt evaluation harness, CI prompt-eval gate, minutes prompt-version provenance enforcement, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting connector/import or UI workflow scope."
   }
 ]
 ```
