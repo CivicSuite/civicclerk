@@ -27,7 +27,7 @@ async def test_minutes_draft_requires_sentence_level_citations_and_records_prove
             f"/meetings/{meeting_id}/minutes/drafts",
             json={
                 "model": "ollama/gemma4",
-                "prompt_version": "minutes-v1",
+                "prompt_version": "minutes_draft@0.1.0",
                 "human_approver": "clerk@example.gov",
                 "source_materials": [
                     {
@@ -62,7 +62,7 @@ async def test_minutes_draft_requires_sentence_level_citations_and_records_prove
     assert payload["posted"] is False
     assert payload["provenance"] == {
         "model": "ollama/gemma4",
-        "prompt_version": "minutes-v1",
+        "prompt_version": "minutes_draft@0.1.0",
         "data_sources": ["motion-1", "vote-1"],
         "human_approver": "clerk@example.gov",
     }
@@ -85,7 +85,7 @@ async def test_minutes_draft_rejects_uncited_material_output_with_actionable_err
             f"/meetings/{meeting.json()['id']}/minutes/drafts",
             json={
                 "model": "ollama/gemma4",
-                "prompt_version": "minutes-v1",
+                "prompt_version": "minutes_draft@0.1.0",
                 "human_approver": "clerk@example.gov",
                 "source_materials": [
                     {
@@ -124,7 +124,7 @@ async def test_minutes_draft_rejects_unknown_citation_source_with_actionable_err
             f"/meetings/{meeting.json()['id']}/minutes/drafts",
             json={
                 "model": "ollama/gemma4",
-                "prompt_version": "minutes-v1",
+                "prompt_version": "minutes_draft@0.1.0",
                 "human_approver": "clerk@example.gov",
                 "source_materials": [
                     {
@@ -163,7 +163,7 @@ async def test_minutes_draft_requires_human_approver_before_ai_output_is_accepte
             f"/meetings/{meeting.json()['id']}/minutes/drafts",
             json={
                 "model": "ollama/gemma4",
-                "prompt_version": "minutes-v1",
+                "prompt_version": "minutes_draft@0.1.0",
                 "source_materials": [
                     {
                         "source_id": "motion-1",
@@ -199,7 +199,7 @@ async def test_minutes_adoption_and_public_posting_are_not_automatic() -> None:
             f"/meetings/{meeting.json()['id']}/minutes/drafts",
             json={
                 "model": "ollama/gemma4",
-                "prompt_version": "minutes-v1",
+                "prompt_version": "minutes_draft@0.1.0",
                 "human_approver": "clerk@example.gov",
                 "source_materials": [
                     {

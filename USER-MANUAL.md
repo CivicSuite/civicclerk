@@ -1,6 +1,6 @@
 # CivicClerk User Manual
 
-Status: public calendar and archive foundation manual  
+Status: prompt YAML and evaluation foundation manual  
 Version: `0.1.0.dev0`
 
 ## Part 1: Non-Technical Overview
@@ -44,13 +44,14 @@ meeting lifecycle enforcement, packet snapshot versioning, notice
 compliance enforcement, immutable motion capture, immutable vote capture,
 action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
-endpoints. IT staff can import and serve `civicclerk.main:app`, call `/`,
-call `/health`, create draft agenda items and meetings, version packet
-snapshots, test allowed/rejected notice compliance postings, capture
-motions, capture votes, add correction records, create action items,
-create minutes drafts with sentence-level citations and provenance, and
-verify public archive filtering. Clerks cannot yet use full workflow
-screens in the product.
+endpoints, plus a prompt YAML library and offline evaluation harness. IT
+staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
+create draft agenda items and meetings, version packet snapshots, test
+allowed/rejected notice compliance postings, capture motions, capture
+votes, add correction records, create action items, create minutes drafts
+with sentence-level citations and prompt-version provenance, verify public
+archive filtering, and run prompt evaluations with outbound network
+blocked. Clerks cannot yet use full workflow screens in the product.
 
 ## Part 2: IT and Technical Overview
 
@@ -107,7 +108,10 @@ citation, provenance records model, prompt version, data sources, and human
 approver, and AI drafts are never auto-adopted or auto-posted. Milestone 8
 adds permission-aware public calendar, public detail, and archive search
 tests that prevent closed-session leakage in anonymous response bodies,
-counts, suggestions, and not-found responses.
+counts, suggestions, and not-found responses. Milestone 9 adds a YAML
+prompt library, prompt-version enforcement, and an offline evaluation
+harness that runs with `CIVICCORE_LLM_PROVIDER=ollama` and outbound network
+blocked before prompt changes merge.
 
 ## Part 3: Architecture Reference
 
@@ -130,8 +134,9 @@ Milestone 6 adds immutable motion capture, immutable vote capture, and
 action-item capture linked to meeting outcomes. Milestone 7 adds
 citation-gated minutes draft capture with provenance. Milestone 8 adds
 permission-aware public archive behavior, including closed-session
-filtering for anonymous and under-privileged users. Full UI screens remain
-planned work.
+filtering for anonymous and under-privileged users. Milestone 9 moves
+policy-bearing prompt text into YAML and adds an evaluation harness. Full
+UI screens remain planned work.
 
 - `meeting_bodies`
 - `meetings`

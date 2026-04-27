@@ -5,6 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import uuid4
 
+from civicclerk.prompt_library import (
+    expected_prompt_version_hint,
+    is_known_prompt_version,
+)
+
 
 @dataclass(frozen=True)
 class SourceMaterial:
@@ -95,6 +100,13 @@ class MinutesDraftStore:
         source_materials: list[SourceMaterial],
         sentences: list[MinutesSentence],
     ) -> MinutesDraft | MinutesValidationError:
+        if not is_known_prompt_version(prompt_version):
+            expected = expected_prompt_version_hint()
+            return MinutesValidationError(
+                message="Minutes drafts must use a prompt version from the CivicClerk YAML prompt library.",
+                fix=f"Use prompt_version '{expected}' or another version returned by the prompt library.",
+            )
+
         validation_error = validate_minutes_draft(
             source_materials=source_materials,
             sentences=sentences,

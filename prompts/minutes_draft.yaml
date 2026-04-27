@@ -1,0 +1,24 @@
+id: minutes_draft
+version: 0.1.0
+provider: ollama
+required_variables:
+  - meeting_title
+  - source_materials
+  - drafting_instructions
+template: |
+  Draft official meeting minutes for $meeting_title.
+
+  Every material sentence must include citations to the supplied source ids.
+  Never adopt or publicly post minutes automatically.
+  Use neutral clerk language and preserve human approval as the final authority.
+
+  Source materials:
+  $source_materials
+
+  Drafting instructions:
+  $drafting_instructions
+evaluations:
+  - name: citation_policy_present
+    required_phrases:
+      - Every material sentence must include citations
+      - Never adopt or publicly post minutes automatically

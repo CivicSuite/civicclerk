@@ -130,14 +130,15 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "public archive foundation",
+        "status": "prompt evaluation foundation",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
             "minutes draft capture plus permission-aware public calendar and archive endpoints; "
+            "prompt YAML and offline evaluation gates now protect policy-bearing prompt changes; "
             "full UI workflows are not implemented yet."
         ),
-        "next_step": "Milestone 9: prompt YAML library and evaluation harness",
+        "next_step": "Milestone 10: connectors and imports",
     }
 
 

@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 9 prompt YAML library and evaluation harness.
+- YAML-backed `minutes_draft@0.1.0` prompt with required variable enforcement.
+- Offline prompt evaluation script that runs with `CIVICCORE_LLM_PROVIDER=ollama`
+  and outbound network blocked.
+- Prompt-version provenance enforcement for minutes drafts.
 - Milestone 8 public meeting calendar, detail, and archive search endpoints.
 - Permission-aware public archive filtering for anonymous, staff, clerk,
   attorney, and admin roles.
@@ -47,6 +52,8 @@ All notable changes to CivicClerk are documented here.
   CivicCore migrations run against the same configured database URL.
 
 ### Changed
+- README, user manual, landing page, and root endpoint now describe the
+  shipped prompt evaluation foundation and point reviewers to Milestone 10.
 - README, user manual, landing page, and root endpoint now describe the
   shipped public archive foundation and point reviewers to Milestone 9.
 - README, user manual, landing page, and root endpoint now describe the
