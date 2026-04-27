@@ -13,6 +13,7 @@ from civicclerk.meeting_lifecycle import MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
 from civicclerk.packet_notice import NoticeStore, PacketStore, evaluate_notice_compliance
+from civicclerk.public_archive import PublicArchiveStore, can_view_closed_sessions
 from civiccore import __version__ as CIVICCORE_VERSION
 
 app = FastAPI(
@@ -27,6 +28,7 @@ packet_snapshots = PacketStore()
 notices = NoticeStore()
 motion_votes = MotionVoteStore()
 minutes_drafts = MinutesDraftStore()
+public_archive = PublicArchiveStore()
 
 
 class AgendaItemCreate(BaseModel):
@@ -114,18 +116,28 @@ class MinutesDraftCreate(BaseModel):
     sentences: list[MinutesSentenceCreate] = Field(min_length=1)
 
 
+class PublicMeetingRecordCreate(BaseModel):
+    title: str = Field(min_length=1)
+    visibility: str = Field(min_length=1)
+    posted_agenda: str = Field(min_length=1)
+    posted_packet: str = Field(min_length=1)
+    approved_minutes: str = Field(min_length=1)
+    closed_session_notes: str | None = Field(default=None, min_length=1)
+
+
 @app.get("/")
 async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "minutes citation foundation",
+        "status": "public archive foundation",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
-            "minutes draft capture; archive and UI workflows are not implemented yet."
+            "minutes draft capture plus permission-aware public calendar and archive endpoints; "
+            "full UI workflows are not implemented yet."
         ),
-        "next_step": "Milestone 8: public meeting calendar, detail, and archive",
+        "next_step": "Milestone 9: prompt YAML library and evaluation harness",
     }
 
 
@@ -545,6 +557,67 @@ async def reject_automatic_minutes_posting(minute_id: str) -> None:
             "fix": "Review, cite-check, and adopt minutes through a human approval workflow before public posting.",
         },
     )
+
+
+@app.post("/meetings/{meeting_id}/public-record", status_code=201)
+async def publish_public_record(
+    meeting_id: str,
+    payload: PublicMeetingRecordCreate,
+) -> dict:
+    """Create a public or restricted archive record for a meeting."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    record = public_archive.publish(
+        meeting_id=meeting_id,
+        title=payload.title,
+        visibility=payload.visibility,
+        posted_agenda=payload.posted_agenda,
+        posted_packet=payload.posted_packet,
+        approved_minutes=payload.approved_minutes,
+        closed_session_notes=payload.closed_session_notes,
+    )
+    return record.public_dict(
+        include_closed=can_view_closed_sessions("clerk")
+        and record.visibility != "public"
+    )
+
+
+@app.get("/public/meetings")
+async def public_meetings() -> dict[str, int | list[dict]]:
+    """Return public meeting calendar records only."""
+    records = [record.public_dict() for record in public_archive.public_calendar()]
+    return {
+        "total_count": len(records),
+        "meetings": records,
+    }
+
+
+@app.get("/public/meetings/{record_id}")
+async def public_meeting_detail(record_id: str) -> dict:
+    """Return one public meeting record without revealing restricted records."""
+    record = public_archive.public_detail(record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Public meeting record not found.")
+    return record.public_dict()
+
+
+@app.get("/public/archive/search")
+async def public_archive_search(
+    q: str,
+    role: str = "anonymous",
+) -> dict[str, int | list[dict]]:
+    """Search public archives with permission-aware closed-session filtering."""
+    include_closed = can_view_closed_sessions(role)
+    results = [
+        record.public_dict(include_closed=include_closed)
+        for record in public_archive.search(query=q, role=role)
+    ]
+    return {
+        "total_count": len(results),
+        "results": results,
+        "suggestions": [],
+    }
 
 
 def _evaluate_notice_or_404(

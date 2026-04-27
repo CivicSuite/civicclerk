@@ -2,7 +2,7 @@
 
 **CivicClerk is the CivicSuite module for municipal meetings, agendas, packets, minutes, votes, notices, and public meeting archives.**
 
-Status: runtime foundation plus minutes drafting with sentence citations  
+Status: runtime foundation plus permission-aware public calendar and archive endpoints  
 Current version: `0.1.0.dev0`  
 Repository: <https://github.com/CivicSuite/civicclerk>  
 Depends on: `civiccore==0.2.0`
@@ -24,7 +24,7 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-This repository now ships the CivicClerk runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, notice compliance, immutable motion capture, immutable vote capture, action-item capture, and citation-gated minutes draft capture. Archive and full meeting workflow screens are not implemented yet.
+This repository now ships the CivicClerk runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, and permission-aware public calendar/detail/archive endpoints. Full meeting workflow screens are not implemented yet.
 
 Shipped in this foundation:
 
@@ -55,6 +55,8 @@ Shipped in this foundation:
 - citation-gated minutes draft records
 - provenance for minutes drafts: model, prompt version, data sources, and human approver
 - rejection of uncited AI-drafted minutes output before it can be accepted
+- permission-aware public meeting calendar, detail, and archive search endpoints
+- closed-session leak prevention for anonymous public archive bodies, counts, suggestions, and not-found responses
 
 Not shipped yet:
 
@@ -62,7 +64,6 @@ Not shipped yet:
 - installer
 - release artifact
 - public portal
-- archive workflows
 - database-backed agenda item persistence beyond the current runtime slice
 - database-backed meeting lifecycle persistence beyond the current runtime slice
 - database-backed packet and notice persistence beyond the current runtime slice
@@ -75,8 +76,8 @@ A new user can inspect and run the foundation, create draft agenda items and mee
 2. Read `USER-MANUAL.md`.
 3. Read `docs/roadmap/mvp-plan.md`.
 4. For an IT smoke check, run the FastAPI app at `civicclerk.main:app` and call `/health`.
-5. Exercise `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, and `/meetings/{id}/minutes/drafts` to smoke-check Milestone 7 behavior.
-6. Follow GitHub issues and discussions as archive, UI, and database-backed workflows land.
+5. Exercise `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, and `/public/archive/search` to smoke-check Milestone 8 behavior.
+6. Follow GitHub issues and discussions as prompt YAML, evaluation, UI, and database-backed workflows land.
 
 ## Architecture direction
 
@@ -89,7 +90,7 @@ CivicClerk follows the CivicSuite pattern:
 - Ollama / Gemma 4 through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - local data ownership, no runtime telemetry, no cloud inference
 
-The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, and citation-gated minutes draft capture are present. Minutes drafts require sentence-level citations and provenance before acceptance, and they are never auto-adopted or auto-posted. Archive, UI, and broader AI workflows land in later milestones after their tests. The next milestone is public meeting calendar, detail, and archive.
+The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, and permission-aware public archive endpoints are present. Minutes drafts require sentence-level citations and provenance before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. UI and broader AI workflows land in later milestones after their tests. The next milestone is the prompt YAML library and evaluation harness.
 
 ## Verification
 
