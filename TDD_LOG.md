@@ -349,7 +349,7 @@
     "tests_passing": 350,
     "tests_failing": 0,
     "files_changed": ["scripts/verify-release.sh", "TDD_LOG.md", "MILESTONE_12_DONE.md"],
-    "commit_sha": "pending",
+    "commit_sha": "9bd8d24",
     "notes": "Made release builds reproducible with SOURCE_DATE_EPOCH so the generated sdist checksum remains stable across repeated release-gate runs."
   }
 ]
