@@ -33,11 +33,11 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "schema foundation",
+        "status": "agenda lifecycle foundation",
         "message": (
-            "CivicClerk schema foundation is online; meeting workflows are not implemented yet."
+            "CivicClerk agenda item lifecycle enforcement is online; full meeting workflows are not implemented yet."
         ),
-        "next_step": "Milestone 3: agenda item lifecycle enforcement",
+        "next_step": "Milestone 4: meeting lifecycle enforcement",
     }
 
 

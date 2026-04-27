@@ -28,7 +28,9 @@ drafting, or database-backed agenda item persistence.
 ## TDD Iterations
 
 - Iteration 1: `5cbfc36` - failing agenda item lifecycle contract.
-- Iteration 2: pending - agenda item lifecycle implementation and docs.
+- Iteration 2: `acc4cee` - agenda item lifecycle implementation.
+- Iteration 3: `b487a79` and `de2e695` - agenda item lifecycle documentation,
+  browser QA screenshots, and completion evidence.
 
 ## Deferred Items
 
