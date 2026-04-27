@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 7 minutes drafting with sentence citations.
+- Citation-gated minutes draft records that reject uncited material output.
+- Minutes draft provenance recording model, prompt version, source ids, and
+  human approver.
+- Guardrail rejecting automatic public posting of AI-drafted minutes.
 - Milestone 6 motion, vote, and action-item capture.
 - Immutable captured motion records, append-only motion corrections, and
   `409 Conflict` responses for direct motion mutation attempts.
@@ -37,6 +42,8 @@ All notable changes to CivicClerk are documented here.
   CivicCore migrations run against the same configured database URL.
 
 ### Changed
+- README, user manual, landing page, and root endpoint now describe the
+  shipped minutes citation foundation and point reviewers to Milestone 8.
 - README, user manual, landing page, and root endpoint now describe the
   shipped motion/vote/action foundation and point reviewers to Milestone 7.
 - README and root endpoint now describe the shipped schema foundation and
