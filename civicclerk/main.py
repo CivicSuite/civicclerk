@@ -131,17 +131,18 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "connector import foundation",
+        "status": "browser QA gate foundation",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
             "minutes draft capture plus permission-aware public calendar and archive endpoints; "
             "prompt YAML and offline evaluation gates protect policy-bearing prompt changes; "
             "local-first Granicus, Legistar, PrimeGov, and NovusAGENDA imports now normalize "
-            "source provenance; "
+            "source provenance; accessibility and browser QA gates now verify loading, success, "
+            "empty, error, partial, keyboard, focus, contrast, and console evidence; "
             "full UI workflows are not implemented yet."
         ),
-        "next_step": "Milestone 11: accessibility and browser QA gates",
+        "next_step": "Milestone 12: v0.1.0 release",
     }
 
 

@@ -85,7 +85,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["name"] == "CivicClerk"
-    assert payload["status"] == "connector import foundation"
+    assert payload["status"] == "browser QA gate foundation"
     assert "not implemented yet" in payload["message"].lower()
     assert "notice compliance" in payload["message"]
     assert "motion" in payload["message"]
@@ -94,7 +94,8 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "archive" in payload["message"]
     assert "prompt YAML" in payload["message"]
     assert "Granicus" in payload["message"]
-    assert payload["next_step"] == "Milestone 11: accessibility and browser QA gates"
+    assert "keyboard" in payload["message"]
+    assert payload["next_step"] == "Milestone 12: v0.1.0 release"
 
 
 @pytest.mark.asyncio
