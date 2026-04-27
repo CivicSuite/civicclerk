@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 8 public meeting calendar, detail, and archive search endpoints.
+- Permission-aware public archive filtering for anonymous, staff, clerk,
+  attorney, and admin roles.
+- Closed-session leak prevention across public response bodies, counts,
+  suggestions, and not-found responses.
 - Milestone 7 minutes drafting with sentence citations.
 - Citation-gated minutes draft records that reject uncited material output.
 - Minutes draft provenance recording model, prompt version, source ids, and
@@ -42,6 +47,8 @@ All notable changes to CivicClerk are documented here.
   CivicCore migrations run against the same configured database URL.
 
 ### Changed
+- README, user manual, landing page, and root endpoint now describe the
+  shipped public archive foundation and point reviewers to Milestone 9.
 - README, user manual, landing page, and root endpoint now describe the
   shipped minutes citation foundation and point reviewers to Milestone 8.
 - README, user manual, landing page, and root endpoint now describe the

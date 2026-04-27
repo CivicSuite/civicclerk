@@ -1,6 +1,6 @@
 # CivicClerk User Manual
 
-Status: minutes drafting with sentence citations foundation manual  
+Status: public calendar and archive foundation manual  
 Version: `0.1.0.dev0`
 
 ## Part 1: Non-Technical Overview
@@ -42,13 +42,15 @@ CivicClerk currently ships a runtime foundation, canonical schema
 metadata, Alembic migration scaffolding, agenda item lifecycle enforcement,
 meeting lifecycle enforcement, packet snapshot versioning, notice
 compliance enforcement, immutable motion capture, immutable vote capture,
-action-item capture linked to meeting outcomes, and citation-gated minutes
-draft capture. IT staff can import and serve `civicclerk.main:app`, call
-`/`, call `/health`, create draft agenda items and meetings, version packet
+action-item capture linked to meeting outcomes, citation-gated minutes
+draft capture, and permission-aware public calendar/detail/archive
+endpoints. IT staff can import and serve `civicclerk.main:app`, call `/`,
+call `/health`, create draft agenda items and meetings, version packet
 snapshots, test allowed/rejected notice compliance postings, capture
-motions, capture votes, add correction records, create action items, and
-create minutes drafts with sentence-level citations and provenance. Clerks
-cannot yet publish archives or use full workflow screens in the product.
+motions, capture votes, add correction records, create action items,
+create minutes drafts with sentence-level citations and provenance, and
+verify public archive filtering. Clerks cannot yet use full workflow
+screens in the product.
 
 ## Part 2: IT and Technical Overview
 
@@ -102,7 +104,10 @@ immutable motion and vote capture, append-only correction records, and
 action-item capture linked to meeting outcomes. Milestone 7 adds
 citation-gated minutes drafts: every material sentence needs a source
 citation, provenance records model, prompt version, data sources, and human
-approver, and AI drafts are never auto-adopted or auto-posted.
+approver, and AI drafts are never auto-adopted or auto-posted. Milestone 8
+adds permission-aware public calendar, public detail, and archive search
+tests that prevent closed-session leakage in anonymous response bodies,
+counts, suggestions, and not-found responses.
 
 ## Part 3: Architecture Reference
 
@@ -123,8 +128,10 @@ for agenda items. Milestone 4 adds meeting lifecycle enforcement. Milestone
 5 adds packet snapshot versioning and notice compliance enforcement.
 Milestone 6 adds immutable motion capture, immutable vote capture, and
 action-item capture linked to meeting outcomes. Milestone 7 adds
-citation-gated minutes draft capture with provenance. Archive workflow
-behavior and full UI screens remain planned work.
+citation-gated minutes draft capture with provenance. Milestone 8 adds
+permission-aware public archive behavior, including closed-session
+filtering for anonymous and under-privileged users. Full UI screens remain
+planned work.
 
 - `meeting_bodies`
 - `meetings`
