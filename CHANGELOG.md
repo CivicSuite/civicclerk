@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 5 packet snapshot versioning and notice compliance enforcement.
+- API endpoints to create/list packet snapshots, check notice compliance,
+  and post approved public notices.
+- Actionable notice warnings for missed deadlines, missing statutory basis,
+  and missing human approval.
 - Milestone 4 meeting lifecycle enforcement for the canonical state chain
   from `SCHEDULED` through `ARCHIVED`.
 - API endpoints to create meetings, transition meeting status, inspect
@@ -31,6 +36,9 @@ All notable changes to CivicClerk are documented here.
 - README, user manual, landing page, and root endpoint now describe the
   shipped meeting lifecycle foundation and point reviewers to Milestone 5
   as the next implementation step.
+- README, user manual, landing page, and root endpoint now describe the
+  shipped packet/notice compliance foundation and point reviewers to
+  Milestone 6 as the next implementation step.
 
 ## [0.1.0.dev0] - 2026-04-26
 

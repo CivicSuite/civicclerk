@@ -141,6 +141,36 @@
     "files_changed": ["civicclerk/meeting_lifecycle.py", "tests/test_milestone_4_meeting_lifecycle.py", "TDD_LOG.md", "MILESTONE_4_DONE.md"],
     "commit_sha": "d20b9a0",
     "notes": "Normalized meeting_type before statutory-basis guardrails and added regression coverage for mixed-case emergency, special, closed-session, and executive meeting types."
+  },
+  {
+    "milestone": 5,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_5_packet_notice_compliance.py",
+    "tests_passing": 0,
+    "tests_failing": 9,
+    "files_changed": ["tests/test_milestone_5_packet_notice_compliance.py", "TDD_LOG.md"],
+    "commit_sha": "74f7dd3",
+    "notes": "Added failing packet snapshot and notice compliance contract covering versioning, actionable warnings, statutory basis, human approval, API behavior, and docs accuracy."
+  },
+  {
+    "milestone": 5,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_5_packet_notice_compliance.py",
+    "tests_passing": 312,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/packet_notice.py", "civicclerk/meeting_lifecycle.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone5-desktop.png", "docs/screenshots/milestone5-mobile.png", "TDD_LOG.md"],
+    "commit_sha": "b14dfa8",
+    "notes": "Implemented versioned packet snapshots, operator-configured notice compliance checks, human-approved public posting, current-facing docs, and desktop/mobile browser QA evidence without starting vote, minutes, archive, UI, or AI workflow scope."
+  },
+  {
+    "milestone": 5,
+    "iteration": "audit-fix",
+    "target_test": "tests/test_milestone_5_packet_notice_compliance.py::test_api_notice_check_rejects_naive_scheduled_start_without_500",
+    "tests_passing": 313,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/main.py", "tests/test_milestone_5_packet_notice_compliance.py", "TDD_LOG.md", "MILESTONE_5_DONE.md"],
+    "commit_sha": "7295f56",
+    "notes": "Rejected timezone-naive scheduled_start values with actionable 422 responses before notice compliance comparisons can crash."
   }
 ]
 ```
