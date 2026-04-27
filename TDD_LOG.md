@@ -101,6 +101,46 @@
     "files_changed": ["civicclerk/agenda_lifecycle.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_3_agenda_item_lifecycle.py", "TDD_LOG.md"],
     "commit_sha": "b487a79",
     "notes": "Implemented agenda item lifecycle enforcement and current-facing documentation updates without starting meeting lifecycle scope."
+  },
+  {
+    "milestone": 4,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_4_meeting_lifecycle.py",
+    "tests_passing": 0,
+    "tests_failing": 152,
+    "files_changed": ["tests/test_milestone_4_meeting_lifecycle.py", "TDD_LOG.md"],
+    "commit_sha": "e3b3d74",
+    "notes": "Added failing meeting lifecycle contract: full transition matrix plus emergency/special, closed/executive, cancellation, API audit, and docs accuracy coverage."
+  },
+  {
+    "milestone": 4,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_4_meeting_lifecycle.py",
+    "tests_passing": 153,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/meeting_lifecycle.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "TDD_LOG.md"],
+    "commit_sha": "c04466e",
+    "notes": "Implemented meeting lifecycle enforcement and current-facing documentation updates without starting packet, notice, vote, minutes, archive, or UI workflow scope."
+  },
+  {
+    "milestone": 4,
+    "iteration": 3,
+    "target_test": "python -m pytest -q && bash scripts/verify-docs.sh && python scripts/check-civiccore-placeholder-imports.py && python -m ruff check .",
+    "tests_passing": 298,
+    "tests_failing": 0,
+    "files_changed": ["README.md", "docs/index.html", "docs/screenshots/milestone4-desktop.png", "docs/screenshots/milestone4-mobile.png", "MILESTONE_4_DONE.md", "TDD_LOG.md"],
+    "commit_sha": "908588b",
+    "notes": "Captured desktop/mobile browser QA evidence, fixed mobile landing-page clipping found during QA, and recorded Milestone 4 completion evidence."
+  },
+  {
+    "milestone": 4,
+    "iteration": "audit-fix",
+    "target_test": "tests/test_milestone_4_meeting_lifecycle.py::test_emergency_and_special_meeting_type_casing_cannot_bypass_notice_basis",
+    "tests_passing": 303,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/meeting_lifecycle.py", "tests/test_milestone_4_meeting_lifecycle.py", "TDD_LOG.md", "MILESTONE_4_DONE.md"],
+    "commit_sha": "d20b9a0",
+    "notes": "Normalized meeting_type before statutory-basis guardrails and added regression coverage for mixed-case emergency, special, closed-session, and executive meeting types."
   }
 ]
 ```

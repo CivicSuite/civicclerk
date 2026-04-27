@@ -5,6 +5,13 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 4 meeting lifecycle enforcement for the canonical state chain
+  from `SCHEDULED` through `ARCHIVED`.
+- API endpoints to create meetings, transition meeting status, inspect
+  current meeting state, and read meeting lifecycle audit entries.
+- Transition tests for emergency/special statutory-basis requirements,
+  closed/executive session statutory-basis requirements, cancellation, and
+  rejected non-canonical meeting transitions.
 - Milestone 3 agenda item lifecycle enforcement for the canonical state
   chain from `DRAFTED` through `ARCHIVED`.
 - API endpoints to create draft agenda items, transition agenda item
@@ -14,14 +21,16 @@ All notable changes to CivicClerk are documented here.
   item status pair. Invalid transitions return 4xx responses and write
   audit entries.
 - Milestone 2 canonical schema and Alembic migration scaffold for the
-  fourteen CivicClerk tables. This is schema foundation only; agenda and
-  meeting lifecycle enforcement has not shipped.
+  fourteen CivicClerk tables.
 - pgvector-backed Alembic integration coverage proving CivicClerk and
   CivicCore migrations run against the same configured database URL.
 
 ### Changed
 - README and root endpoint now describe the shipped schema foundation and
   point reviewers to Milestone 3 as the next implementation step.
+- README, user manual, landing page, and root endpoint now describe the
+  shipped meeting lifecycle foundation and point reviewers to Milestone 5
+  as the next implementation step.
 
 ## [0.1.0.dev0] - 2026-04-26
 
