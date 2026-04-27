@@ -49,18 +49,18 @@
     <section class="hero">
       <div class="eyebrow">CivicSuite runtime foundation</div>
       <h1>CivicClerk</h1>
-      <p>CivicClerk is planned municipal meeting software for agendas, packets, notices, minutes, motions, votes, and public meeting archives.</p>
-      <p class="status">Status: runtime foundation plus canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, and notice compliance enforcement. IT staff can smoke-check the FastAPI app, inspect the schema plan, and exercise agenda, meeting, packet, and notice rules, but vote, minutes, archive, and UI workflows are not implemented yet.</p>
+      <p>CivicClerk is planned municipal meeting software for agendas, packets, notices, minutes, motions, votes, action items, and public meeting archives.</p>
+      <p class="status">Status: runtime foundation plus canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, and action-item capture. IT staff can smoke-check the FastAPI app, inspect the schema plan, and exercise agenda, meeting, packet, notice, motion, vote, and action item rules, but minutes, archive, and UI workflows are not implemented yet.</p>
     </section>
 
     <section class="grid" aria-label="Product overview">
       <article class="card">
         <h2>For clerks</h2>
-        <p>Create draft meetings and agenda items through the API today; version packet snapshots and check notice compliance before public posting. Vote capture and minutes drafting remain planned workflow screens.</p>
+        <p>Create draft meetings and agenda items through the API today; version packet snapshots, check notice compliance before public posting, capture immutable motions and votes, and create action items linked to meeting outcomes. Minutes drafting remains a planned workflow screen.</p>
       </article>
       <article class="card">
         <h2>For IT</h2>
-        <p>Runtime foundation stack: FastAPI, <code>civiccore==0.2.0</code>, canonical schema metadata, Alembic migration scaffold, agenda lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, pytest, docs verification, and placeholder-import CI gates. Planned local services include PostgreSQL 17, Redis 7.2, Celery, Ollama, and nginx-served React.</p>
+        <p>Runtime foundation stack: FastAPI, <code>civiccore==0.2.0</code>, canonical schema metadata, Alembic migration scaffold, agenda lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion/vote capture, action-item capture, pytest, docs verification, and placeholder-import CI gates. Planned local services include PostgreSQL 17, Redis 7.2, Celery, Ollama, and nginx-served React.</p>
       </article>
       <article class="card">
         <h2>For residents</h2>
@@ -70,7 +70,7 @@
 
     <section>
       <h2>What ships today</h2>
-      <p>Documentation, governance files, issue templates, discussion seeds, a docs verification gate, a placeholder-import gate, Python package metadata, a FastAPI runtime foundation with root and health endpoints, canonical schema/Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, and notice compliance enforcement.</p>
+      <p>Documentation, governance files, issue templates, discussion seeds, a docs verification gate, a placeholder-import gate, Python package metadata, a FastAPI runtime foundation with root and health endpoints, canonical schema/Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion/vote capture, and action-item capture.</p>
       <p><a href="../README.md">Read the README</a> · <a href="../USER-MANUAL.md">Read the manual</a></p>
     </section>
   </main>

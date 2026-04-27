@@ -5,6 +5,12 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 6 motion, vote, and action-item capture.
+- Immutable captured motion records, append-only motion corrections, and
+  `409 Conflict` responses for direct motion mutation attempts.
+- Immutable captured vote records, append-only vote corrections, and
+  `409 Conflict` responses for direct vote mutation attempts.
+- Action items linked to meeting outcomes and source motions.
 - Milestone 5 packet snapshot versioning and notice compliance enforcement.
 - API endpoints to create/list packet snapshots, check notice compliance,
   and post approved public notices.
@@ -31,6 +37,8 @@ All notable changes to CivicClerk are documented here.
   CivicCore migrations run against the same configured database URL.
 
 ### Changed
+- README, user manual, landing page, and root endpoint now describe the
+  shipped motion/vote/action foundation and point reviewers to Milestone 7.
 - README and root endpoint now describe the shipped schema foundation and
   point reviewers to Milestone 3 as the next implementation step.
 - README, user manual, landing page, and root endpoint now describe the
