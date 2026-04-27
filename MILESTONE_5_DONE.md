@@ -42,7 +42,7 @@ Version: `0.1.0.dev0`
 
 - Targeted Milestone 5/root contract run: `10 passed`.
 - Full suite after audit fix: `313 passed`.
-- `python -m pytest --collect-only -q`: `312 tests collected`.
+- `python -m pytest --collect-only -q`: `313 tests collected`.
 - `bash scripts/verify-docs.sh`: `VERIFY-DOCS: PASSED`.
 - `python scripts/check-civiccore-placeholder-imports.py`: `PLACEHOLDER-IMPORT-CHECK: PASSED (11 source files scanned)`.
 - `python -m ruff check .`: `All checks passed!`.
