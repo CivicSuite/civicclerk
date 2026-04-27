@@ -2,7 +2,7 @@
 
 **CivicClerk is the CivicSuite module for municipal meetings, agendas, packets, minutes, votes, notices, and public meeting archives.**
 
-Status: meeting lifecycle foundation  
+Status: runtime foundation plus meeting lifecycle enforcement  
 Current version: `0.1.0.dev0`  
 Repository: <https://github.com/CivicSuite/civicclerk>  
 Depends on: `civiccore==0.2.0`

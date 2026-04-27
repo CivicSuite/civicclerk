@@ -30,16 +30,16 @@
     .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
     h1 { font-size: clamp(2.4rem, 8vw, 5.5rem); line-height: .95; margin: 14px 0 18px; }
     h2 { margin-top: 34px; font-size: 1.5rem; }
-    p { max-width: 74ch; overflow-wrap: anywhere; }
+    p { max-width: 74ch; overflow-wrap: anywhere; word-break: break-word; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-top: 24px; }
     .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
     .status { color: var(--warn); font-weight: 700; }
     a { color: var(--accent); }
     code { background: #eadfca; padding: 2px 5px; border-radius: 5px; }
     @media (max-width: 600px) {
-      main { padding: 32px 0; max-width: 390px; }
+      main { padding: 32px 14px; max-width: 100%; }
       h1 { font-size: 2.6rem; }
-      .hero, .card { width: auto; max-width: 362px; margin-inline: 14px; padding: 20px; border-radius: 20px; }
+      .hero, .card { width: 100%; max-width: calc(100vw - 96px); margin-inline: 0; padding: 20px; border-radius: 20px; }
       .grid { grid-template-columns: 1fr; }
     }
   </style>
