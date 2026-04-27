@@ -81,6 +81,26 @@
     "files_changed": ["civicclerk/migrations/env.py", "civicclerk/migrations/guards.py", "civicclerk/migrations/versions/civicclerk_0001_schema.py", "tests/test_milestone_2_schema_and_migrations.py", "pyproject.toml", "TDD_LOG.md"],
     "commit_sha": "fd77804",
     "notes": "Fixed Alembic runtime path by running CivicCore migrations in an isolated process, added schema-aware create-table guard, and replaced mocked migration smoke with a pgvector-backed integration test."
+  },
+  {
+    "milestone": 3,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_3_agenda_item_lifecycle.py::test_agenda_item_lifecycle_matrix_allows_only_canonical_edges",
+    "tests_passing": 0,
+    "tests_failing": 124,
+    "files_changed": ["tests/test_milestone_3_agenda_item_lifecycle.py", "TDD_LOG.md"],
+    "commit_sha": "5cbfc36",
+    "notes": "Added failing agenda item lifecycle contract: full transition matrix plus API audit behavior for valid, invalid, and unknown-status transitions."
+  },
+  {
+    "milestone": 3,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_3_agenda_item_lifecycle.py",
+    "tests_passing": 125,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/agenda_lifecycle.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_3_agenda_item_lifecycle.py", "TDD_LOG.md"],
+    "commit_sha": "pending",
+    "notes": "Implemented agenda item lifecycle enforcement and current-facing documentation updates without starting meeting lifecycle scope."
   }
 ]
 ```

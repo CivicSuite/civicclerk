@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from itertools import product
+from pathlib import Path
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from civicclerk.main import app
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 AGENDA_ITEM_LIFECYCLE = [
@@ -151,3 +154,18 @@ async def test_api_unknown_status_returns_actionable_422_without_state_change() 
         assert audit.json()["entries"][-1]["outcome"] == "rejected"
         current = await client.get(f"/agenda-items/{item_id}")
         assert current.json()["status"] == "DRAFTED"
+
+
+def test_docs_record_agenda_lifecycle_without_claiming_full_meeting_workflows() -> None:
+    docs = {
+        "README.md": (ROOT / "README.md").read_text(encoding="utf-8"),
+        "USER-MANUAL.md": (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8"),
+        "docs/index.html": (ROOT / "docs" / "index.html").read_text(encoding="utf-8"),
+        "CHANGELOG.md": (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"),
+    }
+
+    for path, text in docs.items():
+        lowered = text.lower()
+        assert "agenda item lifecycle" in lowered, path
+        assert "full meeting workflows are implemented" not in lowered, path
+        assert "meeting lifecycle enforcement shipped" not in lowered, path
