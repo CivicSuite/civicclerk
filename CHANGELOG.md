@@ -5,6 +5,14 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Milestone 3 agenda item lifecycle enforcement for the canonical state
+  chain from `DRAFTED` through `ARCHIVED`.
+- API endpoints to create draft agenda items, transition agenda item
+  status, inspect current agenda item state, and read lifecycle audit
+  entries.
+- Parametrized transition matrix tests covering every `(from, to)` agenda
+  item status pair. Invalid transitions return 4xx responses and write
+  audit entries.
 - Milestone 2 canonical schema and Alembic migration scaffold for the
   fourteen CivicClerk tables. This is schema foundation only; agenda and
   meeting lifecycle enforcement has not shipped.

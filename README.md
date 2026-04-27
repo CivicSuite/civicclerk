@@ -24,7 +24,7 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-This repository now ships the CivicClerk runtime and schema foundation. Meeting workflows are not implemented yet.
+This repository now ships the CivicClerk runtime and schema foundation plus agenda item lifecycle enforcement. Full meeting workflows are not implemented yet.
 
 Shipped in this foundation:
 
@@ -40,6 +40,8 @@ Shipped in this foundation:
 - `/health` endpoint for IT staff
 - canonical SQLAlchemy metadata for the fourteen CivicClerk tables
 - Alembic scaffold and first idempotent migration for the `civicclerk` schema
+- agenda item lifecycle enforcement from `DRAFTED` through `ARCHIVED`
+- audit entries for allowed and rejected agenda item transitions
 
 Not shipped yet:
 
@@ -47,17 +49,19 @@ Not shipped yet:
 - installer
 - release artifact
 - public portal
-- meeting, agenda, packet, notice, vote, minutes, or archive workflows
+- meeting, packet, notice, vote, minutes, or archive workflows
+- database-backed agenda item persistence beyond the current runtime slice
 
 ## New user experience today
 
-A new user can inspect and run the runtime foundation, but cannot use CivicClerk for meeting work yet. The correct next experience is:
+A new user can inspect and run the foundation, create draft agenda items through the API, and test the agenda item lifecycle transition rules. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
 
 1. Read this README.
 2. Read `USER-MANUAL.md`.
 3. Read `docs/roadmap/mvp-plan.md`.
 4. For an IT smoke check, run the FastAPI app at `civicclerk.main:app` and call `/health`.
-5. Follow GitHub issues and discussions as meeting workflows land.
+5. Exercise `/agenda-items` and `/agenda-items/{id}/transitions` to smoke-check Milestone 3 behavior.
+6. Follow GitHub issues and discussions as meeting workflows land.
 
 ## Architecture direction
 
@@ -70,7 +74,7 @@ CivicClerk follows the CivicSuite pattern:
 - Ollama / Gemma 4 through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - local data ownership, no runtime telemetry, no cloud inference
 
-The foundation is intentionally thin. Canonical schema and Alembic scaffolding are present; lifecycle rules, UI, and AI workflows land in later milestones after their tests. The next milestone is agenda item lifecycle enforcement.
+The foundation is intentionally thin. Canonical schema, Alembic scaffolding, and agenda item lifecycle enforcement are present; meeting lifecycle rules, UI, and AI workflows land in later milestones after their tests. The next milestone is meeting lifecycle enforcement.
 
 ## Verification
 

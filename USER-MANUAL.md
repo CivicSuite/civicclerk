@@ -38,11 +38,12 @@ draft language, but staff remain in control.
 
 ### Current status
 
-CivicClerk currently ships a runtime foundation plus canonical schema
-metadata and Alembic migration scaffolding. IT staff can import and serve
-`civicclerk.main:app`, call `/`, call `/health`, and inspect the
-`civicclerk` schema plan. Clerks cannot yet create meetings, agendas,
-packets, notices, votes, or minutes in the product.
+CivicClerk currently ships a runtime foundation, canonical schema
+metadata, Alembic migration scaffolding, and agenda item lifecycle
+enforcement. IT staff can import and serve `civicclerk.main:app`, call `/`,
+call `/health`, create draft agenda items, and test allowed/rejected agenda
+item transitions. Clerks cannot yet create full meetings, packets, notices,
+votes, or minutes in the product.
 
 ## Part 2: IT and Technical Overview
 
@@ -82,6 +83,9 @@ python scripts/check-civiccore-placeholder-imports.py
 ```
 
 Runtime test gates now run in CI. Meeting-workflow tests are added in later milestones.
+Milestone 3 adds an agenda item lifecycle test matrix covering every pair
+of canonical states. Only direct forward transitions are accepted; invalid
+transitions return a 4xx response and record an audit entry.
 
 ## Part 3: Architecture Reference
 
@@ -97,8 +101,8 @@ CivicClerk owns meeting workflows. It should not become:
 ### Initial data model sketch
 
 Milestone 2 defines the canonical schema and Alembic migration foundation
-for these CivicClerk tables. It does not ship agenda lifecycle enforcement
-or meeting workflow behavior.
+for these CivicClerk tables. Milestone 3 adds agenda lifecycle enforcement
+for agenda items. It does not ship meeting workflow behavior.
 
 - `meeting_bodies`
 - `meetings`
