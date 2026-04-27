@@ -169,7 +169,7 @@
     "tests_passing": 313,
     "tests_failing": 0,
     "files_changed": ["civicclerk/main.py", "tests/test_milestone_5_packet_notice_compliance.py", "TDD_LOG.md", "MILESTONE_5_DONE.md"],
-    "commit_sha": "pending",
+    "commit_sha": "7295f56",
     "notes": "Rejected timezone-naive scheduled_start values with actionable 422 responses before notice compliance comparisons can crash."
   }
 ]

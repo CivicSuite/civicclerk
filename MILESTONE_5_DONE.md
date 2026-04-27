@@ -36,7 +36,7 @@ Version: `0.1.0.dev0`
 - `74f7dd3` - failing Milestone 5 packet/notice compliance contract.
 - `b14dfa8` - packet snapshot and notice compliance runtime implementation, docs, and browser QA screenshots.
 - `639ed51` - milestone done file and TDD log update.
-- Pending audit-fix commit - rejected timezone-naive `scheduled_start` values with actionable 422 responses.
+- `7295f56` - rejected timezone-naive `scheduled_start` values with actionable 422 responses.
 
 ## Verification Snapshot
 
