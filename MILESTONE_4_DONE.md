@@ -34,7 +34,7 @@ Version: `0.1.0.dev0`
 - `e3b3d74` - failing Milestone 4 meeting lifecycle contract.
 - `c04466e` - meeting lifecycle runtime implementation and current-facing docs.
 - `908588b` - milestone done file, TDD log update, browser QA screenshots, and mobile landing-page clipping fix.
-- Pending audit-fix commit - normalized `meeting_type` before statutory-basis checks and added mixed-case bypass regressions.
+- `d20b9a0` - normalized `meeting_type` before statutory-basis checks and added mixed-case bypass regressions.
 
 ## Verification Snapshot
 

@@ -139,7 +139,7 @@
     "tests_passing": 303,
     "tests_failing": 0,
     "files_changed": ["civicclerk/meeting_lifecycle.py", "tests/test_milestone_4_meeting_lifecycle.py", "TDD_LOG.md", "MILESTONE_4_DONE.md"],
-    "commit_sha": "pending",
+    "commit_sha": "d20b9a0",
     "notes": "Normalized meeting_type before statutory-basis guardrails and added regression coverage for mixed-case emergency, special, closed-session, and executive meeting types."
   }
 ]
