@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from civicclerk import __version__
@@ -15,6 +16,7 @@ from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMateria
 from civicclerk.motion_vote import MotionVoteStore
 from civicclerk.packet_notice import NoticeStore, PacketStore, evaluate_notice_compliance
 from civicclerk.public_archive import PublicArchiveStore, can_view_closed_sessions
+from civicclerk.staff_ui import render_staff_dashboard
 from civiccore import __version__ as CIVICCORE_VERSION
 
 app = FastAPI(
@@ -156,6 +158,12 @@ async def health() -> dict[str, str]:
         "version": __version__,
         "civiccore": CIVICCORE_VERSION,
     }
+
+
+@app.get("/staff", response_class=HTMLResponse)
+async def staff_dashboard() -> str:
+    """Render the staff-facing workflow foundation."""
+    return render_staff_dashboard()
 
 
 @app.post("/agenda-items", status_code=201)

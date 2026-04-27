@@ -17,6 +17,8 @@ def main() -> int:
     screenshots = [
         ROOT / "docs" / "screenshots" / "milestone11-browser-qa-desktop.png",
         ROOT / "docs" / "screenshots" / "milestone11-browser-qa-mobile.png",
+        ROOT / "docs" / "screenshots" / "milestone13-staff-ui-desktop.png",
+        ROOT / "docs" / "screenshots" / "milestone13-staff-ui-mobile.png",
     ]
 
     if not checklist.exists():

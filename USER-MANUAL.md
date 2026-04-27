@@ -47,16 +47,18 @@ draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, accessibility/browser QA gates, and CivicClerk v0.1.0 release
-artifacts. IT
+artifacts. Milestone 13 adds the `/staff` staff workflow UI foundation: a
+browser-visible map of released workflows and required rendered states. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
-create draft agenda items and meetings, version packet snapshots, test
+open `/staff`, create draft agenda items and meetings, version packet snapshots, test
 allowed/rejected notice compliance postings, capture motions, capture
 votes, add correction records, create action items, create minutes drafts
 with sentence-level citations and prompt-version provenance, verify public
 archive filtering, and run prompt evaluations with outbound network
 blocked. IT staff can also import local connector export payloads while
-preserving source provenance. Clerks cannot yet use full workflow screens
-in the product.
+preserving source provenance. Full workflow UI screens are still planned;
+the current `/staff` page does not connect to live database-backed work
+queues yet.
 
 ## Part 2: IT and Technical Overview
 
