@@ -186,6 +186,24 @@ async def test_api_notice_check_is_actionable_and_does_not_post_without_approval
 
 
 @pytest.mark.asyncio
+async def test_api_notice_check_rejects_naive_scheduled_start_without_500() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        created = await client.post(
+            "/meetings",
+            json={
+                "title": "Naive Time Meeting",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-05T19:00:00",
+            },
+        )
+
+    assert created.status_code == 422
+    detail = created.json()["detail"]
+    assert detail["message"] == "scheduled_start must include a timezone offset."
+    assert "Use an ISO 8601 timestamp with Z or an explicit offset" in detail["fix"]
+
+
+@pytest.mark.asyncio
 async def test_api_notice_posting_records_approved_public_notice() -> None:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         created = await client.post(

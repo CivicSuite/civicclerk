@@ -161,6 +161,16 @@
     "files_changed": ["civicclerk/packet_notice.py", "civicclerk/meeting_lifecycle.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone5-desktop.png", "docs/screenshots/milestone5-mobile.png", "TDD_LOG.md"],
     "commit_sha": "b14dfa8",
     "notes": "Implemented versioned packet snapshots, operator-configured notice compliance checks, human-approved public posting, current-facing docs, and desktop/mobile browser QA evidence without starting vote, minutes, archive, UI, or AI workflow scope."
+  },
+  {
+    "milestone": 5,
+    "iteration": "audit-fix",
+    "target_test": "tests/test_milestone_5_packet_notice_compliance.py::test_api_notice_check_rejects_naive_scheduled_start_without_500",
+    "tests_passing": 313,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/main.py", "tests/test_milestone_5_packet_notice_compliance.py", "TDD_LOG.md", "MILESTONE_5_DONE.md"],
+    "commit_sha": "pending",
+    "notes": "Rejected timezone-naive scheduled_start values with actionable 422 responses before notice compliance comparisons can crash."
   }
 ]
 ```

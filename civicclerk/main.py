@@ -38,7 +38,7 @@ class AgendaItemTransitionRequest(BaseModel):
 class MeetingCreate(BaseModel):
     title: str = Field(min_length=1)
     meeting_type: str = Field(min_length=1)
-    scheduled_start: datetime | None = None
+    scheduled_start: str | None = None
 
 
 class MeetingTransitionRequest(BaseModel):
@@ -146,7 +146,10 @@ async def create_meeting(payload: MeetingCreate) -> dict[str, str]:
     return meetings.create(
         title=payload.title,
         meeting_type=payload.meeting_type,
-        scheduled_start=payload.scheduled_start,
+        scheduled_start=_parse_timezone_aware_datetime(
+            payload.scheduled_start,
+            field_name="scheduled_start",
+        ),
     ).public_dict()
 
 
@@ -287,3 +290,32 @@ def _evaluate_notice_or_404(
         statutory_basis=payload.statutory_basis,
         approved_by=payload.approved_by,
     )
+
+
+def _parse_timezone_aware_datetime(
+    value: str | None,
+    *,
+    field_name: str,
+) -> datetime | None:
+    if value is None:
+        return None
+    normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": f"{field_name} must be a valid ISO 8601 timestamp.",
+                "fix": f"Use an ISO 8601 timestamp with Z or an explicit offset for {field_name}.",
+            },
+        ) from exc
+    if parsed.tzinfo is None:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": f"{field_name} must include a timezone offset.",
+                "fix": f"Use an ISO 8601 timestamp with Z or an explicit offset for {field_name}, for example 2026-05-05T19:00:00Z.",
+            },
+        )
+    return parsed

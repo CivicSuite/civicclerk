@@ -36,15 +36,17 @@ Version: `0.1.0.dev0`
 - `74f7dd3` - failing Milestone 5 packet/notice compliance contract.
 - `b14dfa8` - packet snapshot and notice compliance runtime implementation, docs, and browser QA screenshots.
 - `639ed51` - milestone done file and TDD log update.
+- Pending audit-fix commit - rejected timezone-naive `scheduled_start` values with actionable 422 responses.
 
 ## Verification Snapshot
 
 - Targeted Milestone 5/root contract run: `10 passed`.
-- Full suite: `312 passed`.
+- Full suite after audit fix: `313 passed`.
 - `python -m pytest --collect-only -q`: `312 tests collected`.
 - `bash scripts/verify-docs.sh`: `VERIFY-DOCS: PASSED`.
 - `python scripts/check-civiccore-placeholder-imports.py`: `PLACEHOLDER-IMPORT-CHECK: PASSED (11 source files scanned)`.
 - `python -m ruff check .`: `All checks passed!`.
+- Naive `scheduled_start` reproducer now returns `422` with `Use an ISO 8601 timestamp with Z or an explicit offset`.
 - Desktop landing-page screenshot captured at `docs/screenshots/milestone5-desktop.png`.
 - Mobile landing-page screenshot captured at `docs/screenshots/milestone5-mobile.png`.
 
