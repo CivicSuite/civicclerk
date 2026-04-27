@@ -231,6 +231,26 @@
     "files_changed": ["tests/conftest.py", "TDD_LOG.md", "MILESTONE_7_DONE.md"],
     "commit_sha": "72a2e47",
     "notes": "Set Windows tests to use the selector event-loop policy so full-suite async tests avoid Proactor self-pipe socket exhaustion."
+  },
+  {
+    "milestone": 8,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_8_public_archive.py",
+    "tests_passing": 0,
+    "tests_failing": 5,
+    "files_changed": ["tests/test_milestone_8_public_archive.py"],
+    "commit_sha": "4288fed",
+    "notes": "Added failing public archive contract covering public calendar filtering, public detail not-found behavior, anonymous closed-session leak prevention, permission-aware staff/clerk search behavior, and docs accuracy."
+  },
+  {
+    "milestone": 8,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_8_public_archive.py tests/test_milestone_1_runtime_foundation.py",
+    "tests_passing": 15,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/public_archive.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone8-desktop.png", "docs/screenshots/milestone8-mobile.png"],
+    "commit_sha": "e8aa7ab",
+    "notes": "Implemented permission-aware public meeting calendar, public detail, and archive search endpoints with closed-session filtering, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting prompt YAML, evaluation, full UI, or database-backed archive persistence scope."
   }
 ]
 ```
