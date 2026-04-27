@@ -1,6 +1,6 @@
 # CivicClerk User Manual
 
-Status: meeting lifecycle foundation manual  
+Status: packet and notice compliance foundation manual  
 Version: `0.1.0.dev0`
 
 ## Part 1: Non-Technical Overview
@@ -40,11 +40,12 @@ draft language, but staff remain in control.
 
 CivicClerk currently ships a runtime foundation, canonical schema
 metadata, Alembic migration scaffolding, agenda item lifecycle enforcement,
-and meeting lifecycle enforcement. IT staff can import and serve
-`civicclerk.main:app`, call `/`, call `/health`, create draft agenda items
-and meetings, and test allowed/rejected agenda and meeting lifecycle
-transitions. Clerks cannot yet assemble packets, track statutory notice
-deadlines, capture votes, draft minutes, or publish archives in the product.
+meeting lifecycle enforcement, packet snapshot versioning, and notice
+compliance enforcement. IT staff can import and serve `civicclerk.main:app`,
+call `/`, call `/health`, create draft agenda items and meetings, version
+packet snapshots, and test allowed/rejected notice compliance postings.
+Clerks cannot yet capture votes, draft minutes, publish archives, or use
+full workflow screens in the product.
 
 ## Part 2: IT and Technical Overview
 
@@ -91,6 +92,9 @@ Milestone 4 adds a meeting lifecycle test matrix from `SCHEDULED` through
 `ARCHIVED`, plus emergency/special notice preconditions, closed/executive
 session statutory-basis preconditions, cancellation handling, and audit
 entries for allowed and rejected meeting transitions.
+Milestone 5 adds packet snapshot versioning and notice compliance tests for
+deadline warnings, statutory-basis requirements, and public-posting human
+approval. Every warning includes a concrete fix path.
 
 ## Part 3: Architecture Reference
 
@@ -107,9 +111,10 @@ CivicClerk owns meeting workflows. It should not become:
 
 Milestone 2 defines the canonical schema and Alembic migration foundation
 for these CivicClerk tables. Milestone 3 adds agenda lifecycle enforcement
-for agenda items. Milestone 4 adds meeting lifecycle enforcement. Packet
-assembly, notice compliance, vote capture, minutes drafting, and archive
-workflow behavior remain planned work.
+for agenda items. Milestone 4 adds meeting lifecycle enforcement. Milestone
+5 adds packet snapshot versioning and notice compliance enforcement. Vote
+capture, minutes drafting, archive workflow behavior, and full UI screens
+remain planned work.
 
 - `meeting_bodies`
 - `meetings`

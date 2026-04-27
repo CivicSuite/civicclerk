@@ -8,6 +8,7 @@ later milestones.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from uuid import uuid4
 
 
@@ -52,16 +53,20 @@ class MeetingRecord:
     id: str
     title: str
     meeting_type: str
+    scheduled_start: datetime | None = None
     status: str = "SCHEDULED"
     audit_entries: list[dict[str, str]] = field(default_factory=list)
 
-    def public_dict(self) -> dict[str, str]:
-        return {
+    def public_dict(self) -> dict[str, str | None]:
+        payload = {
             "id": self.id,
             "title": self.title,
             "meeting_type": self.meeting_type,
             "status": self.status,
         }
+        if self.scheduled_start is not None:
+            payload["scheduled_start"] = self.scheduled_start.isoformat()
+        return payload
 
 
 class MeetingStore:
@@ -70,11 +75,18 @@ class MeetingStore:
     def __init__(self) -> None:
         self._meetings: dict[str, MeetingRecord] = {}
 
-    def create(self, *, title: str, meeting_type: str) -> MeetingRecord:
+    def create(
+        self,
+        *,
+        title: str,
+        meeting_type: str,
+        scheduled_start: datetime | None = None,
+    ) -> MeetingRecord:
         meeting = MeetingRecord(
             id=str(uuid4()),
             title=title,
             meeting_type=normalize_meeting_type(meeting_type),
+            scheduled_start=scheduled_start,
         )
         self._meetings[meeting.id] = meeting
         return meeting

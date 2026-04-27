@@ -2,7 +2,7 @@
 
 **CivicClerk is the CivicSuite module for municipal meetings, agendas, packets, minutes, votes, notices, and public meeting archives.**
 
-Status: runtime foundation plus meeting lifecycle enforcement  
+Status: runtime foundation plus packet/notice compliance enforcement  
 Current version: `0.1.0.dev0`  
 Repository: <https://github.com/CivicSuite/civicclerk>  
 Depends on: `civiccore==0.2.0`
@@ -24,7 +24,7 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-This repository now ships the CivicClerk runtime and schema foundation plus agenda item and meeting lifecycle enforcement. Packet, notice, vote, minutes, archive, and full meeting workflow screens are not implemented yet.
+This repository now ships the CivicClerk runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, and notice compliance enforcement. Vote, minutes, archive, and full meeting workflow screens are not implemented yet.
 
 Shipped in this foundation:
 
@@ -46,6 +46,9 @@ Shipped in this foundation:
 - emergency/special meeting notice preconditions requiring a statutory basis
 - closed/executive session in-progress preconditions requiring a statutory basis
 - cancellation support from scheduled or noticed meetings, with terminal-state audit entries
+- packet snapshot versioning for meetings
+- notice compliance checks for deadlines, statutory basis, and human approval
+- approved public notice posting records with actionable warning/error responses
 
 Not shipped yet:
 
@@ -53,20 +56,21 @@ Not shipped yet:
 - installer
 - release artifact
 - public portal
-- packet, notice, vote, minutes, or archive workflows
+- vote, minutes, or archive workflows
 - database-backed agenda item persistence beyond the current runtime slice
 - database-backed meeting lifecycle persistence beyond the current runtime slice
+- database-backed packet and notice persistence beyond the current runtime slice
 
 ## New user experience today
 
-A new user can inspect and run the foundation, create draft agenda items and meetings through the API, and test agenda item plus meeting lifecycle transition rules. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
+A new user can inspect and run the foundation, create draft agenda items and meetings through the API, version packet snapshots, and test notice compliance checks/posting guardrails. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
 
 1. Read this README.
 2. Read `USER-MANUAL.md`.
 3. Read `docs/roadmap/mvp-plan.md`.
 4. For an IT smoke check, run the FastAPI app at `civicclerk.main:app` and call `/health`.
-5. Exercise `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, and `/meetings/{id}/transitions` to smoke-check Milestone 4 behavior.
-6. Follow GitHub issues and discussions as packet, notice, vote, minutes, and archive workflows land.
+5. Exercise `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, and `/meetings/{id}/notices/post` to smoke-check Milestone 5 behavior.
+6. Follow GitHub issues and discussions as vote, minutes, archive, UI, and database-backed workflows land.
 
 ## Architecture direction
 
@@ -79,7 +83,7 @@ CivicClerk follows the CivicSuite pattern:
 - Ollama / Gemma 4 through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - local data ownership, no runtime telemetry, no cloud inference
 
-The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, and meeting lifecycle enforcement are present; packet/notice rules, UI, and AI workflows land in later milestones after their tests. The next milestone is packet assembly and notice compliance.
+The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, and notice compliance enforcement are present; vote capture, minutes, archive, UI, and AI workflows land in later milestones after their tests. The next milestone is motion, vote, and action-item capture.
 
 ## Verification
 
