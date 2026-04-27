@@ -229,7 +229,7 @@
     "tests_passing": 325,
     "tests_failing": 0,
     "files_changed": ["tests/conftest.py", "TDD_LOG.md", "MILESTONE_7_DONE.md"],
-    "commit_sha": "pending",
+    "commit_sha": "72a2e47",
     "notes": "Set Windows tests to use the selector event-loop policy so full-suite async tests avoid Proactor self-pipe socket exhaustion."
   }
 ]
