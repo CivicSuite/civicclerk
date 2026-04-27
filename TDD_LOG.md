@@ -271,6 +271,26 @@
     "files_changed": [".github/workflows/ci.yml", "civicclerk/prompt_library.py", "civicclerk/prompt_evals.py", "civicclerk/minutes.py", "civicclerk/main.py", "prompts/minutes_draft.yaml", "scripts/run-prompt-evals.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "tests/test_milestone_7_minutes_citations.py", "docs/screenshots/milestone9-desktop.png", "docs/screenshots/milestone9-mobile.png"],
     "commit_sha": "dfddc2b",
     "notes": "Implemented the YAML prompt library, offline prompt evaluation harness, CI prompt-eval gate, minutes prompt-version provenance enforcement, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting connector/import or UI workflow scope."
+  },
+  {
+    "milestone": 10,
+    "iteration": 1,
+    "target_test": "tests/test_milestone_10_connectors_imports.py",
+    "tests_passing": 0,
+    "tests_failing": 9,
+    "files_changed": ["tests/test_milestone_10_connectors_imports.py"],
+    "commit_sha": "6356a28",
+    "notes": "Added failing connector/import contract covering Granicus, Legistar, PrimeGov, and NovusAGENDA local payload normalization, source provenance, no outbound network dependency, actionable failures, API behavior, and docs accuracy."
+  },
+  {
+    "milestone": 10,
+    "iteration": 2,
+    "target_test": "tests/test_milestone_10_connectors_imports.py tests/test_milestone_1_runtime_foundation.py",
+    "tests_passing": 19,
+    "tests_failing": 0,
+    "files_changed": ["civicclerk/connectors.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone10-desktop.png", "docs/screenshots/milestone10-mobile.png"],
+    "commit_sha": "a9450bd",
+    "notes": "Implemented local-first connector import normalization with source provenance, actionable connector errors, API endpoint, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting live sync, full UI, or database-backed connector persistence scope."
   }
 ]
 ```

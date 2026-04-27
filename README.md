@@ -2,7 +2,7 @@
 
 **CivicClerk is the CivicSuite module for municipal meetings, agendas, packets, minutes, votes, notices, and public meeting archives.**
 
-Status: runtime foundation plus prompt YAML library and evaluation harness  
+Status: runtime foundation plus local-first connector imports  
 Current version: `0.1.0.dev0`  
 Repository: <https://github.com/CivicSuite/civicclerk>  
 Depends on: `civiccore==0.2.0`
@@ -24,7 +24,7 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-This repository now ships the CivicClerk runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, and a prompt YAML library with an offline evaluation harness. Full meeting workflow screens are not implemented yet.
+This repository now ships the CivicClerk runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, and local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA. Full meeting workflow screens are not implemented yet.
 
 Shipped in this foundation:
 
@@ -60,6 +60,8 @@ Shipped in this foundation:
 - YAML prompt library under `prompts/`
 - offline prompt evaluation harness that runs with `CIVICCORE_LLM_PROVIDER=ollama` and outbound network blocked
 - prompt-version provenance enforcement for minutes drafts
+- local-first Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports
+- source provenance on imported meetings and agenda items
 
 Not shipped yet:
 
@@ -79,9 +81,9 @@ A new user can inspect and run the foundation, create draft agenda items and mee
 2. Read `USER-MANUAL.md`.
 3. Read `docs/roadmap/mvp-plan.md`.
 4. For an IT smoke check, run the FastAPI app at `civicclerk.main:app` and call `/health`.
-5. Exercise `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, and `/public/archive/search` to smoke-check Milestone 9 behavior.
+5. Exercise `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, `/public/archive/search`, and `/imports/{connector}/meetings` to smoke-check Milestone 10 behavior.
 6. Run `CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py` before changing prompt YAML.
-7. Follow GitHub issues and discussions as connectors, imports, UI, and database-backed workflows land.
+7. Follow GitHub issues and discussions as live sync, UI, and database-backed workflows land.
 
 ## Architecture direction
 
@@ -94,7 +96,7 @@ CivicClerk follows the CivicSuite pattern:
 - Ollama / Gemma 4 through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - local data ownership, no runtime telemetry, no cloud inference
 
-The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, and prompt YAML/evaluation gates are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. UI and connector workflows land in later milestones after their tests. The next milestone is connectors and imports.
+The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, prompt YAML/evaluation gates, and local-first connector import normalization are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. Connector imports record source provenance and do not require outbound network calls in the default local profile. UI and live sync workflows land in later milestones after their tests. The next milestone is accessibility and browser QA gates.
 
 ## Verification
 

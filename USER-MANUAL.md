@@ -1,6 +1,6 @@
 # CivicClerk User Manual
 
-Status: prompt YAML and evaluation foundation manual  
+Status: local-first connector import foundation manual  
 Version: `0.1.0.dev0`
 
 ## Part 1: Non-Technical Overview
@@ -44,14 +44,18 @@ meeting lifecycle enforcement, packet snapshot versioning, notice
 compliance enforcement, immutable motion capture, immutable vote capture,
 action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
-endpoints, plus a prompt YAML library and offline evaluation harness. IT
+endpoints, a prompt YAML library and offline evaluation harness, and
+local-first connector imports for Granicus, Legistar, PrimeGov, and
+NovusAGENDA. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 create draft agenda items and meetings, version packet snapshots, test
 allowed/rejected notice compliance postings, capture motions, capture
 votes, add correction records, create action items, create minutes drafts
 with sentence-level citations and prompt-version provenance, verify public
 archive filtering, and run prompt evaluations with outbound network
-blocked. Clerks cannot yet use full workflow screens in the product.
+blocked. IT staff can also import local connector export payloads while
+preserving source provenance. Clerks cannot yet use full workflow screens
+in the product.
 
 ## Part 2: IT and Technical Overview
 
@@ -111,7 +115,9 @@ tests that prevent closed-session leakage in anonymous response bodies,
 counts, suggestions, and not-found responses. Milestone 9 adds a YAML
 prompt library, prompt-version enforcement, and an offline evaluation
 harness that runs with `CIVICCORE_LLM_PROVIDER=ollama` and outbound network
-blocked before prompt changes merge.
+blocked before prompt changes merge. Milestone 10 adds local-first
+Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports with source
+provenance and actionable errors, without requiring outbound runtime calls.
 
 ## Part 3: Architecture Reference
 
@@ -135,8 +141,10 @@ action-item capture linked to meeting outcomes. Milestone 7 adds
 citation-gated minutes draft capture with provenance. Milestone 8 adds
 permission-aware public archive behavior, including closed-session
 filtering for anonymous and under-privileged users. Milestone 9 moves
-policy-bearing prompt text into YAML and adds an evaluation harness. Full
-UI screens remain planned work.
+policy-bearing prompt text into YAML and adds an evaluation harness.
+Milestone 10 adds source-provenanced connector import normalization for
+Granicus, Legistar, PrimeGov, and NovusAGENDA. Full UI screens remain
+planned work.
 
 - `meeting_bodies`
 - `meetings`
