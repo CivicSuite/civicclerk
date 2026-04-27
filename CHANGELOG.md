@@ -4,6 +4,9 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Added
+- Milestone 13 staff workflow UI foundation at `/staff`, mapping released API workflows and required rendered states without claiming full workflow screens or live database-backed queues.
+
 ## [0.1.0] - 2026-04-26
 
 ### Added
