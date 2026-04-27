@@ -79,7 +79,7 @@
     "tests_passing": 21,
     "tests_failing": 0,
     "files_changed": ["civicclerk/migrations/env.py", "civicclerk/migrations/guards.py", "civicclerk/migrations/versions/civicclerk_0001_schema.py", "tests/test_milestone_2_schema_and_migrations.py", "pyproject.toml", "TDD_LOG.md"],
-    "commit_sha": "07512c8",
+    "commit_sha": "fd77804",
     "notes": "Fixed Alembic runtime path by running CivicCore migrations in an isolated process, added schema-aware create-table guard, and replaced mocked migration smoke with a pgvector-backed integration test."
   }
 ]
