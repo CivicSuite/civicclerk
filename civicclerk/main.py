@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from civicclerk import __version__
 from civicclerk.agenda_lifecycle import AgendaItemStore
+from civicclerk.meeting_lifecycle import MeetingStore
 from civiccore import __version__ as CIVICCORE_VERSION
 
 app = FastAPI(
@@ -16,6 +17,7 @@ app = FastAPI(
 )
 
 agenda_items = AgendaItemStore()
+meetings = MeetingStore()
 
 
 class AgendaItemCreate(BaseModel):
@@ -28,16 +30,28 @@ class AgendaItemTransitionRequest(BaseModel):
     actor: str = Field(min_length=1)
 
 
+class MeetingCreate(BaseModel):
+    title: str = Field(min_length=1)
+    meeting_type: str = Field(min_length=1)
+
+
+class MeetingTransitionRequest(BaseModel):
+    to_status: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    statutory_basis: str | None = Field(default=None, min_length=1)
+
+
 @app.get("/")
 async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "agenda lifecycle foundation",
+        "status": "meeting lifecycle foundation",
         "message": (
-            "CivicClerk agenda item lifecycle enforcement is online; full meeting workflows are not implemented yet."
+            "CivicClerk agenda item and meeting lifecycle enforcement are online; packet, notice, "
+            "vote, minutes, and archive workflows are not implemented yet."
         ),
-        "next_step": "Milestone 4: meeting lifecycle enforcement",
+        "next_step": "Milestone 5: packet assembly and notice compliance",
     }
 
 
@@ -105,3 +119,59 @@ async def get_agenda_item_audit(item_id: str) -> dict[str, list[dict[str, str]]]
     if item is None:
         raise HTTPException(status_code=404, detail="Agenda item not found.")
     return {"entries": item.audit_entries}
+
+
+@app.post("/meetings", status_code=201)
+async def create_meeting(payload: MeetingCreate) -> dict[str, str]:
+    """Create a scheduled meeting for lifecycle enforcement."""
+    return meetings.create(
+        title=payload.title,
+        meeting_type=payload.meeting_type,
+    ).public_dict()
+
+
+@app.get("/meetings/{meeting_id}")
+async def get_meeting(meeting_id: str) -> dict[str, str]:
+    """Return the current meeting state."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return meeting.public_dict()
+
+
+@app.post("/meetings/{meeting_id}/transitions")
+async def transition_meeting(
+    meeting_id: str,
+    payload: MeetingTransitionRequest,
+) -> dict[str, str]:
+    """Apply a canonical meeting lifecycle transition."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    result = meetings.transition(
+        meeting_id=meeting_id,
+        to_status=payload.to_status,
+        actor=payload.actor,
+        statutory_basis=payload.statutory_basis,
+    )
+    if result is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    if not result.allowed:
+        raise HTTPException(
+            status_code=result.http_status,
+            detail={
+                "message": result.message,
+                "current_status": meeting.status,
+                "requested_status": payload.to_status,
+            },
+        )
+    return meeting.public_dict()
+
+
+@app.get("/meetings/{meeting_id}/audit")
+async def get_meeting_audit(meeting_id: str) -> dict[str, list[dict[str, str]]]:
+    """Return lifecycle audit entries for a meeting."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return {"entries": meeting.audit_entries}

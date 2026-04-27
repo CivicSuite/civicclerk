@@ -50,17 +50,17 @@
       <div class="eyebrow">CivicSuite runtime foundation</div>
       <h1>CivicClerk</h1>
       <p>CivicClerk is planned municipal meeting software for agendas, packets, notices, minutes, motions, votes, and public meeting archives.</p>
-      <p class="status">Status: runtime foundation plus canonical schema, Alembic scaffolding, and agenda item lifecycle enforcement. IT staff can smoke-check the FastAPI app, inspect the schema plan, and exercise agenda transition rules, but full meeting workflows are not implemented yet.</p>
+      <p class="status">Status: runtime foundation plus canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, and meeting lifecycle enforcement. IT staff can smoke-check the FastAPI app, inspect the schema plan, and exercise agenda plus meeting transition rules, but packet, notice, vote, minutes, and archive workflows are not implemented yet.</p>
     </section>
 
     <section class="grid" aria-label="Product overview">
       <article class="card">
         <h2>For clerks</h2>
-        <p>Create meetings, collect agenda items, assemble packets, track posting deadlines, and draft minutes with source citations.</p>
+        <p>Create draft meetings and agenda items through the API today; packet assembly, posting deadlines, and minutes drafting remain planned workflow screens.</p>
       </article>
       <article class="card">
         <h2>For IT</h2>
-        <p>Runtime foundation stack: FastAPI, <code>civiccore==0.2.0</code>, canonical schema metadata, Alembic migration scaffold, agenda lifecycle enforcement, pytest, docs verification, and placeholder-import CI gates. Planned local services include PostgreSQL 17, Redis 7.2, Celery, Ollama, and nginx-served React.</p>
+        <p>Runtime foundation stack: FastAPI, <code>civiccore==0.2.0</code>, canonical schema metadata, Alembic migration scaffold, agenda lifecycle enforcement, meeting lifecycle enforcement, pytest, docs verification, and placeholder-import CI gates. Planned local services include PostgreSQL 17, Redis 7.2, Celery, Ollama, and nginx-served React.</p>
       </article>
       <article class="card">
         <h2>For residents</h2>
@@ -70,7 +70,7 @@
 
     <section>
       <h2>What ships today</h2>
-      <p>Documentation, governance files, issue templates, discussion seeds, a docs verification gate, a placeholder-import gate, Python package metadata, a FastAPI runtime foundation with root and health endpoints, canonical schema/Alembic scaffolding, and agenda item lifecycle enforcement with audit entries.</p>
+      <p>Documentation, governance files, issue templates, discussion seeds, a docs verification gate, a placeholder-import gate, Python package metadata, a FastAPI runtime foundation with root and health endpoints, canonical schema/Alembic scaffolding, agenda item lifecycle enforcement, and meeting lifecycle enforcement with audit entries.</p>
       <p><a href="../README.md">Read the README</a> · <a href="../USER-MANUAL.md">Read the manual</a></p>
     </section>
   </main>

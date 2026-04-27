@@ -1,6 +1,6 @@
 # CivicClerk User Manual
 
-Status: runtime foundation manual  
+Status: meeting lifecycle foundation manual  
 Version: `0.1.0.dev0`
 
 ## Part 1: Non-Technical Overview
@@ -39,11 +39,12 @@ draft language, but staff remain in control.
 ### Current status
 
 CivicClerk currently ships a runtime foundation, canonical schema
-metadata, Alembic migration scaffolding, and agenda item lifecycle
-enforcement. IT staff can import and serve `civicclerk.main:app`, call `/`,
-call `/health`, create draft agenda items, and test allowed/rejected agenda
-item transitions. Clerks cannot yet create full meetings, packets, notices,
-votes, or minutes in the product.
+metadata, Alembic migration scaffolding, agenda item lifecycle enforcement,
+and meeting lifecycle enforcement. IT staff can import and serve
+`civicclerk.main:app`, call `/`, call `/health`, create draft agenda items
+and meetings, and test allowed/rejected agenda and meeting lifecycle
+transitions. Clerks cannot yet assemble packets, track statutory notice
+deadlines, capture votes, draft minutes, or publish archives in the product.
 
 ## Part 2: IT and Technical Overview
 
@@ -86,6 +87,10 @@ Runtime test gates now run in CI. Meeting-workflow tests are added in later mile
 Milestone 3 adds an agenda item lifecycle test matrix covering every pair
 of canonical states. Only direct forward transitions are accepted; invalid
 transitions return a 4xx response and record an audit entry.
+Milestone 4 adds a meeting lifecycle test matrix from `SCHEDULED` through
+`ARCHIVED`, plus emergency/special notice preconditions, closed/executive
+session statutory-basis preconditions, cancellation handling, and audit
+entries for allowed and rejected meeting transitions.
 
 ## Part 3: Architecture Reference
 
@@ -102,7 +107,9 @@ CivicClerk owns meeting workflows. It should not become:
 
 Milestone 2 defines the canonical schema and Alembic migration foundation
 for these CivicClerk tables. Milestone 3 adds agenda lifecycle enforcement
-for agenda items. It does not ship meeting workflow behavior.
+for agenda items. Milestone 4 adds meeting lifecycle enforcement. Packet
+assembly, notice compliance, vote capture, minutes drafting, and archive
+workflow behavior remain planned work.
 
 - `meeting_bodies`
 - `meetings`
