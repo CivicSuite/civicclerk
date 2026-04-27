@@ -2,8 +2,8 @@
 
 **CivicClerk is the CivicSuite module for municipal meetings, agendas, packets, minutes, votes, notices, and public meeting archives.**
 
-Status: runtime foundation plus accessibility and browser QA gates  
-Current version: `0.1.0.dev0`  
+Status: CivicClerk v0.1.0 runtime foundation release  
+Current version: `0.1.0`  
 Repository: <https://github.com/CivicSuite/civicclerk>  
 Depends on: `civiccore==0.2.0`
 
@@ -24,7 +24,7 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-This repository now ships the CivicClerk runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA, and accessibility/browser QA gates. Full meeting workflow screens are not implemented yet.
+CivicClerk v0.1.0 ships the runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA, and accessibility/browser QA gates. Full meeting workflow screens are not implemented yet.
 
 Shipped in this foundation:
 
@@ -64,12 +64,12 @@ Shipped in this foundation:
 - source provenance on imported meetings and agenda items
 - browser QA gate covering loading, success, empty, error, and partial states
 - accessibility checks for keyboard navigation, focus states, contrast, and console errors
+- CivicClerk v0.1.0 release gate and build artifacts
 
 Not shipped yet:
 
 - frontend app
 - installer
-- release artifact
 - public portal
 - database-backed agenda item persistence beyond the current runtime slice
 - database-backed meeting lifecycle persistence beyond the current runtime slice
@@ -99,7 +99,7 @@ CivicClerk follows the CivicSuite pattern:
 - Ollama / Gemma 4 through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - local data ownership, no runtime telemetry, no cloud inference
 
-The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, prompt YAML/evaluation gates, local-first connector import normalization, and browser QA gates are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. Connector imports record source provenance and do not require outbound network calls in the default local profile. Browser QA now checks loading, success, empty, error, and partial states plus keyboard, focus, contrast, and console evidence. Release workflow lands in the final milestone.
+The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, prompt YAML/evaluation gates, local-first connector import normalization, browser QA gates, and CivicClerk v0.1.0 release artifacts are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. Connector imports record source provenance and do not require outbound network calls in the default local profile. Browser QA now checks loading, success, empty, error, and partial states plus keyboard, focus, contrast, and console evidence. CivicClerk v0.1.0 remains paired with `civiccore==0.2.0`.
 
 ## Verification
 
@@ -111,6 +111,7 @@ bash scripts/verify-docs.sh
 python scripts/check-civiccore-placeholder-imports.py
 python scripts/verify-browser-qa.py
 CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py
+bash scripts/verify-release.sh
 ```
 
 ## License

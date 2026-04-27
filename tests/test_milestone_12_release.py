@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 import tomllib
@@ -50,24 +51,30 @@ def test_verify_release_script_exists_and_mentions_all_release_gates() -> None:
 
     assert script.exists()
     for gate in [
-        "python -m pytest",
+        "-m pytest",
         "bash scripts/verify-docs.sh",
-        "python scripts/check-civiccore-placeholder-imports.py",
-        "python scripts/verify-browser-qa.py",
-        "python scripts/run-prompt-evals.py",
-        "python -m build",
+        "scripts/check-civiccore-placeholder-imports.py",
+        "scripts/verify-browser-qa.py",
+        "scripts/run-prompt-evals.py",
+        "-m build",
         "SHA256SUMS.txt",
     ]:
         assert gate in text
 
 
 def test_verify_release_script_passes_and_builds_artifacts() -> None:
+    if os.environ.get("CIVICCLERK_VERIFY_RELEASE_RUNNING") == "1":
+        return
+
+    env = os.environ.copy()
+    env["PYTHON"] = sys.executable
     result = subprocess.run(
         ["bash", "scripts/verify-release.sh"],
         cwd=ROOT,
         check=False,
         capture_output=True,
         text=True,
+        env=env,
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
