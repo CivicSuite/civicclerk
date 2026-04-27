@@ -8,6 +8,7 @@ Milestone 12 closes the CivicClerk v0.1.0 runtime-foundation sprint. It synchron
 
 - `9b6914e` - `test(milestone-12): define release contract`
 - `bd7fbae` - `chore(milestone-12): prepare v0.1.0 release`
+- `d798bb0` - `fix(milestone-12): publish GitHub release assets`
 
 ## Version Surfaces
 
@@ -27,6 +28,8 @@ Milestone 12 closes the CivicClerk v0.1.0 runtime-foundation sprint. It synchron
 - offline prompt evals with `CIVICCORE_LLM_PROVIDER=ollama`
 - package build
 - SHA256 checksum generation
+
+The tag-triggered release workflow runs the release gate, uploads `dist/*` as a workflow artifact, and publishes those same files to the GitHub Release for the pushed tag.
 
 ## Release Artifacts
 

@@ -331,6 +331,16 @@
     "files_changed": [".github/workflows/release.yml", "CHANGELOG.md", "README.md", "USER-MANUAL.md", "civicclerk/__init__.py", "civicclerk/main.py", "docs/index.html", "docs/screenshots/milestone12-desktop.png", "docs/screenshots/milestone12-mobile.png", "pyproject.toml", "scripts/verify-docs.sh", "scripts/verify-release.sh", "tests/test_milestone_1_runtime_foundation.py", "tests/test_milestone_12_release.py"],
     "commit_sha": "bd7fbae",
     "notes": "Prepared the CivicClerk v0.1.0 release: synchronized version surfaces, added release workflow and verify-release gate, built wheel/sdist with SHA256 checksums, updated current-facing docs and root endpoint, and captured desktop/mobile browser QA evidence."
+  },
+  {
+    "milestone": 12,
+    "iteration": 3,
+    "target_test": "tests/test_milestone_12_release.py::test_release_workflow_and_docs_reference_v010_release",
+    "tests_passing": 5,
+    "tests_failing": 0,
+    "files_changed": [".github/workflows/release.yml", "tests/test_milestone_12_release.py"],
+    "commit_sha": "d798bb0",
+    "notes": "Tightened the tag-triggered release workflow so it publishes dist artifacts to a GitHub Release with contents:write permissions after verify-release.sh passes."
   }
 ]
 ```
