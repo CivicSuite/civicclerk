@@ -24,10 +24,16 @@ Status: complete on branch `milestone-7-minutes-drafting-citations`
 ## Verification Snapshot
 
 - `python -m pytest --collect-only -q`: `325 tests collected in 0.76s`
-- `python -m pytest -q`: `325 passed in 6.26s`
+- `python -m pytest -q`: `325 passed in 5.87s`
 - `bash scripts/verify-docs.sh`: `VERIFY-DOCS: PASSED`
 - `python scripts/check-civiccore-placeholder-imports.py`: `PLACEHOLDER-IMPORT-CHECK: PASSED (13 source files scanned)`
 - `python -m ruff check .`: `All checks passed!`
+
+## Audit Fix
+
+- Added `tests/conftest.py` to use the Windows selector event-loop policy during tests.
+- Reason: the audit full-suite run hit Windows Proactor self-pipe socket exhaustion while creating an async test loop.
+- Result: full suite rerun completed cleanly with `325 passed`.
 
 ## Browser QA Evidence
 

@@ -221,6 +221,16 @@
     "files_changed": ["civicclerk/minutes.py", "civicclerk/main.py", "README.md", "USER-MANUAL.md", "docs/index.html", "CHANGELOG.md", "tests/test_milestone_1_runtime_foundation.py", "docs/screenshots/milestone7-desktop.png", "docs/screenshots/milestone7-mobile.png"],
     "commit_sha": "1c9074a",
     "notes": "Implemented citation-gated minutes draft capture with provenance, rejection of uncited or unknown-cited output, no automatic public posting, current-facing docs, root endpoint update, and desktop/mobile browser QA evidence without starting archive or UI workflow scope."
+  },
+  {
+    "milestone": 7,
+    "iteration": "audit-fix",
+    "target_test": "python -m pytest -q",
+    "tests_passing": 325,
+    "tests_failing": 0,
+    "files_changed": ["tests/conftest.py", "TDD_LOG.md", "MILESTONE_7_DONE.md"],
+    "commit_sha": "pending",
+    "notes": "Set Windows tests to use the selector event-loop policy so full-suite async tests avoid Proactor self-pipe socket exhaustion."
   }
 ]
 ```
