@@ -46,15 +46,24 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Live notice checklist action" in html
     assert 'id="notice-checklist-form"' in html
     assert "Check notice and attach proof" in html
+    assert "Meeting Outcomes" in html
+    assert "Motions, votes, and actions" in html
+    assert "/meetings/{id}/motions" in html
+    assert "/meetings/{id}/action-items" in html
+    assert "Live meeting outcomes action" in html
+    assert 'id="meeting-outcomes-form"' in html
+    assert 'id="meeting-outcomes-output"' in html
+    assert "Capture motion, vote, and action" in html
 
     for workflow in [
         "Agenda Intake",
         "Packet Assembly",
         "Notice Checklist",
+        "Meeting Outcomes",
     ]:
         assert workflow in html
 
-    for panel in ["screen-intake", "screen-packet", "screen-notice"]:
+    for panel in ["screen-intake", "screen-packet", "screen-notice", "screen-outcomes"]:
         assert f'id="{panel}"' in html
 
     for state in ["loading", "success", "empty", "error", "partial"]:
@@ -68,6 +77,9 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "/packet-assemblies/{id}/finalize",
         "/meetings/{id}/notice-checklists",
         "/notice-checklists/{id}/posting-proof",
+        "/meetings/{id}/motions",
+        "/motions/${motion.id}/votes",
+        "/meetings/{id}/action-items",
     ]:
         assert api_path in html
 
@@ -86,6 +98,9 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     assert "staff workflow screens" in docs
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-desktop.png").exists()
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-mobile.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-desktop.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-summary.md").exists()
 
 
 def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
@@ -93,3 +108,5 @@ def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
 
     assert "milestone13-staff-ui-desktop.png" in script
     assert "milestone13-staff-ui-mobile.png" in script
+    assert "browser-qa-production-depth-live-meeting-outcomes-screen-desktop.png" in script
+    assert "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png" in script

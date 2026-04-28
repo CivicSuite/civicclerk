@@ -19,6 +19,8 @@ def main() -> int:
         ROOT / "docs" / "screenshots" / "milestone11-browser-qa-mobile.png",
         ROOT / "docs" / "screenshots" / "milestone13-staff-ui-desktop.png",
         ROOT / "docs" / "screenshots" / "milestone13-staff-ui-mobile.png",
+        ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-desktop.png",
+        ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png",
     ]
 
     if not checklist.exists():
