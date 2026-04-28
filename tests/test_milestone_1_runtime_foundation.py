@@ -106,8 +106,9 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "meeting outcome staff screens can now capture motions" in payload["message"]
     assert "minutes draft staff screens can now create citation-gated draft records" in payload["message"]
     assert "public archive staff screens can now publish public-safe records" in payload["message"]
+    assert "connector import staff screens can now normalize local agenda-platform exports" in payload["message"]
     assert payload["next_step"] == (
-        "Production-depth remaining live clerk-console actions for connector imports and packet exports"
+        "Production-depth remaining live clerk-console action for packet exports"
     )
 
 

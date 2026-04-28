@@ -100,6 +100,22 @@ SCREEN_CARDS = [
         ],
         "fix": "If publishing fails, create the meeting first and provide public-safe agenda, packet, and approved-minutes text.",
     },
+    {
+        "id": "imports",
+        "title": "Connector Import",
+        "eyebrow": "Local export payloads",
+        "summary": "Normalize local agenda-platform exports with source provenance and no outbound network calls.",
+        "primary_api": "/imports/{connector}/meetings",
+        "secondary_api": "Granicus, Legistar, PrimeGov, NovusAGENDA",
+        "status": "Live API + screen pattern",
+        "cta": "Import payload",
+        "rows": [
+            ("Clerk", "Granicus export", "NORMALIZED", "Source provenance attached."),
+            ("IT", "Legistar export", "VALIDATED", "Required fields checked."),
+            ("System", "Outbound network", "BLOCKED", "Local payload only."),
+        ],
+        "fix": "If import fails, choose a supported connector and paste a local export payload with its required meeting id, title, and start fields.",
+    },
 ]
 
 STATE_CARDS = [
@@ -274,6 +290,8 @@ def render_staff_dashboard() -> str:
     const minutesOutput = document.querySelector("#minutes-draft-output");
     const archiveForm = document.querySelector("#public-archive-form");
     const archiveOutput = document.querySelector("#public-archive-output");
+    const importForm = document.querySelector("#connector-import-form");
+    const importOutput = document.querySelector("#connector-import-output");
 
     function setOutput(state, html) {{
       output.dataset.state = state;
@@ -474,6 +492,23 @@ def render_staff_dashboard() -> str:
         archiveOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
       }}
     }});
+
+    importForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      importOutput.dataset.state = "loading";
+      importOutput.innerHTML = "<strong>Loading:</strong> normalizing local connector payload...";
+      const form = new FormData(importForm);
+      try {{
+        const connector = form.get("connector");
+        const payload = JSON.parse(form.get("payload"));
+        const imported = await postJson(`/imports/${{connector}}/meetings`, payload);
+        importOutput.dataset.state = "success";
+        importOutput.innerHTML = `<strong>Success:</strong> imported ${{imported.connector}} meeting <code>${{imported.external_meeting_id}}</code> with ${{imported.agenda_items.length}} agenda item(s).<br><strong>Next step:</strong> review source provenance before moving imported items into the clerk queue.`;
+      }} catch (error) {{
+        importOutput.dataset.state = "error";
+        importOutput.innerHTML = `<strong>Error:</strong> ${{error.message}} <br><strong>How to fix:</strong> paste valid JSON from a supported local export and retry.`;
+      }}
+    }});
   </script>
 </body>
 </html>"""
@@ -536,6 +571,8 @@ def _render_live_region(card_id: str) -> str:
         return _render_live_minutes_region()
     if card_id == "archive":
         return _render_live_archive_region()
+    if card_id == "imports":
+        return _render_live_import_region()
     return ""
 
 
@@ -803,6 +840,48 @@ def _render_live_archive_region() -> str:
           <div id="public-archive-output" class="live-output" data-state="empty" role="status" aria-live="polite">
             <strong>Empty:</strong> no live public archive action has run in this browser session.
             <br><strong>How to fix:</strong> provide public-safe agenda, packet, and approved-minutes text before publishing.
+          </div>
+        </section>
+    """
+
+
+def _render_live_import_region() -> str:
+    return """
+        <section class="live-action" aria-labelledby="live-import-heading">
+          <h4 id="live-import-heading">Live connector import action</h4>
+          <p>Normalize a local agenda-platform export payload through `/imports/{connector}/meetings`. This action does not call the vendor network; it works from pasted local JSON.</p>
+          <form id="connector-import-form">
+            <div class="form-grid">
+              <label>Connector
+                <select name="connector">
+                  <option value="granicus">Granicus</option>
+                  <option value="legistar">Legistar</option>
+                  <option value="primegov">PrimeGov</option>
+                  <option value="novusagenda">NovusAGENDA</option>
+                </select>
+              </label>
+              <label class="span-2">Local export payload JSON
+                <textarea name="payload" required>{
+  "id": "gr-demo-100",
+  "name": "Budget Hearing",
+  "start": "2026-05-05T19:00:00Z",
+  "agenda": [
+    {
+      "id": "gr-item-1",
+      "title": "Adopt budget ordinance",
+      "department": "Finance"
+    }
+  ]
+}</textarea>
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="cta" type="submit">Import local connector payload</button>
+            </div>
+          </form>
+          <div id="connector-import-output" class="live-output" data-state="empty" role="status" aria-live="polite">
+            <strong>Empty:</strong> no live connector import action has run in this browser session.
+            <br><strong>How to fix:</strong> choose a supported connector and paste a valid local export payload before importing.
           </div>
         </section>
     """
