@@ -25,6 +25,8 @@ All notable changes to CivicClerk are documented here.
 - Production-depth staff workflow screens at `/staff` for agenda intake,
   packet assembly, and notice checklist/posting-proof work, with visible
   workflow state examples and actionable fix copy.
+- Live `/staff` agenda intake form actions that submit department intake
+  items and record clerk readiness review through the existing API.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.
@@ -36,7 +38,7 @@ All notable changes to CivicClerk are documented here.
 - Safe packet export path handling: API callers provide a relative
   `bundle_name` under `CIVICCLERK_EXPORT_ROOT`, not an arbitrary filesystem
   path.
-- Milestone 13 staff workflow UI at `/staff`, upgraded from a workflow map into first workflow screens for the three database-backed service slices without claiming live browser form submission.
+- Milestone 13 staff workflow UI at `/staff`, upgraded from a workflow map into first workflow screens for the three database-backed service slices; agenda intake now has live browser form actions while packet and notice screens remain guided API screens.
 
 ### Changed
 - CivicClerk now pins `civiccore==0.3.0` for shared audit, provenance,

@@ -34,6 +34,12 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "/meetings/{id}/notice-checklists" in html
     assert "Notice Checklist" in html
     assert "/notice-checklists/{id}/posting-proof" in html
+    assert "Live agenda intake action" in html
+    assert 'id="agenda-intake-form"' in html
+    assert 'id="agenda-review-form"' in html
+    assert 'id="agenda-intake-output"' in html
+    assert "Submit intake item" in html
+    assert "Record readiness review" in html
 
     for workflow in [
         "Agenda Intake",
@@ -51,6 +57,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     for api_path in [
         "/agenda-intake",
         "/agenda-intake/{id}/review",
+        "CIVICCLERK_AGENDA_INTAKE_DB_URL",
         "/meetings/{id}/packet-assemblies",
         "/packet-assemblies/{id}/finalize",
         "/meetings/{id}/notice-checklists",
