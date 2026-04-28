@@ -70,6 +70,13 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert 'id="public-archive-form"' in html
     assert 'id="public-archive-output"' in html
     assert "Publish public archive record" in html
+    assert "Connector Import" in html
+    assert "Local export payloads" in html
+    assert "/imports/{connector}/meetings" in html
+    assert "Live connector import action" in html
+    assert 'id="connector-import-form"' in html
+    assert 'id="connector-import-output"' in html
+    assert "Import local connector payload" in html
 
     for workflow in [
         "Agenda Intake",
@@ -78,6 +85,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "Meeting Outcomes",
         "Minutes Draft",
         "Public Archive",
+        "Connector Import",
     ]:
         assert workflow in html
 
@@ -88,6 +96,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "screen-outcomes",
         "screen-minutes",
         "screen-archive",
+        "screen-imports",
     ]:
         assert f'id="{panel}"' in html
 
@@ -110,6 +119,11 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "/meetings/{id}/public-record",
         "/public/meetings",
         "/public/archive/search",
+        "/imports/{connector}/meetings",
+        "Granicus",
+        "Legistar",
+        "PrimeGov",
+        "NovusAGENDA",
     ]:
         assert api_path in html
 
@@ -137,6 +151,9 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     assert (ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-desktop.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-mobile.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-summary.md").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-connector-import-screen-desktop.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-connector-import-screen-mobile.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-connector-import-screen-summary.md").exists()
 
 
 def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
@@ -150,3 +167,5 @@ def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
     assert "browser-qa-production-depth-live-minutes-draft-screen-mobile.png" in script
     assert "browser-qa-production-depth-live-archive-screen-desktop.png" in script
     assert "browser-qa-production-depth-live-archive-screen-mobile.png" in script
+    assert "browser-qa-production-depth-live-connector-import-screen-desktop.png" in script
+    assert "browser-qa-production-depth-live-connector-import-screen-mobile.png" in script

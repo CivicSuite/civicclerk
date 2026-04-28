@@ -46,6 +46,9 @@ All notable changes to CivicClerk are documented here.
   publishes a public-safe record through `/meetings/{id}/public-record`, and
   verifies anonymous visibility through `/public/meetings` plus
   `/public/archive/search`.
+- Live `/staff` connector import form action that normalizes pasted local
+  Granicus, Legistar, PrimeGov, or NovusAGENDA meeting export JSON through
+  `/imports/{connector}/meetings` without vendor-network access.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.

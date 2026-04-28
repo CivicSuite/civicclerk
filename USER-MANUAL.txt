@@ -54,10 +54,11 @@ with source/citation metadata, and database-backed notice
 checklist/posting-proof records.
 The `/staff` page now provides first staff workflow screens for agenda intake,
 packet assembly, notice checklist/posting-proof, meeting outcome, minutes
-draft, and public archive work. These screens can submit intake items, record
-readiness review, create/finalize packet assembly records, persist notice
-checklist records, attach posting proof, capture motions/votes/action items,
-create citation-gated minutes drafts, and publish public-safe archive records
+draft, public archive, and connector import work. These screens can submit
+intake items, record readiness review, create/finalize packet assembly records,
+persist notice checklist records, attach posting proof, capture
+motions/votes/action items, create citation-gated minutes drafts, publish
+public-safe archive records, and normalize local connector export payloads
 through the live API. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 open `/staff`, create draft agenda items and meetings, version packet snapshots, test
@@ -73,9 +74,9 @@ items with readiness status stored in the configured intake database. The
 current `/staff` page submits and reviews agenda intake records directly,
 creates/finalizes packet assembly records, persists notice checklist
 posting-proof records, captures meeting outcome records, creates
-citation-gated minutes draft records, and publishes public archive records;
-remaining workflow areas still show screen-level guidance until their live
-browser form actions land.
+citation-gated minutes draft records, publishes public archive records, and
+normalizes local connector exports; remaining workflow areas still show
+screen-level guidance until their live browser form actions land.
 
 ## Part 2: IT and Technical Overview
 
@@ -182,7 +183,8 @@ clerk readiness review state; database-backed meeting records with lifecycle
 audit entries; database-backed packet assembly records with source references,
 citations, and packet snapshot linkage; database-backed notice checklist
 records with posting-proof metadata; live staff form actions for minutes
-draft creation; and live staff form actions for public archive publishing. Public
+draft creation; live staff form actions for public archive publishing; and
+live staff form actions for local connector import normalization. Public
 packet exports reject closed-session and restricted source files. Full UI
 screens remain planned work, but browser QA gates now verify the required
 state fixtures and accessibility evidence before browser-visible changes merge.
