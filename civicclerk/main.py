@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from civicclerk import __version__
 from civicclerk.agenda_intake import AgendaIntakeRepository
-from civicclerk.agenda_lifecycle import AgendaItemStore
+from civicclerk.agenda_lifecycle import AgendaItemRepository, AgendaItemStore
 from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_lifecycle import MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
@@ -45,6 +45,8 @@ minutes_drafts = MinutesDraftStore()
 public_archive = PublicArchiveStore()
 _agenda_intake_repository: AgendaIntakeRepository | None = None
 _agenda_intake_db_url: str | None = None
+_agenda_item_repository: AgendaItemRepository | None = None
+_agenda_item_db_url: str | None = None
 _packet_assembly_repository: PacketAssemblyRepository | None = None
 _packet_assembly_db_url: str | None = None
 _notice_checklist_repository: NoticeChecklistRepository | None = None
@@ -266,7 +268,7 @@ async def staff_dashboard() -> str:
 @app.post("/agenda-items", status_code=201)
 async def create_agenda_item(payload: AgendaItemCreate) -> dict[str, str]:
     """Create a draft agenda item for lifecycle enforcement."""
-    return agenda_items.create(
+    return _get_agenda_items().create(
         title=payload.title,
         department_name=payload.department_name,
     ).public_dict()
@@ -275,7 +277,7 @@ async def create_agenda_item(payload: AgendaItemCreate) -> dict[str, str]:
 @app.get("/agenda-items/{item_id}")
 async def get_agenda_item(item_id: str) -> dict[str, str]:
     """Return the current agenda item state."""
-    item = agenda_items.get(item_id)
+    item = _get_agenda_items().get(item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Agenda item not found.")
     return item.public_dict()
@@ -287,10 +289,11 @@ async def transition_agenda_item(
     payload: AgendaItemTransitionRequest,
 ) -> dict[str, str]:
     """Apply a canonical agenda item lifecycle transition."""
-    item = agenda_items.get(item_id)
+    store = _get_agenda_items()
+    item = store.get(item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Agenda item not found.")
-    result = agenda_items.transition(
+    result = store.transition(
         item_id=item_id,
         to_status=payload.to_status,
         actor=payload.actor,
@@ -306,13 +309,14 @@ async def transition_agenda_item(
                 "requested_status": payload.to_status,
             },
         )
-    return item.public_dict()
+    updated = store.get(item_id)
+    return (updated or item).public_dict()
 
 
 @app.get("/agenda-items/{item_id}/audit")
 async def get_agenda_item_audit(item_id: str) -> dict[str, list[dict[str, str]]]:
     """Return lifecycle audit entries for an agenda item."""
-    item = agenda_items.get(item_id)
+    item = _get_agenda_items().get(item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Agenda item not found.")
     return {"entries": item.audit_entries}
@@ -1032,6 +1036,17 @@ def _get_agenda_intake_repository() -> AgendaIntakeRepository:
         _agenda_intake_db_url = db_url
         _agenda_intake_repository = AgendaIntakeRepository(db_url=db_url)
     return _agenda_intake_repository
+
+
+def _get_agenda_items() -> AgendaItemRepository | AgendaItemStore:
+    global _agenda_item_db_url, _agenda_item_repository
+    db_url = os.environ.get("CIVICCLERK_AGENDA_ITEM_DB_URL")
+    if db_url is None:
+        return agenda_items
+    if _agenda_item_repository is None or db_url != _agenda_item_db_url:
+        _agenda_item_db_url = db_url
+        _agenda_item_repository = AgendaItemRepository(db_url=db_url)
+    return _agenda_item_repository
 
 
 def _get_packet_assembly_repository() -> PacketAssemblyRepository:

@@ -50,7 +50,8 @@ NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.1 release
 artifacts, CivicCore v0.3.0-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
-with source/citation metadata, and database-backed notice
+with source/citation metadata, database-backed agenda item lifecycle records
+with durable transition audit entries, and database-backed notice
 checklist/posting-proof records.
 The `/staff` page now provides first staff workflow screens for agenda intake,
 packet assembly/export, notice checklist/posting-proof, meeting outcome, minutes
@@ -70,7 +71,8 @@ blocked. IT staff can also import local connector export payloads while
 preserving source provenance. IT staff can now generate records-ready packet
 export bundles with CivicCore manifests, checksums, provenance, and
 hash-chained audit evidence. Clerks can submit/list/review `/agenda-intake`
-items with readiness status stored in the configured intake database. The
+items with readiness status stored in the configured intake database and persist
+agenda item lifecycle status/audit entries with `CIVICCLERK_AGENDA_ITEM_DB_URL`. The
 current `/staff` page submits and reviews agenda intake records directly,
 creates/finalizes packet assembly records, persists notice checklist
 posting-proof records, captures meeting outcome records, creates
@@ -96,7 +98,8 @@ CivicClerk will follow the CivicSuite deployment pattern:
 ### Planned dependency
 
 The runtime foundation now pins to civiccore `==0.3.0`. Agenda intake uses
-`CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; meeting records use
+`CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; agenda item lifecycle records use
+`CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records use
 `CIVICCLERK_MEETING_DB_URL` when set; packet assembly records use
 `CIVICCLERK_PACKET_ASSEMBLY_DB_URL` when set; notice checklist records use
 `CIVICCLERK_NOTICE_CHECKLIST_DB_URL` when set. If unset, each repository uses
@@ -179,7 +182,8 @@ Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
 records-ready packet export bundles using CivicCore v0.3.0 provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
-clerk readiness review state; database-backed meeting records with lifecycle
+clerk readiness review state; database-backed agenda item lifecycle records with
+durable transition audit entries; database-backed meeting records with lifecycle
 audit entries; database-backed packet assembly records with source references,
 citations, and packet snapshot linkage; database-backed notice checklist
 records with posting-proof metadata; live staff form actions for minutes
