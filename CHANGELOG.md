@@ -4,6 +4,8 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-04-28
+
 ### Added
 - Production-depth agenda intake readiness slice with a database-backed
   department submission queue, clerk review state, and durable CivicCore audit
@@ -68,6 +70,8 @@ All notable changes to CivicClerk are documented here.
 ### Changed
 - CivicClerk now pins `civiccore==0.3.0` for shared audit, provenance,
   connector manifest, export bundle, and city-profile primitives.
+- Version surfaces, release gate artifact checks, and current-facing docs now
+  reflect the post-production-depth `v0.1.1` release.
 
 ## [0.1.0] - 2026-04-26
 
