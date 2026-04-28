@@ -68,6 +68,22 @@ SCREEN_CARDS = [
         ],
         "fix": "If action creation fails, capture the source motion for this meeting first and use that motion id.",
     },
+    {
+        "id": "minutes",
+        "title": "Minutes Draft",
+        "eyebrow": "Citations + provenance",
+        "summary": "Create AI-assisted minutes drafts only when every material sentence cites source material.",
+        "primary_api": "/meetings/{id}/minutes/drafts",
+        "secondary_api": "/minutes/{id}/post",
+        "status": "Live API + screen pattern",
+        "cta": "Create draft",
+        "rows": [
+            ("Clerk", "Motion sentence", "CITED", "Source material attached."),
+            ("Clerk", "Vote sentence", "CITED", "Vote record attached."),
+            ("System", "Auto-post attempt", "BLOCKED", "Human approval required."),
+        ],
+        "fix": "If draft creation fails, add citations to every sentence and use source ids from the source material list.",
+    },
 ]
 
 STATE_CARDS = [
@@ -224,7 +240,9 @@ def render_staff_dashboard() -> str:
       panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === `screen-${{target}}`));
     }}
     tabs.forEach((tab) => tab.addEventListener("click", () => activate(tab.dataset.target)));
-    activate("intake");
+    const requestedScreen = new URLSearchParams(window.location.search).get("screen");
+    const initialScreen = tabs.some((tab) => tab.dataset.target === requestedScreen) ? requestedScreen : "intake";
+    activate(initialScreen);
 
     const intakeForm = document.querySelector("#agenda-intake-form");
     const reviewForm = document.querySelector("#agenda-review-form");
@@ -236,6 +254,8 @@ def render_staff_dashboard() -> str:
     const noticeOutput = document.querySelector("#notice-checklist-output");
     const outcomeForm = document.querySelector("#meeting-outcomes-form");
     const outcomeOutput = document.querySelector("#meeting-outcomes-output");
+    const minutesForm = document.querySelector("#minutes-draft-form");
+    const minutesOutput = document.querySelector("#minutes-draft-output");
 
     function setOutput(state, html) {{
       output.dataset.state = state;
@@ -382,6 +402,36 @@ def render_staff_dashboard() -> str:
         outcomeOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
       }}
     }});
+
+    minutesForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      minutesOutput.dataset.state = "loading";
+      minutesOutput.innerHTML = "<strong>Loading:</strong> creating citation-gated minutes draft...";
+      const form = new FormData(minutesForm);
+      try {{
+        const meeting = await createDemoMeeting(form.get("meeting_title"));
+        const sourceId = form.get("source_id");
+        const draft = await postJson(`/meetings/${{meeting.id}}/minutes/drafts`, {{
+          model: form.get("model"),
+          prompt_version: form.get("prompt_version"),
+          human_approver: form.get("human_approver"),
+          source_materials: [{{
+            source_id: sourceId,
+            label: form.get("source_label"),
+            text: form.get("source_text"),
+          }}],
+          sentences: [{{
+            text: form.get("sentence_text"),
+            citations: [sourceId],
+          }}],
+        }});
+        minutesOutput.dataset.state = "success";
+        minutesOutput.innerHTML = `<strong>Success:</strong> minutes draft <code>${{draft.id}}</code> is ${{draft.status}} and not adopted or posted.<br><strong>Next step:</strong> human review must approve the cited draft before any public posting workflow.`;
+      }} catch (error) {{
+        minutesOutput.dataset.state = "error";
+        minutesOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
+      }}
+    }});
   </script>
 </body>
 </html>"""
@@ -440,6 +490,8 @@ def _render_live_region(card_id: str) -> str:
         return _render_live_notice_region()
     if card_id == "outcomes":
         return _render_live_outcomes_region()
+    if card_id == "minutes":
+        return _render_live_minutes_region()
     return ""
 
 
@@ -625,6 +677,50 @@ def _render_live_outcomes_region() -> str:
           <div id="meeting-outcomes-output" class="live-output" data-state="empty" role="status" aria-live="polite">
             <strong>Empty:</strong> no live meeting outcome action has run in this browser session.
             <br><strong>How to fix:</strong> submit the outcome form above; the screen will create the meeting and source motion first.
+          </div>
+        </section>
+    """
+
+
+def _render_live_minutes_region() -> str:
+    return """
+        <section class="live-action" aria-labelledby="live-minutes-heading">
+          <h4 id="live-minutes-heading">Live minutes draft action</h4>
+          <p>Create a demo meeting and submit a citation-gated minutes draft through `/meetings/{id}/minutes/drafts`. The draft remains unadopted and unposted until human review.</p>
+          <form id="minutes-draft-form">
+            <div class="form-grid">
+              <label>Meeting title
+                <input name="meeting_title" required value="Minutes Draft Demo Meeting">
+              </label>
+              <label>Human approver
+                <input name="human_approver" required value="clerk@example.gov">
+              </label>
+              <label>Model
+                <input name="model" required value="ollama/gemma4">
+              </label>
+              <label>Prompt version
+                <input name="prompt_version" required value="minutes_draft@0.1.0">
+              </label>
+              <label>Source id
+                <input name="source_id" required value="motion-1">
+              </label>
+              <label>Source label
+                <input name="source_label" required value="Motion text">
+              </label>
+              <label class="span-2">Source text
+                <textarea name="source_text" required>Council approved the sidewalk repair packet.</textarea>
+              </label>
+              <label class="span-2">Minutes sentence
+                <textarea name="sentence_text" required>Council approved the sidewalk repair packet.</textarea>
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="cta" type="submit">Create cited minutes draft</button>
+            </div>
+          </form>
+          <div id="minutes-draft-output" class="live-output" data-state="empty" role="status" aria-live="polite">
+            <strong>Empty:</strong> no live minutes draft action has run in this browser session.
+            <br><strong>How to fix:</strong> provide source material and cite that source id in every sentence before creating the draft.
           </div>
         </section>
     """
