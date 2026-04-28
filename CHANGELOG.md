@@ -36,6 +36,9 @@ All notable changes to CivicClerk are documented here.
 - Live `/staff` packet assembly and notice checklist form actions that create
   demo meetings, create/finalize packet assembly records, persist notice
   checklist records, and attach posting proof through the existing APIs.
+- Live `/staff` meeting outcome form action that creates a demo meeting,
+  captures an immutable motion, records a vote, and creates an action item
+  tied to the source motion through the existing APIs.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.

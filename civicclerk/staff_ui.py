@@ -52,6 +52,22 @@ SCREEN_CARDS = [
         ],
         "fix": "If posting proof cannot attach, create the notice checklist record before posting proof metadata.",
     },
+    {
+        "id": "outcomes",
+        "title": "Meeting Outcomes",
+        "eyebrow": "Motions, votes, and actions",
+        "summary": "Capture immutable motions and votes, then create action items tied to the meeting outcome.",
+        "primary_api": "/meetings/{id}/motions",
+        "secondary_api": "/meetings/{id}/action-items",
+        "status": "Live API + screen pattern",
+        "cta": "Capture outcome",
+        "rows": [
+            ("Council", "Approve packet as amended", "CAPTURED", "Vote recorded; action item open."),
+            ("Finance", "Return with fee study", "ACTION OPEN", "Assigned to Finance."),
+            ("Clerk", "Vote correction", "APPENDED", "Original vote preserved."),
+        ],
+        "fix": "If action creation fails, capture the source motion for this meeting first and use that motion id.",
+    },
 ]
 
 STATE_CARDS = [
@@ -127,7 +143,7 @@ def render_staff_dashboard() -> str:
     h2 {{ margin-top: 34px; }}
     p {{ max-width: 78ch; }}
     .status {{ color: var(--warn); font-weight: 700; }}
-    .screen-nav {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 28px 0 18px; }}
+    .screen-nav {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 28px 0 18px; }}
     .screen-tab {{ appearance: none; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); color: var(--ink); padding: 16px; text-align: left; font: inherit; cursor: pointer; box-shadow: 0 8px 24px rgba(23,32,27,.06); }}
     .screen-tab span {{ display: block; color: var(--accent); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }}
     .screen-tab[aria-selected="true"] {{ background: var(--accent-dark); color: white; border-color: var(--accent-dark); transform: translateY(-2px); }}
@@ -218,6 +234,8 @@ def render_staff_dashboard() -> str:
     const packetOutput = document.querySelector("#packet-assembly-output");
     const noticeForm = document.querySelector("#notice-checklist-form");
     const noticeOutput = document.querySelector("#notice-checklist-output");
+    const outcomeForm = document.querySelector("#meeting-outcomes-form");
+    const outcomeOutput = document.querySelector("#meeting-outcomes-output");
 
     function setOutput(state, html) {{
       output.dataset.state = state;
@@ -334,6 +352,36 @@ def render_staff_dashboard() -> str:
         noticeOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
       }}
     }});
+
+    outcomeForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      outcomeOutput.dataset.state = "loading";
+      outcomeOutput.innerHTML = "<strong>Loading:</strong> creating meeting outcome records...";
+      const form = new FormData(outcomeForm);
+      try {{
+        const meeting = await createDemoMeeting(form.get("meeting_title"));
+        const motion = await postJson(`/meetings/${{meeting.id}}/motions`, {{
+          text: form.get("motion_text"),
+          actor: form.get("actor"),
+        }});
+        const vote = await postJson(`/motions/${{motion.id}}/votes`, {{
+          voter_name: form.get("voter_name"),
+          vote: form.get("vote"),
+          actor: form.get("actor"),
+        }});
+        const action = await postJson(`/meetings/${{meeting.id}}/action-items`, {{
+          description: form.get("action_description"),
+          assigned_to: form.get("assigned_to"),
+          source_motion_id: motion.id,
+          actor: form.get("actor"),
+        }});
+        outcomeOutput.dataset.state = "success";
+        outcomeOutput.innerHTML = `<strong>Success:</strong> captured motion <code>${{motion.id}}</code>, vote <code>${{vote.id}}</code>, and action item <code>${{action.id}}</code> for meeting <code>${{meeting.id}}</code>.<br><strong>Next step:</strong> review the action assignment before minutes drafting.`;
+      }} catch (error) {{
+        outcomeOutput.dataset.state = "error";
+        outcomeOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
+      }}
+    }});
   </script>
 </body>
 </html>"""
@@ -390,6 +438,8 @@ def _render_live_region(card_id: str) -> str:
         return _render_live_packet_region()
     if card_id == "notice":
         return _render_live_notice_region()
+    if card_id == "outcomes":
+        return _render_live_outcomes_region()
     return ""
 
 
@@ -530,6 +580,51 @@ def _render_live_notice_region() -> str:
           <div id="notice-checklist-output" class="live-output" data-state="empty" role="status" aria-live="polite">
             <strong>Empty:</strong> no live notice checklist action has run in this browser session.
             <br><strong>How to fix:</strong> submit the notice form above with a timezone-aware posted-at timestamp.
+          </div>
+        </section>
+    """
+
+
+def _render_live_outcomes_region() -> str:
+    return """
+        <section class="live-action" aria-labelledby="live-outcomes-heading">
+          <h4 id="live-outcomes-heading">Live meeting outcomes action</h4>
+          <p>Create a demo meeting, capture an immutable motion, record a vote, and create an action item tied to that motion.</p>
+          <form id="meeting-outcomes-form">
+            <div class="form-grid">
+              <label>Meeting title
+                <input name="meeting_title" required value="Meeting Outcomes Demo">
+              </label>
+              <label>Actor
+                <input name="actor" required value="clerk@example.gov">
+              </label>
+              <label class="span-2">Motion text
+                <textarea name="motion_text" required>Move to direct Public Works to inspect sidewalk repairs.</textarea>
+              </label>
+              <label>Voter name
+                <input name="voter_name" required value="Council Member Rivera">
+              </label>
+              <label>Vote
+                <select name="vote">
+                  <option value="aye">Aye</option>
+                  <option value="nay">Nay</option>
+                  <option value="abstain">Abstain</option>
+                </select>
+              </label>
+              <label>Assigned to
+                <input name="assigned_to" required value="Public Works">
+              </label>
+              <label class="span-2">Action description
+                <textarea name="action_description" required>Public Works to inspect sidewalk repairs and report back.</textarea>
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="cta" type="submit">Capture motion, vote, and action</button>
+            </div>
+          </form>
+          <div id="meeting-outcomes-output" class="live-output" data-state="empty" role="status" aria-live="polite">
+            <strong>Empty:</strong> no live meeting outcome action has run in this browser session.
+            <br><strong>How to fix:</strong> submit the outcome form above; the screen will create the meeting and source motion first.
           </div>
         </section>
     """
