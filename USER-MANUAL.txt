@@ -47,8 +47,9 @@ draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.0 release
-artifacts, and the first CivicCore v0.3.0-backed packet export bundle
-slice. Milestone 13 adds the `/staff` staff workflow UI foundation: a
+artifacts, the first CivicCore v0.3.0-backed packet export bundle
+slice, and a database-backed agenda intake queue with clerk readiness review.
+Milestone 13 adds the `/staff` staff workflow UI foundation: a
 browser-visible map of released workflows and required rendered states. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 open `/staff`, create draft agenda items and meetings, version packet snapshots, test
@@ -59,7 +60,8 @@ archive filtering, and run prompt evaluations with outbound network
 blocked. IT staff can also import local connector export payloads while
 preserving source provenance. IT staff can now generate records-ready packet
 export bundles with CivicCore manifests, checksums, provenance, and
-hash-chained audit evidence. Full workflow UI screens are still planned; the
+hash-chained audit evidence. Clerks can submit/list/review `/agenda-intake`
+items with readiness status stored in the configured intake database. Full workflow UI screens are still planned; the
 current `/staff` page does not connect to live database-backed work queues yet.
 
 ## Part 2: IT and Technical Overview
@@ -79,7 +81,9 @@ CivicClerk will follow the CivicSuite deployment pattern:
 
 ### Planned dependency
 
-The runtime foundation now pins to civiccore `==0.3.0`.
+The runtime foundation now pins to civiccore `==0.3.0`. Agenda intake uses
+`CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; otherwise it uses an in-memory
+SQLite database suitable for local smoke checks.
 
 ### Security posture
 
@@ -157,10 +161,11 @@ policy-bearing prompt text into YAML and adds an evaluation harness.
 Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. The first production-depth
 slice adds records-ready packet export bundles using CivicCore v0.3.0
-provenance, export manifest, checksum, and audit primitives. Public packet
-exports reject closed-session and restricted source files. Full UI screens
-remain planned work, but browser QA gates now verify the required state
-fixtures and accessibility evidence before browser-visible changes merge.
+provenance, export manifest, checksum, and audit primitives. The next slice
+adds database-backed agenda intake and clerk readiness review state. Public
+packet exports reject closed-session and restricted source files. Full UI
+screens remain planned work, but browser QA gates now verify the required
+state fixtures and accessibility evidence before browser-visible changes merge.
 
 - `meeting_bodies`
 - `meetings`

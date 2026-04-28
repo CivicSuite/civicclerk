@@ -6,9 +6,9 @@ from __future__ import annotations
 WORKFLOWS = [
     (
         "Agenda intake",
-        "Create draft items, move them through the agenda lifecycle, and review transition audit entries.",
-        "/agenda-items",
-        "Use /agenda-items/{id}/transitions when a department is ready for the next lifecycle step.",
+        "Submit department items into the database-backed staff queue and record clerk readiness review.",
+        "/agenda-intake",
+        "Use /agenda-intake/{id}/review before moving a ready item toward packet assembly.",
     ),
     (
         "Meeting lifecycle",
@@ -139,8 +139,8 @@ def render_staff_dashboard() -> str:
     <section class="hero">
       <div class="eyebrow">CivicClerk v0.1.0</div>
       <h1>CivicClerk Staff Workflow Foundation</h1>
-      <p class="status">Full workflow UI screens are still planned; this page is the first staff-facing workflow map for the released API foundation.</p>
-      <p>No live database-backed queue is connected yet. Use this screen to orient clerks and IT staff to the workflows that are already enforced by the API, the user-visible states every future screen must handle, and the API paths to smoke-check today.</p>
+      <p class="status">Full workflow UI screens are still planned; this page is the first staff-facing workflow map for the released API foundation and the agenda intake queue now backed by a configurable database URL.</p>
+      <p>The agenda intake queue is available through the API at <code>/agenda-intake</code>. Use this screen to orient clerks and IT staff to the workflows that are already enforced by the API, the user-visible states every future screen must handle, and the API paths to smoke-check today.</p>
     </section>
 
     <section id="workflow-board" aria-labelledby="workflow-heading">

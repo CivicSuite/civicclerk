@@ -26,7 +26,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "CivicClerk Staff Workflow Foundation" in html
     assert "v0.1.0" in html
     assert "Full workflow UI screens are still planned" in html
-    assert "No live database-backed queue is connected yet" in html
+    assert "/agenda-intake" in html
+    assert "database-backed staff queue" in html
 
     for workflow in [
         "Agenda intake",
@@ -43,7 +44,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         assert f'data-state="{state}"' in html
 
     for api_path in [
-        "/agenda-items",
+        "/agenda-intake",
         "/meetings/{id}/packet-snapshots",
         "/meetings/{id}/notices/check",
         "/meetings/{id}/minutes/drafts",
