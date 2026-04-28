@@ -223,10 +223,12 @@ async def root() -> dict[str, str]:
             "work with visible rendered states and actionable next steps; "
             "the staff agenda intake screen can now submit items and record readiness review "
             "through the live API; "
+            "packet assembly and notice checklist staff screens can now create/finalize packet "
+            "records and persist posting proof through live API actions; "
             "CivicClerk remains versioned as v0.1.0 while production-depth service slices continue; "
-            "full live clerk-console form submission for every workflow is not implemented yet."
+            "live clerk-console form submission for the remaining workflows is not implemented yet."
         ),
-        "next_step": "Production-depth live packet and notice form actions plus meeting persistence",
+        "next_step": "Production-depth meeting persistence and remaining live clerk-console actions",
     }
 
 

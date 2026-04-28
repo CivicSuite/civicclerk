@@ -52,8 +52,10 @@ agenda intake queue with clerk readiness review, and database-backed packet
 assembly records with source/citation metadata, and database-backed notice
 checklist/posting-proof records.
 The `/staff` page now provides first staff workflow screens for agenda intake,
-packet assembly, and notice checklist/posting-proof work. The agenda intake
-screen can submit and review intake items through the live API. IT
+packet assembly, and notice checklist/posting-proof work. These screens can
+submit intake items, record readiness review, create/finalize packet assembly
+records, persist notice checklist records, and attach posting proof through
+the live API. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 open `/staff`, create draft agenda items and meetings, version packet snapshots, test
 allowed/rejected notice compliance postings, capture motions, capture
@@ -65,9 +67,10 @@ preserving source provenance. IT staff can now generate records-ready packet
 export bundles with CivicCore manifests, checksums, provenance, and
 hash-chained audit evidence. Clerks can submit/list/review `/agenda-intake`
 items with readiness status stored in the configured intake database. The
-current `/staff` page submits and reviews agenda intake records directly;
-packet assembly and notice checklist screens still show screen-level workflow
-guidance and sample queues until their live browser form actions land.
+current `/staff` page submits and reviews agenda intake records directly,
+creates/finalizes packet assembly records, and persists notice checklist
+posting-proof records; remaining workflow areas still show screen-level
+guidance until their live browser form actions land.
 
 ## Part 2: IT and Technical Overview
 

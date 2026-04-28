@@ -214,6 +214,10 @@ def render_staff_dashboard() -> str:
     const reviewForm = document.querySelector("#agenda-review-form");
     const output = document.querySelector("#agenda-intake-output");
     const itemIdInput = document.querySelector("#review-item-id");
+    const packetForm = document.querySelector("#packet-assembly-form");
+    const packetOutput = document.querySelector("#packet-assembly-output");
+    const noticeForm = document.querySelector("#notice-checklist-form");
+    const noticeOutput = document.querySelector("#notice-checklist-output");
 
     function setOutput(state, html) {{
       output.dataset.state = state;
@@ -232,6 +236,14 @@ def render_staff_dashboard() -> str:
         throw new Error(`${{detail.message || "Request failed."}} How to fix: ${{detail.fix || "Check the required fields and retry."}}`);
       }}
       return data;
+    }}
+
+    async function createDemoMeeting(title) {{
+      return postJson("/meetings", {{
+        title,
+        meeting_type: "regular",
+        scheduled_start: "2026-05-05T19:00:00Z",
+      }});
     }}
 
     intakeForm?.addEventListener("submit", async (event) => {{
@@ -270,6 +282,56 @@ def render_staff_dashboard() -> str:
         setOutput("success", `<strong>Success:</strong> readiness is ${{item.readiness_status}} for <code>${{item.id}}</code>.<br><strong>Next step:</strong> ${{nextStep}}`);
       }} catch (error) {{
         setOutput("error", `<strong>Error:</strong> ${{error.message}}`);
+      }}
+    }});
+
+    packetForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      packetOutput.dataset.state = "loading";
+      packetOutput.innerHTML = "<strong>Loading:</strong> creating packet assembly record...";
+      const form = new FormData(packetForm);
+      try {{
+        const meeting = await createDemoMeeting(form.get("meeting_title"));
+        const draft = await postJson(`/meetings/${{meeting.id}}/packet-assemblies`, {{
+          title: form.get("title"),
+          agenda_item_ids: [form.get("agenda_item_id")],
+          actor: form.get("actor"),
+          source_references: [{{ source_id: "source-1", label: form.get("source_label") }}],
+          citations: [{{ source_id: "source-1", quote: form.get("citation") }}],
+        }});
+        const finalized = await postJson(`/packet-assemblies/${{draft.id}}/finalize`, {{ actor: form.get("actor") }});
+        packetOutput.dataset.state = "success";
+        packetOutput.innerHTML = `<strong>Success:</strong> packet assembly <code>${{finalized.id}}</code> is ${{finalized.status}} for meeting <code>${{meeting.id}}</code>.<br><strong>Next step:</strong> export the finalized packet bundle when sources are public-safe.`;
+      }} catch (error) {{
+        packetOutput.dataset.state = "error";
+        packetOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
+      }}
+    }});
+
+    noticeForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      noticeOutput.dataset.state = "loading";
+      noticeOutput.innerHTML = "<strong>Loading:</strong> checking notice compliance and attaching proof...";
+      const form = new FormData(noticeForm);
+      try {{
+        const meeting = await createDemoMeeting(form.get("meeting_title"));
+        const checklist = await postJson(`/meetings/${{meeting.id}}/notice-checklists`, {{
+          notice_type: "regular",
+          posted_at: form.get("posted_at"),
+          minimum_notice_hours: Number(form.get("minimum_notice_hours")),
+          statutory_basis: form.get("statutory_basis"),
+          approved_by: form.get("approved_by"),
+          actor: form.get("actor"),
+        }});
+        const posted = await postJson(`/notice-checklists/${{checklist.id}}/posting-proof`, {{
+          actor: form.get("actor"),
+          posting_proof: {{ location: form.get("location"), posted_url: form.get("posted_url") }},
+        }});
+        noticeOutput.dataset.state = "success";
+        noticeOutput.innerHTML = `<strong>Success:</strong> notice checklist <code>${{posted.id}}</code> is ${{posted.status}} with posting proof saved.<br><strong>Next step:</strong> keep the proof metadata with the public meeting record.`;
+      }} catch (error) {{
+        noticeOutput.dataset.state = "error";
+        noticeOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
       }}
     }});
   </script>
@@ -316,9 +378,19 @@ def _render_screen_card(card: dict, active: bool) -> str:
           <tbody>{rows}</tbody>
         </table>
         <p class="fix-path"><strong>How to fix:</strong> {card["fix"]}</p>
-        {_render_live_intake_region() if card["id"] == "intake" else ""}
+        {_render_live_region(card["id"])}
       </article>
     """
+
+
+def _render_live_region(card_id: str) -> str:
+    if card_id == "intake":
+        return _render_live_intake_region()
+    if card_id == "packet":
+        return _render_live_packet_region()
+    if card_id == "notice":
+        return _render_live_notice_region()
+    return ""
 
 
 def _render_live_intake_region() -> str:
@@ -376,6 +448,88 @@ def _render_live_intake_region() -> str:
           <div id="agenda-intake-output" class="live-output" data-state="empty" role="status" aria-live="polite">
             <strong>Empty:</strong> no live agenda intake action has been submitted in this browser session.
             <br><strong>How to fix:</strong> submit the intake form above, then review the generated item id.
+          </div>
+        </section>
+    """
+
+
+def _render_live_packet_region() -> str:
+    return """
+        <section class="live-action" aria-labelledby="live-packet-heading">
+          <h4 id="live-packet-heading">Live packet assembly action</h4>
+          <p>Create a demo meeting, create a packet assembly record through `/meetings/{id}/packet-assemblies`, and finalize it through `/packet-assemblies/{id}/finalize`.</p>
+          <form id="packet-assembly-form">
+            <div class="form-grid">
+              <label>Meeting title
+                <input name="meeting_title" required value="Packet Assembly Demo Meeting">
+              </label>
+              <label>Packet title
+                <input name="title" required value="Council packet v1">
+              </label>
+              <label>Agenda item id
+                <input name="agenda_item_id" required value="agenda-item-demo">
+              </label>
+              <label>Actor
+                <input name="actor" required value="clerk@example.gov">
+              </label>
+              <label>Source label
+                <input name="source_label" required value="Staff report">
+              </label>
+              <label>Citation
+                <input name="citation" required value="Staff report page 2">
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="cta" type="submit">Create and finalize packet</button>
+            </div>
+          </form>
+          <div id="packet-assembly-output" class="live-output" data-state="empty" role="status" aria-live="polite">
+            <strong>Empty:</strong> no live packet assembly action has run in this browser session.
+            <br><strong>How to fix:</strong> submit the packet form above; the screen will create a demo meeting first.
+          </div>
+        </section>
+    """
+
+
+def _render_live_notice_region() -> str:
+    return """
+        <section class="live-action" aria-labelledby="live-notice-heading">
+          <h4 id="live-notice-heading">Live notice checklist action</h4>
+          <p>Create a demo meeting, persist a notice checklist through `/meetings/{id}/notice-checklists`, and attach posting proof through `/notice-checklists/{id}/posting-proof`.</p>
+          <form id="notice-checklist-form">
+            <div class="form-grid">
+              <label>Meeting title
+                <input name="meeting_title" required value="Notice Proof Demo Meeting">
+              </label>
+              <label>Posted at
+                <input name="posted_at" required value="2026-05-01T19:00:00Z">
+              </label>
+              <label>Minimum notice hours
+                <input name="minimum_notice_hours" required value="72">
+              </label>
+              <label>Approved by
+                <input name="approved_by" required value="clerk@example.gov">
+              </label>
+              <label>Actor
+                <input name="actor" required value="clerk@example.gov">
+              </label>
+              <label>Posting location
+                <input name="location" required value="City Hall bulletin board">
+              </label>
+              <label class="span-2">Posted URL
+                <input name="posted_url" required value="https://city.example.gov/agendas/demo">
+              </label>
+              <label class="span-2">Statutory basis
+                <textarea name="statutory_basis" required>72-hour regular meeting notice rule.</textarea>
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="cta" type="submit">Check notice and attach proof</button>
+            </div>
+          </form>
+          <div id="notice-checklist-output" class="live-output" data-state="empty" role="status" aria-live="polite">
+            <strong>Empty:</strong> no live notice checklist action has run in this browser session.
+            <br><strong>How to fix:</strong> submit the notice form above with a timezone-aware posted-at timestamp.
           </div>
         </section>
     """
