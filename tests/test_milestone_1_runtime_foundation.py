@@ -97,7 +97,8 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "keyboard" in payload["message"]
     assert "v0.1.0" in payload["message"]
     assert "agenda intake queue" in payload["message"]
-    assert payload["next_step"] == "Production-depth packet assembly and notice checklist persistence"
+    assert "packet assembly records" in payload["message"]
+    assert payload["next_step"] == "Production-depth notice checklist and posting-proof persistence"
 
 
 @pytest.mark.asyncio

@@ -17,6 +17,7 @@ from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_lifecycle import MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
+from civicclerk.packet_assembly import PacketAssemblyRepository
 from civicclerk.packet_notice import (
     NoticeStore,
     PacketExportError,
@@ -43,6 +44,8 @@ minutes_drafts = MinutesDraftStore()
 public_archive = PublicArchiveStore()
 _agenda_intake_repository: AgendaIntakeRepository | None = None
 _agenda_intake_db_url: str | None = None
+_packet_assembly_repository: PacketAssemblyRepository | None = None
+_packet_assembly_db_url: str | None = None
 
 
 class AgendaItemCreate(BaseModel):
@@ -83,6 +86,18 @@ class MeetingTransitionRequest(BaseModel):
 
 class PacketSnapshotCreate(BaseModel):
     agenda_item_ids: list[str] = Field(min_length=1)
+    actor: str = Field(min_length=1)
+
+
+class PacketAssemblyCreate(BaseModel):
+    title: str = Field(min_length=1)
+    agenda_item_ids: list[str] = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    source_references: list[dict] = Field(min_length=1)
+    citations: list[dict] = Field(min_length=1)
+
+
+class PacketAssemblyFinalizeRequest(BaseModel):
     actor: str = Field(min_length=1)
 
 
@@ -188,10 +203,12 @@ async def root() -> dict[str, str]:
             "gates now verify loading, success, empty, error, partial, keyboard, focus, contrast, "
             "and console evidence; the first database-backed agenda intake queue now supports "
             "department submission, clerk readiness review, and durable audit-hash evidence; "
+            "database-backed packet assembly records now tie packet versions to source files, "
+            "citations, and durable audit-hash evidence; "
             "CivicClerk remains versioned as v0.1.0 while production-depth service slices continue; "
             "full UI workflows are not implemented yet."
         ),
-        "next_step": "Production-depth packet assembly and notice checklist persistence",
+        "next_step": "Production-depth notice checklist and posting-proof persistence",
     }
 
 
@@ -404,6 +421,67 @@ async def list_packet_snapshots(meeting_id: str) -> dict[str, list[dict]]:
             for snapshot in packet_snapshots.list_snapshots(meeting_id)
         ]
     }
+
+
+@app.post("/meetings/{meeting_id}/packet-assemblies", status_code=201)
+async def create_packet_assembly_record(
+    meeting_id: str,
+    payload: PacketAssemblyCreate,
+) -> dict:
+    """Create a persisted packet assembly record tied to a packet snapshot."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    snapshot = packet_snapshots.create_snapshot(
+        meeting_id=meeting_id,
+        agenda_item_ids=payload.agenda_item_ids,
+        actor=payload.actor,
+    )
+    return _get_packet_assembly_repository().create_draft(
+        meeting_id=meeting_id,
+        packet_snapshot_id=snapshot.id,
+        packet_version=snapshot.version,
+        title=payload.title,
+        actor=payload.actor,
+        agenda_item_ids=payload.agenda_item_ids,
+        source_references=payload.source_references,
+        citations=payload.citations,
+    ).public_dict()
+
+
+@app.get("/meetings/{meeting_id}/packet-assemblies")
+async def list_packet_assembly_records(meeting_id: str) -> dict[str, list[dict]]:
+    """List persisted packet assembly records for a meeting."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return {
+        "packet_assemblies": [
+            record.public_dict()
+            for record in _get_packet_assembly_repository().list_for_meeting(meeting_id)
+        ]
+    }
+
+
+@app.post("/packet-assemblies/{record_id}/finalize")
+async def finalize_packet_assembly_record(
+    record_id: str,
+    payload: PacketAssemblyFinalizeRequest,
+) -> dict:
+    """Finalize a persisted packet assembly record."""
+    record = _get_packet_assembly_repository().finalize(
+        record_id=record_id,
+        actor=payload.actor,
+    )
+    if record is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Packet assembly record not found.",
+                "fix": "Create the packet assembly record before finalizing it.",
+            },
+        )
+    return record.public_dict()
 
 
 @app.post("/meetings/{meeting_id}/export-bundle", status_code=201)
@@ -859,3 +937,12 @@ def _get_agenda_intake_repository() -> AgendaIntakeRepository:
         _agenda_intake_db_url = db_url
         _agenda_intake_repository = AgendaIntakeRepository(db_url=db_url)
     return _agenda_intake_repository
+
+
+def _get_packet_assembly_repository() -> PacketAssemblyRepository:
+    global _packet_assembly_db_url, _packet_assembly_repository
+    db_url = os.environ.get("CIVICCLERK_PACKET_ASSEMBLY_DB_URL")
+    if _packet_assembly_repository is None or db_url != _packet_assembly_db_url:
+        _packet_assembly_db_url = db_url
+        _packet_assembly_repository = PacketAssemblyRepository(db_url=db_url)
+    return _packet_assembly_repository

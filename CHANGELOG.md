@@ -10,6 +10,12 @@ All notable changes to CivicClerk are documented here.
   hash references.
 - `/agenda-intake` submit/list/review endpoints for the first DB-backed staff
   workflow queue, configurable with `CIVICCLERK_AGENDA_INTAKE_DB_URL`.
+- Production-depth packet assembly persistence slice with source references,
+  citations, packet snapshot linkage, and durable CivicCore audit hash
+  references.
+- `/meetings/{meeting_id}/packet-assemblies` create/list endpoint and
+  `/packet-assemblies/{record_id}/finalize` endpoint, configurable with
+  `CIVICCLERK_PACKET_ASSEMBLY_DB_URL`.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.

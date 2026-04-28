@@ -18,9 +18,9 @@ WORKFLOWS = [
     ),
     (
         "Packet and notice",
-        "Version packet snapshots and check notice deadlines before posting public notices.",
-        "/meetings/{id}/packet-snapshots",
-        "Use /meetings/{id}/notices/check before /meetings/{id}/notices/post.",
+        "Version packet snapshots, persist packet assembly records, and check notice deadlines before posting public notices.",
+        "/meetings/{id}/packet-snapshots · /meetings/{id}/packet-assemblies",
+        "Use /packet-assemblies/{id}/finalize before export; use /meetings/{id}/notices/check before posting.",
     ),
     (
         "Motions, votes, actions",
@@ -139,8 +139,8 @@ def render_staff_dashboard() -> str:
     <section class="hero">
       <div class="eyebrow">CivicClerk v0.1.0</div>
       <h1>CivicClerk Staff Workflow Foundation</h1>
-      <p class="status">Full workflow UI screens are still planned; this page is the first staff-facing workflow map for the released API foundation and the agenda intake queue now backed by a configurable database URL.</p>
-      <p>The agenda intake queue is available through the API at <code>/agenda-intake</code>. Use this screen to orient clerks and IT staff to the workflows that are already enforced by the API, the user-visible states every future screen must handle, and the API paths to smoke-check today.</p>
+      <p class="status">Full workflow UI screens are still planned; this page is the first staff-facing workflow map for the released API foundation, the database-backed agenda intake queue, and database-backed packet assembly records.</p>
+      <p>The agenda intake queue is available through the API at <code>/agenda-intake</code>, and packet assembly records are available at <code>/meetings/{{id}}/packet-assemblies</code>. Use this screen to orient clerks and IT staff to the workflows that are already enforced by the API, the user-visible states every future screen must handle, and the API paths to smoke-check today.</p>
     </section>
 
     <section id="workflow-board" aria-labelledby="workflow-heading">
