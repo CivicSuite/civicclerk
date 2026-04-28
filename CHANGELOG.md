@@ -16,6 +16,12 @@ All notable changes to CivicClerk are documented here.
 - `/meetings/{meeting_id}/packet-assemblies` create/list endpoint and
   `/packet-assemblies/{record_id}/finalize` endpoint, configurable with
   `CIVICCLERK_PACKET_ASSEMBLY_DB_URL`.
+- Production-depth notice checklist persistence slice with compliance outcomes,
+  warning details, posting proof metadata, and durable CivicCore audit hash
+  references.
+- `/meetings/{meeting_id}/notice-checklists` create/list endpoint and
+  `/notice-checklists/{record_id}/posting-proof` endpoint, configurable with
+  `CIVICCLERK_NOTICE_CHECKLIST_DB_URL`.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.
