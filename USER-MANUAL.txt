@@ -46,8 +46,9 @@ action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA, accessibility/browser QA gates, and CivicClerk v0.1.0 release
-artifacts. Milestone 13 adds the `/staff` staff workflow UI foundation: a
+NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.0 release
+artifacts, and the first CivicCore v0.3.0-backed packet export bundle
+slice. Milestone 13 adds the `/staff` staff workflow UI foundation: a
 browser-visible map of released workflows and required rendered states. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 open `/staff`, create draft agenda items and meetings, version packet snapshots, test
@@ -56,9 +57,10 @@ votes, add correction records, create action items, create minutes drafts
 with sentence-level citations and prompt-version provenance, verify public
 archive filtering, and run prompt evaluations with outbound network
 blocked. IT staff can also import local connector export payloads while
-preserving source provenance. Full workflow UI screens are still planned;
-the current `/staff` page does not connect to live database-backed work
-queues yet.
+preserving source provenance. IT staff can now generate records-ready packet
+export bundles with CivicCore manifests, checksums, provenance, and
+hash-chained audit evidence. Full workflow UI screens are still planned; the
+current `/staff` page does not connect to live database-backed work queues yet.
 
 ## Part 2: IT and Technical Overview
 
@@ -77,7 +79,7 @@ CivicClerk will follow the CivicSuite deployment pattern:
 
 ### Planned dependency
 
-The runtime foundation pins to civiccore `==0.2.0`.
+The runtime foundation now pins to civiccore `==0.3.0`.
 
 ### Security posture
 
@@ -124,8 +126,10 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v0.1.0
-paired with `civiccore==0.2.0`.
+builds release artifacts and checksums, and publishes CivicClerk v0.1.0.
+The current production-depth branch pairs CivicClerk with `civiccore==0.3.0`
+so packet exports can use CivicCore manifests, provenance, checksums, and
+audit primitives.
 
 ## Part 3: Architecture Reference
 
@@ -151,9 +155,12 @@ permission-aware public archive behavior, including closed-session
 filtering for anonymous and under-privileged users. Milestone 9 moves
 policy-bearing prompt text into YAML and adds an evaluation harness.
 Milestone 10 adds source-provenanced connector import normalization for
-Granicus, Legistar, PrimeGov, and NovusAGENDA. Full UI screens remain
-planned work, but browser QA gates now verify the required state fixtures
-and accessibility evidence before browser-visible changes merge.
+Granicus, Legistar, PrimeGov, and NovusAGENDA. The first production-depth
+slice adds records-ready packet export bundles using CivicCore v0.3.0
+provenance, export manifest, checksum, and audit primitives. Public packet
+exports reject closed-session and restricted source files. Full UI screens
+remain planned work, but browser QA gates now verify the required state
+fixtures and accessibility evidence before browser-visible changes merge.
 
 - `meeting_bodies`
 - `meetings`

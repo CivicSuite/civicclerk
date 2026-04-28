@@ -5,7 +5,22 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Production-depth packet export bundle slice using CivicCore v0.3.0
+  `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
+  primitives.
+- `/meetings/{meeting_id}/export-bundle` endpoint for records-ready packet
+  bundles with manifest, SHA256 checksum file, source provenance, and
+  hash-chained audit evidence.
+- Public packet export guardrail that rejects closed-session, staff-only, and
+  restricted source files with an actionable fix path.
+- Safe packet export path handling: API callers provide a relative
+  `bundle_name` under `CIVICCLERK_EXPORT_ROOT`, not an arbitrary filesystem
+  path.
 - Milestone 13 staff workflow UI foundation at `/staff`, mapping released API workflows and required rendered states without claiming full workflow screens or live database-backed queues.
+
+### Changed
+- CivicClerk now pins `civiccore==0.3.0` for shared audit, provenance,
+  connector manifest, export bundle, and city-profile primitives.
 
 ## [0.1.0] - 2026-04-26
 
