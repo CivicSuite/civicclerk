@@ -1,14 +1,13 @@
-"""Agenda item lifecycle enforcement for CivicClerk.
-
-Milestone 3 keeps storage intentionally simple while establishing the
-non-negotiable state machine contract. Database-backed persistence lands after
-the API behavior and audit semantics are locked by tests.
-"""
+"""Agenda item lifecycle enforcement for CivicClerk."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from uuid import uuid4
+
+import sqlalchemy as sa
+from sqlalchemy import Engine, create_engine
 
 
 AGENDA_ITEM_LIFECYCLE = (
@@ -54,7 +53,7 @@ class AgendaItemRecord:
 
 
 class AgendaItemStore:
-    """Small in-memory store used until Milestone 3 grows DB-backed routes."""
+    """Small in-memory store used when no agenda item database URL is configured."""
 
     def __init__(self) -> None:
         self._items: dict[str, AgendaItemRecord] = {}
@@ -84,6 +83,90 @@ class AgendaItemStore:
         item.audit_entries.append(result.audit_entry)
         if result.allowed:
             item.status = to_status
+        return result
+
+
+metadata = sa.MetaData()
+
+agenda_item_lifecycle_records = sa.Table(
+    "agenda_item_lifecycle_records",
+    metadata,
+    sa.Column("id", sa.String(64), primary_key=True),
+    sa.Column("title", sa.String(500), nullable=False),
+    sa.Column("department_name", sa.String(255), nullable=False),
+    sa.Column("status", sa.String(80), nullable=False),
+    sa.Column("audit_entries", sa.JSON(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    schema="civicclerk",
+)
+
+
+class AgendaItemRepository:
+    """SQLAlchemy-backed agenda item lifecycle records.
+
+    Configure with `CIVICCLERK_AGENDA_ITEM_DB_URL` in the FastAPI runtime or pass
+    a SQLAlchemy URL directly in tests and local smoke checks.
+    """
+
+    def __init__(self, *, db_url: str | None = None, engine: Engine | None = None) -> None:
+        base_engine = engine or create_engine(db_url or "sqlite+pysqlite:///:memory:", future=True)
+        if base_engine.dialect.name == "sqlite":
+            self.engine = base_engine.execution_options(schema_translate_map={"civicclerk": None})
+        else:
+            self.engine = base_engine
+            with self.engine.begin() as connection:
+                connection.execute(sa.text("CREATE SCHEMA IF NOT EXISTS civicclerk"))
+        metadata.create_all(self.engine)
+
+    def create(self, *, title: str, department_name: str) -> AgendaItemRecord:
+        now = datetime.now(UTC)
+        item = AgendaItemRecord(id=str(uuid4()), title=title, department_name=department_name)
+        with self.engine.begin() as connection:
+            connection.execute(
+                agenda_item_lifecycle_records.insert().values(
+                    id=item.id,
+                    title=item.title,
+                    department_name=item.department_name,
+                    status=item.status,
+                    audit_entries=item.audit_entries,
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+        return item
+
+    def get(self, item_id: str) -> AgendaItemRecord | None:
+        with self.engine.begin() as connection:
+            row = connection.execute(
+                sa.select(agenda_item_lifecycle_records).where(
+                    agenda_item_lifecycle_records.c.id == item_id
+                )
+            ).mappings().first()
+        return _row_to_item(row) if row is not None else None
+
+    def transition(self, *, item_id: str, to_status: str, actor: str) -> TransitionResult | None:
+        item = self.get(item_id)
+        if item is None:
+            return None
+        result = validate_agenda_item_transition(
+            agenda_item_id=item_id,
+            from_status=item.status,
+            to_status=to_status,
+            actor=actor,
+        )
+        audit_entries = [*item.audit_entries, result.audit_entry]
+        status = to_status if result.allowed else item.status
+        with self.engine.begin() as connection:
+            connection.execute(
+                agenda_item_lifecycle_records.update()
+                .where(agenda_item_lifecycle_records.c.id == item_id)
+                .values(
+                    status=status,
+                    audit_entries=audit_entries,
+                    updated_at=datetime.now(UTC),
+                )
+            )
         return result
 
 
@@ -155,11 +238,24 @@ def validate_agenda_item_transition(
     )
 
 
+def _row_to_item(row) -> AgendaItemRecord:
+    data = dict(row)
+    return AgendaItemRecord(
+        id=data["id"],
+        title=data["title"],
+        department_name=data["department_name"],
+        status=data["status"],
+        audit_entries=list(data["audit_entries"]),
+    )
+
+
 __all__ = [
     "AGENDA_ITEM_LIFECYCLE",
     "VALID_TRANSITIONS",
+    "AgendaItemRepository",
     "AgendaItemRecord",
     "AgendaItemStore",
     "TransitionResult",
+    "agenda_item_lifecycle_records",
     "validate_agenda_item_transition",
 ]

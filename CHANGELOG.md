@@ -4,6 +4,11 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Added
+- Production-depth agenda item lifecycle persistence slice with
+  `CIVICCLERK_AGENDA_ITEM_DB_URL`, durable status/audit entries, and Alembic
+  migration `civicclerk_0006_agenda_items`.
+
 ## [0.1.1] - 2026-04-28
 
 ### Added
