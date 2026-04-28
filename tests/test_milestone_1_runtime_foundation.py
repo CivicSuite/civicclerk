@@ -101,7 +101,8 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "notice checklist records" in payload["message"]
     assert "staff workflow screens" in payload["message"]
     assert "staff agenda intake screen can now submit items" in payload["message"]
-    assert payload["next_step"] == "Production-depth live packet and notice form actions plus meeting persistence"
+    assert "persist posting proof through live API actions" in payload["message"]
+    assert payload["next_step"] == "Production-depth meeting persistence and remaining live clerk-console actions"
 
 
 @pytest.mark.asyncio

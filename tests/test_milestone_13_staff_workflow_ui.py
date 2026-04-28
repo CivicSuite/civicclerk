@@ -40,6 +40,12 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert 'id="agenda-intake-output"' in html
     assert "Submit intake item" in html
     assert "Record readiness review" in html
+    assert "Live packet assembly action" in html
+    assert 'id="packet-assembly-form"' in html
+    assert "Create and finalize packet" in html
+    assert "Live notice checklist action" in html
+    assert 'id="notice-checklist-form"' in html
+    assert "Check notice and attach proof" in html
 
     for workflow in [
         "Agenda Intake",
