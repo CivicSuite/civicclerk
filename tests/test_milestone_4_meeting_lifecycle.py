@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from itertools import product
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from civicclerk.main import app
+from civicclerk.meeting_lifecycle import MeetingStore
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -344,6 +346,82 @@ async def test_api_cancelled_meeting_is_terminal_and_audited() -> None:
         assert audit.json()["entries"][0]["to_status"] == "CANCELLED"
         assert audit.json()["entries"][0]["outcome"] == "allowed"
         assert audit.json()["entries"][1]["outcome"] == "rejected"
+
+
+def test_meeting_store_persists_meeting_records_and_audit_entries(tmp_path: Path) -> None:
+    db_url = f"sqlite+pysqlite:///{tmp_path / 'meetings.db'}"
+    store = MeetingStore(db_url=db_url)
+    meeting = store.create(
+        title="Persisted Regular Meeting",
+        meeting_type="Regular",
+        scheduled_start=datetime(2026, 5, 5, 19, 0, tzinfo=UTC),
+    )
+
+    result = store.transition(
+        meeting_id=meeting.id,
+        to_status="NOTICED",
+        actor="clerk@example.gov",
+        statutory_basis=None,
+    )
+
+    assert result is not None
+    assert result.allowed is True
+
+    reopened = MeetingStore(db_url=db_url)
+    persisted = reopened.get(meeting.id)
+
+    assert persisted is not None
+    assert persisted.status == "NOTICED"
+    assert persisted.meeting_type == "regular"
+    assert persisted.scheduled_start == datetime(2026, 5, 5, 19, 0, tzinfo=UTC)
+    assert persisted.audit_entries[-1]["outcome"] == "allowed"
+    assert persisted.audit_entries[-1]["actor"] == "clerk@example.gov"
+
+
+@pytest.mark.asyncio
+async def test_api_uses_configured_meeting_database_for_records_and_audit(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    import civicclerk.main as main_module
+
+    db_url = f"sqlite+pysqlite:///{tmp_path / 'api-meetings.db'}"
+    monkeypatch.setenv("CIVICCLERK_MEETING_DB_URL", db_url)
+    main_module._meeting_store = None
+    main_module._meeting_db_url = None
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        created = await client.post(
+            "/meetings",
+            json={
+                "title": "Persisted API Meeting",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-05T19:00:00Z",
+            },
+        )
+        assert created.status_code == 201
+        meeting_id = created.json()["id"]
+
+        transitioned = await client.post(
+            f"/meetings/{meeting_id}/transitions",
+            json={
+                "to_status": "NOTICED",
+                "actor": "clerk@example.gov",
+            },
+        )
+        assert transitioned.status_code == 200
+        assert transitioned.json()["status"] == "NOTICED"
+
+    reopened = MeetingStore(db_url=db_url)
+    persisted = reopened.get(meeting_id)
+
+    assert persisted is not None
+    assert persisted.title == "Persisted API Meeting"
+    assert persisted.status == "NOTICED"
+    assert persisted.audit_entries[-1]["to_status"] == "NOTICED"
+
+    main_module._meeting_store = None
+    main_module._meeting_db_url = None
 
 
 def test_docs_record_meeting_lifecycle_without_claiming_packet_or_minutes_behavior() -> None:

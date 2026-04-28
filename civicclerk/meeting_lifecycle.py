@@ -8,9 +8,11 @@ later milestones.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import uuid4
 
+import sqlalchemy as sa
+from sqlalchemy import Engine, create_engine
 
 MEETING_LIFECYCLE = (
     "SCHEDULED",
@@ -38,6 +40,22 @@ KNOWN_STATUSES = (*MEETING_LIFECYCLE, CANCELLED_STATUS)
 EMERGENCY_NOTICE_TYPES = {"emergency", "special"}
 CLOSED_SESSION_TYPES = {"closed_session", "executive"}
 KNOWN_MEETING_TYPES = {"regular", *EMERGENCY_NOTICE_TYPES, *CLOSED_SESSION_TYPES}
+
+metadata = sa.MetaData()
+
+meeting_records = sa.Table(
+    "meeting_records",
+    metadata,
+    sa.Column("id", sa.String(64), primary_key=True),
+    sa.Column("title", sa.String(255), nullable=False),
+    sa.Column("meeting_type", sa.String(80), nullable=False),
+    sa.Column("scheduled_start", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("status", sa.String(80), nullable=False),
+    sa.Column("audit_entries", sa.JSON(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    schema="civicclerk",
+)
 
 
 @dataclass(frozen=True)
@@ -70,10 +88,20 @@ class MeetingRecord:
 
 
 class MeetingStore:
-    """Small in-memory store used until DB-backed workflow routes land."""
+    """Meeting store with optional SQLAlchemy persistence."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, db_url: str | None = None, engine: Engine | None = None) -> None:
         self._meetings: dict[str, MeetingRecord] = {}
+        self.engine: Engine | None = None
+        if db_url is not None or engine is not None:
+            base_engine = engine or create_engine(db_url or "sqlite+pysqlite:///:memory:", future=True)
+            if base_engine.dialect.name == "sqlite":
+                self.engine = base_engine.execution_options(schema_translate_map={"civicclerk": None})
+            else:
+                self.engine = base_engine
+                with self.engine.begin() as connection:
+                    connection.execute(sa.text("CREATE SCHEMA IF NOT EXISTS civicclerk"))
+            metadata.create_all(self.engine)
 
     def create(
         self,
@@ -86,12 +114,33 @@ class MeetingStore:
             id=str(uuid4()),
             title=title,
             meeting_type=normalize_meeting_type(meeting_type),
-            scheduled_start=scheduled_start,
+            scheduled_start=_normalize_scheduled_start(scheduled_start),
         )
+        if self.engine is not None:
+            now = datetime.now(UTC)
+            with self.engine.begin() as connection:
+                connection.execute(
+                    meeting_records.insert().values(
+                        id=meeting.id,
+                        title=meeting.title,
+                        meeting_type=meeting.meeting_type,
+                        scheduled_start=meeting.scheduled_start,
+                        status=meeting.status,
+                        audit_entries=meeting.audit_entries,
+                        created_at=now,
+                        updated_at=now,
+                    )
+                )
         self._meetings[meeting.id] = meeting
         return meeting
 
     def get(self, meeting_id: str) -> MeetingRecord | None:
+        if self.engine is not None:
+            with self.engine.begin() as connection:
+                row = connection.execute(
+                    sa.select(meeting_records).where(meeting_records.c.id == meeting_id)
+                ).mappings().first()
+            return _row_to_meeting(row) if row is not None else None
         return self._meetings.get(meeting_id)
 
     def transition(
@@ -116,6 +165,19 @@ class MeetingStore:
         meeting.audit_entries.append(result.audit_entry)
         if result.allowed:
             meeting.status = to_status
+        if self.engine is not None:
+            with self.engine.begin() as connection:
+                connection.execute(
+                    meeting_records.update()
+                    .where(meeting_records.c.id == meeting_id)
+                    .values(
+                        status=meeting.status,
+                        audit_entries=meeting.audit_entries,
+                        updated_at=datetime.now(UTC),
+                    )
+                )
+        else:
+            self._meetings[meeting_id] = meeting
         return result
 
 
@@ -221,6 +283,27 @@ def _rejected(
     )
 
 
+def _row_to_meeting(row) -> MeetingRecord:
+    data = dict(row)
+    scheduled_start = _normalize_scheduled_start(data["scheduled_start"])
+    return MeetingRecord(
+        id=data["id"],
+        title=data["title"],
+        meeting_type=data["meeting_type"],
+        scheduled_start=scheduled_start,
+        status=data["status"],
+        audit_entries=list(data["audit_entries"]),
+    )
+
+
+def _normalize_scheduled_start(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
+
+
 __all__ = [
     "CANCELLED_STATUS",
     "KNOWN_STATUSES",
@@ -231,5 +314,6 @@ __all__ = [
     "MeetingRecord",
     "MeetingStore",
     "TransitionResult",
+    "meeting_records",
     "validate_meeting_transition",
 ]
