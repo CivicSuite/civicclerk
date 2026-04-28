@@ -49,6 +49,8 @@ _packet_assembly_repository: PacketAssemblyRepository | None = None
 _packet_assembly_db_url: str | None = None
 _notice_checklist_repository: NoticeChecklistRepository | None = None
 _notice_checklist_db_url: str | None = None
+_meeting_store: MeetingStore | None = None
+_meeting_db_url: str | None = None
 
 
 class AgendaItemCreate(BaseModel):
@@ -225,10 +227,11 @@ async def root() -> dict[str, str]:
             "through the live API; "
             "packet assembly and notice checklist staff screens can now create/finalize packet "
             "records and persist posting proof through live API actions; "
+            "meeting records can now persist through the configured meeting database; "
             "CivicClerk remains versioned as v0.1.0 while production-depth service slices continue; "
             "live clerk-console form submission for the remaining workflows is not implemented yet."
         ),
-        "next_step": "Production-depth meeting persistence and remaining live clerk-console actions",
+        "next_step": "Production-depth remaining live clerk-console actions",
     }
 
 
@@ -356,7 +359,7 @@ async def review_agenda_intake_item(
 @app.post("/meetings", status_code=201)
 async def create_meeting(payload: MeetingCreate) -> dict[str, str]:
     """Create a scheduled meeting for lifecycle enforcement."""
-    return meetings.create(
+    return _get_meeting_store().create(
         title=payload.title,
         meeting_type=payload.meeting_type,
         scheduled_start=_parse_timezone_aware_datetime(
@@ -369,7 +372,7 @@ async def create_meeting(payload: MeetingCreate) -> dict[str, str]:
 @app.get("/meetings/{meeting_id}")
 async def get_meeting(meeting_id: str) -> dict[str, str]:
     """Return the current meeting state."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return meeting.public_dict()
@@ -381,10 +384,10 @@ async def transition_meeting(
     payload: MeetingTransitionRequest,
 ) -> dict[str, str]:
     """Apply a canonical meeting lifecycle transition."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
-    result = meetings.transition(
+    result = _get_meeting_store().transition(
         meeting_id=meeting_id,
         to_status=payload.to_status,
         actor=payload.actor,
@@ -401,13 +404,16 @@ async def transition_meeting(
                 "requested_status": payload.to_status,
             },
         )
-    return meeting.public_dict()
+    updated_meeting = _get_meeting_store().get(meeting_id)
+    if updated_meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return updated_meeting.public_dict()
 
 
 @app.get("/meetings/{meeting_id}/audit")
 async def get_meeting_audit(meeting_id: str) -> dict[str, list[dict[str, str]]]:
     """Return lifecycle audit entries for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return {"entries": meeting.audit_entries}
@@ -419,7 +425,7 @@ async def create_packet_snapshot(
     payload: PacketSnapshotCreate,
 ) -> dict:
     """Create an immutable packet snapshot version for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return packet_snapshots.create_snapshot(
@@ -432,7 +438,7 @@ async def create_packet_snapshot(
 @app.get("/meetings/{meeting_id}/packet-snapshots")
 async def list_packet_snapshots(meeting_id: str) -> dict[str, list[dict]]:
     """Return packet snapshot versions for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return {
@@ -449,7 +455,7 @@ async def create_packet_assembly_record(
     payload: PacketAssemblyCreate,
 ) -> dict:
     """Create a persisted packet assembly record tied to a packet snapshot."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     snapshot = packet_snapshots.create_snapshot(
@@ -472,7 +478,7 @@ async def create_packet_assembly_record(
 @app.get("/meetings/{meeting_id}/packet-assemblies")
 async def list_packet_assembly_records(meeting_id: str) -> dict[str, list[dict]]:
     """List persisted packet assembly records for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return {
@@ -510,7 +516,7 @@ async def create_packet_export_bundle(
     payload: PacketExportCreate,
 ) -> dict:
     """Create a records-ready packet export bundle with manifest, checksums, and audit."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     try:
@@ -582,7 +588,7 @@ async def create_notice_checklist_record(
 @app.get("/meetings/{meeting_id}/notice-checklists")
 async def list_notice_checklist_records(meeting_id: str) -> dict[str, list[dict]]:
     """List persisted notice checklist records for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return {
@@ -636,7 +642,7 @@ async def post_notice(
 @app.post("/meetings/{meeting_id}/motions", status_code=201)
 async def capture_motion(meeting_id: str, payload: MotionCreate) -> dict:
     """Capture an immutable motion for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return motion_votes.capture_motion(
@@ -650,7 +656,7 @@ async def capture_motion(meeting_id: str, payload: MotionCreate) -> dict:
 @app.get("/meetings/{meeting_id}/motions")
 async def list_motions(meeting_id: str) -> dict[str, list[dict]]:
     """List captured motions and correction records for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return {
@@ -748,7 +754,7 @@ async def correct_vote(vote_id: str, payload: VoteCorrectionCreate) -> dict:
 @app.post("/meetings/{meeting_id}/action-items", status_code=201)
 async def create_action_item(meeting_id: str, payload: ActionItemCreate) -> dict:
     """Create an action item linked to a meeting outcome."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     if payload.source_motion_id is None:
@@ -782,7 +788,7 @@ async def create_action_item(meeting_id: str, payload: ActionItemCreate) -> dict
 @app.get("/meetings/{meeting_id}/action-items")
 async def list_action_items(meeting_id: str) -> dict[str, list[dict]]:
     """List action items linked to a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return {
@@ -796,7 +802,7 @@ async def list_action_items(meeting_id: str) -> dict[str, list[dict]]:
 @app.post("/meetings/{meeting_id}/minutes/drafts", status_code=201)
 async def create_minutes_draft(meeting_id: str, payload: MinutesDraftCreate) -> dict:
     """Create an AI-assisted minutes draft only when every sentence is cited."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     result = minutes_drafts.create_draft(
@@ -834,7 +840,7 @@ async def create_minutes_draft(meeting_id: str, payload: MinutesDraftCreate) -> 
 @app.get("/meetings/{meeting_id}/minutes/drafts")
 async def list_minutes_drafts(meeting_id: str) -> dict[str, list[dict]]:
     """List citation-gated minutes drafts for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return {
@@ -865,7 +871,7 @@ async def publish_public_record(
     payload: PublicMeetingRecordCreate,
 ) -> dict:
     """Create a public or restricted archive record for a meeting."""
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     record = public_archive.publish(
@@ -942,7 +948,7 @@ def _evaluate_notice_or_404(
     meeting_id: str,
     payload: NoticeComplianceRequest,
 ):
-    meeting = meetings.get(meeting_id)
+    meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     if meeting.scheduled_start is None:
@@ -1033,3 +1039,14 @@ def _get_notice_checklist_repository() -> NoticeChecklistRepository:
         _notice_checklist_db_url = db_url
         _notice_checklist_repository = NoticeChecklistRepository(db_url=db_url)
     return _notice_checklist_repository
+
+
+def _get_meeting_store() -> MeetingStore:
+    global _meeting_db_url, _meeting_store
+    db_url = os.environ.get("CIVICCLERK_MEETING_DB_URL")
+    if db_url is None:
+        return meetings
+    if _meeting_store is None or db_url != _meeting_db_url:
+        _meeting_db_url = db_url
+        _meeting_store = MeetingStore(db_url=db_url)
+    return _meeting_store

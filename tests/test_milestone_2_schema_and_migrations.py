@@ -85,6 +85,10 @@ def notice_checklist_migration_path() -> Path:
     return ROOT / "civicclerk" / "migrations" / "versions" / "civicclerk_0004_notice_checklist_records.py"
 
 
+def meeting_records_migration_path() -> Path:
+    return ROOT / "civicclerk" / "migrations" / "versions" / "civicclerk_0005_meeting_records.py"
+
+
 def test_canonical_table_models_exist_and_no_tables_are_missing_or_extra() -> None:
     models = model_module()
     metadata = models.Base.metadata
@@ -150,6 +154,7 @@ def test_alembic_scaffold_exists_for_civicclerk_schema_chain() -> None:
         agenda_intake_migration_path(),
         packet_assembly_migration_path(),
         notice_checklist_migration_path(),
+        meeting_records_migration_path(),
     ]
 
     for path in expected:
@@ -245,9 +250,10 @@ def test_alembic_command_upgrades_real_pgvector_database(
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civicclerk_revision == "civicclerk_0004_notice_ck"
+        assert civicclerk_revision == "civicclerk_0005_meetings"
         assert civicclerk_tables == set(CANONICAL_TABLES) | {
             "agenda_intake_queue",
+            "meeting_records",
             "notice_checklist_records",
             "packet_assembly_records",
         }
@@ -315,6 +321,20 @@ def test_notice_checklist_migration_declares_persistent_records_table() -> None:
     assert '"warnings"' in text
     assert '"posting_proof"' in text
     assert '"last_audit_hash"' in text
+    assert "postgresql.JSONB()" in text
+    assert 'schema="civicclerk"' in text
+
+
+def test_meeting_records_migration_declares_persistent_records_table() -> None:
+    text = meeting_records_migration_path().read_text(encoding="utf-8")
+
+    assert 'revision = "civicclerk_0005_meetings"' in text
+    assert 'down_revision = "civicclerk_0004_notice_ck"' in text
+    assert "idempotent_create_table" in text
+    assert '"meeting_records"' in text
+    assert '"meeting_type"' in text
+    assert '"scheduled_start"' in text
+    assert '"audit_entries"' in text
     assert "postgresql.JSONB()" in text
     assert 'schema="civicclerk"' in text
 

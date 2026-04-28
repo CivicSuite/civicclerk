@@ -22,6 +22,12 @@ All notable changes to CivicClerk are documented here.
 - `/meetings/{meeting_id}/notice-checklists` create/list endpoint and
   `/notice-checklists/{record_id}/posting-proof` endpoint, configurable with
   `CIVICCLERK_NOTICE_CHECKLIST_DB_URL`.
+- Production-depth meeting persistence slice with database-backed meeting
+  records, normalized meeting types, scheduled starts, lifecycle status, and
+  durable audit entries.
+- `CIVICCLERK_MEETING_DB_URL` configuration for `/meetings`,
+  `/meetings/{meeting_id}/transitions`, and meeting-dependent service
+  endpoints.
 - Production-depth staff workflow screens at `/staff` for agenda intake,
   packet assembly, and notice checklist/posting-proof work, with visible
   workflow state examples and actionable fix copy.

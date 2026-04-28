@@ -48,8 +48,9 @@ endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.0 release
 artifacts, CivicCore v0.3.0-backed packet export bundles, a database-backed
-agenda intake queue with clerk readiness review, and database-backed packet
-assembly records with source/citation metadata, and database-backed notice
+agenda intake queue with clerk readiness review, database-backed meeting
+records with lifecycle audit entries, database-backed packet assembly records
+with source/citation metadata, and database-backed notice
 checklist/posting-proof records.
 The `/staff` page now provides first staff workflow screens for agenda intake,
 packet assembly, and notice checklist/posting-proof work. These screens can
@@ -90,7 +91,8 @@ CivicClerk will follow the CivicSuite deployment pattern:
 ### Planned dependency
 
 The runtime foundation now pins to civiccore `==0.3.0`. Agenda intake uses
-`CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; packet assembly records use
+`CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; meeting records use
+`CIVICCLERK_MEETING_DB_URL` when set; packet assembly records use
 `CIVICCLERK_PACKET_ASSEMBLY_DB_URL` when set; notice checklist records use
 `CIVICCLERK_NOTICE_CHECKLIST_DB_URL` when set. If unset, each repository uses
 an in-memory SQLite database suitable for local smoke checks.
@@ -172,9 +174,10 @@ Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
 records-ready packet export bundles using CivicCore v0.3.0 provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
-clerk readiness review state; and database-backed packet assembly records
-with source references, citations, and packet snapshot linkage; and
-database-backed notice checklist records with posting-proof metadata. Public
+clerk readiness review state; database-backed meeting records with lifecycle
+audit entries; database-backed packet assembly records with source references,
+citations, and packet snapshot linkage; and database-backed notice checklist
+records with posting-proof metadata. Public
 packet exports reject closed-session and restricted source files. Full UI
 screens remain planned work, but browser QA gates now verify the required
 state fixtures and accessibility evidence before browser-visible changes merge.
