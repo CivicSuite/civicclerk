@@ -26,7 +26,7 @@ SCREEN_CARDS = [
         "eyebrow": "Source + citation binder",
         "summary": "Tie agenda item ids to packet versions, source files, citations, and audit evidence.",
         "primary_api": "/meetings/{id}/packet-assemblies",
-        "secondary_api": "/packet-assemblies/{id}/finalize",
+        "secondary_api": "/packet-assemblies/{id}/finalize + /meetings/{id}/export-bundle",
         "status": "Live API + screen pattern",
         "cta": "Finalize packet",
         "rows": [
@@ -244,8 +244,8 @@ def render_staff_dashboard() -> str:
     <section class="hero">
       <div class="eyebrow">CivicClerk v0.1.0</div>
       <h1>CivicClerk Staff Workflow Screens</h1>
-      <p class="status">These are the first browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly, and notice checklist/posting proof work without claiming the full end-to-end clerk console is finished.</p>
-      <p>The screens show the live API paths, safe next actions, required staff states, and actionable fix copy for the three database-backed service slices available today: agenda intake, packet assembly records, and notice checklist records.</p>
+      <p class="status">These are browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly and export, notice checklist/posting proof, outcome capture, cited minutes drafting, public archive publishing, and connector import work without claiming the full end-to-end clerk console is finished.</p>
+      <p>The screens show the live API paths, safe next actions, required staff states, and actionable fix copy for the service slices available today.</p>
     </section>
 
     <section id="workflow-screens" aria-labelledby="workflow-heading">
@@ -282,6 +282,8 @@ def render_staff_dashboard() -> str:
     const itemIdInput = document.querySelector("#review-item-id");
     const packetForm = document.querySelector("#packet-assembly-form");
     const packetOutput = document.querySelector("#packet-assembly-output");
+    const packetExportForm = document.querySelector("#packet-export-form");
+    const packetExportOutput = document.querySelector("#packet-export-output");
     const noticeForm = document.querySelector("#notice-checklist-form");
     const noticeOutput = document.querySelector("#notice-checklist-output");
     const outcomeForm = document.querySelector("#meeting-outcomes-form");
@@ -379,6 +381,38 @@ def render_staff_dashboard() -> str:
       }} catch (error) {{
         packetOutput.dataset.state = "error";
         packetOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
+      }}
+    }});
+
+    packetExportForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      packetExportOutput.dataset.state = "loading";
+      packetExportOutput.innerHTML = "<strong>Loading:</strong> creating records-ready packet export bundle...";
+      const form = new FormData(packetExportForm);
+      try {{
+        const meeting = await createDemoMeeting(form.get("meeting_title"));
+        await postJson(`/meetings/${{meeting.id}}/packet-snapshots`, {{
+          agenda_item_ids: [form.get("agenda_item_id")],
+          actor: form.get("actor"),
+        }});
+        const exported = await postJson(`/meetings/${{meeting.id}}/export-bundle`, {{
+          bundle_name: form.get("bundle_name"),
+          actor: form.get("actor"),
+          public_bundle: true,
+          sources: [{{
+            source_id: form.get("source_id"),
+            title: form.get("source_title"),
+            kind: "document",
+            source_system: "local_file",
+            source_path: form.get("source_path"),
+            citation_label: form.get("citation_label"),
+          }}],
+        }});
+        packetExportOutput.dataset.state = "success";
+        packetExportOutput.innerHTML = `<strong>Success:</strong> exported packet bundle for meeting <code>${{meeting.id}}</code> at <code>${{exported.bundle_path}}</code>.<br><strong>Manifest:</strong> <code>${{exported.manifest_path}}</code>. <strong>Checksums:</strong> <code>${{exported.checksums_path}}</code>.<br><strong>Next step:</strong> validate the manifest and attach the checksum file to the records package.`;
+      }} catch (error) {{
+        packetExportOutput.dataset.state = "error";
+        packetExportOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
       }}
     }});
 
@@ -669,6 +703,45 @@ def _render_live_packet_region() -> str:
           <div id="packet-assembly-output" class="live-output" data-state="empty" role="status" aria-live="polite">
             <strong>Empty:</strong> no live packet assembly action has run in this browser session.
             <br><strong>How to fix:</strong> submit the packet form above; the screen will create a demo meeting first.
+          </div>
+        </section>
+        <section class="live-action" aria-labelledby="live-packet-export-heading">
+          <h4 id="live-packet-export-heading">Live packet export action</h4>
+          <p>Create a demo meeting, create the required packet snapshot through `/meetings/{id}/packet-snapshots`, and export a records-ready bundle through `/meetings/{id}/export-bundle`.</p>
+          <form id="packet-export-form">
+            <div class="form-grid">
+              <label>Meeting title
+                <input name="meeting_title" required value="Packet Export Demo Meeting">
+              </label>
+              <label>Bundle folder name
+                <input name="bundle_name" required value="staff-packet-export-demo">
+              </label>
+              <label>Agenda item id
+                <input name="agenda_item_id" required value="agenda-item-export-demo">
+              </label>
+              <label>Actor
+                <input name="actor" required value="clerk@example.gov">
+              </label>
+              <label>Source id
+                <input name="source_id" required value="staff-report-1">
+              </label>
+              <label>Source title
+                <input name="source_title" required value="Staff report">
+              </label>
+              <label>Source path
+                <input name="source_path" required value="staff-report.pdf">
+              </label>
+              <label>Citation label
+                <input name="citation_label" required value="Staff Report p. 1">
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="cta" type="submit">Create packet export bundle</button>
+            </div>
+          </form>
+          <div id="packet-export-output" class="live-output" data-state="empty" role="status" aria-live="polite">
+            <strong>Empty:</strong> no live packet export action has run in this browser session.
+            <br><strong>How to fix:</strong> submit the export form above; the screen will create the required meeting and packet snapshot before export.
           </div>
         </section>
     """

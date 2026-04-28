@@ -49,6 +49,9 @@ All notable changes to CivicClerk are documented here.
 - Live `/staff` connector import form action that normalizes pasted local
   Granicus, Legistar, PrimeGov, or NovusAGENDA meeting export JSON through
   `/imports/{connector}/meetings` without vendor-network access.
+- Live `/staff` packet export form action that creates the required packet
+  snapshot, then writes a records-ready bundle with manifest and checksums
+  through `/meetings/{id}/export-bundle`.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.

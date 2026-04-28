@@ -235,11 +235,14 @@ async def root() -> dict[str, str]:
             "anonymous archive visibility through live API actions; "
             "connector import staff screens can now normalize local agenda-platform exports "
             "through live API actions; "
+            "packet export staff screens can now create records-ready bundles with manifests "
+            "and checksums through live API actions; "
             "meeting records can now persist through the configured meeting database; "
             "CivicClerk remains versioned as v0.1.0 while production-depth service slices continue; "
-            "live clerk-console form submission for the remaining workflows is not implemented yet."
+            "all current production-depth clerk-console form submissions are live for the released "
+            "API foundation, while the full integrated clerk console remains future work."
         ),
-        "next_step": "Production-depth remaining live clerk-console action for packet exports",
+        "next_step": "Production-depth consolidation and next CivicSuite module planning",
     }
 
 
