@@ -1,51 +1,57 @@
-"""Accessible staff workflow UI foundation."""
+"""Accessible staff workflow screens for CivicClerk staff."""
 
 from __future__ import annotations
 
 
-WORKFLOWS = [
-    (
-        "Agenda intake",
-        "Submit department items into the database-backed staff queue and record clerk readiness review.",
-        "/agenda-intake",
-        "Use /agenda-intake/{id}/review before moving a ready item toward packet assembly.",
-    ),
-    (
-        "Meeting lifecycle",
-        "Create meetings, apply canonical meeting transitions, and enforce statutory-basis preconditions.",
-        "/meetings",
-        "Emergency, special, closed-session, and executive-session guardrails remain enforced by the API.",
-    ),
-    (
-        "Packet and notice",
-        "Version packet snapshots, persist packet assembly records, and save notice checklist/posting proof records.",
-        "/meetings/{id}/packet-snapshots · /meetings/{id}/packet-assemblies · /meetings/{id}/notice-checklists · /meetings/{id}/notices/check",
-        "Use /packet-assemblies/{id}/finalize before export; use /notice-checklists/{id}/posting-proof after posting.",
-    ),
-    (
-        "Motions, votes, actions",
-        "Capture immutable motions and votes, then add action items linked to source motions.",
-        "/meetings/{id}/motions",
-        "Corrections are append-only; direct mutation returns 409 Conflict.",
-    ),
-    (
-        "Minutes drafts",
-        "Create citation-gated minutes drafts with source provenance, model, prompt version, and human approver.",
-        "/meetings/{id}/minutes/drafts",
-        "Every material sentence needs citations before the draft can be accepted.",
-    ),
-    (
-        "Public archive",
-        "Expose public meeting records while preventing closed-session leakage to anonymous users.",
-        "/public/archive/search",
-        "Anonymous counts, suggestions, bodies, and not-found responses never reveal restricted content.",
-    ),
-    (
-        "Connector imports",
-        "Normalize local Granicus, Legistar, PrimeGov, and NovusAGENDA export payloads with source provenance.",
-        "/imports/{connector}/meetings",
-        "No outbound network call is required in the default local-first profile.",
-    ),
+SCREEN_CARDS = [
+    {
+        "id": "intake",
+        "title": "Agenda Intake",
+        "eyebrow": "Department submission queue",
+        "summary": "Review submitted items, decide readiness, and preserve clerk review evidence.",
+        "primary_api": "/agenda-intake",
+        "secondary_api": "/agenda-intake/{id}/review",
+        "status": "Live API + screen pattern",
+        "cta": "Review readiness",
+        "rows": [
+            ("Public Works", "Crosswalk safety update", "READY", "Move toward packet assembly."),
+            ("Finance", "Quarterly appropriation amendment", "NEEDS INFO", "Request fiscal attachment."),
+            ("Parks", "Trail maintenance award", "PARTIAL", "One source reference missing."),
+        ],
+        "fix": "If the queue is empty, submit a department item with title, department, summary, and source references.",
+    },
+    {
+        "id": "packet",
+        "title": "Packet Assembly",
+        "eyebrow": "Source + citation binder",
+        "summary": "Tie agenda item ids to packet versions, source files, citations, and audit evidence.",
+        "primary_api": "/meetings/{id}/packet-assemblies",
+        "secondary_api": "/packet-assemblies/{id}/finalize",
+        "status": "Live API + screen pattern",
+        "cta": "Finalize packet",
+        "rows": [
+            ("Packet v3", "4 sources", "DRAFT", "Citation review still open."),
+            ("Packet v2", "4 sources", "FINALIZED", "Ready for export bundle."),
+            ("Packet v1", "3 sources", "SUPERSEDED", "Kept for audit trail."),
+        ],
+        "fix": "If finalization fails, create the packet assembly record first and include at least one source reference and citation.",
+    },
+    {
+        "id": "notice",
+        "title": "Notice Checklist",
+        "eyebrow": "Deadline + posting proof",
+        "summary": "Persist notice compliance outcomes, warning details, and posting-proof metadata.",
+        "primary_api": "/meetings/{id}/notice-checklists",
+        "secondary_api": "/notice-checklists/{id}/posting-proof",
+        "status": "Live API + screen pattern",
+        "cta": "Attach posting proof",
+        "rows": [
+            ("Regular notice", "72 hours", "CHECKED", "Compliant, awaiting posting proof."),
+            ("Special notice", "24 hours", "WARNING", "Statutory basis required."),
+            ("Emergency notice", "Immediate", "POSTED", "Proof metadata attached."),
+        ],
+        "fix": "If posting proof cannot attach, create the notice checklist record before posting proof metadata.",
+    },
 ]
 
 STATE_CARDS = [
@@ -58,18 +64,17 @@ STATE_CARDS = [
 
 
 def render_staff_dashboard() -> str:
-    """Render the current staff workflow foundation as dependency-free HTML."""
-    workflow_cards = "\n".join(
+    """Render the current staff workflow screens as dependency-free HTML."""
+    nav_buttons = "\n".join(
         f"""
-        <article class="workflow-card">
-          <h3>{title}</h3>
-          <p>{description}</p>
-          <p><strong>Primary API:</strong> <code>{api_path}</code></p>
-          <p class="fix-path">{fix_path}</p>
-        </article>
+        <button class="screen-tab" data-target="{card["id"]}" aria-controls="screen-{card["id"]}">
+          <span>{card["eyebrow"]}</span>
+          {card["title"]}
+        </button>
         """
-        for title, description, api_path, fix_path in WORKFLOWS
+        for card in SCREEN_CARDS
     )
+    screen_cards = "\n".join(_render_screen_card(card, index == 0) for index, card in enumerate(SCREEN_CARDS))
     state_cards = "\n".join(
         f"""
         <article class="state-card" data-state="{state}">
@@ -85,7 +90,7 @@ def render_staff_dashboard() -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CivicClerk Staff Workflow Foundation</title>
+  <title>CivicClerk Staff Workflow Screens</title>
   <style>
     :root {{
       --ink: #17201b;
@@ -97,6 +102,8 @@ def render_staff_dashboard() -> str:
       --accent-dark: #174739;
       --warn: #8a5a16;
       --error: #8c2f24;
+      --good: #26714d;
+      --blueprint: rgba(47, 111, 94, .11);
     }}
     * {{ box-sizing: border-box; }}
     html, body {{ margin: 0; overflow-x: hidden; }}
@@ -113,41 +120,63 @@ def render_staff_dashboard() -> str:
     a {{ color: var(--accent-dark); }}
     a:focus-visible, button:focus-visible {{ outline: 4px solid var(--accent-dark); outline-offset: 4px; }}
     main {{ max-width: 1180px; margin: 0 auto; padding: 48px 20px; }}
-    .hero {{ background: rgba(255,255,255,.82); border: 1px solid var(--line); border-radius: 28px; padding: 34px; box-shadow: 0 18px 60px rgba(23,32,27,.08); }}
+    .hero {{ background: rgba(255,255,255,.82); border: 1px solid var(--line); border-radius: 28px; padding: 34px; box-shadow: 0 18px 60px rgba(23,32,27,.08); position: relative; overflow: hidden; }}
+    .hero::after {{ content: ""; position: absolute; inset: auto -8% -40% 44%; height: 280px; background: repeating-linear-gradient(135deg, var(--blueprint) 0 10px, transparent 10px 24px); transform: rotate(-8deg); pointer-events: none; }}
     .eyebrow {{ color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }}
     h1 {{ font-size: clamp(2.2rem, 7vw, 5rem); line-height: .95; margin: 14px 0 18px; }}
     h2 {{ margin-top: 34px; }}
     p {{ max-width: 78ch; }}
     .status {{ color: var(--warn); font-weight: 700; }}
+    .screen-nav {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 28px 0 18px; }}
+    .screen-tab {{ appearance: none; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); color: var(--ink); padding: 16px; text-align: left; font: inherit; cursor: pointer; box-shadow: 0 8px 24px rgba(23,32,27,.06); }}
+    .screen-tab span {{ display: block; color: var(--accent); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }}
+    .screen-tab[aria-selected="true"] {{ background: var(--accent-dark); color: white; border-color: var(--accent-dark); transform: translateY(-2px); }}
+    .screen-tab[aria-selected="true"] span {{ color: #d8efe2; }}
+    .screen-panel {{ display: none; background: rgba(255,253,248,.94); border: 1px solid var(--line); border-radius: 28px; padding: 24px; box-shadow: 0 18px 60px rgba(23,32,27,.08); }}
+    .screen-panel.is-active {{ display: block; }}
+    .screen-top {{ display: flex; gap: 18px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }}
+    .pill {{ display: inline-block; border-radius: 999px; padding: 6px 10px; background: #e3efe8; color: var(--accent-dark); font-weight: 700; font-size: .82rem; }}
+    .cta {{ border: 0; border-radius: 999px; background: var(--accent); color: white; padding: 12px 16px; font: inherit; font-weight: 700; }}
+    .work-table {{ width: 100%; border-collapse: collapse; margin-top: 18px; overflow: hidden; border-radius: 18px; }}
+    .work-table th, .work-table td {{ border-bottom: 1px solid var(--line); padding: 12px; text-align: left; vertical-align: top; }}
+    .work-table th {{ color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }}
+    .badge {{ display: inline-block; border-radius: 999px; padding: 4px 8px; background: #efe7d8; font-weight: 700; }}
+    .badge[data-tone="ready"], .badge[data-tone="finalized"], .badge[data-tone="posted"] {{ background: #dbeee3; color: var(--good); }}
+    .badge[data-tone="warning"], .badge[data-tone="needs-info"], .badge[data-tone="partial"] {{ background: #f4e1bd; color: var(--warn); }}
+    .api-strip {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }}
+    .api-strip p {{ margin: 0; background: #eadfca; padding: 12px; border-radius: 14px; }}
+    .fix-path {{ background: #fff7e4; border-left: 5px solid var(--warn); padding: 12px 14px; border-radius: 12px; margin-top: 16px; }}
     .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 22px; }}
-    .workflow-card, .state-card {{ background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 20px; }}
-    .workflow-card h3, .state-card h3 {{ margin-top: 0; }}
+    .state-card {{ background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 20px; }}
+    .state-card h3 {{ margin-top: 0; }}
     code {{ background: #eadfca; padding: 2px 5px; border-radius: 5px; overflow-wrap: anywhere; }}
-    .fix-path {{ color: var(--muted); }}
     [data-state="error"] {{ border-color: rgba(140,47,36,.45); }}
     [data-state="partial"] {{ border-color: rgba(138,90,22,.5); }}
     @media (max-width: 640px) {{
       main {{ padding: 30px 14px; }}
-      .hero, .workflow-card, .state-card {{ border-radius: 20px; padding: 18px; }}
+      .hero, .screen-panel, .state-card {{ border-radius: 20px; padding: 18px; }}
+      .screen-nav, .api-strip {{ grid-template-columns: 1fr; }}
+      .work-table {{ display: block; overflow-x: auto; }}
       .grid {{ grid-template-columns: 1fr; }}
     }}
   </style>
 </head>
 <body>
-  <a class="skip" href="#workflow-board">Skip to workflow board</a>
-  <main aria-label="CivicClerk staff workflow foundation">
+  <a class="skip" href="#workflow-screens">Skip to workflow screens</a>
+  <main aria-label="CivicClerk staff workflow screens">
     <section class="hero">
       <div class="eyebrow">CivicClerk v0.1.0</div>
-      <h1>CivicClerk Staff Workflow Foundation</h1>
-      <p class="status">Full workflow UI screens are still planned; this page is the first staff-facing workflow map for the released API foundation, the database-backed agenda intake queue, packet assembly records, and notice checklist records.</p>
-      <p>The agenda intake queue is available through the API at <code>/agenda-intake</code>, packet assembly records are available at <code>/meetings/{{id}}/packet-assemblies</code>, and notice checklist records are available at <code>/meetings/{{id}}/notice-checklists</code>. Use this screen to orient clerks and IT staff to the workflows that are already enforced by the API, the user-visible states every future screen must handle, and the API paths to smoke-check today.</p>
+      <h1>CivicClerk Staff Workflow Screens</h1>
+      <p class="status">These are the first browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly, and notice checklist/posting proof work without claiming the full end-to-end clerk console is finished.</p>
+      <p>The screens show the live API paths, safe next actions, required staff states, and actionable fix copy for the three database-backed service slices available today: agenda intake, packet assembly records, and notice checklist records.</p>
     </section>
 
-    <section id="workflow-board" aria-labelledby="workflow-heading">
-      <h2 id="workflow-heading">Workflow board</h2>
-      <div class="grid">
-        {workflow_cards}
+    <section id="workflow-screens" aria-labelledby="workflow-heading">
+      <h2 id="workflow-heading">Workflow screens</h2>
+      <div class="screen-nav" role="tablist" aria-label="Staff workflow screen selector">
+        {nav_buttons}
       </div>
+      {screen_cards}
     </section>
 
     <section aria-labelledby="states-heading">
@@ -158,5 +187,58 @@ def render_staff_dashboard() -> str:
       </div>
     </section>
   </main>
+  <script>
+    const tabs = [...document.querySelectorAll(".screen-tab")];
+    const panels = [...document.querySelectorAll(".screen-panel")];
+    function activate(target) {{
+      tabs.forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.target === target)));
+      panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === `screen-${{target}}`));
+    }}
+    tabs.forEach((tab) => tab.addEventListener("click", () => activate(tab.dataset.target)));
+    activate("intake");
+  </script>
 </body>
 </html>"""
+
+
+def _render_screen_card(card: dict, active: bool) -> str:
+    rows = "\n".join(
+        f"""
+        <tr>
+          <td>{owner}</td>
+          <td>{item}</td>
+          <td><span class="badge" data-tone="{status.lower().replace(" ", "-")}">{status}</span></td>
+          <td>{next_step}</td>
+        </tr>
+        """
+        for owner, item, status, next_step in card["rows"]
+    )
+    return f"""
+      <article id="screen-{card["id"]}" class="screen-panel{' is-active' if active else ''}" role="tabpanel">
+        <div class="screen-top">
+          <div>
+            <div class="eyebrow">{card["eyebrow"]}</div>
+            <h3>{card["title"]}</h3>
+            <p>{card["summary"]}</p>
+            <span class="pill">{card["status"]}</span>
+          </div>
+          <button class="cta" type="button">{card["cta"]}</button>
+        </div>
+        <div class="api-strip" aria-label="{card["title"]} API paths">
+          <p><strong>Primary API:</strong> <code>{card["primary_api"]}</code></p>
+          <p><strong>Next action:</strong> <code>{card["secondary_api"]}</code></p>
+        </div>
+        <table class="work-table">
+          <thead>
+            <tr>
+              <th>Owner</th>
+              <th>Record</th>
+              <th>Status</th>
+              <th>Safe next step</th>
+            </tr>
+          </thead>
+          <tbody>{rows}</tbody>
+        </table>
+        <p class="fix-path"><strong>How to fix:</strong> {card["fix"]}</p>
+      </article>
+    """
