@@ -34,7 +34,7 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
     data = load_pyproject()
 
     assert data["project"]["name"] == "civicclerk"
-    assert data["project"]["version"] == "0.1.0"
+    assert data["project"]["version"] == "0.1.1"
     assert "CivicClerk" in data["project"]["description"]
 
 
@@ -85,7 +85,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["name"] == "CivicClerk"
-    assert payload["status"] == "v0.1.0 runtime foundation release"
+    assert payload["status"] == "v0.1.1 runtime foundation release"
     assert "full integrated clerk console remains future work" in payload["message"]
     assert "notice compliance" in payload["message"]
     assert "motion" in payload["message"]
@@ -95,7 +95,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "prompt YAML" in payload["message"]
     assert "Granicus" in payload["message"]
     assert "keyboard" in payload["message"]
-    assert "v0.1.0" in payload["message"]
+    assert "v0.1.1" in payload["message"]
     assert "agenda intake queue" in payload["message"]
     assert "packet assembly records" in payload["message"]
     assert "notice checklist records" in payload["message"]
@@ -125,7 +125,7 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
     assert payload == {
         "status": "ok",
         "service": "civicclerk",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "civiccore": "0.3.0",
     }
 

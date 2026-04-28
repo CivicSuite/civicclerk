@@ -1,7 +1,7 @@
 # CivicClerk User Manual
 
-Status: CivicClerk v0.1.0 runtime foundation manual  
-Version: `0.1.0`
+Status: CivicClerk v0.1.1 runtime foundation manual  
+Version: `0.1.1`
 
 ## Part 1: Non-Technical Overview
 
@@ -46,7 +46,7 @@ action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.0 release
+NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.1 release
 artifacts, CivicCore v0.3.0-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
@@ -147,7 +147,7 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v0.1.0.
+builds release artifacts and checksums, and publishes CivicClerk v0.1.1.
 The current production-depth branch pairs CivicClerk with `civiccore==0.3.0`
 so packet exports, packet assembly records, and notice checklist records can
 use CivicCore manifests, provenance, checksums, and audit primitives.
