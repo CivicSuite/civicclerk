@@ -118,7 +118,7 @@ def render_staff_dashboard() -> str:
     .skip {{ position: absolute; left: -999px; top: 12px; background: var(--accent-dark); color: white; padding: 10px 14px; border-radius: 10px; }}
     .skip:focus {{ left: 12px; z-index: 5; }}
     a {{ color: var(--accent-dark); }}
-    a:focus-visible, button:focus-visible {{ outline: 4px solid var(--accent-dark); outline-offset: 4px; }}
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {{ outline: 4px solid var(--accent-dark); outline-offset: 4px; }}
     main {{ max-width: 1180px; margin: 0 auto; padding: 48px 20px; }}
     .hero {{ background: rgba(255,255,255,.82); border: 1px solid var(--line); border-radius: 28px; padding: 34px; box-shadow: 0 18px 60px rgba(23,32,27,.08); position: relative; overflow: hidden; }}
     .hero::after {{ content: ""; position: absolute; inset: auto -8% -40% 44%; height: 280px; background: repeating-linear-gradient(135deg, var(--blueprint) 0 10px, transparent 10px 24px); transform: rotate(-8deg); pointer-events: none; }}
@@ -146,6 +146,19 @@ def render_staff_dashboard() -> str:
     .api-strip {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }}
     .api-strip p {{ margin: 0; background: #eadfca; padding: 12px; border-radius: 14px; }}
     .fix-path {{ background: #fff7e4; border-left: 5px solid var(--warn); padding: 12px 14px; border-radius: 12px; margin-top: 16px; }}
+    .live-action {{ margin-top: 18px; border: 1px solid rgba(47,111,94,.28); border-radius: 22px; padding: 18px; background: linear-gradient(135deg, rgba(47,111,94,.08), rgba(255,253,248,.95)); }}
+    .live-action h4 {{ margin: 0 0 8px; font-size: 1.15rem; }}
+    .form-grid {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }}
+    label {{ display: grid; gap: 5px; font-weight: 700; }}
+    input, textarea, select {{ width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 10px; font: inherit; background: white; color: var(--ink); }}
+    textarea {{ min-height: 84px; resize: vertical; }}
+    .span-2 {{ grid-column: 1 / -1; }}
+    .live-actions {{ display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }}
+    .secondary {{ border: 1px solid var(--accent); border-radius: 999px; background: transparent; color: var(--accent-dark); padding: 10px 14px; font: inherit; font-weight: 700; }}
+    .live-output {{ margin-top: 14px; border-radius: 16px; padding: 14px; background: var(--panel); border: 1px solid var(--line); }}
+    .live-output[data-state="success"] {{ border-color: rgba(38,113,77,.45); background: #f0faf4; }}
+    .live-output[data-state="error"] {{ border-color: rgba(140,47,36,.45); background: #fff3f0; }}
+    .live-output[data-state="loading"] {{ border-color: rgba(47,111,94,.45); }}
     .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 22px; }}
     .state-card {{ background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 20px; }}
     .state-card h3 {{ margin-top: 0; }}
@@ -155,7 +168,7 @@ def render_staff_dashboard() -> str:
     @media (max-width: 640px) {{
       main {{ padding: 30px 14px; }}
       .hero, .screen-panel, .state-card {{ border-radius: 20px; padding: 18px; }}
-      .screen-nav, .api-strip {{ grid-template-columns: 1fr; }}
+      .screen-nav, .api-strip, .form-grid {{ grid-template-columns: 1fr; }}
       .work-table {{ display: block; overflow-x: auto; }}
       .grid {{ grid-template-columns: 1fr; }}
     }}
@@ -196,6 +209,69 @@ def render_staff_dashboard() -> str:
     }}
     tabs.forEach((tab) => tab.addEventListener("click", () => activate(tab.dataset.target)));
     activate("intake");
+
+    const intakeForm = document.querySelector("#agenda-intake-form");
+    const reviewForm = document.querySelector("#agenda-review-form");
+    const output = document.querySelector("#agenda-intake-output");
+    const itemIdInput = document.querySelector("#review-item-id");
+
+    function setOutput(state, html) {{
+      output.dataset.state = state;
+      output.innerHTML = html;
+    }}
+
+    async function postJson(path, payload) {{
+      const response = await fetch(path, {{
+        method: "POST",
+        headers: {{ "content-type": "application/json" }},
+        body: JSON.stringify(payload),
+      }});
+      const data = await response.json();
+      if (!response.ok) {{
+        const detail = data.detail || {{}};
+        throw new Error(`${{detail.message || "Request failed."}} How to fix: ${{detail.fix || "Check the required fields and retry."}}`);
+      }}
+      return data;
+    }}
+
+    intakeForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      setOutput("loading", "<strong>Loading:</strong> submitting agenda intake item...");
+      const form = new FormData(intakeForm);
+      const payload = {{
+        title: form.get("title"),
+        department_name: form.get("department_name"),
+        submitted_by: form.get("submitted_by"),
+        summary: form.get("summary"),
+        source_references: [{{ label: form.get("source_label"), url: form.get("source_url") }}],
+      }};
+      try {{
+        const item = await postJson("/agenda-intake", payload);
+        itemIdInput.value = item.id;
+        setOutput("success", `<strong>Success:</strong> ${{item.title}} is now ${{item.readiness_status}}. <br><strong>Record id:</strong> <code>${{item.id}}</code><br><strong>Next step:</strong> review readiness below.`);
+      }} catch (error) {{
+        setOutput("error", `<strong>Error:</strong> ${{error.message}}`);
+      }}
+    }});
+
+    reviewForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      setOutput("loading", "<strong>Loading:</strong> recording clerk readiness review...");
+      const form = new FormData(reviewForm);
+      const itemId = form.get("item_id");
+      const payload = {{
+        reviewer: form.get("reviewer"),
+        ready: form.get("ready") === "true",
+        notes: form.get("notes"),
+      }};
+      try {{
+        const item = await postJson(`/agenda-intake/${{itemId}}/review`, payload);
+        const nextStep = item.readiness_status === "READY" ? "move toward packet assembly." : "request the missing information before packet assembly.";
+        setOutput("success", `<strong>Success:</strong> readiness is ${{item.readiness_status}} for <code>${{item.id}}</code>.<br><strong>Next step:</strong> ${{nextStep}}`);
+      }} catch (error) {{
+        setOutput("error", `<strong>Error:</strong> ${{error.message}}`);
+      }}
+    }});
   </script>
 </body>
 </html>"""
@@ -240,5 +316,66 @@ def _render_screen_card(card: dict, active: bool) -> str:
           <tbody>{rows}</tbody>
         </table>
         <p class="fix-path"><strong>How to fix:</strong> {card["fix"]}</p>
+        {_render_live_intake_region() if card["id"] == "intake" else ""}
       </article>
+    """
+
+
+def _render_live_intake_region() -> str:
+    return """
+        <section class="live-action" aria-labelledby="live-intake-heading">
+          <h4 id="live-intake-heading">Live agenda intake action</h4>
+          <p>Submit a real agenda intake item into the configured `CIVICCLERK_AGENDA_INTAKE_DB_URL` store, then record clerk readiness review. In local smoke checks, the in-memory default is used.</p>
+          <form id="agenda-intake-form">
+            <div class="form-grid">
+              <label>Title
+                <input name="title" required value="Crosswalk safety update">
+              </label>
+              <label>Department
+                <input name="department_name" required value="Public Works">
+              </label>
+              <label>Submitted by
+                <input name="submitted_by" required value="department@example.gov">
+              </label>
+              <label>Source label
+                <input name="source_label" required value="Staff report">
+              </label>
+              <label class="span-2">Source URL
+                <input name="source_url" required value="https://city.example.gov/staff-reports/crosswalk">
+              </label>
+              <label class="span-2">Summary
+                <textarea name="summary" required>Request council review of crosswalk safety improvements near the library.</textarea>
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="cta" type="submit">Submit intake item</button>
+            </div>
+          </form>
+          <form id="agenda-review-form">
+            <div class="form-grid">
+              <label>Item id
+                <input id="review-item-id" name="item_id" required placeholder="Submit an intake item first">
+              </label>
+              <label>Reviewer
+                <input name="reviewer" required value="clerk@example.gov">
+              </label>
+              <label>Ready?
+                <select name="ready">
+                  <option value="true">Ready for packet assembly</option>
+                  <option value="false">Needs more information</option>
+                </select>
+              </label>
+              <label class="span-2">Review notes
+                <textarea name="notes" required>Sources complete and ready for packet assembly.</textarea>
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="secondary" type="submit">Record readiness review</button>
+            </div>
+          </form>
+          <div id="agenda-intake-output" class="live-output" data-state="empty" role="status" aria-live="polite">
+            <strong>Empty:</strong> no live agenda intake action has been submitted in this browser session.
+            <br><strong>How to fix:</strong> submit the intake form above, then review the generated item id.
+          </div>
+        </section>
     """
