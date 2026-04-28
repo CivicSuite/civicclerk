@@ -17,6 +17,7 @@ from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_lifecycle import MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
+from civicclerk.notice_checklist import NoticeChecklistRepository
 from civicclerk.packet_assembly import PacketAssemblyRepository
 from civicclerk.packet_notice import (
     NoticeStore,
@@ -46,6 +47,8 @@ _agenda_intake_repository: AgendaIntakeRepository | None = None
 _agenda_intake_db_url: str | None = None
 _packet_assembly_repository: PacketAssemblyRepository | None = None
 _packet_assembly_db_url: str | None = None
+_notice_checklist_repository: NoticeChecklistRepository | None = None
+_notice_checklist_db_url: str | None = None
 
 
 class AgendaItemCreate(BaseModel):
@@ -127,6 +130,15 @@ class NoticeComplianceRequest(BaseModel):
     approved_by: str | None = Field(default=None, min_length=1)
 
 
+class NoticeChecklistCreate(NoticeComplianceRequest):
+    actor: str = Field(min_length=1)
+
+
+class NoticePostingProofCreate(BaseModel):
+    actor: str = Field(min_length=1)
+    posting_proof: dict = Field(min_length=1)
+
+
 class MotionCreate(BaseModel):
     text: str = Field(min_length=1)
     actor: str = Field(min_length=1)
@@ -205,10 +217,12 @@ async def root() -> dict[str, str]:
             "department submission, clerk readiness review, and durable audit-hash evidence; "
             "database-backed packet assembly records now tie packet versions to source files, "
             "citations, and durable audit-hash evidence; "
+            "database-backed notice checklist records now persist compliance checks and posting "
+            "proof metadata; "
             "CivicClerk remains versioned as v0.1.0 while production-depth service slices continue; "
             "full UI workflows are not implemented yet."
         ),
-        "next_step": "Production-depth notice checklist and posting-proof persistence",
+        "next_step": "Production-depth staff workflow screens for intake, packets, and notices",
     }
 
 
@@ -535,6 +549,64 @@ async def check_notice_compliance(
             },
         )
     return result.public_dict()
+
+
+@app.post("/meetings/{meeting_id}/notice-checklists", status_code=201)
+async def create_notice_checklist_record(
+    meeting_id: str,
+    payload: NoticeChecklistCreate,
+) -> dict:
+    """Persist a notice compliance checklist record for staff review."""
+    result = _evaluate_notice_or_404(meeting_id, payload)
+    return _get_notice_checklist_repository().record_check(
+        meeting_id=meeting_id,
+        notice_type=result.notice_type,
+        compliant=result.compliant,
+        http_status=result.http_status,
+        warnings=result.warnings,
+        deadline_at=result.deadline_at,
+        posted_at=result.posted_at,
+        minimum_notice_hours=result.minimum_notice_hours,
+        statutory_basis=result.statutory_basis,
+        approved_by=result.approved_by,
+        actor=payload.actor,
+    ).public_dict()
+
+
+@app.get("/meetings/{meeting_id}/notice-checklists")
+async def list_notice_checklist_records(meeting_id: str) -> dict[str, list[dict]]:
+    """List persisted notice checklist records for a meeting."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return {
+        "notice_checklists": [
+            record.public_dict()
+            for record in _get_notice_checklist_repository().list_for_meeting(meeting_id)
+        ]
+    }
+
+
+@app.post("/notice-checklists/{record_id}/posting-proof")
+async def attach_notice_posting_proof(
+    record_id: str,
+    payload: NoticePostingProofCreate,
+) -> dict:
+    """Attach posting proof metadata to a persisted notice checklist record."""
+    record = _get_notice_checklist_repository().attach_posting_proof(
+        record_id=record_id,
+        actor=payload.actor,
+        posting_proof=payload.posting_proof,
+    )
+    if record is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Notice checklist record not found.",
+                "fix": "Create the notice checklist record before attaching posting proof.",
+            },
+        )
+    return record.public_dict()
 
 
 @app.post("/meetings/{meeting_id}/notices/post", status_code=201)
@@ -946,3 +1018,12 @@ def _get_packet_assembly_repository() -> PacketAssemblyRepository:
         _packet_assembly_db_url = db_url
         _packet_assembly_repository = PacketAssemblyRepository(db_url=db_url)
     return _packet_assembly_repository
+
+
+def _get_notice_checklist_repository() -> NoticeChecklistRepository:
+    global _notice_checklist_db_url, _notice_checklist_repository
+    db_url = os.environ.get("CIVICCLERK_NOTICE_CHECKLIST_DB_URL")
+    if _notice_checklist_repository is None or db_url != _notice_checklist_db_url:
+        _notice_checklist_db_url = db_url
+        _notice_checklist_repository = NoticeChecklistRepository(db_url=db_url)
+    return _notice_checklist_repository
