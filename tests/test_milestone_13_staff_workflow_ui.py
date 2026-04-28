@@ -54,16 +54,25 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert 'id="meeting-outcomes-form"' in html
     assert 'id="meeting-outcomes-output"' in html
     assert "Capture motion, vote, and action" in html
+    assert "Minutes Draft" in html
+    assert "Citations + provenance" in html
+    assert "/meetings/{id}/minutes/drafts" in html
+    assert "Live minutes draft action" in html
+    assert 'id="minutes-draft-form"' in html
+    assert 'id="minutes-draft-output"' in html
+    assert "Create cited minutes draft" in html
+    assert "URLSearchParams(window.location.search)" in html
 
     for workflow in [
         "Agenda Intake",
         "Packet Assembly",
         "Notice Checklist",
         "Meeting Outcomes",
+        "Minutes Draft",
     ]:
         assert workflow in html
 
-    for panel in ["screen-intake", "screen-packet", "screen-notice", "screen-outcomes"]:
+    for panel in ["screen-intake", "screen-packet", "screen-notice", "screen-outcomes", "screen-minutes"]:
         assert f'id="{panel}"' in html
 
     for state in ["loading", "success", "empty", "error", "partial"]:
@@ -80,6 +89,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "/meetings/{id}/motions",
         "/motions/${motion.id}/votes",
         "/meetings/{id}/action-items",
+        "/meetings/{id}/minutes/drafts",
+        "minutes_draft@0.1.0",
     ]:
         assert api_path in html
 
@@ -101,6 +112,9 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-desktop.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-summary.md").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-minutes-draft-screen-desktop.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-minutes-draft-screen-mobile.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-minutes-draft-screen-summary.md").exists()
 
 
 def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
@@ -110,3 +124,5 @@ def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
     assert "milestone13-staff-ui-mobile.png" in script
     assert "browser-qa-production-depth-live-meeting-outcomes-screen-desktop.png" in script
     assert "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png" in script
+    assert "browser-qa-production-depth-live-minutes-draft-screen-desktop.png" in script
+    assert "browser-qa-production-depth-live-minutes-draft-screen-mobile.png" in script

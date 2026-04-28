@@ -53,11 +53,11 @@ records with lifecycle audit entries, database-backed packet assembly records
 with source/citation metadata, and database-backed notice
 checklist/posting-proof records.
 The `/staff` page now provides first staff workflow screens for agenda intake,
-packet assembly, and notice checklist/posting-proof work. These screens can
-submit intake items, record readiness review, create/finalize packet assembly
-records, persist notice checklist records, and attach posting proof through
-the live API. The meeting outcomes screen can now capture motions, votes,
-and action items through the live API. IT
+packet assembly, notice checklist/posting-proof, meeting outcome, and minutes
+draft work. These screens can submit intake items, record readiness review,
+create/finalize packet assembly records, persist notice checklist records,
+attach posting proof, capture motions/votes/action items, and create
+citation-gated minutes drafts through the live API. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 open `/staff`, create draft agenda items and meetings, version packet snapshots, test
 allowed/rejected notice compliance postings, capture motions, capture
@@ -71,9 +71,9 @@ hash-chained audit evidence. Clerks can submit/list/review `/agenda-intake`
 items with readiness status stored in the configured intake database. The
 current `/staff` page submits and reviews agenda intake records directly,
 creates/finalizes packet assembly records, persists notice checklist
-posting-proof records, and captures meeting outcome records; remaining
-workflow areas still show screen-level guidance until their live browser form
-actions land.
+posting-proof records, captures meeting outcome records, and creates
+citation-gated minutes draft records; remaining workflow areas still show
+screen-level guidance until their live browser form actions land.
 
 ## Part 2: IT and Technical Overview
 
@@ -178,8 +178,9 @@ records-ready packet export bundles using CivicCore v0.3.0 provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed meeting records with lifecycle
 audit entries; database-backed packet assembly records with source references,
-citations, and packet snapshot linkage; and database-backed notice checklist
-records with posting-proof metadata. Public
+citations, and packet snapshot linkage; database-backed notice checklist
+records with posting-proof metadata; and live staff form actions for minutes
+draft creation. Public
 packet exports reject closed-session and restricted source files. Full UI
 screens remain planned work, but browser QA gates now verify the required
 state fixtures and accessibility evidence before browser-visible changes merge.

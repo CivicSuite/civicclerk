@@ -39,6 +39,9 @@ All notable changes to CivicClerk are documented here.
 - Live `/staff` meeting outcome form action that creates a demo meeting,
   captures an immutable motion, records a vote, and creates an action item
   tied to the source motion through the existing APIs.
+- Live `/staff` minutes draft form action that creates a demo meeting and
+  submits a citation-gated minutes draft through `/meetings/{id}/minutes/drafts`
+  while preserving the human-review, never-auto-posted guardrail.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.

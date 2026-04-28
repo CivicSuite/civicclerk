@@ -229,11 +229,13 @@ async def root() -> dict[str, str]:
             "records and persist posting proof through live API actions; "
             "meeting outcome staff screens can now capture motions, votes, and action items "
             "through live API actions; "
+            "minutes draft staff screens can now create citation-gated draft records through "
+            "live API actions; "
             "meeting records can now persist through the configured meeting database; "
             "CivicClerk remains versioned as v0.1.0 while production-depth service slices continue; "
             "live clerk-console form submission for the remaining workflows is not implemented yet."
         ),
-        "next_step": "Production-depth remaining live clerk-console actions for minutes, archive, connector imports, and packet exports",
+        "next_step": "Production-depth remaining live clerk-console actions for archive, connector imports, and packet exports",
     }
 
 
