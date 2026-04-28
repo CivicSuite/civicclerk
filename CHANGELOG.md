@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Production-depth agenda intake readiness slice with a database-backed
+  department submission queue, clerk review state, and durable CivicCore audit
+  hash references.
+- `/agenda-intake` submit/list/review endpoints for the first DB-backed staff
+  workflow queue, configurable with `CIVICCLERK_AGENDA_INTAKE_DB_URL`.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.

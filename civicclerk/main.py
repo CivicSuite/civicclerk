@@ -11,6 +11,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from civicclerk import __version__
+from civicclerk.agenda_intake import AgendaIntakeRepository
 from civicclerk.agenda_lifecycle import AgendaItemStore
 from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_lifecycle import MeetingStore
@@ -40,6 +41,8 @@ notices = NoticeStore()
 motion_votes = MotionVoteStore()
 minutes_drafts = MinutesDraftStore()
 public_archive = PublicArchiveStore()
+_agenda_intake_repository: AgendaIntakeRepository | None = None
+_agenda_intake_db_url: str | None = None
 
 
 class AgendaItemCreate(BaseModel):
@@ -50,6 +53,20 @@ class AgendaItemCreate(BaseModel):
 class AgendaItemTransitionRequest(BaseModel):
     to_status: str = Field(min_length=1)
     actor: str = Field(min_length=1)
+
+
+class AgendaIntakeCreate(BaseModel):
+    title: str = Field(min_length=1)
+    department_name: str = Field(min_length=1)
+    submitted_by: str = Field(min_length=1)
+    summary: str = Field(min_length=1)
+    source_references: list[dict] = Field(min_length=1)
+
+
+class AgendaIntakeReviewRequest(BaseModel):
+    reviewer: str = Field(min_length=1)
+    ready: bool
+    notes: str = Field(min_length=1)
 
 
 class MeetingCreate(BaseModel):
@@ -169,10 +186,12 @@ async def root() -> dict[str, str]:
             "source provenance; CivicCore v0.3.0 packet export bundles now include manifests, "
             "checksums, provenance, and hash-chained audit evidence; accessibility and browser QA "
             "gates now verify loading, success, empty, error, partial, keyboard, focus, contrast, "
-            "and console evidence; CivicClerk remains versioned as v0.1.0 while this production-depth "
-            "slice hardens packet and notice services; full UI workflows are not implemented yet."
+            "and console evidence; the first database-backed agenda intake queue now supports "
+            "department submission, clerk readiness review, and durable audit-hash evidence; "
+            "CivicClerk remains versioned as v0.1.0 while production-depth service slices continue; "
+            "full UI workflows are not implemented yet."
         ),
-        "next_step": "Production-depth packet and notice workflow hardening",
+        "next_step": "Production-depth packet assembly and notice checklist persistence",
     }
 
 
@@ -246,6 +265,55 @@ async def get_agenda_item_audit(item_id: str) -> dict[str, list[dict[str, str]]]
     if item is None:
         raise HTTPException(status_code=404, detail="Agenda item not found.")
     return {"entries": item.audit_entries}
+
+
+@app.post("/agenda-intake", status_code=201)
+async def submit_agenda_intake_item(payload: AgendaIntakeCreate) -> dict:
+    """Submit a department agenda item into the database-backed staff queue."""
+    item = _get_agenda_intake_repository().submit(
+        title=payload.title,
+        department_name=payload.department_name,
+        submitted_by=payload.submitted_by,
+        summary=payload.summary,
+        source_references=payload.source_references,
+    )
+    return item.public_dict()
+
+
+@app.get("/agenda-intake")
+async def list_agenda_intake_items(readiness_status: str | None = None) -> dict[str, list[dict]]:
+    """List department-submitted agenda intake items awaiting staff review."""
+    return {
+        "items": [
+            item.public_dict()
+            for item in _get_agenda_intake_repository().list_queue(
+                readiness_status=readiness_status,
+            )
+        ]
+    }
+
+
+@app.post("/agenda-intake/{item_id}/review")
+async def review_agenda_intake_item(
+    item_id: str,
+    payload: AgendaIntakeReviewRequest,
+) -> dict:
+    """Record clerk readiness review for an intake queue item."""
+    item = _get_agenda_intake_repository().review(
+        item_id=item_id,
+        reviewer=payload.reviewer,
+        ready=payload.ready,
+        notes=payload.notes,
+    )
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Agenda intake item not found.",
+                "fix": "Submit the agenda item into the intake queue before review.",
+            },
+        )
+    return item.public_dict()
 
 
 @app.post("/meetings", status_code=201)
@@ -782,3 +850,12 @@ def _resolve_packet_export_path(bundle_name: str) -> Path:
         )
     export_root = Path(os.environ.get("CIVICCLERK_EXPORT_ROOT", "exports")).resolve()
     return export_root / requested
+
+
+def _get_agenda_intake_repository() -> AgendaIntakeRepository:
+    global _agenda_intake_db_url, _agenda_intake_repository
+    db_url = os.environ.get("CIVICCLERK_AGENDA_INTAKE_DB_URL")
+    if _agenda_intake_repository is None or db_url != _agenda_intake_db_url:
+        _agenda_intake_db_url = db_url
+        _agenda_intake_repository = AgendaIntakeRepository(db_url=db_url)
+    return _agenda_intake_repository
