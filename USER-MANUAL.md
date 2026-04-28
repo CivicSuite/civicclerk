@@ -51,8 +51,8 @@ artifacts, CivicCore v0.3.0-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, and database-backed packet
 assembly records with source/citation metadata, and database-backed notice
 checklist/posting-proof records.
-Milestone 13 adds the `/staff` staff workflow UI foundation: a
-browser-visible map of released workflows and required rendered states. IT
+The `/staff` page now provides first staff workflow screens for agenda intake,
+packet assembly, and notice checklist/posting-proof work. IT
 staff can import and serve `civicclerk.main:app`, call `/`, call `/health`,
 open `/staff`, create draft agenda items and meetings, version packet snapshots, test
 allowed/rejected notice compliance postings, capture motions, capture
@@ -63,8 +63,9 @@ blocked. IT staff can also import local connector export payloads while
 preserving source provenance. IT staff can now generate records-ready packet
 export bundles with CivicCore manifests, checksums, provenance, and
 hash-chained audit evidence. Clerks can submit/list/review `/agenda-intake`
-items with readiness status stored in the configured intake database. Full workflow UI screens are still planned; the
-current `/staff` page does not connect to live database-backed work queues yet.
+items with readiness status stored in the configured intake database. The
+current `/staff` page shows screen-level workflow guidance and sample queues; live browser form submission into those
+database-backed services remains planned work.
 
 ## Part 2: IT and Technical Overview
 

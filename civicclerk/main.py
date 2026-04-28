@@ -219,10 +219,12 @@ async def root() -> dict[str, str]:
             "citations, and durable audit-hash evidence; "
             "database-backed notice checklist records now persist compliance checks and posting "
             "proof metadata; "
+            "staff workflow screens now guide agenda intake, packet assembly, and notice checklist "
+            "work with visible rendered states and actionable next steps; "
             "CivicClerk remains versioned as v0.1.0 while production-depth service slices continue; "
-            "full UI workflows are not implemented yet."
+            "full live clerk-console form submission is not implemented yet."
         ),
-        "next_step": "Production-depth staff workflow screens for intake, packets, and notices",
+        "next_step": "Production-depth live clerk-console form actions and meeting persistence",
     }
 
 

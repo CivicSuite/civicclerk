@@ -1,4 +1,4 @@
-"""Milestone 13 staff workflow UI foundation contract."""
+"""Milestone 13 staff workflow screen contract."""
 
 from __future__ import annotations
 
@@ -21,41 +21,40 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     html = response.text
 
     assert "<main" in html
-    assert 'aria-label="CivicClerk staff workflow foundation"' in html
-    assert "Skip to workflow board" in html
-    assert "CivicClerk Staff Workflow Foundation" in html
+    assert 'aria-label="CivicClerk staff workflow screens"' in html
+    assert "Skip to workflow screens" in html
+    assert "CivicClerk Staff Workflow Screens" in html
     assert "v0.1.0" in html
-    assert "Full workflow UI screens are still planned" in html
+    assert "first browser-visible staff workflow screens" in html
+    assert "without claiming the full end-to-end clerk console is finished" in html
     assert "/agenda-intake" in html
-    assert "database-backed staff queue" in html
+    assert "Department submission queue" in html
     assert "/meetings/{id}/packet-assemblies" in html
-    assert "packet assembly records" in html
+    assert "Packet Assembly" in html
     assert "/meetings/{id}/notice-checklists" in html
-    assert "notice checklist records" in html
+    assert "Notice Checklist" in html
+    assert "/notice-checklists/{id}/posting-proof" in html
 
     for workflow in [
-        "Agenda intake",
-        "Meeting lifecycle",
-        "Packet and notice",
-        "Motions, votes, actions",
-        "Minutes drafts",
-        "Public archive",
-        "Connector imports",
+        "Agenda Intake",
+        "Packet Assembly",
+        "Notice Checklist",
     ]:
         assert workflow in html
+
+    for panel in ["screen-intake", "screen-packet", "screen-notice"]:
+        assert f'id="{panel}"' in html
 
     for state in ["loading", "success", "empty", "error", "partial"]:
         assert f'data-state="{state}"' in html
 
     for api_path in [
         "/agenda-intake",
-        "/meetings/{id}/packet-snapshots",
+        "/agenda-intake/{id}/review",
         "/meetings/{id}/packet-assemblies",
+        "/packet-assemblies/{id}/finalize",
         "/meetings/{id}/notice-checklists",
-        "/meetings/{id}/notices/check",
-        "/meetings/{id}/minutes/drafts",
-        "/public/archive/search",
-        "/imports/{connector}/meetings",
+        "/notice-checklists/{id}/posting-proof",
     ]:
         assert api_path in html
 
@@ -71,8 +70,7 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     )
 
     assert "/staff" in docs
-    assert "staff workflow UI foundation" in docs
-    assert "Full workflow UI screens are still planned" in docs
+    assert "staff workflow screens" in docs
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-desktop.png").exists()
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-mobile.png").exists()
 
