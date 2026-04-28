@@ -77,6 +77,10 @@ def agenda_intake_migration_path() -> Path:
     return ROOT / "civicclerk" / "migrations" / "versions" / "civicclerk_0002_agenda_intake_queue.py"
 
 
+def packet_assembly_migration_path() -> Path:
+    return ROOT / "civicclerk" / "migrations" / "versions" / "civicclerk_0003_packet_assembly_records.py"
+
+
 def test_canonical_table_models_exist_and_no_tables_are_missing_or_extra() -> None:
     models = model_module()
     metadata = models.Base.metadata
@@ -140,6 +144,7 @@ def test_alembic_scaffold_exists_for_civicclerk_schema_chain() -> None:
         ROOT / "civicclerk" / "migrations" / "env.py",
         migration_path(),
         agenda_intake_migration_path(),
+        packet_assembly_migration_path(),
     ]
 
     for path in expected:
@@ -235,8 +240,11 @@ def test_alembic_command_upgrades_real_pgvector_database(
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civicclerk_revision == "civicclerk_0002_intake_queue"
-        assert civicclerk_tables == set(CANONICAL_TABLES) | {"agenda_intake_queue"}
+        assert civicclerk_revision == "civicclerk_0003_packet_asm"
+        assert civicclerk_tables == set(CANONICAL_TABLES) | {
+            "agenda_intake_queue",
+            "packet_assembly_records",
+        }
     finally:
         subprocess.run(["docker", "rm", "-f", name], check=False, capture_output=True, text=True)
 
@@ -271,6 +279,21 @@ def test_agenda_intake_migration_declares_persistent_queue_table() -> None:
     assert 'down_revision = "civicclerk_0001_schema"' in text
     assert "idempotent_create_table" in text
     assert '"agenda_intake_queue"' in text
+    assert '"last_audit_hash"' in text
+    assert "postgresql.JSONB()" in text
+    assert 'schema="civicclerk"' in text
+
+
+def test_packet_assembly_migration_declares_persistent_records_table() -> None:
+    text = packet_assembly_migration_path().read_text(encoding="utf-8")
+
+    assert 'revision = "civicclerk_0003_packet_asm"' in text
+    assert 'down_revision = "civicclerk_0002_intake_queue"' in text
+    assert "idempotent_create_table" in text
+    assert '"packet_assembly_records"' in text
+    assert '"packet_snapshot_id"' in text
+    assert '"source_references"' in text
+    assert '"citations"' in text
     assert '"last_audit_hash"' in text
     assert "postgresql.JSONB()" in text
     assert 'schema="civicclerk"' in text

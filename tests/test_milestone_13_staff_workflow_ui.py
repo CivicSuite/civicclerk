@@ -28,6 +28,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Full workflow UI screens are still planned" in html
     assert "/agenda-intake" in html
     assert "database-backed staff queue" in html
+    assert "/meetings/{id}/packet-assemblies" in html
+    assert "database-backed packet assembly records" in html
 
     for workflow in [
         "Agenda intake",
@@ -46,6 +48,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     for api_path in [
         "/agenda-intake",
         "/meetings/{id}/packet-snapshots",
+        "/meetings/{id}/packet-assemblies",
         "/meetings/{id}/notices/check",
         "/meetings/{id}/minutes/drafts",
         "/public/archive/search",
