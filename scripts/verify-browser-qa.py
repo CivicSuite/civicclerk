@@ -27,6 +27,8 @@ def main() -> int:
         ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-mobile.png",
         ROOT / "docs" / "browser-qa-production-depth-live-connector-import-screen-desktop.png",
         ROOT / "docs" / "browser-qa-production-depth-live-connector-import-screen-mobile.png",
+        ROOT / "docs" / "browser-qa-production-depth-live-packet-export-screen-desktop.png",
+        ROOT / "docs" / "browser-qa-production-depth-live-packet-export-screen-mobile.png",
     ]
 
     if not checklist.exists():

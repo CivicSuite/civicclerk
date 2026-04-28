@@ -25,7 +25,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Skip to workflow screens" in html
     assert "CivicClerk Staff Workflow Screens" in html
     assert "v0.1.0" in html
-    assert "first browser-visible staff workflow screens" in html
+    assert "browser-visible staff workflow screens" in html
     assert "without claiming the full end-to-end clerk console is finished" in html
     assert "/agenda-intake" in html
     assert "Department submission queue" in html
@@ -43,6 +43,11 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Live packet assembly action" in html
     assert 'id="packet-assembly-form"' in html
     assert "Create and finalize packet" in html
+    assert "Live packet export action" in html
+    assert 'id="packet-export-form"' in html
+    assert 'id="packet-export-output"' in html
+    assert "Create packet export bundle" in html
+    assert "/meetings/{id}/export-bundle" in html
     assert "Live notice checklist action" in html
     assert 'id="notice-checklist-form"' in html
     assert "Check notice and attach proof" in html
@@ -109,6 +114,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "CIVICCLERK_AGENDA_INTAKE_DB_URL",
         "/meetings/{id}/packet-assemblies",
         "/packet-assemblies/{id}/finalize",
+        "/meetings/{id}/packet-snapshots",
+        "/meetings/{id}/export-bundle",
         "/meetings/{id}/notice-checklists",
         "/notice-checklists/{id}/posting-proof",
         "/meetings/{id}/motions",
@@ -154,6 +161,9 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     assert (ROOT / "docs" / "browser-qa-production-depth-live-connector-import-screen-desktop.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-connector-import-screen-mobile.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-connector-import-screen-summary.md").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-packet-export-screen-desktop.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-packet-export-screen-mobile.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-packet-export-screen-summary.md").exists()
 
 
 def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
@@ -169,3 +179,5 @@ def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
     assert "browser-qa-production-depth-live-archive-screen-mobile.png" in script
     assert "browser-qa-production-depth-live-connector-import-screen-desktop.png" in script
     assert "browser-qa-production-depth-live-connector-import-screen-mobile.png" in script
+    assert "browser-qa-production-depth-live-packet-export-screen-desktop.png" in script
+    assert "browser-qa-production-depth-live-packet-export-screen-mobile.png" in script

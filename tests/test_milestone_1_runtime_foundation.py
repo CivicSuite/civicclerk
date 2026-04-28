@@ -86,7 +86,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     payload = response.json()
     assert payload["name"] == "CivicClerk"
     assert payload["status"] == "v0.1.0 runtime foundation release"
-    assert "not implemented yet" in payload["message"].lower()
+    assert "full integrated clerk console remains future work" in payload["message"]
     assert "notice compliance" in payload["message"]
     assert "motion" in payload["message"]
     assert "vote" in payload["message"]
@@ -107,9 +107,8 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "minutes draft staff screens can now create citation-gated draft records" in payload["message"]
     assert "public archive staff screens can now publish public-safe records" in payload["message"]
     assert "connector import staff screens can now normalize local agenda-platform exports" in payload["message"]
-    assert payload["next_step"] == (
-        "Production-depth remaining live clerk-console action for packet exports"
-    )
+    assert "packet export staff screens can now create records-ready bundles" in payload["message"]
+    assert payload["next_step"] == "Production-depth consolidation and next CivicSuite module planning"
 
 
 @pytest.mark.asyncio
