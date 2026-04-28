@@ -42,6 +42,10 @@ All notable changes to CivicClerk are documented here.
 - Live `/staff` minutes draft form action that creates a demo meeting and
   submits a citation-gated minutes draft through `/meetings/{id}/minutes/drafts`
   while preserving the human-review, never-auto-posted guardrail.
+- Live `/staff` public archive form action that creates a demo meeting,
+  publishes a public-safe record through `/meetings/{id}/public-record`, and
+  verifies anonymous visibility through `/public/meetings` plus
+  `/public/archive/search`.
 - Production-depth packet export bundle slice using CivicCore v0.3.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.
