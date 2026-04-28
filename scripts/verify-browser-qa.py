@@ -23,6 +23,8 @@ def main() -> int:
         ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png",
         ROOT / "docs" / "browser-qa-production-depth-live-minutes-draft-screen-desktop.png",
         ROOT / "docs" / "browser-qa-production-depth-live-minutes-draft-screen-mobile.png",
+        ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-desktop.png",
+        ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-mobile.png",
     ]
 
     if not checklist.exists():

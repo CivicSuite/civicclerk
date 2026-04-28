@@ -84,6 +84,22 @@ SCREEN_CARDS = [
         ],
         "fix": "If draft creation fails, add citations to every sentence and use source ids from the source material list.",
     },
+    {
+        "id": "archive",
+        "title": "Public Archive",
+        "eyebrow": "Public-safe records",
+        "summary": "Publish a public meeting record and verify anonymous archive views exclude closed-session material.",
+        "primary_api": "/meetings/{id}/public-record",
+        "secondary_api": "/public/archive/search",
+        "status": "Live API + screen pattern",
+        "cta": "Publish archive record",
+        "rows": [
+            ("Clerk", "Public agenda", "POSTED", "Visible in public calendar."),
+            ("Clerk", "Approved minutes", "APPROVED", "Visible in archive search."),
+            ("System", "Closed notes", "FILTERED", "Anonymous users cannot see restricted material."),
+        ],
+        "fix": "If publishing fails, create the meeting first and provide public-safe agenda, packet, and approved-minutes text.",
+    },
 ]
 
 STATE_CARDS = [
@@ -256,6 +272,8 @@ def render_staff_dashboard() -> str:
     const outcomeOutput = document.querySelector("#meeting-outcomes-output");
     const minutesForm = document.querySelector("#minutes-draft-form");
     const minutesOutput = document.querySelector("#minutes-draft-output");
+    const archiveForm = document.querySelector("#public-archive-form");
+    const archiveOutput = document.querySelector("#public-archive-output");
 
     function setOutput(state, html) {{
       output.dataset.state = state;
@@ -432,6 +450,30 @@ def render_staff_dashboard() -> str:
         minutesOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
       }}
     }});
+
+    archiveForm?.addEventListener("submit", async (event) => {{
+      event.preventDefault();
+      archiveOutput.dataset.state = "loading";
+      archiveOutput.innerHTML = "<strong>Loading:</strong> publishing public archive record...";
+      const form = new FormData(archiveForm);
+      try {{
+        const meeting = await createDemoMeeting(form.get("meeting_title"));
+        const record = await postJson(`/meetings/${{meeting.id}}/public-record`, {{
+          title: form.get("record_title"),
+          visibility: "public",
+          posted_agenda: form.get("posted_agenda"),
+          posted_packet: form.get("posted_packet"),
+          approved_minutes: form.get("approved_minutes"),
+        }});
+        const calendar = await fetch("/public/meetings").then((response) => response.json());
+        const search = await fetch(`/public/archive/search?q=${{encodeURIComponent(form.get("search_query"))}}`).then((response) => response.json());
+        archiveOutput.dataset.state = "success";
+        archiveOutput.innerHTML = `<strong>Success:</strong> public archive record <code>${{record.id}}</code> is visible to anonymous users.<br><strong>Calendar count:</strong> ${{calendar.total_count}} public record(s). <strong>Search count:</strong> ${{search.total_count}} result(s).<br><strong>Next step:</strong> confirm any closed-session material remains outside the public record before linking it from the portal.`;
+      }} catch (error) {{
+        archiveOutput.dataset.state = "error";
+        archiveOutput.innerHTML = `<strong>Error:</strong> ${{error.message}}`;
+      }}
+    }});
   </script>
 </body>
 </html>"""
@@ -492,6 +534,8 @@ def _render_live_region(card_id: str) -> str:
         return _render_live_outcomes_region()
     if card_id == "minutes":
         return _render_live_minutes_region()
+    if card_id == "archive":
+        return _render_live_archive_region()
     return ""
 
 
@@ -721,6 +765,44 @@ def _render_live_minutes_region() -> str:
           <div id="minutes-draft-output" class="live-output" data-state="empty" role="status" aria-live="polite">
             <strong>Empty:</strong> no live minutes draft action has run in this browser session.
             <br><strong>How to fix:</strong> provide source material and cite that source id in every sentence before creating the draft.
+          </div>
+        </section>
+    """
+
+
+def _render_live_archive_region() -> str:
+    return """
+        <section class="live-action" aria-labelledby="live-archive-heading">
+          <h4 id="live-archive-heading">Live public archive action</h4>
+          <p>Create a demo meeting, publish a public-safe archive record through `/meetings/{id}/public-record`, then confirm `/public/meetings` and `/public/archive/search` can see it.</p>
+          <form id="public-archive-form">
+            <div class="form-grid">
+              <label>Meeting title
+                <input name="meeting_title" required value="Public Archive Demo Meeting">
+              </label>
+              <label>Record title
+                <input name="record_title" required value="Public Archive Demo Meeting">
+              </label>
+              <label class="span-2">Posted agenda
+                <textarea name="posted_agenda" required>Agenda: approve sidewalk repair packet.</textarea>
+              </label>
+              <label class="span-2">Posted packet
+                <textarea name="posted_packet" required>Packet: staff report, fiscal note, and public attachments.</textarea>
+              </label>
+              <label class="span-2">Approved minutes
+                <textarea name="approved_minutes" required>Approved minutes: council approved the sidewalk repair packet 5-0.</textarea>
+              </label>
+              <label class="span-2">Search query
+                <input name="search_query" required value="sidewalk repair">
+              </label>
+            </div>
+            <div class="live-actions">
+              <button class="cta" type="submit">Publish public archive record</button>
+            </div>
+          </form>
+          <div id="public-archive-output" class="live-output" data-state="empty" role="status" aria-live="polite">
+            <strong>Empty:</strong> no live public archive action has run in this browser session.
+            <br><strong>How to fix:</strong> provide public-safe agenda, packet, and approved-minutes text before publishing.
           </div>
         </section>
     """

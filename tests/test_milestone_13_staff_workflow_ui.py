@@ -62,6 +62,14 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert 'id="minutes-draft-output"' in html
     assert "Create cited minutes draft" in html
     assert "URLSearchParams(window.location.search)" in html
+    assert "Public Archive" in html
+    assert "Public-safe records" in html
+    assert "/meetings/{id}/public-record" in html
+    assert "/public/archive/search" in html
+    assert "Live public archive action" in html
+    assert 'id="public-archive-form"' in html
+    assert 'id="public-archive-output"' in html
+    assert "Publish public archive record" in html
 
     for workflow in [
         "Agenda Intake",
@@ -69,10 +77,18 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "Notice Checklist",
         "Meeting Outcomes",
         "Minutes Draft",
+        "Public Archive",
     ]:
         assert workflow in html
 
-    for panel in ["screen-intake", "screen-packet", "screen-notice", "screen-outcomes", "screen-minutes"]:
+    for panel in [
+        "screen-intake",
+        "screen-packet",
+        "screen-notice",
+        "screen-outcomes",
+        "screen-minutes",
+        "screen-archive",
+    ]:
         assert f'id="{panel}"' in html
 
     for state in ["loading", "success", "empty", "error", "partial"]:
@@ -91,6 +107,9 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "/meetings/{id}/action-items",
         "/meetings/{id}/minutes/drafts",
         "minutes_draft@0.1.0",
+        "/meetings/{id}/public-record",
+        "/public/meetings",
+        "/public/archive/search",
     ]:
         assert api_path in html
 
@@ -115,6 +134,9 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     assert (ROOT / "docs" / "browser-qa-production-depth-live-minutes-draft-screen-desktop.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-minutes-draft-screen-mobile.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-minutes-draft-screen-summary.md").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-desktop.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-mobile.png").exists()
+    assert (ROOT / "docs" / "browser-qa-production-depth-live-archive-screen-summary.md").exists()
 
 
 def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
@@ -126,3 +148,5 @@ def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
     assert "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png" in script
     assert "browser-qa-production-depth-live-minutes-draft-screen-desktop.png" in script
     assert "browser-qa-production-depth-live-minutes-draft-screen-mobile.png" in script
+    assert "browser-qa-production-depth-live-archive-screen-desktop.png" in script
+    assert "browser-qa-production-depth-live-archive-screen-mobile.png" in script
