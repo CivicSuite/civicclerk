@@ -38,11 +38,11 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
     assert "CivicClerk" in data["project"]["description"]
 
 
-def test_pyproject_pins_civiccore_exactly_to_released_v020() -> None:
+def test_pyproject_pins_civiccore_exactly_to_released_v030() -> None:
     data = load_pyproject()
     dependencies = data["project"]["dependencies"]
 
-    assert "civiccore==0.2.0" in dependencies
+    assert "civiccore==0.3.0" in dependencies
     assert not any("civiccore>=" in dep or "civiccore~=" in dep for dep in dependencies)
 
 
@@ -96,7 +96,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "Granicus" in payload["message"]
     assert "keyboard" in payload["message"]
     assert "v0.1.0" in payload["message"]
-    assert payload["next_step"] == "Post-v0.1.0 planning and CivicSuite compatibility matrix maintenance"
+    assert payload["next_step"] == "Production-depth packet and notice workflow hardening"
 
 
 @pytest.mark.asyncio
@@ -114,7 +114,7 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
         "status": "ok",
         "service": "civicclerk",
         "version": "0.1.0",
-        "civiccore": "0.2.0",
+        "civiccore": "0.3.0",
     }
 
 

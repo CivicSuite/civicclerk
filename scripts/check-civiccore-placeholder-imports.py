@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail if CivicClerk source imports CivicCore v0.2.0 placeholder packages."""
+"""Fail if CivicClerk source imports CivicCore v0.3.0 placeholder packages."""
 
 from __future__ import annotations
 
@@ -11,11 +11,9 @@ from pathlib import Path
 PLACEHOLDERS = [
     "auth",
     "rbac",
-    "audit",
     "ingestion",
     "search",
     "notifications",
-    "connectors",
     "exemptions",
     "onboarding",
     "catalog",
@@ -64,7 +62,7 @@ def main() -> int:
         for name in PLACEHOLDERS:
             if any(pattern.search(text) for pattern in patterns_for(name)):
                 failures.append(
-                    f"{path}: civiccore.{name} is a placeholder package in v0.2.0. "
+                    f"{path}: civiccore.{name} is a placeholder package in v0.3.0. "
                     "See AGENTS.md section 3.1."
                 )
 

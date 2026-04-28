@@ -5,7 +5,7 @@
 Status: CivicClerk v0.1.0 runtime foundation release  
 Current version: `0.1.0`  
 Repository: <https://github.com/CivicSuite/civicclerk>  
-Depends on: `civiccore==0.2.0`
+Depends on: `civiccore==0.3.0`
 
 ## What CivicClerk will do
 
@@ -24,7 +24,7 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-CivicClerk v0.1.0 ships the runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA, and accessibility/browser QA gates. Full meeting workflow screens are not implemented yet.
+CivicClerk v0.1.0 ships the runtime and schema foundation plus agenda item lifecycle, meeting lifecycle, packet snapshot, notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA, accessibility/browser QA gates, and the first CivicCore v0.3.0-backed records export slice for packet bundles. Full meeting workflow screens are not implemented yet.
 
 Shipped in this foundation:
 
@@ -34,7 +34,7 @@ Shipped in this foundation:
 - contributing, support, security, code of conduct, issue templates, and PR template
 - discussion seed posts
 - docs verification script and CI workflow
-- Python package metadata with `civiccore==0.2.0`
+- Python package metadata with `civiccore==0.3.0`
 - FastAPI application import path at `civicclerk.main:app`
 - root endpoint that explains the current product state
 - `/health` endpoint for IT staff
@@ -63,6 +63,9 @@ Shipped in this foundation:
 - prompt-version provenance enforcement for minutes drafts
 - local-first Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports
 - source provenance on imported meetings and agenda items
+- records-ready packet export bundles with CivicCore v0.3.0 manifests, SHA256 checksums, provenance, and hash-chained audit events
+- closed-session/restricted source guardrails for public packet export bundles
+- safe API export-path handling through `bundle_name` under `CIVICCLERK_EXPORT_ROOT`
 - browser QA gate covering loading, success, empty, error, and partial states
 - accessibility checks for keyboard navigation, focus states, contrast, and console errors
 - CivicClerk v0.1.0 release gate and build artifacts
@@ -75,19 +78,21 @@ Not shipped yet:
 - database-backed agenda item persistence beyond the current runtime slice
 - database-backed meeting lifecycle persistence beyond the current runtime slice
 - database-backed packet and notice persistence beyond the current runtime slice
+- browser workflow screens for packet export creation and review
 
 ## New user experience today
 
-A new user can inspect and run the foundation, create draft agenda items and meetings through the API, version packet snapshots, and test notice compliance checks/posting guardrails. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
+A new user can inspect and run the foundation, create draft agenda items and meetings through the API, version packet snapshots, test notice compliance checks/posting guardrails, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
 
 1. Read this README.
 2. Read `USER-MANUAL.md`.
 3. Read `docs/roadmap/mvp-plan.md`.
 4. For an IT smoke check, run the FastAPI app at `civicclerk.main:app`, call `/health`, and open `/staff`.
-5. Exercise `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, `/public/archive/search`, and `/imports/{connector}/meetings` to smoke-check Milestone 10 behavior.
+5. Exercise `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/export-bundle`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, `/public/archive/search`, and `/imports/{connector}/meetings` to smoke-check Milestone 10 plus the production-depth packet export slice.
 6. Run `CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py` before changing prompt YAML.
-7. Run `python scripts/verify-browser-qa.py` before landing frontend or browser-visible documentation changes.
-8. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
+7. Set `CIVICCLERK_EXPORT_ROOT` before API packet export smoke checks; API callers provide a relative `bundle_name`, not an arbitrary filesystem path.
+8. Run `python scripts/verify-browser-qa.py` before landing frontend or browser-visible documentation changes.
+9. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
 
 ## Architecture direction
 
@@ -100,7 +105,7 @@ CivicClerk follows the CivicSuite pattern:
 - Ollama / Gemma 4 through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - local data ownership, no runtime telemetry, no cloud inference
 
-The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, prompt YAML/evaluation gates, local-first connector import normalization, browser QA gates, and CivicClerk v0.1.0 release artifacts are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. Connector imports record source provenance and do not require outbound network calls in the default local profile. Browser QA now checks loading, success, empty, error, and partial states plus keyboard, focus, contrast, and console evidence. CivicClerk v0.1.0 remains paired with `civiccore==0.2.0`.
+The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, meeting lifecycle enforcement, packet snapshot versioning, notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, prompt YAML/evaluation gates, local-first connector import normalization, browser QA gates, CivicClerk v0.1.0 release artifacts, and CivicCore v0.3.0 packet export primitives are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. Connector imports record source provenance and do not require outbound network calls in the default local profile. Public packet exports block closed-session/restricted sources and include manifest, checksum, provenance, and audit evidence. Browser QA now checks loading, success, empty, error, and partial states plus keyboard, focus, contrast, and console evidence. CivicClerk v0.1.0 now pairs with `civiccore==0.3.0`.
 
 Milestone 13 adds a staff workflow UI foundation at `/staff`. It is intentionally honest: it gives clerks and IT staff a browser-visible workflow map for agenda intake, meeting lifecycle, packet/notice, motions/votes/actions, minutes drafts, public archive, and connector imports, but it does not claim full workflow screens or database-backed queues. Full workflow UI screens are still planned.
 

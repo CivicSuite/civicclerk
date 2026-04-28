@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import os
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
@@ -14,7 +16,13 @@ from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_lifecycle import MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
-from civicclerk.packet_notice import NoticeStore, PacketStore, evaluate_notice_compliance
+from civicclerk.packet_notice import (
+    NoticeStore,
+    PacketExportError,
+    PacketSource,
+    PacketStore,
+    evaluate_notice_compliance,
+)
 from civicclerk.public_archive import PublicArchiveStore, can_view_closed_sessions
 from civicclerk.staff_ui import render_staff_dashboard
 from civiccore import __version__ as CIVICCORE_VERSION
@@ -59,6 +67,24 @@ class MeetingTransitionRequest(BaseModel):
 class PacketSnapshotCreate(BaseModel):
     agenda_item_ids: list[str] = Field(min_length=1)
     actor: str = Field(min_length=1)
+
+
+class PacketSourceCreate(BaseModel):
+    source_id: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    kind: str = Field(default="document", min_length=1)
+    source_system: str | None = Field(default=None, min_length=1)
+    source_path: str | None = Field(default=None, min_length=1)
+    checksum: str | None = Field(default=None, min_length=1)
+    sensitivity_label: str | None = Field(default=None, min_length=1)
+    citation_label: str | None = Field(default=None, min_length=1)
+
+
+class PacketExportCreate(BaseModel):
+    bundle_name: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    sources: list[PacketSourceCreate] = Field(min_length=1)
+    public_bundle: bool = True
 
 
 class NoticeComplianceRequest(BaseModel):
@@ -140,12 +166,13 @@ async def root() -> dict[str, str]:
             "minutes draft capture plus permission-aware public calendar and archive endpoints; "
             "prompt YAML and offline evaluation gates protect policy-bearing prompt changes; "
             "local-first Granicus, Legistar, PrimeGov, and NovusAGENDA imports now normalize "
-            "source provenance; accessibility and browser QA gates now verify loading, success, "
-            "empty, error, partial, keyboard, focus, contrast, and console evidence; "
-            "CivicClerk v0.1.0 release artifacts pair with civiccore==0.2.0; "
-            "full UI workflows are not implemented yet."
+            "source provenance; CivicCore v0.3.0 packet export bundles now include manifests, "
+            "checksums, provenance, and hash-chained audit evidence; accessibility and browser QA "
+            "gates now verify loading, success, empty, error, partial, keyboard, focus, contrast, "
+            "and console evidence; CivicClerk remains versioned as v0.1.0 while this production-depth "
+            "slice hardens packet and notice services; full UI workflows are not implemented yet."
         ),
-        "next_step": "Post-v0.1.0 planning and CivicSuite compatibility matrix maintenance",
+        "next_step": "Production-depth packet and notice workflow hardening",
     }
 
 
@@ -309,6 +336,41 @@ async def list_packet_snapshots(meeting_id: str) -> dict[str, list[dict]]:
             for snapshot in packet_snapshots.list_snapshots(meeting_id)
         ]
     }
+
+
+@app.post("/meetings/{meeting_id}/export-bundle", status_code=201)
+async def create_packet_export_bundle(
+    meeting_id: str,
+    payload: PacketExportCreate,
+) -> dict:
+    """Create a records-ready packet export bundle with manifest, checksums, and audit."""
+    meeting = meetings.get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    try:
+        return packet_snapshots.create_export_bundle(
+            meeting_id=meeting_id,
+            meeting_title=meeting.title,
+            bundle_path=_resolve_packet_export_path(payload.bundle_name),
+            actor=payload.actor,
+            sources=[
+                PacketSource(
+                    source_id=source.source_id,
+                    title=source.title,
+                    kind=source.kind,
+                    source_system=source.source_system,
+                    source_path=source.source_path,
+                    checksum=source.checksum,
+                    sensitivity_label=source.sensitivity_label,
+                    citation_label=source.citation_label,
+                )
+                for source in payload.sources
+            ],
+            notices=[notice.public_dict() for notice in notices.list_notices(meeting_id)],
+            public_bundle=payload.public_bundle,
+        ).public_dict()
+    except PacketExportError as error:
+        raise HTTPException(status_code=error.http_status, detail=error.public_dict()) from error
 
 
 @app.post("/meetings/{meeting_id}/notices/check")
@@ -705,3 +767,18 @@ def _parse_timezone_aware_datetime(
             },
         )
     return parsed
+
+
+def _resolve_packet_export_path(bundle_name: str) -> Path:
+    """Resolve an API-provided bundle name under the configured export root."""
+    requested = Path(bundle_name)
+    if str(requested) == "." or requested.is_absolute() or ".." in requested.parts:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "bundle_name must be a relative folder name under CIVICCLERK_EXPORT_ROOT.",
+                "fix": "Use a simple bundle name such as council-2026-05-05-packet-v1; configure CIVICCLERK_EXPORT_ROOT for the parent export directory.",
+            },
+        )
+    export_root = Path(os.environ.get("CIVICCLERK_EXPORT_ROOT", "exports")).resolve()
+    return export_root / requested
