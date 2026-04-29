@@ -38,16 +38,16 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
     assert "CivicClerk" in data["project"]["description"]
 
 
-def test_pyproject_targets_published_civiccore_v070_release_wheel() -> None:
+def test_pyproject_targets_published_civiccore_v080_release_wheel() -> None:
     data = load_pyproject()
     dependencies = data["project"]["dependencies"]
 
     assert (
-        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.7.0/"
-        "civiccore-0.7.0-py3-none-any.whl"
+        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.8.0/"
+        "civiccore-0.8.0-py3-none-any.whl"
     ) in dependencies
     assert not any(
-        "civiccore>=" in dep or "civiccore~=" in dep or dep == "civiccore==0.7.0"
+        "civiccore>=" in dep or "civiccore~=" in dep or dep == "civiccore==0.8.0"
         for dep in dependencies
     )
 
@@ -132,7 +132,7 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
         "status": "ok",
         "service": "civicclerk",
         "version": "0.1.2",
-        "civiccore": "0.7.0",
+        "civiccore": "0.8.0",
     }
 
 

@@ -100,6 +100,6 @@ def test_release_workflow_and_docs_reference_v012_release() -> None:
     assert "contents: write" in workflow
     assert "gh release create" in workflow
     assert "dist/*" in workflow
-    assert "civiccore/releases/download/v0.7.0/civiccore-0.7.0-py3-none-any.whl" in workflow
+    assert "civiccore/releases/download/v0.8.0/civiccore-0.8.0-py3-none-any.whl" in workflow
     assert "civicclerk v0.1.2" in docs
-    assert "published `civiccore` v0.7.0 release wheel" in docs
+    assert "published `civiccore` v0.8.0 release wheel" in docs

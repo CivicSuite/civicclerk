@@ -217,7 +217,7 @@ async def root() -> dict[str, str]:
             "minutes draft capture plus permission-aware public calendar and archive endpoints; "
             "prompt YAML and offline evaluation gates protect policy-bearing prompt changes; "
             "local-first Granicus, Legistar, PrimeGov, and NovusAGENDA imports now normalize "
-            "source provenance; CivicCore v0.7.0 packet export bundles now include manifests, "
+            f"source provenance; CivicCore v{CIVICCORE_VERSION} packet export bundles now include manifests, "
             "checksums, provenance, and hash-chained audit evidence; accessibility and browser QA "
             "gates now verify loading, success, empty, error, partial, keyboard, focus, contrast, "
             "and console evidence; the first database-backed agenda intake queue now supports "
