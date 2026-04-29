@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 
@@ -12,14 +13,21 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_browser_qa_artifacts_cover_required_states_and_accessibility_checks() -> None:
     checklist = ROOT / "docs" / "browser-qa" / "milestone11-checklist.md"
+    release_evidence = ROOT / "docs" / "browser-qa" / "release-evidence.json"
     states = ROOT / "docs" / "browser-qa" / "states.html"
     desktop = ROOT / "docs" / "screenshots" / "milestone11-browser-qa-desktop.png"
     mobile = ROOT / "docs" / "screenshots" / "milestone11-browser-qa-mobile.png"
+    version = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    release_desktop = ROOT / "docs" / f"browser-qa-v{version}-release-desktop.png"
+    release_mobile = ROOT / "docs" / f"browser-qa-v{version}-release-mobile.png"
 
     assert checklist.exists()
+    assert release_evidence.exists()
     assert states.exists()
     assert desktop.exists() and desktop.stat().st_size > 20_000
     assert mobile.exists() and mobile.stat().st_size > 20_000
+    assert release_desktop.exists() and release_desktop.stat().st_size > 20_000
+    assert release_mobile.exists() and release_mobile.stat().st_size > 20_000
 
     checklist_text = checklist.read_text(encoding="utf-8").lower()
     states_text = states.read_text(encoding="utf-8").lower()
@@ -45,6 +53,7 @@ def test_browser_qa_gate_script_passes_and_reports_checked_states() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     assert "BROWSER-QA: PASSED" in result.stdout
     assert "states checked: loading, success, empty, error, partial" in result.stdout
+    assert "release evidence checked: docs/index.html @ v0.1.2" in result.stdout
     assert "console errors: 0" in result.stdout
 
 
