@@ -7,6 +7,7 @@ from civiccore.connectors import (
     SUPPORTED_CONNECTORS,
     import_meeting_payload,
 )
+from civiccore.security import validate_odbc_connection_string, validate_url_host
 
 __all__ = [
     "ConnectorImportError",
@@ -14,4 +15,6 @@ __all__ = [
     "ImportedMeeting",
     "SUPPORTED_CONNECTORS",
     "import_meeting_payload",
+    "validate_odbc_connection_string",
+    "validate_url_host",
 ]
