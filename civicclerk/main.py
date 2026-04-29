@@ -6,7 +6,9 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from civiccore.auth import AuthenticatedPrincipal, resolve_optional_bearer_roles
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
@@ -43,6 +45,7 @@ notices = NoticeStore()
 motion_votes = MotionVoteStore()
 minutes_drafts = MinutesDraftStore()
 public_archive = PublicArchiveStore()
+_archive_search_bearer = HTTPBearer(auto_error=False)
 _agenda_intake_repository: AgendaIntakeRepository | None = None
 _agenda_intake_db_url: str | None = None
 _agenda_item_repository: AgendaItemRepository | None = None
@@ -207,14 +210,14 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "v0.1.1 runtime foundation release",
+        "status": "v0.1.2 runtime foundation release",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
             "minutes draft capture plus permission-aware public calendar and archive endpoints; "
             "prompt YAML and offline evaluation gates protect policy-bearing prompt changes; "
             "local-first Granicus, Legistar, PrimeGov, and NovusAGENDA imports now normalize "
-            "source provenance; CivicCore v0.3.0 packet export bundles now include manifests, "
+            "source provenance; CivicCore v0.5.0 packet export bundles now include manifests, "
             "checksums, provenance, and hash-chained audit evidence; accessibility and browser QA "
             "gates now verify loading, success, empty, error, partial, keyboard, focus, contrast, "
             "and console evidence; the first database-backed agenda intake queue now supports "
@@ -240,7 +243,7 @@ async def root() -> dict[str, str]:
             "packet export staff screens can now create records-ready bundles with manifests "
             "and checksums through live API actions; "
             "meeting records can now persist through the configured meeting database; "
-            "CivicClerk is versioned as v0.1.1 with the production-depth service slices included; "
+            "CivicClerk is versioned as v0.1.2 with the production-depth service slices included; "
             "all current production-depth clerk-console form submissions are live for the released "
             "API foundation, while the full integrated clerk console remains future work."
         ),
@@ -898,10 +901,7 @@ async def publish_public_record(
         approved_minutes=payload.approved_minutes,
         closed_session_notes=payload.closed_session_notes,
     )
-    return record.public_dict(
-        include_closed=can_view_closed_sessions("clerk")
-        and record.visibility != "public"
-    )
+    return record.public_dict()
 
 
 @app.post("/imports/{connector_name}/meetings", status_code=201)
@@ -944,19 +944,32 @@ async def public_meeting_detail(record_id: str) -> dict:
 @app.get("/public/archive/search")
 async def public_archive_search(
     q: str,
-    role: str = "anonymous",
+    credentials: HTTPAuthorizationCredentials | None = Depends(_archive_search_bearer),
 ) -> dict[str, int | list[dict]]:
     """Search public archives with permission-aware closed-session filtering."""
-    include_closed = can_view_closed_sessions(role)
+    principal = _resolve_archive_search_principal(credentials)
+    include_closed = principal is not None and can_view_closed_sessions(principal.roles)
     results = [
         record.public_dict(include_closed=include_closed)
-        for record in public_archive.search(query=q, role=role)
+        for record in public_archive.search(query=q, include_closed=include_closed)
     ]
     return {
         "total_count": len(results),
         "results": results,
         "suggestions": [],
     }
+
+
+def _resolve_archive_search_principal(
+    credentials: HTTPAuthorizationCredentials | None,
+) -> AuthenticatedPrincipal | None:
+    return resolve_optional_bearer_roles(
+        credentials,
+        service_name="CivicClerk",
+        feature_name="archive search staff access",
+        token_roles_env_var="CIVICCLERK_AUTH_TOKEN_ROLES",
+        allowed_roles={"archive_reader", "clerk_admin", "city_attorney"},
+    )
 
 
 def _evaluate_notice_or_404(

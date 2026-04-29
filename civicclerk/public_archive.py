@@ -8,7 +8,7 @@ from uuid import uuid4
 
 PUBLIC_VISIBILITY = "public"
 CLOSED_SESSION_VISIBILITY = "closed_session"
-PERMITTED_CLOSED_SESSION_ROLES = {"clerk", "attorney", "admin"}
+PERMITTED_CLOSED_SESSION_ROLES = {"archive_reader", "city_attorney", "clerk_admin"}
 
 
 @dataclass(frozen=True)
@@ -82,14 +82,13 @@ class PublicArchiveStore:
             return None
         return record
 
-    def search(self, *, query: str, role: str) -> list[PublicMeetingRecord]:
+    def search(self, *, query: str, include_closed: bool = False) -> list[PublicMeetingRecord]:
         normalized_query = query.strip().lower()
-        permitted_closed = can_view_closed_sessions(role)
         results: list[PublicMeetingRecord] = []
         for record in self._records.values():
-            if record.visibility != PUBLIC_VISIBILITY and not permitted_closed:
+            if record.visibility != PUBLIC_VISIBILITY and not include_closed:
                 continue
-            if _record_matches(record, normalized_query, include_closed=permitted_closed):
+            if _record_matches(record, normalized_query, include_closed=include_closed):
                 results.append(record)
         return results
 
@@ -98,8 +97,9 @@ def normalize_visibility(visibility: str) -> str:
     return visibility.strip().lower()
 
 
-def can_view_closed_sessions(role: str) -> bool:
-    return role.strip().lower() in PERMITTED_CLOSED_SESSION_ROLES
+def can_view_closed_sessions(roles: set[str] | frozenset[str] | list[str] | tuple[str, ...]) -> bool:
+    normalized_roles = {role.strip().lower() for role in roles if role.strip()}
+    return not normalized_roles.isdisjoint(PERMITTED_CLOSED_SESSION_ROLES)
 
 
 def _record_matches(
