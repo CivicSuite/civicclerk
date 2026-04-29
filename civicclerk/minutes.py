@@ -5,37 +5,16 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import uuid4
 
+from civiccore.ingest import (
+    CitedSentence as MinutesSentence,
+    SourceMaterial,
+    validate_cited_sentences,
+)
+
 from civicclerk.prompt_library import (
     expected_prompt_version_hint,
     is_known_prompt_version,
 )
-
-
-@dataclass(frozen=True)
-class SourceMaterial:
-    source_id: str
-    label: str
-    text: str
-
-    def public_dict(self) -> dict[str, str]:
-        return {
-            "source_id": self.source_id,
-            "label": self.label,
-            "text": self.text,
-        }
-
-
-@dataclass(frozen=True)
-class MinutesSentence:
-    text: str
-    citations: tuple[str, ...]
-
-    def public_dict(self) -> dict[str, str | list[str]]:
-        return {
-            "text": self.text,
-            "citations": list(self.citations),
-        }
-
 
 @dataclass(frozen=True)
 class MinutesProvenance:
@@ -147,20 +126,23 @@ def validate_minutes_draft(
     source_materials: list[SourceMaterial],
     sentences: list[MinutesSentence],
 ) -> MinutesValidationError | None:
-    known_sources = {source.source_id for source in source_materials}
-    for sentence in sentences:
-        if not sentence.citations:
-            return MinutesValidationError(
-                message="Every material minutes sentence must include at least one citation.",
-                fix="Add source citations to each sentence before accepting AI-drafted minutes.",
-            )
-        unknown_sources = [citation for citation in sentence.citations if citation not in known_sources]
-        if unknown_sources:
-            return MinutesValidationError(
-                message="Minutes sentence cites an unknown source.",
-                fix="Use one of the source_materials source_id values for each citation.",
-            )
-    return None
+    error = validate_cited_sentences(
+        source_materials=source_materials,
+        sentences=sentences,
+    )
+    if error is None:
+        return None
+    if error.message == "Every material sentence must include at least one citation.":
+        return MinutesValidationError(
+            message="Every material minutes sentence must include at least one citation.",
+            fix="Add source citations to each sentence before accepting AI-drafted minutes.",
+        )
+    if error.message == "Generated sentence cites an unknown source.":
+        return MinutesValidationError(
+            message="Minutes sentence cites an unknown source.",
+            fix=error.fix,
+        )
+    return MinutesValidationError(message=error.message, fix=error.fix)
 
 
 __all__ = [
