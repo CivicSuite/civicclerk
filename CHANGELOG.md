@@ -4,6 +4,16 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-04-29
+
+### Added
+- CivicClerk minutes drafting now consumes the shared
+  `civiccore.ingest` cited-source contracts and validation helper while
+  preserving the module's existing operator-facing minutes error messages.
+
+### Changed
+- CivicClerk now targets the published `civiccore` v0.13.0 release wheel.
+
 ## [0.1.5] - 2026-04-29
 
 ### Added

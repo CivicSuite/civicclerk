@@ -210,7 +210,7 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-            "status": "v0.1.5 runtime foundation release",
+        "status": "v0.1.6 runtime foundation release",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
@@ -246,7 +246,7 @@ async def root() -> dict[str, str]:
             "packet export staff screens can now create records-ready bundles with manifests "
             "and checksums through live API actions; "
             "meeting records can now persist through the configured meeting database; "
-            "CivicClerk is versioned as v0.1.5 with the production-depth service slices included; "
+            "CivicClerk is versioned as v0.1.6 with the production-depth service slices included; "
             "all current production-depth clerk-console form submissions are live for the released "
             "API foundation, while the full integrated clerk console remains future work."
         ),
