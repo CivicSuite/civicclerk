@@ -1,0 +1,10 @@
+{
+  "version": "0.1.2",
+  "reviewed_at": "2026-04-29T09:32:51-06:00",
+  "page": "docs/index.html",
+  "page_sha256": "1eace9b42fca142697976052500898bb990dc70ae1907bc44fcad7807ea4b027",
+  "screenshots": {
+    "desktop": "docs/browser-qa-v0.1.2-release-desktop.png",
+    "mobile": "docs/browser-qa-v0.1.2-release-mobile.png"
+  }
+}

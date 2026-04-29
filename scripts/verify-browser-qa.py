@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import tomllib
+from hashlib import sha256
 from pathlib import Path
 
 
@@ -13,7 +16,9 @@ REQUIRED_CHECKS = ("keyboard", "focus", "contrast", "console")
 def main() -> int:
     failures: list[str] = []
     checklist = ROOT / "docs" / "browser-qa" / "milestone11-checklist.md"
+    release_evidence = ROOT / "docs" / "browser-qa" / "release-evidence.json"
     states = ROOT / "docs" / "browser-qa" / "states.html"
+    version = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     screenshots = [
         ROOT / "docs" / "screenshots" / "milestone11-browser-qa-desktop.png",
         ROOT / "docs" / "screenshots" / "milestone11-browser-qa-mobile.png",
@@ -38,6 +43,12 @@ def main() -> int:
         checklist_text = ""
     else:
         checklist_text = checklist.read_text(encoding="utf-8").lower()
+
+    if not release_evidence.exists():
+        failures.append("missing docs/browser-qa/release-evidence.json")
+        release_data: dict[str, object] = {}
+    else:
+        release_data = json.loads(release_evidence.read_text(encoding="utf-8"))
 
     if not states.exists():
         failures.append("missing docs/browser-qa/states.html")
@@ -68,6 +79,50 @@ def main() -> int:
         elif screenshot.stat().st_size <= 20_000:
             failures.append(f"screenshot too small to be credible evidence: {screenshot.relative_to(ROOT)}")
 
+    release_version = release_data.get("version")
+    if release_version != version:
+        failures.append(
+            f"release evidence version mismatch: expected {version}, found {release_version!r}"
+        )
+
+    reviewed_at = release_data.get("reviewed_at")
+    if not isinstance(reviewed_at, str) or not reviewed_at.strip():
+        failures.append("release evidence missing reviewed_at timestamp")
+
+    page_rel = release_data.get("page")
+    if not isinstance(page_rel, str) or not page_rel.strip():
+        failures.append("release evidence missing page path")
+        page_path = ROOT / "docs" / "index.html"
+    else:
+        page_path = ROOT / page_rel
+        if not page_path.exists():
+            failures.append(f"release evidence page is missing: {page_rel}")
+
+    expected_hash = release_data.get("page_sha256")
+    if not isinstance(expected_hash, str) or not expected_hash.strip():
+        failures.append("release evidence missing page_sha256")
+    elif page_path.exists():
+        actual_hash = sha256(page_path.read_bytes()).hexdigest()
+        if actual_hash != expected_hash:
+            failures.append(
+                "release evidence hash mismatch for docs/index.html; refresh browser QA screenshots and manifest"
+            )
+
+    screenshot_map = release_data.get("screenshots")
+    if not isinstance(screenshot_map, dict):
+        failures.append("release evidence screenshots map is missing")
+    else:
+        for viewport in ("desktop", "mobile"):
+            rel_path = screenshot_map.get(viewport)
+            if not isinstance(rel_path, str) or not rel_path.strip():
+                failures.append(f"release evidence missing {viewport} screenshot path")
+                continue
+            release_shot = ROOT / rel_path
+            if not release_shot.exists():
+                failures.append(f"missing release screenshot: {rel_path}")
+            elif release_shot.stat().st_size <= 20_000:
+                failures.append(f"release screenshot too small to be credible evidence: {rel_path}")
+
     if failures:
         for failure in failures:
             print(f"  FAILED: {failure}")
@@ -76,6 +131,7 @@ def main() -> int:
 
     print("states checked: loading, success, empty, error, partial")
     print("accessibility checked: keyboard, focus, contrast, console")
+    print(f"release evidence checked: docs/index.html @ v{version}")
     print("console errors: 0")
     print("BROWSER-QA: PASSED")
     return 0
