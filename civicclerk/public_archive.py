@@ -5,7 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import uuid4
 
-from civiccore.search import normalize_search_query, search_text_matches_query
+from civiccore.search import (
+    normalize_search_query,
+    roles_grant_access,
+    search_text_matches_query,
+)
 
 
 PUBLIC_VISIBILITY = "public"
@@ -100,8 +104,7 @@ def normalize_visibility(visibility: str) -> str:
 
 
 def can_view_closed_sessions(roles: set[str] | frozenset[str] | list[str] | tuple[str, ...]) -> bool:
-    normalized_roles = {role.strip().lower() for role in roles if role.strip()}
-    return not normalized_roles.isdisjoint(PERMITTED_CLOSED_SESSION_ROLES)
+    return roles_grant_access(roles, allowed_roles=PERMITTED_CLOSED_SESSION_ROLES)
 
 
 def _record_matches(

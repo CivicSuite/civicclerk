@@ -4,7 +4,7 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
-## [0.1.3] - 2026-04-29
+## [0.1.4] - 2026-04-29
 
 ### Added
 - Production-depth agenda item lifecycle persistence slice with
@@ -21,7 +21,7 @@ All notable changes to CivicClerk are documented here.
   preserving the module's existing warning and posting API contract.
 
 ### Changed
-- CivicClerk now installs the published `civiccore` v0.9.0 release wheel so
+- CivicClerk now installs the published `civiccore` v0.11.0 release wheel so
   the release gate can consume the shipped shared verification, search, and
   connector import helpers plus the shared notice compliance helper in
   addition to the existing audit, provenance, and export primitives.
