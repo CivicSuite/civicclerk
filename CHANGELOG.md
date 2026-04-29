@@ -4,6 +4,17 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-04-29
+
+### Added
+- `civicclerk.connectors` now re-exports the shared `civiccore.security`
+  connector runtime validation helpers so future live-sync work can adopt the
+  same blocked-host and ODBC host-validation contract without module-local
+  reimplementation.
+
+### Changed
+- CivicClerk now targets the published `civiccore` v0.12.0 release wheel.
+
 ## [0.1.4] - 2026-04-29
 
 ### Added

@@ -98,6 +98,19 @@ def test_connector_imports_are_local_first_and_do_not_require_outbound_network(
     assert result.title == "Budget Hearing"
 
 
+def test_connector_runtime_validation_helpers_are_available_for_future_live_sync() -> None:
+    from civicclerk.connectors import validate_odbc_connection_string, validate_url_host
+
+    validate_url_host("https://records.vendor.example/api")
+    validate_odbc_connection_string("Server=db.public.example.com;Database=clerk")
+
+    with pytest.raises(ValueError, match="blocked range"):
+        validate_url_host("http://localhost/api")
+
+    with pytest.raises(ValueError, match="blocked range"):
+        validate_odbc_connection_string("Server=127.0.0.1;Database=clerk")
+
+
 def test_connector_import_failures_are_actionable() -> None:
     from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 
