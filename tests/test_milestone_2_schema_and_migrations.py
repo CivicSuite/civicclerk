@@ -53,7 +53,6 @@ PLACEHOLDER_TARGET_PREFIXES = {
     "civiccore.auth",
     "civiccore.rbac",
     "civiccore.ingestion",
-    "civiccore.search",
     "civiccore.notifications",
     "civiccore.exemptions",
     "civiccore.onboarding",
