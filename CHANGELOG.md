@@ -4,6 +4,8 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-29
+
 ### Added
 - Production-depth agenda item lifecycle persistence slice with
   `CIVICCLERK_AGENDA_ITEM_DB_URL`, durable status/audit entries, and Alembic
@@ -14,12 +16,15 @@ All notable changes to CivicClerk are documented here.
 - Public archive search now consumes the shared `civiccore.search`
   normalization helper surface, keeping permission-aware archive matching
   whitespace-stable and case-insensitive without a local duplicate helper.
+- CivicClerk notice compliance checks now reuse the shared
+  `civiccore.notifications.evaluate_notice_compliance` helper while
+  preserving the module's existing warning and posting API contract.
 
 ### Changed
-- CivicClerk now installs the published `civiccore` v0.8.0 release wheel so
+- CivicClerk now installs the published `civiccore` v0.9.0 release wheel so
   the release gate can consume the shipped shared verification, search, and
-  connector import helpers in addition to the existing audit, provenance, and
-  export primitives.
+  connector import helpers plus the shared notice compliance helper in
+  addition to the existing audit, provenance, and export primitives.
 
 ## [0.1.2] - 2026-04-29
 

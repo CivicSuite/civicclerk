@@ -210,7 +210,7 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "v0.1.2 runtime foundation release",
+        "status": "v0.1.3 runtime foundation release",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
@@ -218,7 +218,10 @@ async def root() -> dict[str, str]:
             "prompt YAML and offline evaluation gates protect policy-bearing prompt changes; "
             "local-first Granicus, Legistar, PrimeGov, and NovusAGENDA imports now normalize "
             f"source provenance; CivicCore v{CIVICCORE_VERSION} packet export bundles now include manifests, "
-            "checksums, provenance, and hash-chained audit evidence; accessibility and browser QA "
+            "checksums, provenance, and hash-chained audit evidence; "
+            "CivicClerk notice checks now reuse the shared CivicCore notice compliance helper while preserving "
+            "meeting-specific warning and posting flows; "
+            "accessibility and browser QA "
             "gates now verify loading, success, empty, error, partial, keyboard, focus, contrast, "
             "and console evidence; the first database-backed agenda intake queue now supports "
             "department submission, clerk readiness review, and durable audit-hash evidence; "
@@ -243,7 +246,7 @@ async def root() -> dict[str, str]:
             "packet export staff screens can now create records-ready bundles with manifests "
             "and checksums through live API actions; "
             "meeting records can now persist through the configured meeting database; "
-            "CivicClerk is versioned as v0.1.2 with the production-depth service slices included; "
+            "CivicClerk is versioned as v0.1.3 with the production-depth service slices included; "
             "all current production-depth clerk-console form submissions are live for the released "
             "API foundation, while the full integrated clerk console remains future work."
         ),

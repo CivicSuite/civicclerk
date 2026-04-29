@@ -79,8 +79,8 @@ from pathlib import Path
 
 dist = Path("dist")
 artifacts = [
-    dist / "civicclerk-0.1.2-py3-none-any.whl",
-    dist / "civicclerk-0.1.2.tar.gz",
+    dist / "civicclerk-0.1.3-py3-none-any.whl",
+    dist / "civicclerk-0.1.3.tar.gz",
 ]
 missing = [str(path) for path in artifacts if not path.exists()]
 if missing:
