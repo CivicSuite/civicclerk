@@ -102,4 +102,4 @@ def test_release_workflow_and_docs_reference_v012_release() -> None:
     assert "dist/*" in workflow
     assert "civiccore/releases/download/v0.6.0/civiccore-0.6.0-py3-none-any.whl" in workflow
     assert "civicclerk v0.1.2" in docs
-    assert "civiccore==0.6.0" in docs
+    assert "civiccore==0.7.0" in docs

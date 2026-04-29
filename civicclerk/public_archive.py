@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import uuid4
 
+from civiccore.search import normalize_search_query, search_text_matches_query
+
 
 PUBLIC_VISIBILITY = "public"
 CLOSED_SESSION_VISIBILITY = "closed_session"
@@ -83,7 +85,7 @@ class PublicArchiveStore:
         return record
 
     def search(self, *, query: str, include_closed: bool = False) -> list[PublicMeetingRecord]:
-        normalized_query = query.strip().lower()
+        normalized_query = normalize_search_query(query)
         results: list[PublicMeetingRecord] = []
         for record in self._records.values():
             if record.visibility != PUBLIC_VISIBILITY and not include_closed:
@@ -116,8 +118,8 @@ def _record_matches(
             record.approved_minutes,
             record.closed_session_notes if include_closed and record.closed_session_notes else "",
         ]
-    ).lower()
-    return query in searchable_text
+    )
+    return search_text_matches_query(text=searchable_text, query=query)
 
 
 __all__ = [

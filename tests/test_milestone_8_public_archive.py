@@ -126,6 +126,25 @@ async def test_anonymous_archive_search_never_leaks_closed_session_in_body_count
 
 
 @pytest.mark.asyncio
+async def test_archive_search_normalizes_case_and_whitespace() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        meeting_id = await _create_meeting(client, "Normalization Budget Meeting")
+        public_record = await _publish_public_record(
+            client,
+            meeting_id=meeting_id,
+            title="Normalization Budget Meeting",
+        )
+
+        search = await client.get(
+            "/public/archive/search",
+            params={"q": "  normalization   budget   meeting  "},
+        )
+
+    assert search.status_code == 200
+    assert search.json()["results"] == [public_record]
+
+
+@pytest.mark.asyncio
 async def test_permission_aware_archive_search_for_staff_roles() -> None:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         closed_meeting_id = await _create_meeting(client, "Closed Labor Negotiation", "closed_session")
