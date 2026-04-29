@@ -8,6 +8,14 @@ All notable changes to CivicClerk are documented here.
 - Production-depth agenda item lifecycle persistence slice with
   `CIVICCLERK_AGENDA_ITEM_DB_URL`, durable status/audit entries, and Alembic
   migration `civicclerk_0006_agenda_items`.
+- Shared browser-QA release evidence validation through
+  `civiccore.verification.validate_release_browser_evidence`, so CivicClerk's
+  release screenshots and manifest stay bound to the current docs page hash.
+
+### Changed
+- CivicClerk now pins `civiccore==0.6.0` so the release gate can consume the
+  shipped shared verification helper in addition to the existing audit,
+  provenance, and export primitives.
 
 ## [0.1.2] - 2026-04-29
 
@@ -59,7 +67,7 @@ All notable changes to CivicClerk are documented here.
 - Live `/staff` packet export form action that creates the required packet
   snapshot, then writes a records-ready bundle with manifest and checksums
   through `/meetings/{id}/export-bundle`.
-- Production-depth packet export bundle slice using CivicCore v0.5.0
+- Production-depth packet export bundle slice using CivicCore v0.6.0
   `civiccore.exports`, `civiccore.provenance`, and `civiccore.audit`
   primitives.
 - `/meetings/{meeting_id}/export-bundle` endpoint for records-ready packet
@@ -73,7 +81,7 @@ All notable changes to CivicClerk are documented here.
 - Milestone 13 staff workflow UI at `/staff`, upgraded from a workflow map into first workflow screens for the three database-backed service slices with live browser form actions for agenda intake, packet assembly, and notice checklist/posting-proof workflows.
 
 ### Changed
-- CivicClerk now pins `civiccore==0.5.0` for shared audit, provenance,
+- CivicClerk now pins `civiccore==0.6.0` for shared audit, provenance,
   connector manifest, export bundle, and city-profile primitives.
 - Version surfaces, release gate artifact checks, and current-facing docs now
   reflect the post-production-depth `v0.1.2` release.

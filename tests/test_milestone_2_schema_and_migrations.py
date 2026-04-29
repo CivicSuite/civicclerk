@@ -58,7 +58,6 @@ PLACEHOLDER_TARGET_PREFIXES = {
     "civiccore.exemptions",
     "civiccore.onboarding",
     "civiccore.catalog",
-    "civiccore.verification",
 }
 
 
