@@ -13,6 +13,11 @@ REQUIRED_STATES = ("loading", "success", "empty", "error", "partial")
 REQUIRED_CHECKS = ("keyboard", "focus", "contrast", "console")
 
 
+def normalized_text_sha256(path: Path) -> str:
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+    return sha256(text.encode("utf-8")).hexdigest()
+
+
 def main() -> int:
     failures: list[str] = []
     checklist = ROOT / "docs" / "browser-qa" / "milestone11-checklist.md"
@@ -102,7 +107,7 @@ def main() -> int:
     if not isinstance(expected_hash, str) or not expected_hash.strip():
         failures.append("release evidence missing page_sha256")
     elif page_path.exists():
-        actual_hash = sha256(page_path.read_bytes()).hexdigest()
+        actual_hash = normalized_text_sha256(page_path)
         if actual_hash != expected_hash:
             failures.append(
                 "release evidence hash mismatch for docs/index.html; refresh browser QA screenshots and manifest"
