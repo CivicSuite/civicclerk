@@ -139,20 +139,90 @@ async def test_permission_aware_archive_search_for_staff_roles() -> None:
 
         underprivileged = await client.get(
             "/public/archive/search",
-            params={"q": "Collective bargaining", "role": "staff"},
+            params={"q": "Collective bargaining"},
+            headers={"Authorization": "Bearer staff-token"},
         )
         permitted = await client.get(
             "/public/archive/search",
-            params={"q": "Collective bargaining", "role": "clerk"},
+            params={"q": "Collective bargaining"},
+            headers={"Authorization": "Bearer archive-reader-token"},
         )
 
-    assert underprivileged.status_code == 200
-    assert underprivileged.json() == {"total_count": 0, "results": [], "suggestions": []}
-    assert "Collective bargaining" not in underprivileged.text
+    assert underprivileged.status_code == 503
+    assert underprivileged.json()["detail"]["message"] == "CivicClerk archive search staff access auth is not configured."
+    assert "CIVICCLERK_AUTH_TOKEN_ROLES" in underprivileged.json()["detail"]["fix"]
+    assert permitted.status_code == 503
+
+
+@pytest.mark.asyncio
+async def test_archive_search_requires_allowed_bearer_role_for_closed_session_visibility(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        "CIVICCLERK_AUTH_TOKEN_ROLES",
+        '{"staff-token": ["meeting_editor"], "archive-reader-token": ["archive_reader"]}',
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        closed_meeting_id = await _create_meeting(client, "Closed Labor Negotiation", "closed_session")
+        closed_record = await _publish_public_record(
+            client,
+            meeting_id=closed_meeting_id,
+            title="Closed Labor Negotiation",
+            visibility="closed_session",
+            closed_session_notes="Collective bargaining strategy and salary floor.",
+        )
+
+        underprivileged = await client.get(
+            "/public/archive/search",
+            params={"q": "Collective bargaining"},
+            headers={"Authorization": "Bearer staff-token"},
+        )
+        permitted = await client.get(
+            "/public/archive/search",
+            params={"q": "Collective bargaining"},
+            headers={"Authorization": "Bearer archive-reader-token"},
+        )
+
+    assert underprivileged.status_code == 403
+    assert underprivileged.json()["detail"]["required_roles"] == [
+        "archive_reader",
+        "city_attorney",
+        "clerk_admin",
+    ]
+    assert underprivileged.json()["detail"]["token_roles"] == ["meeting_editor"]
     assert permitted.status_code == 200
-    assert permitted.json()["total_count"] == 1
-    assert permitted.json()["results"] == [closed_record]
+    assert permitted.json()["total_count"] >= 1
+    assert any(result["id"] == closed_record["id"] for result in permitted.json()["results"])
     assert "Collective bargaining strategy" in permitted.text
+
+
+@pytest.mark.asyncio
+async def test_publish_public_record_response_does_not_echo_closed_session_notes() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        closed_meeting_id = await _create_meeting(client, "Closed Personnel Review", "closed_session")
+        response = await client.post(
+            f"/meetings/{closed_meeting_id}/public-record",
+            json={
+                "title": "Closed Personnel Review",
+                "visibility": "closed_session",
+                "posted_agenda": "Agenda: personnel review.",
+                "posted_packet": "Packet: confidential memo.",
+                "approved_minutes": "Approved minutes withheld.",
+                "closed_session_notes": "Employee discipline discussion with names and allegations.",
+            },
+        )
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "id": response.json()["id"],
+        "meeting_id": closed_meeting_id,
+        "title": "Closed Personnel Review",
+        "posted_agenda": "Agenda: personnel review.",
+        "posted_packet": "Packet: confidential memo.",
+        "approved_minutes": "Approved minutes withheld.",
+    }
+    assert "closed_session_notes" not in response.text
 
 
 def test_docs_record_public_archive_scope_without_claiming_full_ui() -> None:

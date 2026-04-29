@@ -1,7 +1,7 @@
 # CivicClerk User Manual
 
-Status: CivicClerk v0.1.1 runtime foundation manual  
-Version: `0.1.1`
+Status: CivicClerk v0.1.2 runtime foundation manual  
+Version: `0.1.2`
 
 ## Part 1: Non-Technical Overview
 
@@ -46,8 +46,8 @@ action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.1 release
-artifacts, CivicCore v0.3.0-backed packet export bundles, a database-backed
+NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.2 release
+artifacts, CivicCore v0.5.0-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
 with source/citation metadata, database-backed agenda item lifecycle records
@@ -97,7 +97,7 @@ CivicClerk will follow the CivicSuite deployment pattern:
 
 ### Planned dependency
 
-The runtime foundation now pins to civiccore `==0.3.0`. Agenda intake uses
+The runtime foundation now pins to civiccore `==0.5.0`. Agenda intake uses
 `CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; agenda item lifecycle records use
 `CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records use
 `CIVICCLERK_MEETING_DB_URL` when set; packet assembly records use
@@ -150,8 +150,8 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v0.1.1.
-The current production-depth branch pairs CivicClerk with `civiccore==0.3.0`
+builds release artifacts and checksums, and publishes CivicClerk v0.1.2.
+The current production-depth branch pairs CivicClerk with `civiccore==0.5.0`
 so packet exports, packet assembly records, and notice checklist records can
 use CivicCore manifests, provenance, checksums, and audit primitives.
 
@@ -180,7 +180,7 @@ filtering for anonymous and under-privileged users. Milestone 9 moves
 policy-bearing prompt text into YAML and adds an evaluation harness.
 Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
-records-ready packet export bundles using CivicCore v0.3.0 provenance, export
+records-ready packet export bundles using CivicCore v0.5.0 provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed agenda item lifecycle records with
 durable transition audit entries; database-backed meeting records with lifecycle

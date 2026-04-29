@@ -121,7 +121,7 @@ class PacketStore:
     """Packet version and export-bundle store.
 
     The store is still process-local in this slice, but export bundles are
-    written to disk with CivicCore v0.3.0 manifests, checksums, provenance, and
+    written to disk with CivicCore v0.5.0 manifests, checksums, provenance, and
     hash-chained audit events so they can be validated without the server.
     """
 
