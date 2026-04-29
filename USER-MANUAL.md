@@ -151,7 +151,7 @@ Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
 builds release artifacts and checksums, and publishes CivicClerk v0.1.2.
-The current production-depth branch pairs CivicClerk with `civiccore==0.7.0`
+The current production-depth branch pairs CivicClerk with the published `civiccore` v0.7.0 release wheel
 so packet exports, packet assembly records, notice checklist records, and the
 browser QA release-evidence gate can use shared CivicCore manifests,
 provenance, checksums, audit primitives, and verification helpers.

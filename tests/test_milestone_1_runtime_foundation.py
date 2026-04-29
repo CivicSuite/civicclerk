@@ -38,12 +38,18 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
     assert "CivicClerk" in data["project"]["description"]
 
 
-def test_pyproject_pins_civiccore_exactly_to_released_v060() -> None:
+def test_pyproject_targets_published_civiccore_v070_release_wheel() -> None:
     data = load_pyproject()
     dependencies = data["project"]["dependencies"]
 
-    assert "civiccore==0.7.0" in dependencies
-    assert not any("civiccore>=" in dep or "civiccore~=" in dep for dep in dependencies)
+    assert (
+        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.7.0/"
+        "civiccore-0.7.0-py3-none-any.whl"
+    ) in dependencies
+    assert not any(
+        "civiccore>=" in dep or "civiccore~=" in dep or dep == "civiccore==0.7.0"
+        for dep in dependencies
+    )
 
 
 def test_pyproject_declares_foundation_runtime_and_test_dependencies() -> None:
