@@ -148,7 +148,7 @@ async def test_archive_search_normalizes_case_and_whitespace() -> None:
 async def test_permission_aware_archive_search_for_staff_roles() -> None:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         closed_meeting_id = await _create_meeting(client, "Closed Labor Negotiation", "closed_session")
-        closed_record = await _publish_public_record(
+        await _publish_public_record(
             client,
             meeting_id=closed_meeting_id,
             title="Closed Labor Negotiation",

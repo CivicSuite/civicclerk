@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -12,10 +12,10 @@ from civicclerk import __version__ as CIVICCLERK_VERSION
 from civiccore import __version__ as CIVICCORE_VERSION
 from civiccore.audit import AuditActor, AuditHashChain, AuditSubject
 from civiccore.exports import BundleFile, ExportBundle, build_sha256sums, validate_bundle, write_manifest
+from civiccore.notifications import evaluate_notice_compliance as evaluate_shared_notice_compliance
 from civiccore.provenance import ProvenanceBundle, SourceKind, SourceReference
 
 
-SPECIAL_NOTICE_TYPES = {"special", "emergency"}
 PUBLIC_BLOCKED_SENSITIVITY = {"closed_session", "staff_only", "restricted"}
 
 
@@ -121,7 +121,7 @@ class PacketStore:
     """Packet version and export-bundle store.
 
     The store is still process-local in this slice, but export bundles are
-    written to disk with CivicCore v0.8.0 manifests, checksums, provenance, and
+    written to disk with CivicCore v0.9.0 manifests, checksums, provenance, and
     hash-chained audit events so they can be validated without the server.
     """
 
@@ -339,59 +339,28 @@ def evaluate_notice_compliance(
     statutory_basis: str | None,
     approved_by: str | None,
 ) -> NoticeComplianceResult:
-    normalized_notice_type = notice_type.strip().lower()
-    deadline_at = scheduled_start - timedelta(hours=minimum_notice_hours)
-    warnings: list[dict[str, str]] = []
-
-    if normalized_notice_type in SPECIAL_NOTICE_TYPES and not statutory_basis:
-        warnings.append(
-            {
-                "code": "missing_statutory_basis",
-                "message": "Special and emergency notices require a statutory basis.",
-                "fix": "Add the statutory basis authorizing this meeting type before posting public notice.",
-            }
-        )
-
-    if posted_at > deadline_at:
-        warnings.append(
-            {
-                "code": "notice_deadline_missed",
-                "message": "Notice was posted after the required deadline.",
-                "fix": "Move the meeting, document the legal exception, or obtain attorney/clerk approval before posting.",
-            }
-        )
-
-    if not approved_by:
-        warnings.append(
-            {
-                "code": "human_approval_required",
-                "message": "Public notice posting requires a named clerk or authorized approver.",
-                "fix": "Provide approved_by before posting public notice.",
-            }
-        )
-
-    status = _status_for_warnings(warnings)
-    return NoticeComplianceResult(
+    shared_result = evaluate_shared_notice_compliance(
         meeting_id=meeting_id,
-        notice_type=normalized_notice_type,
+        notice_type=notice_type,
         scheduled_start=scheduled_start,
         posted_at=posted_at,
         minimum_notice_hours=minimum_notice_hours,
-        deadline_at=deadline_at,
         statutory_basis=statutory_basis,
         approved_by=approved_by,
-        compliant=not warnings,
-        http_status=status,
-        warnings=warnings,
     )
-
-
-def _status_for_warnings(warnings: list[dict[str, str]]) -> int:
-    if not warnings:
-        return 200
-    if warnings[0]["code"] == "human_approval_required":
-        return 403
-    return 422
+    return NoticeComplianceResult(
+        meeting_id=shared_result.meeting_id,
+        notice_type=shared_result.notice_type,
+        scheduled_start=shared_result.scheduled_start,
+        posted_at=shared_result.posted_at,
+        minimum_notice_hours=shared_result.minimum_notice_hours,
+        deadline_at=shared_result.deadline_at,
+        statutory_basis=shared_result.statutory_basis,
+        approved_by=shared_result.approved_by,
+        compliant=shared_result.compliant,
+        http_status=shared_result.http_status,
+        warnings=[warning.public_dict() for warning in shared_result.warnings],
+    )
 
 
 def _write_json(path: Path, payload: dict) -> None:
