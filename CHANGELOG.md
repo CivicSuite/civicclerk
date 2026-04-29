@@ -16,9 +16,10 @@ All notable changes to CivicClerk are documented here.
   whitespace-stable and case-insensitive without a local duplicate helper.
 
 ### Changed
-- CivicClerk now installs the published `civiccore` v0.7.0 release wheel so
-  the release gate can consume the shipped shared verification and search
-  helpers in addition to the existing audit, provenance, and export primitives.
+- CivicClerk now installs the published `civiccore` v0.8.0 release wheel so
+  the release gate can consume the shipped shared verification, search, and
+  connector import helpers in addition to the existing audit, provenance, and
+  export primitives.
 
 ## [0.1.2] - 2026-04-29
 
