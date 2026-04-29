@@ -38,11 +38,11 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
     assert "CivicClerk" in data["project"]["description"]
 
 
-def test_pyproject_pins_civiccore_exactly_to_released_v050() -> None:
+def test_pyproject_pins_civiccore_exactly_to_released_v060() -> None:
     data = load_pyproject()
     dependencies = data["project"]["dependencies"]
 
-    assert "civiccore==0.5.0" in dependencies
+    assert "civiccore==0.6.0" in dependencies
     assert not any("civiccore>=" in dep or "civiccore~=" in dep for dep in dependencies)
 
 
@@ -126,7 +126,7 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
         "status": "ok",
         "service": "civicclerk",
         "version": "0.1.2",
-        "civiccore": "0.5.0",
+        "civiccore": "0.6.0",
     }
 
 
