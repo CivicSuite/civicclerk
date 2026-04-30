@@ -111,6 +111,8 @@ def main() -> int:
             "focus",
             "contrast",
             "console",
+            "console_events=0",
+            "exceptions=0",
             "mobile",
         ):
             if required_phrase not in public_portal_text:
