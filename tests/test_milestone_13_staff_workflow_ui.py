@@ -24,9 +24,13 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert 'aria-label="CivicClerk staff workflow screens"' in html
     assert "Skip to workflow screens" in html
     assert "CivicClerk Staff Workflow Screens" in html
-    assert "v0.1.0" in html
+    assert "v0.1.7" in html
     assert "browser-visible staff workflow screens" in html
-    assert "without claiming the full end-to-end clerk console is finished" in html
+    assert "bearer-protected staff mode" in html
+    assert "SSO is not shipped yet" in html
+    assert 'id="staff-auth-token"' in html
+    assert 'id="staff-auth-status"' in html
+    assert "/staff/session" in html
     assert "/agenda-intake" in html
     assert "Department submission queue" in html
     assert "/meetings/{id}/packet-assemblies" in html

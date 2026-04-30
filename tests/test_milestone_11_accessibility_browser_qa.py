@@ -53,7 +53,7 @@ def test_browser_qa_gate_script_passes_and_reports_checked_states() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     assert "BROWSER-QA: PASSED" in result.stdout
     assert "states checked: loading, success, empty, error, partial" in result.stdout
-    assert "release evidence checked: docs/index.html @ v0.1.6" in result.stdout
+    assert "release evidence checked: docs/index.html @ v0.1.7" in result.stdout
     assert "console errors: 0" in result.stdout
 
 

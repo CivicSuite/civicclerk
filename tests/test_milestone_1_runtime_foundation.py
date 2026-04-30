@@ -34,7 +34,7 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
     data = load_pyproject()
 
     assert data["project"]["name"] == "civicclerk"
-    assert data["project"]["version"] == "0.1.6"
+    assert data["project"]["version"] == "0.1.7"
     assert "CivicClerk" in data["project"]["description"]
 
 
@@ -91,7 +91,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["name"] == "CivicClerk"
-    assert payload["status"] == "v0.1.6 runtime foundation release"
+    assert payload["status"] == "v0.1.7 runtime foundation release"
     assert "full integrated clerk console remains future work" in payload["message"]
     assert "notice compliance" in payload["message"]
     assert "motion" in payload["message"]
@@ -102,7 +102,8 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "Granicus" in payload["message"]
     assert "keyboard" in payload["message"]
     assert "shared CivicCore notice compliance helper" in payload["message"]
-    assert "v0.1.6" in payload["message"]
+    assert "v0.1.7" in payload["message"]
+    assert "staff auth mode" in payload["message"]
     assert "agenda intake queue" in payload["message"]
     assert "packet assembly records" in payload["message"]
     assert "notice checklist records" in payload["message"]
@@ -132,7 +133,7 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
     assert payload == {
         "status": "ok",
         "service": "civicclerk",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "civiccore": "0.13.0",
     }
 
@@ -162,7 +163,9 @@ def test_placeholder_import_gate_passes_for_runtime_source() -> None:
 def test_current_facing_docs_describe_runtime_foundation_honestly() -> None:
     docs = {
         "README.md": (ROOT / "README.md").read_text(encoding="utf-8"),
+        "README.txt": (ROOT / "README.txt").read_text(encoding="utf-8"),
         "USER-MANUAL.md": (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8"),
+        "USER-MANUAL.txt": (ROOT / "USER-MANUAL.txt").read_text(encoding="utf-8"),
         "docs/index.html": (ROOT / "docs" / "index.html").read_text(encoding="utf-8"),
     }
 

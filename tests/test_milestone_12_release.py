@@ -1,4 +1,4 @@
-"""Milestone 12+ v0.1.6 release contract."""
+"""Milestone 12+ v0.1.7 release contract."""
 
 from __future__ import annotations
 
@@ -22,19 +22,21 @@ def test_version_surfaces_are_synchronized_to_v015() -> None:
     current_docs = "\n".join(
         [
             (ROOT / "README.md").read_text(encoding="utf-8"),
+            (ROOT / "README.txt").read_text(encoding="utf-8"),
             (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8"),
+            (ROOT / "USER-MANUAL.txt").read_text(encoding="utf-8"),
             (ROOT / "docs" / "index.html").read_text(encoding="utf-8"),
         ]
     )
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
 
-    assert pyproject["project"]["version"] == "0.1.6"
-    assert __version__ == "0.1.6"
-    assert "Current version: `0.1.6`" in current_docs
-    assert "Version: `0.1.6`" in current_docs
-    assert "v0.1.6" in current_docs
+    assert pyproject["project"]["version"] == "0.1.7"
+    assert __version__ == "0.1.7"
+    assert "Current version: `0.1.7`" in current_docs
+    assert "Version: `0.1.7`" in current_docs
+    assert "v0.1.7" in current_docs
     assert "0.1.0.dev0" not in current_docs
-    assert "## [0.1.6] - 2026-04-29" in changelog
+    assert "## [0.1.7] - 2026-04-29" in changelog
 
 
 async def test_health_endpoint_reports_release_version() -> None:
@@ -42,7 +44,7 @@ async def test_health_endpoint_reports_release_version() -> None:
         response = await client.get("/health")
 
     assert response.status_code == 200
-    assert response.json()["version"] == "0.1.6"
+    assert response.json()["version"] == "0.1.7"
 
 
 def test_verify_release_script_exists_and_mentions_all_release_gates() -> None:
@@ -79,8 +81,8 @@ def test_verify_release_script_passes_and_builds_artifacts() -> None:
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "VERIFY-RELEASE: PASSED" in result.stdout
-    assert (ROOT / "dist" / "civicclerk-0.1.6-py3-none-any.whl").exists()
-    assert (ROOT / "dist" / "civicclerk-0.1.6.tar.gz").exists()
+    assert (ROOT / "dist" / "civicclerk-0.1.7-py3-none-any.whl").exists()
+    assert (ROOT / "dist" / "civicclerk-0.1.7.tar.gz").exists()
     assert (ROOT / "dist" / "SHA256SUMS.txt").exists()
 
 
@@ -89,7 +91,9 @@ def test_release_workflow_and_docs_reference_v015_release() -> None:
     docs = "\n".join(
         [
             (ROOT / "README.md").read_text(encoding="utf-8"),
+            (ROOT / "README.txt").read_text(encoding="utf-8"),
             (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8"),
+            (ROOT / "USER-MANUAL.txt").read_text(encoding="utf-8"),
             (ROOT / "docs" / "index.html").read_text(encoding="utf-8"),
             (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"),
         ]
@@ -101,5 +105,5 @@ def test_release_workflow_and_docs_reference_v015_release() -> None:
     assert "gh release create" in workflow
     assert "dist/*" in workflow
     assert "civiccore/releases/download/v0.13.0/civiccore-0.13.0-py3-none-any.whl" in workflow
-    assert "civicclerk v0.1.6" in docs
+    assert "civicclerk v0.1.7" in docs
     assert "published `civiccore` v0.13.0 release wheel" in docs
