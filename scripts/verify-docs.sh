@@ -8,7 +8,9 @@ fail=0
 
 required=(
   README.md
+  README.txt
   USER-MANUAL.md
+  USER-MANUAL.txt
   CHANGELOG.md
   CONTRIBUTING.md
   LICENSE-CODE
@@ -58,7 +60,7 @@ done
 echo "==> Stale current-facing strings check"
 pattern='MIT|26 modules across 6 tiers|~=0\.2|civicclerk shipping|scottconverse/civicrecords-ai|v1\.3\.0|civiccore 0\.1\.0|Phase 0 scaffold'
 hits=$(grep -RInE "$pattern" \
-  -- README.md USER-MANUAL.md docs/index.html CHANGELOG.md CONTRIBUTING.md SECURITY.md SUPPORT.md .github 2>/dev/null \
+  -- README.md README.txt USER-MANUAL.md USER-MANUAL.txt docs/index.html CHANGELOG.md CONTRIBUTING.md SECURITY.md SUPPORT.md .github 2>/dev/null \
   || true)
 
 if [[ -n "$hits" ]]; then
@@ -66,6 +68,13 @@ if [[ -n "$hits" ]]; then
   echo "$hits" | sed 's/^/    /'
   fail=1
 fi
+
+for file in README.md README.txt docs/index.html; do
+  if ! grep -q "connector runtime validation" "$file"; then
+    echo "  MISSING CURRENT CONNECTOR CLAIM: $file"
+    fail=1
+  fi
+done
 
 if [[ $fail -ne 0 ]]; then
   echo "VERIFY-DOCS: FAILED"
