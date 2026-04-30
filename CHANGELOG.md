@@ -25,6 +25,9 @@ All notable changes to CivicClerk are documented here.
   injected headers, steps, and warnings for `scripts/local_trusted_header_proxy.py`.
 
 ### Changed
+- Fresh-install docs now call out the Python `venv` prerequisite for Bash-based
+  Linux rehearsals, and the roadmap now labels the release bar as current
+  instead of the historical v0.1.0 target.
 - The `/staff` auth panel now renders the trusted-header local proxy rehearsal
   guidance directly so operators can follow a safe loopback rehearsal path
   without reading raw JSON output.
