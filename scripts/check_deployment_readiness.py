@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
+import shlex
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -15,6 +16,7 @@ from civicclerk import __version__
 from civicclerk.main import (
     STAFF_AUTH_MODE_ENV_VAR,
     STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
+    STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
     staff_auth_readiness,
 )
 from civiccore import __version__ as CIVICCORE_VERSION
@@ -56,11 +58,19 @@ def main() -> int:
         action="store_true",
         help="Exit non-zero when the report is not deployment-ready.",
     )
+    parser.add_argument(
+        "--env-file",
+        help=(
+            "Load KEY=VALUE lines from a deployment profile before checking. "
+            "Comments and blank lines are ignored; existing process env values win."
+        ),
+    )
     args = parser.parse_args()
 
+    loaded_env_file = _load_env_file(Path(args.env_file)) if args.env_file else None
     checks = build_checks()
     deployment_ready = all(check.status == "PASS" for check in checks)
-    print_report(checks=checks, deployment_ready=deployment_ready)
+    print_report(checks=checks, deployment_ready=deployment_ready, loaded_env_file=loaded_env_file)
     return 1 if args.strict and not deployment_ready else 0
 
 
@@ -69,16 +79,24 @@ def build_checks() -> list[Check]:
     checks.extend(_auth_checks())
     checks.extend(_database_checks())
     checks.extend(_export_root_checks())
+    checks.extend(_placeholder_checks())
     checks.extend(_release_artifact_checks())
     checks.extend(_documentation_checks())
     return checks
 
 
-def print_report(*, checks: Iterable[Check], deployment_ready: bool) -> None:
+def print_report(
+    *,
+    checks: Iterable[Check],
+    deployment_ready: bool,
+    loaded_env_file: Path | None = None,
+) -> None:
     checks = list(checks)
     counts = {status: sum(1 for check in checks if check.status == status) for status in ("PASS", "WARN", "FAIL")}
     print("CivicClerk deployment readiness preflight")
     print(f"Version: civicclerk {__version__}; civiccore {CIVICCORE_VERSION}")
+    if loaded_env_file is not None:
+        print(f"env_file={_display_path(loaded_env_file)}")
     print(f"deployment_ready={str(deployment_ready).lower()}")
     print(f"summary: pass={counts['PASS']} warn={counts['WARN']} fail={counts['FAIL']}")
     for check in checks:
@@ -182,6 +200,37 @@ def _export_root_checks() -> list[Check]:
     ]
 
 
+def _placeholder_checks() -> list[Check]:
+    env_names = (
+        STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
+        *DATABASE_ENV_VARS,
+        "CIVICCLERK_EXPORT_ROOT",
+        DIST_ROOT_ENV_VAR,
+    )
+    placeholder_names = [
+        name
+        for name in env_names
+        if _looks_like_placeholder(os.environ.get(name, ""))
+    ]
+    if not placeholder_names:
+        return [
+            Check(
+                status="PASS",
+                name="deployment profile placeholders",
+                message="no known placeholder values were found in deployment environment variables.",
+                fix="Keep completed deployment profiles out of source control and rotate any copied sample tokens before use.",
+            )
+        ]
+    return [
+        Check(
+            status="WARN",
+            name="deployment profile placeholders",
+            message="placeholder values still need replacement in: " + ", ".join(placeholder_names),
+            fix="Replace sample tokens, sample database paths, and sample export roots before treating this profile as deployment-ready.",
+        )
+    ]
+
+
 def _release_artifact_checks() -> list[Check]:
     dist_root = Path(os.environ.get(DIST_ROOT_ENV_VAR, ROOT / "dist"))
     required = (
@@ -261,6 +310,59 @@ def _display_path(path: Path) -> str:
         return path.resolve().relative_to(ROOT).as_posix()
     except ValueError:
         return path.name
+
+
+def _load_env_file(path: Path) -> Path:
+    resolved = path.resolve()
+    if not resolved.exists():
+        raise SystemExit(f"Deployment env file not found: {path}")
+    if not resolved.is_file():
+        raise SystemExit(f"Deployment env file is not a file: {path}")
+
+    for line_number, raw_line in enumerate(resolved.read_text(encoding="utf-8").splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].strip()
+        if "=" not in line:
+            raise SystemExit(f"Invalid env file line {line_number}: expected KEY=VALUE.")
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if not key or not key.replace("_", "").isalnum() or key[0].isdigit():
+            raise SystemExit(f"Invalid env file line {line_number}: invalid environment variable name.")
+        if key in os.environ:
+            continue
+        os.environ[key] = _parse_env_value(value.strip(), line_number=line_number)
+    return resolved
+
+
+def _parse_env_value(value: str, *, line_number: int) -> str:
+    if not value:
+        return ""
+    if not (value.startswith("'") or value.startswith('"')):
+        return value
+    try:
+        parsed = shlex.split(value, posix=True)
+    except ValueError as exc:
+        raise SystemExit(f"Invalid env file line {line_number}: {exc}") from exc
+    if len(parsed) > 1:
+        raise SystemExit(f"Invalid env file line {line_number}: value contains unquoted whitespace.")
+    return parsed[0] if parsed else ""
+
+
+def _looks_like_placeholder(value: str) -> bool:
+    lowered = value.lower()
+    return any(
+        marker in lowered
+        for marker in (
+            "replace-with",
+            "replace_me",
+            "placeholder",
+            "civicclerk-data",
+            "civicclerk-exports",
+        )
+    )
 
 
 if __name__ == "__main__":

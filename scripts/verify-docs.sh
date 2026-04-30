@@ -18,6 +18,7 @@ required=(
   SUPPORT.md
   .gitignore
   docs/index.html
+  docs/examples/deployment.env.example
   docs/browser-qa/milestone11-checklist.md
   docs/browser-qa/states.html
   docs/github-discussions-seed.md

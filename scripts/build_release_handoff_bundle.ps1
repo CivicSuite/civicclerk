@@ -24,6 +24,7 @@ $BundleFiles = @(
     "CHANGELOG.md",
     "LICENSE",
     "docs/index.html",
+    "docs/examples/deployment.env.example",
     "docs/examples/trusted-header-nginx.conf",
     "scripts/start_fresh_install_rehearsal.ps1",
     "scripts/start_fresh_install_rehearsal.sh",

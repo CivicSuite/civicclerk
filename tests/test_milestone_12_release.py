@@ -115,6 +115,8 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
         "scripts/build_release_handoff_bundle.ps1",
         "scripts/build_release_handoff_bundle.sh",
         "scripts/check_deployment_readiness.py",
+        "docs/examples/deployment.env.example",
+        "python scripts/check_deployment_readiness.py --env-file",
         "scripts/check_backup_restore_rehearsal.py",
         "scripts/start_backup_restore_rehearsal.ps1",
         "scripts/start_backup_restore_rehearsal.sh",
@@ -314,6 +316,7 @@ def test_release_handoff_bundle_script_prints_expected_plan() -> None:
         "scripts/start_protected_demo_rehearsal.ps1",
         "scripts/start_protected_demo_rehearsal.sh",
         "docs/examples/trusted-header-nginx.conf",
+        "docs/examples/deployment.env.example",
         "Not an installer",
         "Build release artifacts first with: bash scripts/verify-release.sh",
     ]:
@@ -362,6 +365,7 @@ def test_release_handoff_bundle_bash_script_prints_expected_plan() -> None:
         "scripts/start_protected_demo_rehearsal.ps1",
         "scripts/start_protected_demo_rehearsal.sh",
         "docs/examples/trusted-header-nginx.conf",
+        "docs/examples/deployment.env.example",
         "Not an installer",
         "Build release artifacts first with: bash scripts/verify-release.sh",
     ]:
