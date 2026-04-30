@@ -114,6 +114,7 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
         "--print-only",
         "scripts/build_release_handoff_bundle.ps1",
         "scripts/build_release_handoff_bundle.sh",
+        "scripts/check_deployment_readiness.py",
         "127.0.0.1:8877",
         "127.0.0.1:8878",
     ]:

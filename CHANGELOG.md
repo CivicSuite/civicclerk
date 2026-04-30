@@ -5,6 +5,9 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `scripts/check_deployment_readiness.py` now prints a non-mutating deployment
+  preflight for auth posture, persistent-store env vars, packet export root,
+  release artifacts, documentation gate files, and trusted-header proxy handoff.
 - `scripts/build_release_handoff_bundle.sh` now mirrors the PowerShell release
   handoff bundle helper for Linux, macOS, and Git Bash operators.
 - `scripts/build_release_handoff_bundle.ps1` now prints and can create a
