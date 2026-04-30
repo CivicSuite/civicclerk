@@ -24,7 +24,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert 'aria-label="CivicClerk staff workflow screens"' in html
     assert "Skip to workflow screens" in html
     assert "CivicClerk Staff Workflow Screens" in html
-    assert "v0.1.8" in html
+    assert "v0.1.9" in html
     assert "browser-visible staff workflow screens" in html
     assert "bearer-protected staff mode" in html
     assert "trusted-header staff mode" in html
@@ -34,6 +34,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "/staff/session" in html
     assert "CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER" in html
     assert "CIVICCLERK_STAFF_SSO_ROLES_HEADER" in html
+    assert "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES" in html
     assert "/agenda-intake" in html
     assert "Department submission queue" in html
     assert "/meetings/{id}/packet-assemblies" in html

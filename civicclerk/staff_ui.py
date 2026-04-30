@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from civicclerk import __version__
 
 SCREEN_CARDS = [
     {
@@ -249,7 +250,7 @@ def render_staff_dashboard() -> str:
   <a class="skip" href="#workflow-screens">Skip to workflow screens</a>
   <main aria-label="CivicClerk staff workflow screens">
     <section class="hero">
-      <div class="eyebrow">CivicClerk v0.1.8</div>
+      <div class="eyebrow">CivicClerk v{__version__}</div>
       <h1>CivicClerk Staff Workflow Screens</h1>
       <p class="status">These are browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly and export, notice checklist/posting proof, outcome capture, cited minutes drafting, public archive publishing, and connector import work, and they now disclose whether the service is running in local open mode, bearer-protected staff mode, or trusted-header staff mode.</p>
       <p>The screens show the live API paths, safe next actions, required staff states, actionable fix copy, and the first deployment-ready staff auth contract for the service slices available today. full OIDC login is not shipped yet; this screen is the bridge contract until that lands.</p>
@@ -259,7 +260,7 @@ def render_staff_dashboard() -> str:
       <div class="auth-grid">
         <div>
           <h2 id="staff-auth-heading">Staff access check</h2>
-          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code>.</p>
+          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>.</p>
           <label>Bearer token for staff actions
             <input id="staff-auth-token" name="staff_auth_token" placeholder="Paste bearer token when bearer mode is enabled" autocomplete="off">
           </label>

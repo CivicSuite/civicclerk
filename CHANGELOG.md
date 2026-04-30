@@ -4,6 +4,18 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-04-29
+
+### Added
+- Trusted-header staff mode now enforces a configured trusted-proxy CIDR
+  allowlist before CivicClerk accepts asserted principal and roles headers.
+
+### Changed
+- The `/staff` workflow shell, current-facing docs, and release gate now
+  document `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES` as part of the trusted
+  reverse-proxy contract.
+- CivicClerk now targets the published `civiccore` v0.15.0 release wheel.
+
 ## [0.1.8] - 2026-04-29
 
 ### Added
