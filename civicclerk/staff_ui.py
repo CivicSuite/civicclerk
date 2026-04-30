@@ -260,7 +260,7 @@ def render_staff_dashboard() -> str:
       <div class="auth-grid">
         <div>
           <h2 id="staff-auth-heading">Staff access and readiness check</h2>
-          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>.</p>
+          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>. If you need a one-workstation trusted-header rehearsal first, use <code>scripts/local_trusted_header_proxy.py</code> with the loopback starter allowlist <code>127.0.0.1/32</code> instead of sending identity headers straight to the app.</p>
           <p>The readiness check uses <code>/staff/auth-readiness</code> to tell IT staff whether the current auth mode is deployment-ready before a live authenticated session is tested, and it now returns a concrete session probe plus a protected write probe when bearer or trusted-header mode is ready.</p>
           <label>Bearer token for staff actions
             <input id="staff-auth-token" name="staff_auth_token" placeholder="Paste bearer token when bearer mode is enabled" autocomplete="off">
@@ -371,6 +371,28 @@ def render_staff_dashboard() -> str:
       return `<ul>${{items.join("")}}</ul>`;
     }}
 
+    function formatKeyValueTable(data) {{
+      if (!data || typeof data !== "object" || Array.isArray(data) || Object.keys(data).length === 0) {{
+        return "";
+      }}
+      const rows = Object.entries(data).map(([key, value]) => `<li><strong>${{key}}:</strong> <code>${{value}}</code></li>`);
+      return `<ul>${{rows.join("")}}</ul>`;
+    }}
+
+    function formatOrderedList(items) {{
+      if (!Array.isArray(items) || items.length === 0) {{
+        return "";
+      }}
+      return `<ol>${{items.map((item) => `<li>${{item}}</li>`).join("")}}</ol>`;
+    }}
+
+    function formatWarningList(items) {{
+      if (!Array.isArray(items) || items.length === 0) {{
+        return "";
+      }}
+      return `<ul>${{items.map((item) => `<li>${{item}}</li>`).join("")}}</ul>`;
+    }}
+
     function formatProbe(label, probe) {{
       if (!probe || typeof probe !== "object") {{
         return "";
@@ -382,16 +404,51 @@ def render_staff_dashboard() -> str:
         ? `<li><strong>Body:</strong><pre>${{JSON.stringify(probe.body, null, 2)}}</pre></li>`
         : "";
       const note = probe.note ? `<li><strong>Why this matters:</strong> ${{probe.note}}</li>` : "";
-      return `
-        <div class="probe-card">
-          <strong>${{label}}</strong>
-          <ul>
+        return `
+          <div class="probe-card">
+            <strong>${{label}}</strong>
+            <ul>
             <li><strong>Method:</strong> <code>${{probe.method || "GET"}}</code></li>
             <li><strong>Path:</strong> <code>${{probe.path || "/"}}</code></li>
             ${{headers}}
             ${{body}}
             ${{note}}
           </ul>
+          </div>
+        `;
+      }}
+
+    function formatLocalProxyRehearsal(rehearsal) {{
+      if (!rehearsal || typeof rehearsal !== "object") {{
+        return "";
+      }}
+      const command = Array.isArray(rehearsal.command)
+        ? rehearsal.command.map((part) => `${{part}}`).join(" ")
+        : "";
+      const trustedProxyCidrs = Array.isArray(rehearsal.trusted_proxy_cidrs)
+        ? rehearsal.trusted_proxy_cidrs.map((cidr) => `<code>${{cidr}}</code>`).join(", ")
+        : "<code>not set</code>";
+      return `
+        <div class="probe-card">
+          <strong>Local proxy rehearsal</strong>
+          <ul>
+            <li><strong>Scope:</strong> <code>${{rehearsal.scope || "not set"}}</code></li>
+            <li><strong>Helper script:</strong> <code>${{rehearsal.script_path || "not set"}}</code></li>
+            <li><strong>Listen URL:</strong> <code>${{rehearsal.listen_url || "not set"}}</code></li>
+            <li><strong>Upstream URL:</strong> <code>${{rehearsal.upstream_url || "not set"}}</code></li>
+            <li><strong>Trusted proxy CIDRs:</strong> ${{trustedProxyCidrs}}</li>
+            <li><strong>Command:</strong> <code>${{command || "not set"}}</code></li>
+          </ul>
+          <strong>App env</strong>
+          ${{formatKeyValueTable(rehearsal.app_env)}}
+          <strong>Proxy env</strong>
+          ${{formatKeyValueTable(rehearsal.proxy_env)}}
+          <strong>Injected headers</strong>
+          ${{formatKeyValueTable(rehearsal.headers)}}
+          <strong>Steps</strong>
+          ${{formatOrderedList(rehearsal.steps)}}
+          <strong>Warnings</strong>
+          ${{formatWarningList(rehearsal.warnings)}}
         </div>
       `;
     }}
@@ -406,15 +463,16 @@ def render_staff_dashboard() -> str:
           throw new Error(`${{detail.message || "Staff auth readiness check failed."}} How to fix: ${{detail.fix || "Check the configured auth mode and retry."}}`);
         }}
         const readinessChecks = formatReadinessChecks(readiness.checks);
+        const localProxy = formatLocalProxyRehearsal(readiness.local_proxy_rehearsal);
         if (readiness.mode === "trusted_header") {{
           const readinessState = readiness.ready ? "success" : "error";
           const probes = `${{formatProbe("Session probe", readiness.session_probe)}}${{formatProbe("Write probe", readiness.write_probe)}}`;
           setAuthStatus(
             readinessState,
-            `<strong>${{readiness.ready ? "Ready" : "Not ready"}}:</strong> ${{readiness.message}}<br><strong>Provider:</strong> ${{readiness.provider || "not set"}}<br><strong>Principal header:</strong> <code>${{readiness.principal_header || "not set"}}</code><br><strong>Roles header:</strong> <code>${{readiness.roles_header || "not set"}}</code>${{readinessChecks}}${{probes}}<strong>Next step:</strong> ${{readiness.fix}}`,
-          );
-          return;
-        }}
+            `<strong>${{readiness.ready ? "Ready" : "Not ready"}}:</strong> ${{readiness.message}}<br><strong>Provider:</strong> ${{readiness.provider || "not set"}}<br><strong>Principal header:</strong> <code>${{readiness.principal_header || "not set"}}</code><br><strong>Roles header:</strong> <code>${{readiness.roles_header || "not set"}}</code>${{readinessChecks}}${{localProxy}}${{probes}}<strong>Next step:</strong> ${{readiness.fix}}`,
+            );
+            return;
+          }}
         if (readiness.mode === "open") {{
           setAuthStatus(
             "success",

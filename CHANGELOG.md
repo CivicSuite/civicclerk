@@ -4,6 +4,16 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Added
+- Trusted-header `/staff/auth-readiness` responses now include a structured
+  `local_proxy_rehearsal` contract with loopback-only helper command, env vars,
+  injected headers, steps, and warnings for `scripts/local_trusted_header_proxy.py`.
+
+### Changed
+- The `/staff` auth panel now renders the trusted-header local proxy rehearsal
+  guidance directly so operators can follow a safe loopback rehearsal path
+  without reading raw JSON output.
+
 ## [0.1.11] - 2026-04-30
 
 ### Added
