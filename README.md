@@ -97,6 +97,9 @@ Shipped in this foundation:
 - browser QA gate covering loading, success, empty, error, and partial states
 - accessibility checks for keyboard navigation, focus states, contrast, and console errors
 - CivicClerk v0.1.11 release gate and build artifacts
+- `scripts/start_fresh_install_rehearsal.ps1` to rehearse the documented
+  Windows-first wheel install and first-run smoke checks from an isolated
+  `.fresh-install-rehearsal` virtual environment
 - `/staff/session` to report whether the live staff shell is in local open mode, bearer-protected staff mode, or trusted-header staff mode
 - `/staff/auth-readiness` to report whether the current bearer-token or trusted-header staff auth contract is deployment-ready
 - structured `session_probe` and `write_probe` guidance from `/staff/auth-readiness` when bearer or trusted-header deployment is ready
@@ -140,6 +143,7 @@ A new user can inspect and run the foundation, open first staff workflow screens
    - `GET http://127.0.0.1:8776/health` must return `{"status":"ok","service":"civicclerk","version":"0.1.11","civiccore":"0.16.0"}`
    - `GET http://127.0.0.1:8776/staff/auth-readiness` must report `mode: "open"` and explain how to switch to bearer or trusted-header deployment
    - Open `http://127.0.0.1:8776/staff` and confirm the first workflow shell loads
+   - Use `powershell -ExecutionPolicy Bypass -File scripts/start_fresh_install_rehearsal.ps1 -PrintOnly` to print the repeatable Windows fresh-install rehearsal plan, or rerun without `-PrintOnly` to create `.fresh-install-rehearsal\.venv`, install the release wheel, start the installed app, and run the same smoke checks automatically
    - Use `powershell -ExecutionPolicy Bypass -File scripts/start_protected_demo_rehearsal.ps1 -PrintOnly` on Windows PowerShell or `bash scripts/start_protected_demo_rehearsal.sh --print-only` on Linux, macOS, or Git Bash to print the protected trusted-header demo profile before launching it
 7. Exercise `/agenda-intake`, `/agenda-intake/{id}/review`, `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/packet-assemblies`, `/packet-assemblies/{id}/finalize`, `/meetings/{id}/notice-checklists`, `/notice-checklists/{id}/posting-proof`, `/meetings/{id}/export-bundle`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, `/public/archive/search`, and `/imports/{connector}/meetings` to smoke-check Milestone 10 plus the production-depth live staff action slices.
 8. Set `CIVICCLERK_AGENDA_ITEM_DB_URL` before agenda item lifecycle persistence smoke checks, set `CIVICCLERK_MEETING_DB_URL` before meeting persistence smoke checks, and set `CIVICCLERK_EXPORT_ROOT` before API packet export smoke checks; API callers provide a relative `bundle_name`, not an arbitrary filesystem path.
@@ -168,6 +172,8 @@ The foundation is intentionally thin. Canonical schema, Alembic scaffolding, age
 The staff experience at `/staff` now includes first workflow screens for agenda intake, packet assembly/export, notice checklist/posting-proof, meeting outcome, minutes draft, public archive, and connector import work. It is intentionally honest: these seven screens can submit their corresponding live API actions, the auth panel now renders concrete protected-session and protected-write probes from `/staff/auth-readiness` when bearer or trusted-header mode is ready, it surfaces the loopback-only local proxy rehearsal command and env vars when trusted-header mode is being staged, and the broader multi-role React clerk console remains future work.
 
 For the first real trusted-header deployment handoff, `docs/examples/trusted-header-nginx.conf` now ships a reference nginx bridge that strips client-supplied identity headers, sets proxy-owned staff headers, and points operators back to `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES` plus the `/staff/auth-readiness` contract before live staff traffic is trusted.
+
+For fresh Windows install rehearsals, `scripts/start_fresh_install_rehearsal.ps1` now prints and can execute the documented wheel-install path from an isolated `.fresh-install-rehearsal` virtual environment: create venv, upgrade pip, install `dist/civicclerk-0.1.11-py3-none-any.whl`, set `CIVICCLERK_STAFF_AUTH_MODE=open`, launch the installed app on `127.0.0.1:8776`, verify `/health`, verify `/staff/auth-readiness`, and fetch `/staff`. If the wheel is missing, the helper tells the operator to build it with `python -m build` before trying again.
 
 For protected demos on Windows PowerShell, `scripts/start_protected_demo_rehearsal.ps1` now prints and can launch the loopback-only trusted-header profile end to end: the app on `127.0.0.1:8877`, the helper proxy on `127.0.0.1:8878`, the required trusted-header env vars, the health/readiness checks, and the browser target for `/staff`.
 

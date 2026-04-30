@@ -146,6 +146,20 @@ Then verify these first-run checks:
 - `GET /staff` renders the first workflow shell without console errors
 - Linux and Unix shell parity still needs its own rehearsal before those commands are documented as supported
 
+To rehearse that Windows-first path without hand-copying each command, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start_fresh_install_rehearsal.ps1 -PrintOnly
+```
+
+The print-only mode shows the virtual environment path, wheel path, app command,
+and exact smoke-check URLs. Rerun the same script without `-PrintOnly` to create
+`.fresh-install-rehearsal\.venv`, install the release wheel into that isolated
+environment, start the installed app on `127.0.0.1:8776`, verify `/health`,
+verify `/staff/auth-readiness`, and fetch `/staff`. If the release wheel is not
+present, the helper stops with the fix path: build it first with `python -m
+build`.
+
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
 workflows, move to `bearer` or `trusted_header` before user testing and use
