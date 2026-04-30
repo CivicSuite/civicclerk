@@ -4,6 +4,21 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-04-29
+
+### Added
+- CivicClerk staff workflow APIs now support a trusted-header reverse-proxy
+  bridge for municipal SSO front doors, including configurable principal and
+  role header names, provider labeling, and browser-visible `/staff/session`
+  status that tells operators exactly which asserted identity contract is in
+  effect.
+
+### Changed
+- The `/staff` workflow shell now discloses local open, bearer-protected, and
+  trusted-header staff modes, and it explains that full OIDC login is still
+  future work rather than pretending the proxy bridge is a first-party IdP flow.
+- CivicClerk now targets the published `civiccore` v0.14.0 release wheel.
+
 ## [0.1.7] - 2026-04-29
 
 ### Added
