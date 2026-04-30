@@ -5,6 +5,12 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `docs/examples/deployment.env.example` now gives operators a copy-editable
+  deployment profile for protected auth, persistent stores, packet export root,
+  and release artifact preflight paths.
+- `scripts/check_deployment_readiness.py` now supports `--env-file` so CI or IT
+  can validate a deployment profile without hand-exporting each environment
+  variable first.
 - `scripts/check_backup_restore_rehearsal.py` now seeds the SQLite-backed
   agenda intake, agenda item, meeting, packet assembly, and notice checklist
   stores, copies them with packet export evidence into a backup directory,
@@ -45,6 +51,7 @@ All notable changes to CivicClerk are documented here.
   injected headers, steps, and warnings for `scripts/local_trusted_header_proxy.py`.
 
 ### Changed
+- Release handoff bundles now include the deployment env profile example.
 - `scripts/start_backup_restore_rehearsal.sh` now supports
   `CIVICCLERK_REHEARSAL_PYTHON` and performs an actionable dependency preflight
   before executing the backup/restore rehearsal from Bash.

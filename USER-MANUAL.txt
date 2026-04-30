@@ -209,6 +209,17 @@ should fail unless staff auth, persistent-store env vars, packet export root,
 release artifacts, required docs, and trusted-header proxy references are
 deployment-ready. The report intentionally does not print database URLs or token
 values; it names missing environment variables and gives the next fix step.
+To validate a profile without hand-exporting each variable, copy
+`docs/examples/deployment.env.example` to a private deployment path, replace the
+placeholder token, database URLs, export root, and dist root, then run:
+
+```bash
+python scripts/check_deployment_readiness.py --env-file path/to/deployment.env --strict
+```
+
+The env-file loader accepts `KEY=VALUE` and `export KEY=VALUE` lines, ignores
+comments and blanks, lets already-exported process environment values win, and
+still avoids printing token values or database URLs in the report.
 
 Before IT trusts restore operations, rehearse the local backup/restore path:
 
