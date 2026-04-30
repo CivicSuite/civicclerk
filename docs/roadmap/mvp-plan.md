@@ -5,10 +5,11 @@ replacement.
 
 Current status as of CivicClerk v0.1.11: the runtime foundation, staff workflow
 HTML shell, prompt gates, release gates, connector import normalization, public
-archive filtering, packet export bundles, protected staff-auth rehearsal, and
-fresh-install rehearsal helpers are present. Remaining MVP work still centers
-on the integrated multi-role frontend app, installer packaging, public portal,
-and live sync/deployment hardening.
+archive filtering, the first public portal shell, packet export bundles,
+protected staff-auth rehearsal, and fresh-install rehearsal helpers are present.
+Remaining MVP work still centers on the integrated multi-role frontend app,
+installer packaging, the finished public portal, and live sync/deployment
+hardening.
 
 ## Sprint 1
 
