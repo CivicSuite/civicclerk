@@ -80,8 +80,12 @@ if [[ "$print_only" -eq 1 ]]; then
 fi
 
 cd "$repo_root"
-export PYTHONPATH="$repo_root${PYTHONPATH:+:$PYTHONPATH}"
-if command -v python3 >/dev/null 2>&1; then
+
+if [[ -n "${CIVICCLERK_REHEARSAL_PYTHON:-}" ]]; then
+  python_cmd=("${CIVICCLERK_REHEARSAL_PYTHON}")
+elif [[ "$(uname -s)" == MINGW* || "$(uname -s)" == MSYS* || "$(uname -s)" == CYGWIN* ]] && command -v py >/dev/null 2>&1; then
+  python_cmd=(py -3)
+elif command -v python3 >/dev/null 2>&1; then
   python_cmd=(python3)
 elif command -v python >/dev/null 2>&1; then
   python_cmd=(python)
@@ -90,6 +94,27 @@ elif command -v py >/dev/null 2>&1; then
 else
   echo "Python is required for the backup/restore rehearsal. Install Python 3 or rerun from Windows PowerShell with scripts/start_backup_restore_rehearsal.ps1." >&2
   exit 1
+fi
+
+pythonpath_repo_root="$repo_root"
+pythonpath_separator=":"
+if command -v wslpath >/dev/null 2>&1 && [[ "${python_cmd[0]}" == *.exe ]]; then
+  pythonpath_repo_root="$(wslpath -w "$repo_root")"
+  pythonpath_separator=";"
+fi
+export PYTHONPATH="$pythonpath_repo_root${PYTHONPATH:+$pythonpath_separator$PYTHONPATH}"
+
+if [[ "$print_only" -ne 1 ]]; then
+  if ! "${python_cmd[@]}" - <<'PY' >/dev/null 2>&1
+import civicclerk
+import civiccore
+import sqlalchemy
+PY
+  then
+    echo "The selected Python cannot import CivicClerk runtime dependencies." >&2
+    echo "Fix: install this checkout first with 'python -m pip install -e .', set CIVICCLERK_REHEARSAL_PYTHON to the prepared Python executable, or run the Windows PowerShell wrapper instead." >&2
+    exit 1
+  fi
 fi
 
 "${python_cmd[@]}" "${args[@]}"
