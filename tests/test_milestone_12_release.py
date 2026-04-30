@@ -103,6 +103,8 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
         "http://127.0.0.1:8776/health",
         "/staff/auth-readiness",
         '$env:CIVICCLERK_STAFF_AUTH_MODE="open"',
+        "docs/examples/trusted-header-nginx.conf",
+        "reverse_proxy_reference",
         "scripts/start_protected_demo_rehearsal.ps1",
         "-PrintOnly",
         "scripts/start_protected_demo_rehearsal.sh",

@@ -5,6 +5,8 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `docs/examples/trusted-header-nginx.conf` now ships the first real trusted-header
+  reverse-proxy reference bridge for CivicClerk staff auth handoff.
 - `scripts/start_protected_demo_rehearsal.ps1` now prints and can launch a
   repeatable Windows PowerShell trusted-header demo profile for CivicClerk plus
   the loopback-only helper proxy.
@@ -19,6 +21,9 @@ All notable changes to CivicClerk are documented here.
 - The `/staff` auth panel now renders the trusted-header local proxy rehearsal
   guidance directly so operators can follow a safe loopback rehearsal path
   without reading raw JSON output.
+- Trusted-header `/staff/auth-readiness` responses now include a structured
+  `reverse_proxy_reference` block that points operators to the shipped nginx
+  bridge example before they trust live staff traffic.
 
 ## [0.1.11] - 2026-04-30
 

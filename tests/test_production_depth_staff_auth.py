@@ -240,6 +240,13 @@ async def test_trusted_header_mode_readiness_reports_configured_proxy_bridge(
     assert response.json()["principal_header"] == "X-Staff-Email"
     assert response.json()["roles_header"] == "X-Staff-Roles"
     assert response.json()["trusted_proxy_cidrs"] == ["10.20.30.0/24"]
+    assert response.json()["reverse_proxy_reference"]["kind"] == "nginx_trusted_header_bridge"
+    assert response.json()["reverse_proxy_reference"]["path"] == "docs/examples/trusted-header-nginx.conf"
+    assert response.json()["reverse_proxy_reference"]["headers"] == {
+        "X-Staff-Email": "<authenticated staff email>",
+        "X-Staff-Roles": "<comma-separated mapped staff roles>",
+    }
+    assert "Strip any client-supplied copies" in response.json()["reverse_proxy_reference"]["steps"][1]
     assert response.json()["local_proxy_rehearsal"]["scope"] == "loopback_only"
     assert response.json()["local_proxy_rehearsal"]["script_path"] == "scripts/local_trusted_header_proxy.py"
     assert response.json()["local_proxy_rehearsal"]["trusted_proxy_cidrs"] == ["127.0.0.1/32"]
@@ -344,6 +351,8 @@ async def test_trusted_header_mode_readiness_requires_proxy_allowlist(
     assert response.json()["deployment_ready"] is False
     assert "allowlist is missing" in response.json()["message"]
     assert STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR in response.json()["fix"]
+    assert "docs/examples/trusted-header-nginx.conf" in response.json()["fix"]
+    assert response.json()["reverse_proxy_reference"]["path"] == "docs/examples/trusted-header-nginx.conf"
     assert response.json()["local_proxy_rehearsal"]["script_path"] == "scripts/local_trusted_header_proxy.py"
     assert response.json()["local_proxy_rehearsal"]["proxy_env"]["CIVICCLERK_LOCAL_PROXY_UPSTREAM"] == "http://127.0.0.1:8000"
     assert "localhost rehearsal only" in response.json()["local_proxy_rehearsal"]["warnings"][0]
