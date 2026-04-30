@@ -211,6 +211,30 @@ release artifacts, required docs, and trusted-header proxy references are
 deployment-ready. The report intentionally does not print database URLs or token
 values; it names missing environment variables and gives the next fix step.
 
+Before IT trusts restore operations, rehearse the local backup/restore path:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start_backup_restore_rehearsal.ps1 -PrintOnly
+```
+
+or from Linux, macOS, or Git Bash:
+
+```bash
+bash scripts/start_backup_restore_rehearsal.sh --print-only
+```
+
+The print-only plan previews the five SQLite-backed persistent stores, the
+packet export evidence, the `backup/civicclerk-backup-manifest.json` file, the
+restored store directory, and the restored `CIVICCLERK_EXPORT_ROOT`. Rerun
+without the print-only flag to execute the rehearsal under
+`.backup-restore-rehearsal`: `scripts/check_backup_restore_rehearsal.py` seeds
+agenda intake, agenda item, meeting, packet assembly, and notice checklist
+records, copies the databases and export evidence into a backup directory,
+restores them to separate `restored-data` and `restored-exports` directories,
+then reopens the restored records through CivicClerk repositories. If a check
+fails, keep the run directory, inspect the named file or record, fix the backup
+source or environment variable, and rerun with a new run id.
+
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
 workflows, move to `bearer` or `trusted_header` before user testing and use

@@ -28,6 +28,9 @@ required=(
   scripts/run-prompt-evals.py
   scripts/verify-release.sh
   scripts/verify-browser-qa.py
+  scripts/check_backup_restore_rehearsal.py
+  scripts/start_backup_restore_rehearsal.ps1
+  scripts/start_backup_restore_rehearsal.sh
   docs/architecture/ADR-0001-mvp-boundary.md
   docs/adr/civicclerk-adr-0001.md
   docs/adr/civicclerk-adr-0002.md
