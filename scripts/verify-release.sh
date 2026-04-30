@@ -93,4 +93,7 @@ for artifact in artifacts:
 print("SHA256SUMS.txt")
 PY
 
+echo "==> release contract"
+"$PYTHON" -m pytest tests/test_milestone_12_release.py
+
 echo "VERIFY-RELEASE: PASSED"
