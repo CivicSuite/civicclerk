@@ -5,6 +5,9 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `/public` now renders the first resident-facing public portal shell over the
+  existing public calendar, public detail, and anonymous archive search APIs,
+  with actionable loading, empty, error, and search states.
 - `scripts/start_fresh_install_rehearsal.ps1` now prints and can execute the
   documented Windows-first fresh-machine wheel install plus `/health`,
   `/staff/auth-readiness`, and `/staff` smoke checks from an isolated

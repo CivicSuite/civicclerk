@@ -38,6 +38,7 @@ from civicclerk.packet_notice import (
     evaluate_notice_compliance,
 )
 from civicclerk.public_archive import PublicArchiveStore, can_view_closed_sessions
+from civicclerk.public_ui import render_public_portal
 from civicclerk.staff_ui import render_staff_dashboard
 from civiccore import __version__ as CIVICCORE_VERSION
 
@@ -341,6 +342,12 @@ async def favicon() -> Response:
 async def staff_dashboard() -> str:
     """Render the staff-facing workflow foundation."""
     return render_staff_dashboard()
+
+
+@app.get("/public", response_class=HTMLResponse)
+async def public_portal() -> str:
+    """Render the resident-facing public portal shell."""
+    return render_public_portal()
 
 
 @app.get("/staff/session")
@@ -1503,7 +1510,7 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
 def _is_staff_protected_path(path: str) -> bool:
     if path in {"/", "/health", "/staff", "/staff/auth-readiness", "/favicon.ico"}:
         return False
-    if path.startswith("/public/"):
+    if path == "/public" or path.startswith("/public/"):
         return False
     if path in {"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}:
         return False

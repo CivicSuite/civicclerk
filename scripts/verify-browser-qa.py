@@ -36,8 +36,12 @@ def main() -> int:
         ROOT / "docs" / "browser-qa-production-depth-live-packet-export-screen-mobile.png",
         ROOT / "docs" / "browser-qa-production-depth-agenda-item-persistence-desktop.png",
         ROOT / "docs" / "browser-qa-production-depth-agenda-item-persistence-mobile.png",
+        ROOT / "docs" / "screenshots" / "public-portal-shell-empty-desktop.png",
+        ROOT / "docs" / "screenshots" / "public-portal-shell-desktop.png",
+        ROOT / "docs" / "screenshots" / "public-portal-shell-mobile.png",
     ]
     milestone13_summary = ROOT / "docs" / "screenshots" / "milestone13-staff-ui-summary.md"
+    public_portal_summary = ROOT / "docs" / "screenshots" / "public-portal-shell-summary.md"
 
     if not checklist.exists():
         failures.append("missing docs/browser-qa/milestone11-checklist.md")
@@ -90,6 +94,28 @@ def main() -> int:
             if required_phrase not in milestone13_text:
                 failures.append(
                     "protected staff UI summary missing phrase: "
+                    f"{required_phrase}"
+                )
+
+    if not public_portal_summary.exists():
+        failures.append("missing public portal summary: docs/screenshots/public-portal-shell-summary.md")
+    else:
+        public_portal_text = public_portal_summary.read_text(encoding="utf-8").lower()
+        for required_phrase in (
+            "public portal shell",
+            "empty state",
+            "success state",
+            "error state",
+            "partial state",
+            "keyboard",
+            "focus",
+            "contrast",
+            "console",
+            "mobile",
+        ):
+            if required_phrase not in public_portal_text:
+                failures.append(
+                    "public portal summary missing phrase: "
                     f"{required_phrase}"
                 )
 
