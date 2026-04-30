@@ -263,14 +263,20 @@ def test_fresh_install_rehearsal_bash_script_prints_expected_plan() -> None:
 
 
 def test_release_handoff_bundle_script_prints_expected_plan() -> None:
+    import shutil
     import subprocess
+
+    import pytest
 
     script = ROOT / "scripts" / "build_release_handoff_bundle.ps1"
     assert script.exists()
+    powershell = shutil.which("powershell") or shutil.which("pwsh")
+    if powershell is None:
+        pytest.skip("PowerShell runtime is not available in this environment.")
 
     result = subprocess.run(
         [
-            "powershell",
+            powershell,
             "-ExecutionPolicy",
             "Bypass",
             "-File",
