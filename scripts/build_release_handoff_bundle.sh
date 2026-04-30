@@ -69,6 +69,7 @@ bundle_files=(
   "scripts/start_fresh_install_rehearsal.ps1"
   "scripts/start_fresh_install_rehearsal.sh"
   "scripts/check_backup_restore_rehearsal.py"
+  "scripts/check_protected_deployment_smoke.py"
   "scripts/start_backup_restore_rehearsal.ps1"
   "scripts/start_backup_restore_rehearsal.sh"
   "scripts/start_protected_demo_rehearsal.ps1"

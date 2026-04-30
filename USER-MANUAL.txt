@@ -220,6 +220,20 @@ python scripts/check_deployment_readiness.py --env-file path/to/deployment.env -
 The env-file loader accepts `KEY=VALUE` and `export KEY=VALUE` lines, ignores
 comments and blanks, lets already-exported process environment values win, and
 still avoids printing token values or database URLs in the report.
+After strict readiness passes, run the protected smoke helper:
+
+```bash
+python scripts/check_protected_deployment_smoke.py --env-file path/to/deployment.env
+```
+
+The smoke helper loads the same completed profile, verifies `/health`, verifies
+`/staff/auth-readiness`, executes the returned protected session probe, and
+executes the returned protected write probe. Bearer tokens are redacted from
+output. Trusted-header profiles use `127.0.0.1` as the default in-process
+proxy source; pass `--trusted-proxy-client-ip` when the completed profile
+allowlists a different proxy test address. If the sample
+`docs/examples/deployment.env.example` is used without replacing placeholders,
+the helper stops before running probes and points back to the readiness failures.
 
 Before IT trusts restore operations, rehearse the local backup/restore path:
 
