@@ -10,9 +10,10 @@ from civiccore.auth import (
     AuthenticatedPrincipal,
     authorize_bearer_roles,
     authorize_trusted_header_roles,
+    enforce_trusted_proxy_source,
+    load_trusted_header_auth_config,
     resolve_optional_bearer_roles,
 )
-from civiccore.security import is_trusted_proxy_ip, normalize_trusted_proxy_cidrs
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -366,13 +367,15 @@ async def staff_session(request: Request) -> dict[str, object]:
         )
         return response
 
+    trusted_header_config = _get_staff_trusted_header_config()
     response["message"] = "Trusted staff identity accepted from the configured reverse proxy."
     response["fix"] = (
-        f"Keep {_get_staff_sso_provider_name()} stripping client-supplied copies of "
-        f"{_get_staff_sso_principal_header()} and {_get_staff_sso_roles_header()} before CivicClerk."
+        f"Keep {trusted_header_config.provider_name} stripping client-supplied copies of "
+        f"{trusted_header_config.principal_header_name} and {trusted_header_config.roles_header_name} "
+        "before CivicClerk."
     )
-    response["principal_header"] = _get_staff_sso_principal_header()
-    response["roles_header"] = _get_staff_sso_roles_header()
+    response["principal_header"] = trusted_header_config.principal_header_name
+    response["roles_header"] = trusted_header_config.roles_header_name
     return response
 
 
@@ -1099,15 +1102,22 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
             allowed_roles=STAFF_ALLOWED_ROLES,
         )
     if mode == STAFF_TRUSTED_HEADER_MODE:
-        _validate_staff_trusted_proxy(request)
+        trusted_header_config = _get_staff_trusted_header_config()
+        enforce_trusted_proxy_source(
+            request.client.host if request.client is not None else None,
+            service_name="CivicClerk",
+            feature_name="staff workflow access",
+            config=trusted_header_config,
+            trusted_proxy_env_var=STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
+        )
         return authorize_trusted_header_roles(
             request.headers,
             service_name="CivicClerk",
             feature_name="staff workflow access",
-            principal_header_name=_get_staff_sso_principal_header(),
-            roles_header_name=_get_staff_sso_roles_header(),
+            principal_header_name=trusted_header_config.principal_header_name,
+            roles_header_name=trusted_header_config.roles_header_name,
             allowed_roles=STAFF_ALLOWED_ROLES,
-            provider_name=_get_staff_sso_provider_name(),
+            provider_name=trusted_header_config.provider_name,
         )
     raise HTTPException(
         status_code=500,
@@ -1116,50 +1126,6 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
             "fix": f"Set {STAFF_AUTH_MODE_ENV_VAR} to a supported value and retry.",
         },
     )
-
-
-def _validate_staff_trusted_proxy(request: Request) -> None:
-    trusted_proxy_cidrs = _get_staff_sso_trusted_proxy_cidrs()
-    if not trusted_proxy_cidrs:
-        raise HTTPException(
-            status_code=503,
-            detail={
-                "message": "Trusted-header proxy allowlist is missing.",
-                "fix": (
-                    f"Set {STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR} to the reverse-proxy CIDR list "
-                    "that is allowed to inject staff identity headers, for example "
-                    "'10.0.0.0/24,192.168.1.8/32'."
-                ),
-            },
-        )
-
-    try:
-        normalize_trusted_proxy_cidrs(trusted_proxy_cidrs)
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=503,
-            detail={
-                "message": "Trusted-header proxy allowlist is invalid.",
-                "fix": f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR}: {exc}",
-            },
-        ) from exc
-
-    client_host = request.client.host if request.client is not None else None
-    if not is_trusted_proxy_ip(client_host, trusted_proxy_cidrs):
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "message": "Trusted staff headers were not received from an approved proxy.",
-                "fix": (
-                    f"Route staff requests through a reverse proxy inside "
-                    f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR} and strip client-supplied copies of "
-                    f"{_get_staff_sso_principal_header()} and {_get_staff_sso_roles_header()} before "
-                    "they reach CivicClerk."
-                ),
-                "client_host": client_host,
-                "trusted_proxy_cidrs": trusted_proxy_cidrs,
-            },
-        )
 
 
 def _get_staff_auth_mode() -> str:
@@ -1179,39 +1145,16 @@ def _get_staff_auth_mode() -> str:
     )
 
 
-def _get_staff_sso_provider_name() -> str:
-    return (
-        os.environ.get(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, DEFAULT_STAFF_SSO_PROVIDER).strip()
-        or DEFAULT_STAFF_SSO_PROVIDER
+def _get_staff_trusted_header_config():
+    return load_trusted_header_auth_config(
+        provider_env_var=STAFF_AUTH_SSO_PROVIDER_ENV_VAR,
+        provider_default=DEFAULT_STAFF_SSO_PROVIDER,
+        principal_header_env_var=STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR,
+        principal_header_default=DEFAULT_STAFF_SSO_PRINCIPAL_HEADER,
+        roles_header_env_var=STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR,
+        roles_header_default=DEFAULT_STAFF_SSO_ROLES_HEADER,
+        trusted_proxy_env_var=STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
     )
-
-
-def _get_staff_sso_principal_header() -> str:
-    return (
-        os.environ.get(
-            STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR,
-            DEFAULT_STAFF_SSO_PRINCIPAL_HEADER,
-        ).strip()
-        or DEFAULT_STAFF_SSO_PRINCIPAL_HEADER
-    )
-
-
-def _get_staff_sso_roles_header() -> str:
-    return (
-        os.environ.get(
-            STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR,
-            DEFAULT_STAFF_SSO_ROLES_HEADER,
-        ).strip()
-        or DEFAULT_STAFF_SSO_ROLES_HEADER
-    )
-
-
-def _get_staff_sso_trusted_proxy_cidrs() -> list[str]:
-    return [
-        candidate.strip()
-        for candidate in os.environ.get(STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR, "").split(",")
-        if candidate.strip()
-    ]
 
 
 def _is_staff_protected_path(path: str) -> bool:
