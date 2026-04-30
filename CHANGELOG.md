@@ -5,6 +5,15 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `scripts/check_backup_restore_rehearsal.py` now seeds the SQLite-backed
+  agenda intake, agenda item, meeting, packet assembly, and notice checklist
+  stores, copies them with packet export evidence into a backup directory,
+  restores them to a separate directory, and verifies the restored records can
+  be reopened through CivicClerk repositories.
+- `scripts/start_backup_restore_rehearsal.ps1` and
+  `scripts/start_backup_restore_rehearsal.sh` now provide repeatable
+  Windows-first and Bash operator wrappers for the backup/restore rehearsal,
+  including print-only plans and actionable failure guidance.
 - `scripts/check_deployment_readiness.py` now prints a non-mutating deployment
   preflight for auth posture, persistent-store env vars, packet export root,
   release artifacts, documentation gate files, and trusted-header proxy handoff.
