@@ -104,6 +104,9 @@ Shipped in this foundation:
   `.fresh-install-rehearsal` virtual environment
 - `scripts/start_fresh_install_rehearsal.sh` to rehearse the same fresh-install
   wheel path from Bash on Linux, macOS, or Git Bash
+- `scripts/build_release_handoff_bundle.ps1` to package the built wheel, sdist,
+  checksums, current docs, proxy reference, and rehearsal helpers into a
+  repeatable IT handoff zip without calling it an installer
 - `/staff/session` to report whether the live staff shell is in local open mode, bearer-protected staff mode, or trusted-header staff mode
 - `/staff/auth-readiness` to report whether the current bearer-token or trusted-header staff auth contract is deployment-ready
 - structured `session_probe` and `write_probe` guidance from `/staff/auth-readiness` when bearer or trusted-header deployment is ready
@@ -150,6 +153,7 @@ A new user can inspect and run the foundation, open first staff workflow screens
    - Open `http://127.0.0.1:8776/public` and confirm the resident public portal shell loads, explains empty public records, and points staff to publish public records from `/staff`
    - Use `powershell -ExecutionPolicy Bypass -File scripts/start_fresh_install_rehearsal.ps1 -PrintOnly` to print the repeatable Windows fresh-install rehearsal plan, or rerun without `-PrintOnly` to create `.fresh-install-rehearsal\.venv`, install the release wheel, start the installed app, and run the same smoke checks automatically
    - Use `bash scripts/start_fresh_install_rehearsal.sh --print-only` to print the same fresh-install rehearsal plan from Linux, macOS, or Git Bash, or rerun without `--print-only` to create `.fresh-install-rehearsal/.venv`, install the release wheel, start the installed app, and run the same smoke checks automatically; Linux hosts need Python 3 with `venv` support installed first, such as `python3-venv` on Debian or Ubuntu
+   - Use `powershell -ExecutionPolicy Bypass -File scripts/build_release_handoff_bundle.ps1 -PrintOnly` to preview the release handoff bundle, or rerun without `-PrintOnly` after `bash scripts/verify-release.sh` has built `dist/` artifacts
    - Use `powershell -ExecutionPolicy Bypass -File scripts/start_protected_demo_rehearsal.ps1 -PrintOnly` on Windows PowerShell or `bash scripts/start_protected_demo_rehearsal.sh --print-only` on Linux, macOS, or Git Bash to print the protected trusted-header demo profile before launching it
 7. Exercise `/agenda-intake`, `/agenda-intake/{id}/review`, `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/packet-assemblies`, `/packet-assemblies/{id}/finalize`, `/meetings/{id}/notice-checklists`, `/notice-checklists/{id}/posting-proof`, `/meetings/{id}/export-bundle`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, `/public/archive/search`, and `/imports/{connector}/meetings` to smoke-check Milestone 10 plus the production-depth live staff action slices.
 8. Set `CIVICCLERK_AGENDA_ITEM_DB_URL` before agenda item lifecycle persistence smoke checks, set `CIVICCLERK_MEETING_DB_URL` before meeting persistence smoke checks, and set `CIVICCLERK_EXPORT_ROOT` before API packet export smoke checks; API callers provide a relative `bundle_name`, not an arbitrary filesystem path.
@@ -182,6 +186,8 @@ For the first real trusted-header deployment handoff, `docs/examples/trusted-hea
 For fresh Windows install rehearsals, `scripts/start_fresh_install_rehearsal.ps1` now prints and can execute the documented wheel-install path from an isolated `.fresh-install-rehearsal` virtual environment: create venv, upgrade pip, install `dist/civicclerk-0.1.11-py3-none-any.whl`, set `CIVICCLERK_STAFF_AUTH_MODE=open`, launch the installed app on `127.0.0.1:8776`, verify `/health`, verify `/staff/auth-readiness`, and fetch `/staff`. If the wheel is missing, the helper tells the operator to build it with `python -m build` before trying again.
 
 For fresh Bash install rehearsals on Linux, macOS, or Git Bash, `scripts/start_fresh_install_rehearsal.sh` now prints and can execute the same wheel-install path from an isolated `.fresh-install-rehearsal/.venv`, with the same `/health`, `/staff/auth-readiness`, `/staff`, missing-wheel, occupied-port, and Python `venv` prerequisite checks as the Windows helper. On Debian or Ubuntu, install `python3-venv` before executing the helper.
+
+For IT release handoff, `scripts/build_release_handoff_bundle.ps1` now prints and can create `dist/civicclerk-0.1.11-release-handoff.zip` containing the built wheel, source distribution, checksums, current README/manual/changelog/license, docs landing page, trusted-header nginx reference, and the fresh-install/protected-demo rehearsal helpers. It intentionally refuses to overwrite an existing bundle and it is not an installer; build artifacts first with `bash scripts/verify-release.sh`.
 
 For protected demos on Windows PowerShell, `scripts/start_protected_demo_rehearsal.ps1` now prints and can launch the loopback-only trusted-header profile end to end: the app on `127.0.0.1:8877`, the helper proxy on `127.0.0.1:8878`, the required trusted-header env vars, the health/readiness checks, and the browser target for `/staff`.
 
