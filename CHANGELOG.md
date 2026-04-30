@@ -5,6 +5,9 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `scripts/check_protected_deployment_smoke.py` now consumes a completed
+  deployment env profile, runs strict readiness, executes the readiness-provided
+  protected session/write probes, and redacts bearer tokens in output.
 - `docs/examples/deployment.env.example` now gives operators a copy-editable
   deployment profile for protected auth, persistent stores, packet export root,
   and release artifact preflight paths.
@@ -51,7 +54,8 @@ All notable changes to CivicClerk are documented here.
   injected headers, steps, and warnings for `scripts/local_trusted_header_proxy.py`.
 
 ### Changed
-- Release handoff bundles now include the deployment env profile example.
+- Release handoff bundles now include the deployment env profile example and
+  protected deployment smoke helper.
 - `scripts/start_backup_restore_rehearsal.sh` now supports
   `CIVICCLERK_REHEARSAL_PYTHON` and performs an actionable dependency preflight
   before executing the backup/restore rehearsal from Bash.
