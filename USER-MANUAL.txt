@@ -116,6 +116,34 @@ The runtime foundation now pins to the published `civiccore` v0.16.0 release whe
 `CIVICCLERK_NOTICE_CHECKLIST_DB_URL` when set. If unset, each repository uses
 an in-memory SQLite database suitable for local smoke checks.
 
+### Fresh-machine install rehearsal
+
+The current release is expected to work from a clean machine install, not just
+from a source checkout. The repeatable rehearsal path verified in this release
+is the Windows PowerShell path:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install dist/civicclerk-0.1.11-py3-none-any.whl
+$env:CIVICCLERK_STAFF_AUTH_MODE="open"
+python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776
+```
+
+Then verify these first-run checks:
+
+- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"0.1.11","civiccore":"0.16.0"}`
+- `GET /staff/auth-readiness` returns `mode: "open"` and explains how to move to bearer or trusted-header deployment
+- `GET /staff` renders the first workflow shell without console errors
+- Linux and Unix shell parity still needs its own rehearsal before those commands are documented as supported
+
+If staff access will stay local for a demo or rehearsal, keep
+`CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
+workflows, move to `bearer` or `trusted_header` before user testing and use
+`/staff/auth-readiness` to confirm the service reports a deployment-ready
+contract instead of a local-only rehearsal mode.
+
 ### Security posture
 
 - Local-first data ownership.
