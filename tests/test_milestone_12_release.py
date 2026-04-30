@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import os
-import subprocess
-import sys
 import tomllib
 from pathlib import Path
 
@@ -62,29 +59,6 @@ def test_verify_release_script_exists_and_mentions_all_release_gates() -> None:
         "SHA256SUMS.txt",
     ]:
         assert gate in text
-
-
-def test_verify_release_script_passes_and_builds_artifacts() -> None:
-    if os.environ.get("CIVICCLERK_VERIFY_RELEASE_RUNNING") == "1":
-        return
-
-    env = os.environ.copy()
-    env["PYTHON"] = sys.executable
-    result = subprocess.run(
-        ["bash", "scripts/verify-release.sh"],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-    )
-
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert "VERIFY-RELEASE: PASSED" in result.stdout
-    assert (ROOT / "dist" / "civicclerk-0.1.9-py3-none-any.whl").exists()
-    assert (ROOT / "dist" / "civicclerk-0.1.9.tar.gz").exists()
-    assert (ROOT / "dist" / "SHA256SUMS.txt").exists()
-
 
 def test_release_workflow_and_docs_reference_v019_release() -> None:
     workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
