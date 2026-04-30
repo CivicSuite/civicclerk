@@ -105,6 +105,8 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
         '$env:CIVICCLERK_STAFF_AUTH_MODE="open"',
         "scripts/start_protected_demo_rehearsal.ps1",
         "-PrintOnly",
+        "scripts/start_protected_demo_rehearsal.sh",
+        "--print-only",
         "127.0.0.1:8877",
         "127.0.0.1:8878",
     ]:
@@ -145,6 +147,47 @@ def test_protected_demo_rehearsal_script_prints_expected_plan() -> None:
         "CIVICCLERK_STAFF_AUTH_MODE=trusted_header",
         "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32",
         "CIVICCLERK_LOCAL_PROXY_UPSTREAM=http://127.0.0.1:8877",
+        "App command: python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8877",
+        "Proxy command: python scripts/local_trusted_header_proxy.py",
+        "Smoke check: GET http://127.0.0.1:8877/health",
+        "Readiness check: GET http://127.0.0.1:8877/staff/auth-readiness",
+        "Browser check: open http://127.0.0.1:8878/staff",
+    ]:
+        assert expected in output
+
+
+def test_protected_demo_rehearsal_bash_script_prints_expected_plan() -> None:
+    import shutil
+    import subprocess
+
+    import pytest
+
+    script = ROOT / "scripts" / "start_protected_demo_rehearsal.sh"
+    relative_script = (Path("scripts") / "start_protected_demo_rehearsal.sh").as_posix()
+    assert script.exists()
+    shell = shutil.which("bash")
+    if shell is None:
+        pytest.skip("Bash runtime is not available in this environment.")
+
+    result = subprocess.run(
+        [
+            shell,
+            relative_script,
+            "--print-only",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    output = result.stdout
+    for expected in [
+        "Protected demo rehearsal profile",
+        "Export CIVICCLERK_STAFF_AUTH_MODE=trusted_header",
+        "Export CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32",
+        "Export CIVICCLERK_LOCAL_PROXY_UPSTREAM=http://127.0.0.1:8877",
         "App command: python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8877",
         "Proxy command: python scripts/local_trusted_header_proxy.py",
         "Smoke check: GET http://127.0.0.1:8877/health",
