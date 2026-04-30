@@ -12,6 +12,7 @@ from civiccore.auth import (
     authorize_trusted_header_roles,
     resolve_optional_bearer_roles,
 )
+from civiccore.security import is_trusted_proxy_ip, normalize_trusted_proxy_cidrs
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -56,6 +57,7 @@ STAFF_AUTH_TOKEN_ROLES_ENV_VAR = "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES"
 STAFF_AUTH_SSO_PROVIDER_ENV_VAR = "CIVICCLERK_STAFF_SSO_PROVIDER"
 STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR = "CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER"
 STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR = "CIVICCLERK_STAFF_SSO_ROLES_HEADER"
+STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR = "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES"
 STAFF_OPEN_MODE = "open"
 STAFF_BEARER_MODE = "bearer"
 STAFF_TRUSTED_HEADER_MODE = "trusted_header"
@@ -253,7 +255,7 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "v0.1.8 runtime foundation release",
+        "status": f"v{__version__} runtime foundation release",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
@@ -289,9 +291,10 @@ async def root() -> dict[str, str]:
             "packet export staff screens can now create records-ready bundles with manifests "
             "and checksums through live API actions; "
             "meeting records can now persist through the configured meeting database; "
-            "CivicClerk is versioned as v0.1.8 with the production-depth service slices included; "
+            f"CivicClerk is versioned as v{__version__} with the production-depth service slices included; "
             "staff workflow APIs now support a local-open rehearsal mode, a bearer-protected bridge mode, "
-            "and a trusted-header reverse-proxy mode, with the /staff screen showing the current access "
+            "and a trusted-header reverse-proxy mode with a required trusted-proxy CIDR allowlist, "
+            "with the /staff screen showing the current access "
             "state while full OIDC login remains future work; "
             "all current production-depth clerk-console form submissions are live for the released "
             "API foundation, while the full integrated clerk console remains future work."
@@ -1096,6 +1099,7 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
             allowed_roles=STAFF_ALLOWED_ROLES,
         )
     if mode == STAFF_TRUSTED_HEADER_MODE:
+        _validate_staff_trusted_proxy(request)
         return authorize_trusted_header_roles(
             request.headers,
             service_name="CivicClerk",
@@ -1112,6 +1116,50 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
             "fix": f"Set {STAFF_AUTH_MODE_ENV_VAR} to a supported value and retry.",
         },
     )
+
+
+def _validate_staff_trusted_proxy(request: Request) -> None:
+    trusted_proxy_cidrs = _get_staff_sso_trusted_proxy_cidrs()
+    if not trusted_proxy_cidrs:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "message": "Trusted-header proxy allowlist is missing.",
+                "fix": (
+                    f"Set {STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR} to the reverse-proxy CIDR list "
+                    "that is allowed to inject staff identity headers, for example "
+                    "'10.0.0.0/24,192.168.1.8/32'."
+                ),
+            },
+        )
+
+    try:
+        normalize_trusted_proxy_cidrs(trusted_proxy_cidrs)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "message": "Trusted-header proxy allowlist is invalid.",
+                "fix": f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR}: {exc}",
+            },
+        ) from exc
+
+    client_host = request.client.host if request.client is not None else None
+    if not is_trusted_proxy_ip(client_host, trusted_proxy_cidrs):
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "message": "Trusted staff headers were not received from an approved proxy.",
+                "fix": (
+                    f"Route staff requests through a reverse proxy inside "
+                    f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR} and strip client-supplied copies of "
+                    f"{_get_staff_sso_principal_header()} and {_get_staff_sso_roles_header()} before "
+                    "they reach CivicClerk."
+                ),
+                "client_host": client_host,
+                "trusted_proxy_cidrs": trusted_proxy_cidrs,
+            },
+        )
 
 
 def _get_staff_auth_mode() -> str:
@@ -1156,6 +1204,14 @@ def _get_staff_sso_roles_header() -> str:
         ).strip()
         or DEFAULT_STAFF_SSO_ROLES_HEADER
     )
+
+
+def _get_staff_sso_trusted_proxy_cidrs() -> list[str]:
+    return [
+        candidate.strip()
+        for candidate in os.environ.get(STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR, "").split(",")
+        if candidate.strip()
+    ]
 
 
 def _is_staff_protected_path(path: str) -> bool:

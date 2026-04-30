@@ -8,6 +8,7 @@ from civicclerk.main import (
     STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR,
     STAFF_AUTH_SSO_PROVIDER_ENV_VAR,
     STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR,
+    STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
     STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
     STAFF_BEARER_MODE,
     STAFF_TRUSTED_HEADER_MODE,
@@ -130,6 +131,7 @@ async def test_trusted_header_mode_requires_proxy_headers(monkeypatch: pytest.Mo
     monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
     monkeypatch.setenv(STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR, "X-Staff-Email")
     monkeypatch.setenv(STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR, "X-Staff-Roles")
+    monkeypatch.setenv(STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR, "127.0.0.1/32")
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/staff/session")
@@ -147,12 +149,16 @@ async def test_trusted_header_mode_accepts_proxy_identity_for_session_and_write(
     monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
     monkeypatch.setenv(STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR, "X-Staff-Email")
     monkeypatch.setenv(STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR, "X-Staff-Roles")
+    monkeypatch.setenv(STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR, "10.20.30.0/24")
 
     headers = {
         "X-Staff-Email": "clerk@example.gov",
         "X-Staff-Roles": "clerk_admin,meeting_editor",
     }
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app, client=("10.20.30.40", 443)),
+        base_url="http://testserver",
+    ) as client:
         session = await client.get("/staff/session", headers=headers)
         create = await client.post(
             "/agenda-intake",
@@ -186,12 +192,16 @@ async def test_trusted_header_mode_rejects_underprivileged_identity(
     monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
     monkeypatch.setenv(STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR, "X-Staff-Email")
     monkeypatch.setenv(STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR, "X-Staff-Roles")
+    monkeypatch.setenv(STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR, "10.20.30.0/24")
 
     headers = {
         "X-Staff-Email": "records@example.gov",
         "X-Staff-Roles": "archive_reader",
     }
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app, client=("10.20.30.40", 443)),
+        base_url="http://testserver",
+    ) as client:
         response = await client.post(
             "/agenda-intake",
             headers=headers,
@@ -214,6 +224,57 @@ async def test_trusted_header_mode_rejects_underprivileged_identity(
     ]
     assert response.json()["detail"]["principal_roles"] == ["archive_reader"]
     assert response.json()["detail"]["principal"] == "records@example.gov"
+
+
+@pytest.mark.asyncio
+async def test_trusted_header_mode_requires_trusted_proxy_allowlist(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_TRUSTED_HEADER_MODE)
+    monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
+    monkeypatch.setenv(STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR, "X-Staff-Email")
+    monkeypatch.setenv(STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR, "X-Staff-Roles")
+
+    headers = {
+        "X-Staff-Email": "clerk@example.gov",
+        "X-Staff-Roles": "clerk_admin",
+    }
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/session", headers=headers)
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["message"] == "Trusted-header proxy allowlist is missing."
+    assert STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR in response.json()["detail"]["fix"]
+
+
+@pytest.mark.asyncio
+async def test_trusted_header_mode_rejects_untrusted_proxy_source(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_TRUSTED_HEADER_MODE)
+    monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
+    monkeypatch.setenv(STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR, "X-Staff-Email")
+    monkeypatch.setenv(STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR, "X-Staff-Roles")
+    monkeypatch.setenv(STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR, "10.20.30.0/24")
+
+    headers = {
+        "X-Staff-Email": "clerk@example.gov",
+        "X-Staff-Roles": "clerk_admin",
+    }
+    async with AsyncClient(
+        transport=ASGITransport(app=app, client=("203.0.113.22", 443)),
+        base_url="http://testserver",
+    ) as client:
+        response = await client.get("/staff/session", headers=headers)
+
+    assert response.status_code == 403
+    assert (
+        response.json()["detail"]["message"]
+        == "Trusted staff headers were not received from an approved proxy."
+    )
+    assert response.json()["detail"]["client_host"] == "203.0.113.22"
+    assert response.json()["detail"]["trusted_proxy_cidrs"] == ["10.20.30.0/24"]
+    assert STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR in response.json()["detail"]["fix"]
 
 
 @pytest.mark.asyncio
