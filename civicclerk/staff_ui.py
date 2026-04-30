@@ -191,6 +191,13 @@ def render_staff_dashboard() -> str:
     h2 {{ margin-top: 34px; }}
     p {{ max-width: 78ch; }}
     .status {{ color: var(--warn); font-weight: 700; }}
+    .auth-panel {{ margin-top: 22px; background: rgba(255,253,248,.94); border: 1px solid var(--line); border-radius: 24px; padding: 22px; box-shadow: 0 18px 60px rgba(23,32,27,.06); }}
+    .auth-panel p {{ margin-top: 0; }}
+    .auth-grid {{ display: grid; grid-template-columns: 1.3fr .9fr; gap: 16px; align-items: start; }}
+    .auth-status {{ border-radius: 18px; padding: 14px; background: var(--panel); border: 1px solid var(--line); }}
+    .auth-status[data-state="success"] {{ border-color: rgba(38,113,77,.45); background: #f0faf4; }}
+    .auth-status[data-state="error"] {{ border-color: rgba(140,47,36,.45); background: #fff3f0; }}
+    .auth-status[data-state="loading"] {{ border-color: rgba(47,111,94,.45); }}
     .screen-nav {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 28px 0 18px; }}
     .screen-tab {{ appearance: none; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); color: var(--ink); padding: 16px; text-align: left; font: inherit; cursor: pointer; box-shadow: 0 8px 24px rgba(23,32,27,.06); }}
     .screen-tab span {{ display: block; color: var(--accent); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }}
@@ -232,7 +239,7 @@ def render_staff_dashboard() -> str:
     @media (max-width: 640px) {{
       main {{ padding: 30px 14px; }}
       .hero, .screen-panel, .state-card {{ border-radius: 20px; padding: 18px; }}
-      .screen-nav, .api-strip, .form-grid {{ grid-template-columns: 1fr; }}
+      .auth-grid, .screen-nav, .api-strip, .form-grid {{ grid-template-columns: 1fr; }}
       .work-table {{ display: block; overflow-x: auto; }}
       .grid {{ grid-template-columns: 1fr; }}
     }}
@@ -242,10 +249,28 @@ def render_staff_dashboard() -> str:
   <a class="skip" href="#workflow-screens">Skip to workflow screens</a>
   <main aria-label="CivicClerk staff workflow screens">
     <section class="hero">
-      <div class="eyebrow">CivicClerk v0.1.0</div>
+      <div class="eyebrow">CivicClerk v0.1.7</div>
       <h1>CivicClerk Staff Workflow Screens</h1>
-      <p class="status">These are browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly and export, notice checklist/posting proof, outcome capture, cited minutes drafting, public archive publishing, and connector import work without claiming the full end-to-end clerk console is finished.</p>
-      <p>The screens show the live API paths, safe next actions, required staff states, and actionable fix copy for the service slices available today.</p>
+      <p class="status">These are browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly and export, notice checklist/posting proof, outcome capture, cited minutes drafting, public archive publishing, and connector import work, and they now disclose whether the service is running in local open mode or bearer-protected staff mode.</p>
+      <p>The screens show the live API paths, safe next actions, required staff states, actionable fix copy, and the first deployment-ready staff auth contract for the service slices available today. SSO is not shipped yet; this screen is the bridge contract until that lands.</p>
+    </section>
+
+    <section class="auth-panel" aria-labelledby="staff-auth-heading">
+      <div class="auth-grid">
+        <div>
+          <h2 id="staff-auth-heading">Staff access check</h2>
+          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>.</p>
+          <label>Bearer token for staff actions
+            <input id="staff-auth-token" name="staff_auth_token" placeholder="Paste bearer token when bearer mode is enabled" autocomplete="off">
+          </label>
+          <div class="live-actions">
+            <button class="cta" id="staff-auth-refresh" type="button">Check staff access</button>
+          </div>
+        </div>
+        <div id="staff-auth-status" class="auth-status" data-state="loading" role="status" aria-live="polite">
+          <strong>Loading:</strong> checking staff access mode...
+        </div>
+      </div>
     </section>
 
     <section id="workflow-screens" aria-labelledby="workflow-heading">
@@ -267,6 +292,9 @@ def render_staff_dashboard() -> str:
   <script>
     const tabs = [...document.querySelectorAll(".screen-tab")];
     const panels = [...document.querySelectorAll(".screen-panel")];
+    const authTokenInput = document.querySelector("#staff-auth-token");
+    const authRefreshButton = document.querySelector("#staff-auth-refresh");
+    const authStatus = document.querySelector("#staff-auth-status");
     function activate(target) {{
       tabs.forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.target === target)));
       panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === `screen-${{target}}`));
@@ -295,6 +323,23 @@ def render_staff_dashboard() -> str:
     const importForm = document.querySelector("#connector-import-form");
     const importOutput = document.querySelector("#connector-import-output");
 
+    function authHeaders(includeJson = false) {{
+      const headers = {{}};
+      const token = authTokenInput?.value?.trim();
+      if (includeJson) {{
+        headers["content-type"] = "application/json";
+      }}
+      if (token) {{
+        headers.Authorization = `Bearer ${{token}}`;
+      }}
+      return headers;
+    }}
+
+    function setAuthStatus(state, html) {{
+      authStatus.dataset.state = state;
+      authStatus.innerHTML = html;
+    }}
+
     function setOutput(state, html) {{
       output.dataset.state = state;
       output.innerHTML = html;
@@ -303,7 +348,7 @@ def render_staff_dashboard() -> str:
     async function postJson(path, payload) {{
       const response = await fetch(path, {{
         method: "POST",
-        headers: {{ "content-type": "application/json" }},
+        headers: authHeaders(true),
         body: JSON.stringify(payload),
       }});
       const data = await response.json();
@@ -313,6 +358,33 @@ def render_staff_dashboard() -> str:
       }}
       return data;
     }}
+
+    async function refreshStaffSession() {{
+      setAuthStatus("loading", "<strong>Loading:</strong> checking staff access mode...");
+      try {{
+        const response = await fetch("/staff/session", {{ headers: authHeaders(false) }});
+        const data = await response.json();
+        if (!response.ok) {{
+          const detail = data.detail || {{}};
+          throw new Error(`${{detail.message || "Staff access check failed."}} How to fix: ${{detail.fix || "Check the configured auth mode and retry."}}`);
+        }}
+        const roles = (data.roles || []).join(", ");
+        setAuthStatus(
+          "success",
+          `<strong>Success:</strong> mode is <code>${{data.mode}}</code>.<br><strong>Roles:</strong> ${{roles || "none"}}<br><strong>Next step:</strong> ${{data.fix || "Proceed with staff workflow actions."}}`,
+        );
+      }} catch (error) {{
+        setAuthStatus("error", `<strong>Error:</strong> ${{error.message}}`);
+      }}
+    }}
+
+    authRefreshButton?.addEventListener("click", () => {{
+      refreshStaffSession();
+    }});
+    authTokenInput?.addEventListener("change", () => {{
+      refreshStaffSession();
+    }});
+    refreshStaffSession();
 
     async function createDemoMeeting(title) {{
       return postJson("/meetings", {{

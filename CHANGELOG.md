@@ -4,6 +4,18 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-04-29
+
+### Added
+- CivicClerk staff workflow APIs now support a first shared bearer-token
+  access contract, including `/staff/session` for browser-visible auth-state
+  checks and a local-open rehearsal mode that can be replaced later by SSO.
+
+### Changed
+- The `/staff` workflow shell now discloses whether the service is running in
+  local open mode or bearer-protected staff mode and sends bearer tokens with
+  live staff actions when configured.
+
 ## [0.1.6] - 2026-04-29
 
 ### Added

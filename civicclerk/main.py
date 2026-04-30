@@ -6,10 +6,14 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from civiccore.auth import AuthenticatedPrincipal, resolve_optional_bearer_roles
-from fastapi import Depends, FastAPI, HTTPException
+from civiccore.auth import (
+    AuthenticatedPrincipal,
+    authorize_bearer_roles,
+    resolve_optional_bearer_roles,
+)
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from civicclerk import __version__
@@ -46,6 +50,11 @@ motion_votes = MotionVoteStore()
 minutes_drafts = MinutesDraftStore()
 public_archive = PublicArchiveStore()
 _archive_search_bearer = HTTPBearer(auto_error=False)
+STAFF_AUTH_MODE_ENV_VAR = "CIVICCLERK_STAFF_AUTH_MODE"
+STAFF_AUTH_TOKEN_ROLES_ENV_VAR = "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES"
+STAFF_OPEN_MODE = "open"
+STAFF_BEARER_MODE = "bearer"
+STAFF_ALLOWED_ROLES = frozenset({"clerk_admin", "clerk_editor", "meeting_editor", "city_attorney"})
 _agenda_intake_repository: AgendaIntakeRepository | None = None
 _agenda_intake_db_url: str | None = None
 _agenda_item_repository: AgendaItemRepository | None = None
@@ -56,6 +65,47 @@ _notice_checklist_repository: NoticeChecklistRepository | None = None
 _notice_checklist_db_url: str | None = None
 _meeting_store: MeetingStore | None = None
 _meeting_db_url: str | None = None
+
+
+@app.middleware("http")
+async def enforce_staff_api_access(request: Request, call_next):
+    """Protect internal staff APIs when bearer mode is enabled."""
+
+    try:
+        mode = _get_staff_auth_mode()
+    except HTTPException as exc:
+        payload = exc.detail if isinstance(exc.detail, dict) else {"message": str(exc.detail)}
+        return JSONResponse(status_code=exc.status_code, content={"detail": payload})
+
+    if mode != STAFF_BEARER_MODE or not _is_staff_protected_path(request.url.path):
+        return await call_next(request)
+
+    authorization = request.headers.get("authorization", "").strip()
+    credentials: HTTPAuthorizationCredentials | None = None
+    if authorization:
+        scheme, _, token = authorization.partition(" ")
+        credentials = HTTPAuthorizationCredentials(
+            scheme=scheme,
+            credentials=token.strip(),
+        )
+
+    try:
+        request.state.staff_principal = authorize_bearer_roles(
+            credentials,
+            service_name="CivicClerk",
+            feature_name="staff workflow access",
+            token_roles_env_var=STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
+            allowed_roles=STAFF_ALLOWED_ROLES,
+        )
+    except HTTPException as exc:
+        payload = exc.detail if isinstance(exc.detail, dict) else {"message": str(exc.detail)}
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": payload},
+            headers=exc.headers or None,
+        )
+
+    return await call_next(request)
 
 
 class AgendaItemCreate(BaseModel):
@@ -210,7 +260,7 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "v0.1.6 runtime foundation release",
+        "status": "v0.1.7 runtime foundation release",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
@@ -246,7 +296,9 @@ async def root() -> dict[str, str]:
             "packet export staff screens can now create records-ready bundles with manifests "
             "and checksums through live API actions; "
             "meeting records can now persist through the configured meeting database; "
-            "CivicClerk is versioned as v0.1.6 with the production-depth service slices included; "
+            "CivicClerk is versioned as v0.1.7 with the production-depth service slices included; "
+            "staff workflow APIs now support a local-open rehearsal mode plus a bearer-protected staff auth mode, "
+            "with the /staff screen showing the current access state while full SSO remains future work; "
             "all current production-depth clerk-console form submissions are live for the released "
             "API foundation, while the full integrated clerk console remains future work."
         ),
@@ -269,6 +321,43 @@ async def health() -> dict[str, str]:
 async def staff_dashboard() -> str:
     """Render the staff-facing workflow foundation."""
     return render_staff_dashboard()
+
+
+@app.get("/staff/session")
+async def staff_session(request: Request) -> dict[str, object]:
+    """Describe the current staff access mode for the browser workflow shell."""
+
+    mode = _get_staff_auth_mode()
+    if mode == STAFF_OPEN_MODE:
+        return {
+            "mode": STAFF_OPEN_MODE,
+            "authenticated": True,
+            "roles": ["open_access"],
+            "message": "Staff workflow access is running in local open mode.",
+            "fix": (
+                f"Set {STAFF_AUTH_MODE_ENV_VAR}={STAFF_BEARER_MODE} and configure "
+                f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR} before exposing staff APIs outside a local rehearsal."
+            ),
+        }
+
+    principal = getattr(request.state, "staff_principal", None)
+    if principal is None:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "message": "Staff session principal is missing.",
+                "fix": "Retry the request with a configured bearer token or review staff auth middleware setup.",
+            },
+        )
+
+    return {
+        "mode": STAFF_BEARER_MODE,
+        "authenticated": True,
+        "roles": sorted(principal.roles),
+        "token_fingerprint": principal.token_fingerprint,
+        "message": "Bearer token accepted for staff workflow access.",
+        "fix": "Keep this token scoped to clerk workflow roles until SSO lands.",
+    }
 
 
 @app.post("/agenda-items", status_code=201)
@@ -973,6 +1062,32 @@ def _resolve_archive_search_principal(
         token_roles_env_var="CIVICCLERK_AUTH_TOKEN_ROLES",
         allowed_roles={"archive_reader", "clerk_admin", "city_attorney"},
     )
+
+
+def _get_staff_auth_mode() -> str:
+    raw_mode = os.environ.get(STAFF_AUTH_MODE_ENV_VAR, STAFF_OPEN_MODE).strip().lower()
+    if raw_mode in {STAFF_OPEN_MODE, STAFF_BEARER_MODE}:
+        return raw_mode
+    raise HTTPException(
+        status_code=503,
+        detail={
+            "message": "CivicClerk staff auth mode is invalid.",
+            "fix": (
+                f"Set {STAFF_AUTH_MODE_ENV_VAR} to '{STAFF_OPEN_MODE}' for local rehearsal "
+                f"or '{STAFF_BEARER_MODE}' for bearer-protected staff APIs."
+            ),
+        },
+    )
+
+
+def _is_staff_protected_path(path: str) -> bool:
+    if path in {"/", "/health", "/staff"}:
+        return False
+    if path.startswith("/public/"):
+        return False
+    if path in {"/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}:
+        return False
+    return True
 
 
 def _evaluate_notice_or_404(
