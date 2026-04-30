@@ -2,10 +2,10 @@
 
 **CivicClerk is the CivicSuite module for municipal meetings, agendas, packets, minutes, votes, notices, and public meeting archives.**
 
-Status: CivicClerk v0.1.7 runtime foundation release
-Current version: `0.1.7`
-Repository: <https://github.com/CivicSuite/civicclerk>  
-Depends on: published `civiccore` v0.13.0 release wheel
+Status: CivicClerk v0.1.8 runtime foundation release
+Current version: `0.1.8`
+Repository: <https://github.com/CivicSuite/civicclerk>
+Depends on: published `civiccore` v0.14.0 release wheel
 
 ## What CivicClerk will do
 
@@ -24,7 +24,7 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-CivicClerk v0.1.7 ships the runtime and schema foundation plus database-backed agenda item lifecycle records, meeting lifecycle, packet snapshot, shared CivicCore-backed notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA, accessibility/browser QA gates, CivicCore v0.13.0-backed records export bundles, database-backed agenda intake readiness, database-backed packet assembly records, database-backed notice checklist/posting-proof records, database-backed meeting records, and first staff workflow screens for intake, packet assembly/export, notice checklist, meeting outcome, minutes draft, public archive, and connector import work. The staff screens now submit agenda intake, record readiness review, create/finalize packet assembly records, create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture motions/votes/action items, create citation-gated minutes drafts, publish public-safe archive records, normalize local connector exports through the shared CivicCore connector import contract, and disclose whether the service is running in local open mode or bearer-protected staff mode while full SSO remains future work.
+CivicClerk v0.1.8 ships the runtime and schema foundation plus database-backed agenda item lifecycle records, meeting lifecycle, packet snapshot, shared CivicCore-backed notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA, accessibility/browser QA gates, CivicCore v0.14.0-backed records export bundles, database-backed agenda intake readiness, database-backed packet assembly records, database-backed notice checklist/posting-proof records, database-backed meeting records, and first staff workflow screens for intake, packet assembly/export, notice checklist, meeting outcome, minutes draft, public archive, and connector import work. The staff screens now submit agenda intake, record readiness review, create/finalize packet assembly records, create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture motions/votes/action items, create citation-gated minutes drafts, publish public-safe archive records, normalize local connector exports through the shared CivicCore connector import contract, and disclose whether the service is running in local open mode, bearer-protected staff mode, or trusted-header staff mode while full OIDC login remains future work.
 
 Shipped in this foundation:
 
@@ -34,7 +34,7 @@ Shipped in this foundation:
 - contributing, support, security, code of conduct, issue templates, and PR template
 - discussion seed posts
 - docs verification script and CI workflow
-- Python package metadata with the published `civiccore` v0.13.0 release wheel
+- Python package metadata with the published `civiccore` v0.14.0 release wheel
 - FastAPI application import path at `civicclerk.main:app`
 - root endpoint that explains the current product state
 - `/health` endpoint for IT staff
@@ -91,15 +91,16 @@ Shipped in this foundation:
 - prompt-version provenance enforcement for minutes drafts
 - local-first Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports
 - source provenance on imported meetings and agenda items
-- records-ready packet export bundles with CivicCore v0.13.0 manifests, SHA256 checksums, provenance, and hash-chained audit events
+- records-ready packet export bundles with CivicCore v0.14.0 manifests, SHA256 checksums, provenance, and hash-chained audit events
 - closed-session/restricted source guardrails for public packet export bundles
 - safe API export-path handling through `bundle_name` under `CIVICCLERK_EXPORT_ROOT`
 - browser QA gate covering loading, success, empty, error, and partial states
 - accessibility checks for keyboard navigation, focus states, contrast, and console errors
-- CivicClerk v0.1.7 release gate and build artifacts
-- `/staff/session` to report whether the live staff shell is in local open mode or bearer-protected staff mode
-- `CIVICCLERK_STAFF_AUTH_MODE=open|bearer` for the first staff auth foundation contract
+- CivicClerk v0.1.8 release gate and build artifacts
+- `/staff/session` to report whether the live staff shell is in local open mode, bearer-protected staff mode, or trusted-header staff mode
+- `CIVICCLERK_STAFF_AUTH_MODE=open|bearer|trusted_header` for the first staff auth foundation contract
 - `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES` for bearer-token-to-role mapping during staff workflow access
+- `CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER`, `CIVICCLERK_STAFF_SSO_ROLES_HEADER`, and `CIVICCLERK_STAFF_SSO_PROVIDER` for trusted reverse-proxy SSO bridge configuration
 
 Not shipped yet:
 
@@ -133,7 +134,7 @@ CivicClerk follows the CivicSuite pattern:
 - Ollama / Gemma 4 through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - local data ownership, no runtime telemetry, no cloud inference
 
-The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, agenda item lifecycle persistence, meeting lifecycle enforcement, meeting records, packet snapshot versioning, packet assembly records, notice checklist records, shared notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, prompt YAML/evaluation gates, local-first connector import normalization, browser QA gates, CivicClerk v0.1.7 release artifacts, and CivicCore v0.13.0 packet export plus browser-evidence verification primitives are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. Connector imports record source provenance and do not require outbound network calls in the default local profile. Public packet exports block closed-session/restricted sources and include manifest, checksum, provenance, and audit evidence. Agenda item records now persist lifecycle status and audit entries when `CIVICCLERK_AGENDA_ITEM_DB_URL` is configured. Meeting records now persist scheduled starts, normalized meeting type, lifecycle status, and audit entries when `CIVICCLERK_MEETING_DB_URL` is configured. Packet assembly records now persist source references, citations, linked packet snapshot ids, and durable audit hashes. Notice checklist records persist compliance outcomes, warnings, posting proof, and durable audit hashes. Browser QA now checks loading, success, empty, error, and partial states plus keyboard, focus, contrast, and console evidence, and release screenshots are bound to the current docs page through shared CivicCore verification helpers. CivicClerk v0.1.7 now pairs with the published `civiccore` v0.13.0 release wheel. The first staff auth foundation is now explicit: local rehearsals can stay in `CIVICCLERK_STAFF_AUTH_MODE=open`, while bearer-protected deployments set `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES` until real SSO lands.
+The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, agenda item lifecycle persistence, meeting lifecycle enforcement, meeting records, packet snapshot versioning, packet assembly records, notice checklist records, shared notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, prompt YAML/evaluation gates, local-first connector import normalization, browser QA gates, CivicClerk v0.1.8 release artifacts, and CivicCore v0.14.0 packet export plus browser-evidence verification primitives are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. Connector imports record source provenance and do not require outbound network calls in the default local profile. Public packet exports block closed-session/restricted sources and include manifest, checksum, provenance, and audit evidence. Agenda item records now persist lifecycle status and audit entries when `CIVICCLERK_AGENDA_ITEM_DB_URL` is configured. Meeting records now persist scheduled starts, normalized meeting type, lifecycle status, and audit entries when `CIVICCLERK_MEETING_DB_URL` is configured. Packet assembly records now persist source references, citations, linked packet snapshot ids, and durable audit hashes. Notice checklist records persist compliance outcomes, warnings, posting proof, and durable audit hashes. Browser QA now checks loading, success, empty, error, and partial states plus keyboard, focus, contrast, and console evidence, and release screenshots are bound to the current docs page through shared CivicCore verification helpers. CivicClerk v0.1.8 now pairs with the published `civiccore` v0.14.0 release wheel. The first staff auth foundation is now explicit: local rehearsals can stay in `CIVICCLERK_STAFF_AUTH_MODE=open`, bearer-protected deployments can set `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`, and trusted reverse-proxy deployments can set `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus `CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER`, `CIVICCLERK_STAFF_SSO_ROLES_HEADER`, and `CIVICCLERK_STAFF_SSO_PROVIDER` until full OIDC login lands.
 
 The staff experience at `/staff` now includes first workflow screens for agenda intake, packet assembly/export, notice checklist/posting-proof, meeting outcome, minutes draft, public archive, and connector import work. It is intentionally honest: these seven screens can submit their corresponding live API actions, while the broader multi-role React clerk console remains future work.
 

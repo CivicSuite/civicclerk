@@ -9,6 +9,7 @@ from pathlib import Path
 from civiccore.auth import (
     AuthenticatedPrincipal,
     authorize_bearer_roles,
+    authorize_trusted_header_roles,
     resolve_optional_bearer_roles,
 )
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -52,8 +53,15 @@ public_archive = PublicArchiveStore()
 _archive_search_bearer = HTTPBearer(auto_error=False)
 STAFF_AUTH_MODE_ENV_VAR = "CIVICCLERK_STAFF_AUTH_MODE"
 STAFF_AUTH_TOKEN_ROLES_ENV_VAR = "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES"
+STAFF_AUTH_SSO_PROVIDER_ENV_VAR = "CIVICCLERK_STAFF_SSO_PROVIDER"
+STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR = "CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER"
+STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR = "CIVICCLERK_STAFF_SSO_ROLES_HEADER"
 STAFF_OPEN_MODE = "open"
 STAFF_BEARER_MODE = "bearer"
+STAFF_TRUSTED_HEADER_MODE = "trusted_header"
+DEFAULT_STAFF_SSO_PROVIDER = "trusted reverse proxy"
+DEFAULT_STAFF_SSO_PRINCIPAL_HEADER = "X-Forwarded-Email"
+DEFAULT_STAFF_SSO_ROLES_HEADER = "X-Forwarded-Roles"
 STAFF_ALLOWED_ROLES = frozenset({"clerk_admin", "clerk_editor", "meeting_editor", "city_attorney"})
 _agenda_intake_repository: AgendaIntakeRepository | None = None
 _agenda_intake_db_url: str | None = None
@@ -77,26 +85,11 @@ async def enforce_staff_api_access(request: Request, call_next):
         payload = exc.detail if isinstance(exc.detail, dict) else {"message": str(exc.detail)}
         return JSONResponse(status_code=exc.status_code, content={"detail": payload})
 
-    if mode != STAFF_BEARER_MODE or not _is_staff_protected_path(request.url.path):
+    if not _is_staff_protected_path(request.url.path) or mode == STAFF_OPEN_MODE:
         return await call_next(request)
 
-    authorization = request.headers.get("authorization", "").strip()
-    credentials: HTTPAuthorizationCredentials | None = None
-    if authorization:
-        scheme, _, token = authorization.partition(" ")
-        credentials = HTTPAuthorizationCredentials(
-            scheme=scheme,
-            credentials=token.strip(),
-        )
-
     try:
-        request.state.staff_principal = authorize_bearer_roles(
-            credentials,
-            service_name="CivicClerk",
-            feature_name="staff workflow access",
-            token_roles_env_var=STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
-            allowed_roles=STAFF_ALLOWED_ROLES,
-        )
+        request.state.staff_principal = _authorize_staff_principal(request)
     except HTTPException as exc:
         payload = exc.detail if isinstance(exc.detail, dict) else {"message": str(exc.detail)}
         return JSONResponse(
@@ -260,7 +253,7 @@ async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
     return {
         "name": "CivicClerk",
-        "status": "v0.1.7 runtime foundation release",
+        "status": "v0.1.8 runtime foundation release",
         "message": (
             "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance "
             "enforcement are online with immutable motion, vote, action-item, and citation-gated "
@@ -296,9 +289,10 @@ async def root() -> dict[str, str]:
             "packet export staff screens can now create records-ready bundles with manifests "
             "and checksums through live API actions; "
             "meeting records can now persist through the configured meeting database; "
-            "CivicClerk is versioned as v0.1.7 with the production-depth service slices included; "
-            "staff workflow APIs now support a local-open rehearsal mode plus a bearer-protected staff auth mode, "
-            "with the /staff screen showing the current access state while full SSO remains future work; "
+            "CivicClerk is versioned as v0.1.8 with the production-depth service slices included; "
+            "staff workflow APIs now support a local-open rehearsal mode, a bearer-protected bridge mode, "
+            "and a trusted-header reverse-proxy mode, with the /staff screen showing the current access "
+            "state while full OIDC login remains future work; "
             "all current production-depth clerk-console form submissions are live for the released "
             "API foundation, while the full integrated clerk console remains future work."
         ),
@@ -336,7 +330,8 @@ async def staff_session(request: Request) -> dict[str, object]:
             "message": "Staff workflow access is running in local open mode.",
             "fix": (
                 f"Set {STAFF_AUTH_MODE_ENV_VAR}={STAFF_BEARER_MODE} and configure "
-                f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR} before exposing staff APIs outside a local rehearsal."
+                f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR}, or switch to "
+                f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_TRUSTED_HEADER_MODE} behind a trusted reverse proxy."
             ),
         }
 
@@ -350,14 +345,32 @@ async def staff_session(request: Request) -> dict[str, object]:
             },
         )
 
-    return {
-        "mode": STAFF_BEARER_MODE,
+    response: dict[str, object] = {
+        "mode": mode,
         "authenticated": True,
         "roles": sorted(principal.roles),
         "token_fingerprint": principal.token_fingerprint,
-        "message": "Bearer token accepted for staff workflow access.",
-        "fix": "Keep this token scoped to clerk workflow roles until SSO lands.",
+        "auth_method": principal.auth_method,
     }
+    if principal.subject:
+        response["subject"] = principal.subject
+    if principal.provider:
+        response["provider"] = principal.provider
+    if mode == STAFF_BEARER_MODE:
+        response["message"] = "Bearer token accepted for staff workflow access."
+        response["fix"] = (
+            "Keep this token scoped to clerk workflow roles until the trusted-header SSO bridge is ready."
+        )
+        return response
+
+    response["message"] = "Trusted staff identity accepted from the configured reverse proxy."
+    response["fix"] = (
+        f"Keep {_get_staff_sso_provider_name()} stripping client-supplied copies of "
+        f"{_get_staff_sso_principal_header()} and {_get_staff_sso_roles_header()} before CivicClerk."
+    )
+    response["principal_header"] = _get_staff_sso_principal_header()
+    response["roles_header"] = _get_staff_sso_roles_header()
+    return response
 
 
 @app.post("/agenda-items", status_code=201)
@@ -1064,9 +1077,46 @@ def _resolve_archive_search_principal(
     )
 
 
+def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
+    mode = _get_staff_auth_mode()
+    if mode == STAFF_BEARER_MODE:
+        authorization = request.headers.get("authorization", "").strip()
+        credentials: HTTPAuthorizationCredentials | None = None
+        if authorization:
+            scheme, _, token = authorization.partition(" ")
+            credentials = HTTPAuthorizationCredentials(
+                scheme=scheme,
+                credentials=token.strip(),
+            )
+        return authorize_bearer_roles(
+            credentials,
+            service_name="CivicClerk",
+            feature_name="staff workflow access",
+            token_roles_env_var=STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
+            allowed_roles=STAFF_ALLOWED_ROLES,
+        )
+    if mode == STAFF_TRUSTED_HEADER_MODE:
+        return authorize_trusted_header_roles(
+            request.headers,
+            service_name="CivicClerk",
+            feature_name="staff workflow access",
+            principal_header_name=_get_staff_sso_principal_header(),
+            roles_header_name=_get_staff_sso_roles_header(),
+            allowed_roles=STAFF_ALLOWED_ROLES,
+            provider_name=_get_staff_sso_provider_name(),
+        )
+    raise HTTPException(
+        status_code=500,
+        detail={
+            "message": "Staff auth mode was not resolved before principal authorization.",
+            "fix": f"Set {STAFF_AUTH_MODE_ENV_VAR} to a supported value and retry.",
+        },
+    )
+
+
 def _get_staff_auth_mode() -> str:
     raw_mode = os.environ.get(STAFF_AUTH_MODE_ENV_VAR, STAFF_OPEN_MODE).strip().lower()
-    if raw_mode in {STAFF_OPEN_MODE, STAFF_BEARER_MODE}:
+    if raw_mode in {STAFF_OPEN_MODE, STAFF_BEARER_MODE, STAFF_TRUSTED_HEADER_MODE}:
         return raw_mode
     raise HTTPException(
         status_code=503,
@@ -1074,9 +1124,37 @@ def _get_staff_auth_mode() -> str:
             "message": "CivicClerk staff auth mode is invalid.",
             "fix": (
                 f"Set {STAFF_AUTH_MODE_ENV_VAR} to '{STAFF_OPEN_MODE}' for local rehearsal "
-                f"or '{STAFF_BEARER_MODE}' for bearer-protected staff APIs."
+                f"or '{STAFF_BEARER_MODE}' for bearer-protected staff APIs, "
+                f"or '{STAFF_TRUSTED_HEADER_MODE}' for trusted reverse-proxy SSO headers."
             ),
         },
+    )
+
+
+def _get_staff_sso_provider_name() -> str:
+    return (
+        os.environ.get(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, DEFAULT_STAFF_SSO_PROVIDER).strip()
+        or DEFAULT_STAFF_SSO_PROVIDER
+    )
+
+
+def _get_staff_sso_principal_header() -> str:
+    return (
+        os.environ.get(
+            STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR,
+            DEFAULT_STAFF_SSO_PRINCIPAL_HEADER,
+        ).strip()
+        or DEFAULT_STAFF_SSO_PRINCIPAL_HEADER
+    )
+
+
+def _get_staff_sso_roles_header() -> str:
+    return (
+        os.environ.get(
+            STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR,
+            DEFAULT_STAFF_SSO_ROLES_HEADER,
+        ).strip()
+        or DEFAULT_STAFF_SSO_ROLES_HEADER
     )
 
 

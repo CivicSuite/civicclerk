@@ -1,7 +1,7 @@
 # CivicClerk User Manual
 
-Status: CivicClerk v0.1.7 runtime foundation manual
-Version: `0.1.7`
+Status: CivicClerk v0.1.8 runtime foundation manual
+Version: `0.1.8`
 
 ## Part 1: Non-Technical Overview
 
@@ -46,8 +46,8 @@ action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.7 release
-artifacts, CivicCore v0.13.0-backed packet export bundles, a database-backed
+NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.8 release
+artifacts, CivicCore v0.14.0-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
 with source/citation metadata, database-backed agenda item lifecycle records
@@ -79,9 +79,13 @@ posting-proof records, captures meeting outcome records, creates
 citation-gated minutes draft records, publishes public archive records, and
 normalizes local connector exports, and creates records-ready packet export
 bundles. The staff shell now checks `/staff/session` so IT staff and clerks can
-see whether the service is in local open mode or bearer-protected staff mode.
-Bearer mode uses `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus
-`CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`; full SSO is still future work.
+see whether the service is in local open mode, bearer-protected staff mode, or
+trusted-header staff mode. Bearer mode uses
+`CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`.
+Trusted-header mode uses `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus
+`CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER`,
+`CIVICCLERK_STAFF_SSO_ROLES_HEADER`, and
+`CIVICCLERK_STAFF_SSO_PROVIDER`; full OIDC login is still future work.
 bundles; the broader multi-role React clerk console remains future work.
 
 ## Part 2: IT and Technical Overview
@@ -101,7 +105,7 @@ CivicClerk will follow the CivicSuite deployment pattern:
 
 ### Planned dependency
 
-The runtime foundation now pins to the published `civiccore` v0.13.0 release wheel. Agenda intake uses
+The runtime foundation now pins to the published `civiccore` v0.14.0 release wheel. Agenda intake uses
 `CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; agenda item lifecycle records use
 `CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records use
 `CIVICCLERK_MEETING_DB_URL` when set; packet assembly records use
@@ -154,8 +158,8 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v0.1.7.
-The current production-depth branch pairs CivicClerk with the published `civiccore` v0.13.0 release wheel
+builds release artifacts and checksums, and publishes CivicClerk v0.1.8.
+The current production-depth branch pairs CivicClerk with the published `civiccore` v0.14.0 release wheel
 so packet exports, packet assembly records, notice checklist records, and the
 browser QA release-evidence gate can use shared CivicCore manifests,
 provenance, checksums, audit primitives, and verification helpers.
@@ -185,7 +189,7 @@ filtering for anonymous and under-privileged users. Milestone 9 moves
 policy-bearing prompt text into YAML and adds an evaluation harness.
 Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
-records-ready packet export bundles using CivicCore v0.13.0 provenance, export
+records-ready packet export bundles using CivicCore v0.14.0 provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed agenda item lifecycle records with
 durable transition audit entries; database-backed meeting records with lifecycle
