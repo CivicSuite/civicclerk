@@ -25,5 +25,7 @@ QA checks:
   visible `:focus-visible` outlines.
 - Contrast: text, buttons, and state cards use high-contrast ink/accent colors
   on light panels.
-- Console: Chrome headless screenshots completed without browser crash output;
-  API responses were served by the branch-local app.
+- Console: Chrome DevTools Protocol check against
+  `http://127.0.0.1:8795/public` reported `console_events=0` and
+  `exceptions=0` after a seeded public record loaded through the branch-local
+  app.
