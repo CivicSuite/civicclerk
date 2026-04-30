@@ -104,6 +104,7 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
         "/staff/auth-readiness",
         '$env:CIVICCLERK_STAFF_AUTH_MODE="open"',
         "scripts/start_fresh_install_rehearsal.ps1",
+        "scripts/start_fresh_install_rehearsal.sh",
         ".fresh-install-rehearsal",
         "docs/examples/trusted-header-nginx.conf",
         "reverse_proxy_reference",
@@ -207,6 +208,56 @@ def test_fresh_install_rehearsal_script_prints_expected_plan() -> None:
         "If the wheel is missing, build it first with: python -m build",
         "If port 8776 is already in use, stop the existing process or rerun with -AppPort set to an available port.",
         "pass -KeepServer to keep it running",
+    ]:
+        assert expected in output
+
+
+def test_fresh_install_rehearsal_bash_script_prints_expected_plan() -> None:
+    import shutil
+    import subprocess
+
+    import pytest
+
+    script = ROOT / "scripts" / "start_fresh_install_rehearsal.sh"
+    relative_script = (Path("scripts") / "start_fresh_install_rehearsal.sh").as_posix()
+    assert script.exists()
+    shell = shutil.which("bash")
+    if shell is None:
+        pytest.skip("Bash runtime is not available in this environment.")
+
+    result = subprocess.run(
+        [
+            shell,
+            relative_script,
+            "--print-only",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    output = result.stdout
+    for expected in [
+        "Fresh install rehearsal profile",
+        "Wheel path:",
+        "Rehearsal root:",
+        ".fresh-install-rehearsal",
+        "Host Python:",
+        "Create venv:",
+        "Upgrade pip:",
+        "Install wheel:",
+        "Export CIVICCLERK_STAFF_AUTH_MODE=open",
+        "App command:",
+        "/bin/python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776",
+        "Smoke check: GET http://127.0.0.1:8776/health",
+        "Readiness check: GET http://127.0.0.1:8776/staff/auth-readiness",
+        "Browser check: open http://127.0.0.1:8776/staff",
+        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"0.1.11\",\"civiccore\":\"0.16.0\"}",
+        "If the wheel is missing, build it first with: python -m build",
+        "If port 8776 is already in use, stop the existing process or rerun with --app-port set to an available port.",
+        "pass --keep-server to keep it running",
     ]:
         assert expected in output
 

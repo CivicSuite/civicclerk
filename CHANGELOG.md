@@ -9,6 +9,9 @@ All notable changes to CivicClerk are documented here.
   documented Windows-first fresh-machine wheel install plus `/health`,
   `/staff/auth-readiness`, and `/staff` smoke checks from an isolated
   `.fresh-install-rehearsal` virtual environment.
+- `scripts/start_fresh_install_rehearsal.sh` now prints and can execute the
+  same fresh-machine wheel install and first-run smoke checks from Bash on
+  Linux, macOS, or Git Bash.
 - `docs/examples/trusted-header-nginx.conf` now ships the first real trusted-header
   reverse-proxy reference bridge for CivicClerk staff auth handoff.
 - `scripts/start_protected_demo_rehearsal.ps1` now prints and can launch a
