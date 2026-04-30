@@ -36,6 +36,21 @@ async def test_staff_session_reports_open_mode_by_default() -> None:
 
 
 @pytest.mark.asyncio
+async def test_staff_auth_readiness_reports_open_mode_as_rehearsal_only() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/auth-readiness")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "open"
+    assert response.json()["ready"] is True
+    assert response.json()["deployment_ready"] is False
+    assert response.json()["message"] == (
+        "Local open mode is ready for rehearsal, but not for real staff deployment."
+    )
+    assert STAFF_AUTH_MODE_ENV_VAR in response.json()["fix"]
+
+
+@pytest.mark.asyncio
 async def test_staff_page_discloses_open_and_bearer_modes_without_claiming_sso() -> None:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/staff")
@@ -126,6 +141,24 @@ async def test_bearer_mode_accepts_configured_staff_token_for_session_and_write(
 
 
 @pytest.mark.asyncio
+async def test_bearer_mode_readiness_requires_token_role_mapping(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_BEARER_MODE)
+    monkeypatch.delenv(STAFF_AUTH_TOKEN_ROLES_ENV_VAR, raising=False)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/auth-readiness")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "bearer"
+    assert response.json()["ready"] is False
+    assert response.json()["deployment_ready"] is False
+    assert "no staff token mappings are configured yet" in response.json()["message"]
+    assert STAFF_AUTH_TOKEN_ROLES_ENV_VAR in response.json()["fix"]
+
+
+@pytest.mark.asyncio
 async def test_trusted_header_mode_requires_proxy_headers(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_TRUSTED_HEADER_MODE)
     monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
@@ -182,6 +215,30 @@ async def test_trusted_header_mode_accepts_proxy_identity_for_session_and_write(
     assert session.json()["roles"] == ["clerk_admin", "meeting_editor"]
     assert create.status_code == 201
     assert create.json()["title"] == "Proxy auth check"
+
+
+@pytest.mark.asyncio
+async def test_trusted_header_mode_readiness_reports_configured_proxy_bridge(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_TRUSTED_HEADER_MODE)
+    monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
+    monkeypatch.setenv(STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR, "X-Staff-Email")
+    monkeypatch.setenv(STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR, "X-Staff-Roles")
+    monkeypatch.setenv(STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR, "10.20.30.0/24")
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/auth-readiness")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "trusted_header"
+    assert response.json()["ready"] is True
+    assert response.json()["deployment_ready"] is True
+    assert response.json()["provider"] == "Entra ID proxy"
+    assert response.json()["principal_header"] == "X-Staff-Email"
+    assert response.json()["roles_header"] == "X-Staff-Roles"
+    assert response.json()["trusted_proxy_cidrs"] == ["10.20.30.0/24"]
+    assert "reverse-proxy deployment readiness" in response.json()["message"]
 
 
 @pytest.mark.asyncio
@@ -245,6 +302,27 @@ async def test_trusted_header_mode_requires_trusted_proxy_allowlist(
     assert response.status_code == 503
     assert response.json()["detail"]["message"] == "Trusted-header proxy allowlist is missing."
     assert STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR in response.json()["detail"]["fix"]
+
+
+@pytest.mark.asyncio
+async def test_trusted_header_mode_readiness_requires_proxy_allowlist(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_TRUSTED_HEADER_MODE)
+    monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
+    monkeypatch.setenv(STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR, "X-Staff-Email")
+    monkeypatch.setenv(STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR, "X-Staff-Roles")
+    monkeypatch.delenv(STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR, raising=False)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/auth-readiness")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "trusted_header"
+    assert response.json()["ready"] is False
+    assert response.json()["deployment_ready"] is False
+    assert "allowlist is missing" in response.json()["message"]
+    assert STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR in response.json()["fix"]
 
 
 @pytest.mark.asyncio

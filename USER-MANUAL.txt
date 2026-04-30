@@ -1,7 +1,7 @@
 # CivicClerk User Manual
 
-Status: CivicClerk v0.1.10 runtime foundation manual
-Version: `0.1.10`
+Status: CivicClerk v0.1.11 runtime foundation manual
+Version: `0.1.11`
 
 ## Part 1: Non-Technical Overview
 
@@ -46,7 +46,7 @@ action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.10 release
+NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.11 release
 artifacts, CivicCore v0.16.0-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed agenda item
 lifecycle records with durable transition audit entries, database-backed meeting
@@ -80,7 +80,9 @@ citation-gated minutes draft records, publishes public archive records, and
 normalizes local connector exports, and creates records-ready packet export
 bundles. The staff shell now checks `/staff/session` so IT staff and clerks can
 see whether the service is in local open mode, bearer-protected staff mode, or
-trusted-header staff mode. Bearer mode uses
+trusted-header staff mode. `/staff/auth-readiness` now reports whether the
+configured bearer-token or trusted-proxy bridge is deployment-ready before a
+live session check. Bearer mode uses
 `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`.
 Trusted-header mode uses `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus
 `CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER`,
@@ -159,7 +161,7 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v0.1.10.
+builds release artifacts and checksums, and publishes CivicClerk v0.1.11.
 The current production-depth branch pairs CivicClerk with the published `civiccore` v0.16.0 release wheel
 so packet exports, packet assembly records, notice checklist records, and the
 browser QA release-evidence gate can use shared CivicCore manifests,

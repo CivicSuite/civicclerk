@@ -253,14 +253,15 @@ def render_staff_dashboard() -> str:
       <div class="eyebrow">CivicClerk v{__version__}</div>
       <h1>CivicClerk Staff Workflow Screens</h1>
       <p class="status">These are browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly and export, notice checklist/posting proof, outcome capture, cited minutes drafting, public archive publishing, and connector import work, and they now disclose whether the service is running in local open mode, bearer-protected staff mode, or trusted-header staff mode.</p>
-      <p>The screens show the live API paths, safe next actions, required staff states, actionable fix copy, and the first deployment-ready staff auth contract for the service slices available today. full OIDC login is not shipped yet; this screen is the bridge contract until that lands.</p>
+      <p>The screens show the live API paths, safe next actions, required staff states, actionable fix copy, and the first deployment-ready staff auth contract for the service slices available today. Full OIDC login is not shipped yet; this screen is the bridge contract until that lands.</p>
     </section>
 
     <section class="auth-panel" aria-labelledby="staff-auth-heading">
       <div class="auth-grid">
         <div>
-          <h2 id="staff-auth-heading">Staff access check</h2>
+          <h2 id="staff-auth-heading">Staff access and readiness check</h2>
           <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>.</p>
+          <p>The readiness check uses <code>/staff/auth-readiness</code> to tell IT staff whether the current auth mode is deployment-ready before a live authenticated session is tested.</p>
           <label>Bearer token for staff actions
             <input id="staff-auth-token" name="staff_auth_token" placeholder="Paste bearer token when bearer mode is enabled" autocomplete="off">
           </label>
@@ -269,7 +270,7 @@ def render_staff_dashboard() -> str:
           </div>
         </div>
         <div id="staff-auth-status" class="auth-status" data-state="loading" role="status" aria-live="polite">
-          <strong>Loading:</strong> checking staff access mode...
+          <strong>Loading:</strong> checking staff auth readiness...
         </div>
       </div>
     </section>
@@ -360,19 +361,62 @@ def render_staff_dashboard() -> str:
       return data;
     }}
 
+    function formatReadinessChecks(checks) {{
+      if (!Array.isArray(checks) || checks.length === 0) {{
+        return "";
+      }}
+      const items = checks.map((check) => `<li><strong>${{check.name}}:</strong> ${{check.status}}${{check.value ? ` (${{
+        check.value
+      }})` : ""}}</li>`);
+      return `<ul>${{items.join("")}}</ul>`;
+    }}
+
     async function refreshStaffSession() {{
-      setAuthStatus("loading", "<strong>Loading:</strong> checking staff access mode...");
+      setAuthStatus("loading", "<strong>Loading:</strong> checking staff auth readiness...");
       try {{
+        const readinessResponse = await fetch("/staff/auth-readiness");
+        const readiness = await readinessResponse.json();
+        if (!readinessResponse.ok) {{
+          const detail = readiness.detail || {{}};
+          throw new Error(`${{detail.message || "Staff auth readiness check failed."}} How to fix: ${{detail.fix || "Check the configured auth mode and retry."}}`);
+        }}
+        const readinessChecks = formatReadinessChecks(readiness.checks);
+        if (readiness.mode === "trusted_header") {{
+          const readinessState = readiness.ready ? "success" : "error";
+          setAuthStatus(
+            readinessState,
+            `<strong>${{readiness.ready ? "Ready" : "Not ready"}}:</strong> ${{readiness.message}}<br><strong>Provider:</strong> ${{readiness.provider || "not set"}}<br><strong>Principal header:</strong> <code>${{readiness.principal_header || "not set"}}</code><br><strong>Roles header:</strong> <code>${{readiness.roles_header || "not set"}}</code>${{readinessChecks}}<strong>Next step:</strong> ${{readiness.fix}}`,
+          );
+          return;
+        }}
+        if (readiness.mode === "open") {{
+          setAuthStatus(
+            "success",
+            `<strong>Rehearsal mode:</strong> ${{readiness.message}}${{readinessChecks}}<strong>Next step:</strong> ${{readiness.fix}}`,
+          );
+          return;
+        }}
+        if (!readiness.ready) {{
+          setAuthStatus(
+            "error",
+            `<strong>Not ready:</strong> ${{readiness.message}}${{readinessChecks}}<strong>Next step:</strong> ${{readiness.fix}}`,
+          );
+          return;
+        }}
         const response = await fetch("/staff/session", {{ headers: authHeaders(false) }});
         const data = await response.json();
         if (!response.ok) {{
           const detail = data.detail || {{}};
-          throw new Error(`${{detail.message || "Staff access check failed."}} How to fix: ${{detail.fix || "Check the configured auth mode and retry."}}`);
+          setAuthStatus(
+            "error",
+            `<strong>Ready, but session check failed:</strong> ${{detail.message || "Staff access check failed."}}${{readinessChecks}}<strong>Next step:</strong> ${{detail.fix || readiness.fix || "Check the configured auth mode and retry."}}`,
+          );
+          return;
         }}
         const roles = (data.roles || []).join(", ");
         setAuthStatus(
           "success",
-          `<strong>Success:</strong> mode is <code>${{data.mode}}</code>.<br><strong>Roles:</strong> ${{roles || "none"}}<br><strong>Next step:</strong> ${{data.fix || "Proceed with staff workflow actions."}}`,
+          `<strong>Success:</strong> mode is <code>${{data.mode}}</code>.<br><strong>Roles:</strong> ${{roles || "none"}}${{readinessChecks}}<strong>Next step:</strong> ${{data.fix || readiness.fix || "Proceed with staff workflow actions."}}`,
         );
       }} catch (error) {{
         setAuthStatus("error", `<strong>Error:</strong> ${{error.message}}`);

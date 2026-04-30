@@ -4,6 +4,19 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-04-30
+
+### Added
+- `/staff/auth-readiness` now reports whether the current bearer-token or
+  trusted-header staff auth mode is deployment-ready, including actionable
+  fix paths for missing token mappings and missing or invalid trusted-proxy
+  CIDR allowlists.
+
+### Changed
+- The `/staff` workflow shell now checks auth readiness before attempting a
+  live session check so operators can distinguish direct-browser access from
+  deployable staff-auth configuration.
+
 ## [0.1.10] - 2026-04-29
 
 ### Changed
