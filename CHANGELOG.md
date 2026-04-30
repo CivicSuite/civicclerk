@@ -4,6 +4,14 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-04-29
+
+### Changed
+- Trusted-header staff auth now consumes the shared `civiccore.auth`
+  trusted-header config contract and shared proxy-source enforcement helper
+  instead of carrying service-local env parsing and allowlist validation copy.
+- CivicClerk now targets the published `civiccore` v0.16.0 release wheel.
+
 ## [0.1.9] - 2026-04-29
 
 ### Added
@@ -14,7 +22,6 @@ All notable changes to CivicClerk are documented here.
 - The `/staff` workflow shell, current-facing docs, and release gate now
   document `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES` as part of the trusted
   reverse-proxy contract.
-- CivicClerk now targets the published `civiccore` v0.15.0 release wheel.
 
 ## [0.1.8] - 2026-04-29
 
