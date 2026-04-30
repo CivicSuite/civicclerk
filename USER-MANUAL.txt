@@ -170,7 +170,9 @@ The Bash helper prints the same wheel path, isolated
 `.fresh-install-rehearsal/.venv`, app command, and smoke-check URLs. Rerun
 without `--print-only` to execute the install and first-run checks. If the
 default port is already occupied, rerun with `--app-port` set to an available
-loopback port.
+loopback port. Linux hosts must have Python 3 with `venv` support available
+before this helper can create the isolated environment; on Debian or Ubuntu,
+install `python3-venv` first.
 
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff

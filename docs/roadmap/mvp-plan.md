@@ -3,6 +3,13 @@
 The first CivicClerk MVP is a vertical slice, not a full Granicus-style
 replacement.
 
+Current status as of CivicClerk v0.1.11: the runtime foundation, staff workflow
+HTML shell, prompt gates, release gates, connector import normalization, public
+archive filtering, packet export bundles, protected staff-auth rehearsal, and
+fresh-install rehearsal helpers are present. Remaining MVP work still centers
+on the integrated multi-role frontend app, installer packaging, public portal,
+and live sync/deployment hardening.
+
 ## Sprint 1
 
 - Meeting body CRUD
@@ -28,7 +35,7 @@ replacement.
 - Minutes draft workspace
 - Citation model
 
-## Release bar for v0.1.0
+## Current release bar
 
 - Full docs baseline updated
 - CI green
