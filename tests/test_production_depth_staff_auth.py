@@ -179,6 +179,44 @@ async def test_trusted_header_mode_accepts_proxy_identity_for_session_and_write(
 
 
 @pytest.mark.asyncio
+async def test_trusted_header_mode_rejects_underprivileged_identity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_TRUSTED_HEADER_MODE)
+    monkeypatch.setenv(STAFF_AUTH_SSO_PROVIDER_ENV_VAR, "Entra ID proxy")
+    monkeypatch.setenv(STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR, "X-Staff-Email")
+    monkeypatch.setenv(STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR, "X-Staff-Roles")
+
+    headers = {
+        "X-Staff-Email": "records@example.gov",
+        "X-Staff-Roles": "archive_reader",
+    }
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.post(
+            "/agenda-intake",
+            headers=headers,
+            json={
+                "title": "Proxy auth check",
+                "department_name": "Clerk",
+                "submitted_by": "clerk@example.gov",
+                "summary": "Test trusted-header protected agenda intake.",
+                "source_references": [{"label": "Memo", "url": "https://city.example.gov/memo"}],
+            },
+        )
+
+    assert response.status_code == 403
+    assert response.json()["detail"]["message"] == "Trusted identity lacks an allowed role."
+    assert response.json()["detail"]["required_roles"] == [
+        "city_attorney",
+        "clerk_admin",
+        "clerk_editor",
+        "meeting_editor",
+    ]
+    assert response.json()["detail"]["principal_roles"] == ["archive_reader"]
+    assert response.json()["detail"]["principal"] == "records@example.gov"
+
+
+@pytest.mark.asyncio
 async def test_invalid_staff_auth_mode_returns_actionable_503(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, "mystery")
 
