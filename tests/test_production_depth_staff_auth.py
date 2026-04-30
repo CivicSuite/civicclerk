@@ -240,6 +240,15 @@ async def test_trusted_header_mode_readiness_reports_configured_proxy_bridge(
     assert response.json()["principal_header"] == "X-Staff-Email"
     assert response.json()["roles_header"] == "X-Staff-Roles"
     assert response.json()["trusted_proxy_cidrs"] == ["10.20.30.0/24"]
+    assert response.json()["local_proxy_rehearsal"]["scope"] == "loopback_only"
+    assert response.json()["local_proxy_rehearsal"]["script_path"] == "scripts/local_trusted_header_proxy.py"
+    assert response.json()["local_proxy_rehearsal"]["trusted_proxy_cidrs"] == ["127.0.0.1/32"]
+    assert response.json()["local_proxy_rehearsal"]["app_env"][STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR] == "127.0.0.1/32"
+    assert response.json()["local_proxy_rehearsal"]["headers"] == {
+        "X-Staff-Email": "clerk@example.gov",
+        "X-Staff-Roles": "clerk_admin,meeting_editor",
+    }
+    assert "Run the helper command" in response.json()["local_proxy_rehearsal"]["steps"][1]
     assert "reverse-proxy deployment readiness" in response.json()["message"]
     assert response.json()["session_probe"]["path"] == "/staff/session"
     assert response.json()["session_probe"]["headers"] == {
@@ -335,6 +344,9 @@ async def test_trusted_header_mode_readiness_requires_proxy_allowlist(
     assert response.json()["deployment_ready"] is False
     assert "allowlist is missing" in response.json()["message"]
     assert STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR in response.json()["fix"]
+    assert response.json()["local_proxy_rehearsal"]["script_path"] == "scripts/local_trusted_header_proxy.py"
+    assert response.json()["local_proxy_rehearsal"]["proxy_env"]["CIVICCLERK_LOCAL_PROXY_UPSTREAM"] == "http://127.0.0.1:8000"
+    assert "localhost rehearsal only" in response.json()["local_proxy_rehearsal"]["warnings"][0]
     assert "session_probe" not in response.json()
     assert "write_probe" not in response.json()
 

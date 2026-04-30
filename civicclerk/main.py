@@ -18,7 +18,7 @@ from civiccore.auth import (
 from civiccore.security import normalize_trusted_proxy_cidrs
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from civicclerk import __version__
@@ -67,6 +67,19 @@ STAFF_TRUSTED_HEADER_MODE = "trusted_header"
 DEFAULT_STAFF_SSO_PROVIDER = "trusted reverse proxy"
 DEFAULT_STAFF_SSO_PRINCIPAL_HEADER = "X-Forwarded-Email"
 DEFAULT_STAFF_SSO_ROLES_HEADER = "X-Forwarded-Roles"
+LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH = "scripts/local_trusted_header_proxy.py"
+LOCAL_TRUSTED_HEADER_PROXY_UPSTREAM_ENV_VAR = "CIVICCLERK_LOCAL_PROXY_UPSTREAM"
+LOCAL_TRUSTED_HEADER_PROXY_LISTEN_HOST_ENV_VAR = "CIVICCLERK_LOCAL_PROXY_LISTEN_HOST"
+LOCAL_TRUSTED_HEADER_PROXY_LISTEN_PORT_ENV_VAR = "CIVICCLERK_LOCAL_PROXY_LISTEN_PORT"
+LOCAL_TRUSTED_HEADER_PROXY_PRINCIPAL_ENV_VAR = "CIVICCLERK_LOCAL_PROXY_PRINCIPAL"
+LOCAL_TRUSTED_HEADER_PROXY_ROLES_ENV_VAR = "CIVICCLERK_LOCAL_PROXY_ROLES"
+LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PROVIDER = "local trusted-header rehearsal proxy"
+LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_HOST = "127.0.0.1"
+LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PORT = 8010
+LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_UPSTREAM = "http://127.0.0.1:8000"
+LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PRINCIPAL = "clerk@example.gov"
+LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_ROLES = "clerk_admin,meeting_editor"
+LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_TRUSTED_PROXY = "127.0.0.1/32"
 STAFF_ALLOWED_ROLES = frozenset({"clerk_admin", "clerk_editor", "meeting_editor", "city_attorney"})
 _agenda_intake_repository: AgendaIntakeRepository | None = None
 _agenda_intake_db_url: str | None = None
@@ -315,6 +328,12 @@ async def health() -> dict[str, str]:
         "version": __version__,
         "civiccore": CIVICCORE_VERSION,
     }
+
+
+@app.get("/favicon.ico", response_class=Response)
+async def favicon() -> Response:
+    """Return an empty public favicon response so browser QA stays console-clean."""
+    return Response(status_code=204)
 
 
 @app.get("/staff", response_class=HTMLResponse)
@@ -1193,6 +1212,63 @@ def _get_staff_trusted_header_config():
     )
 
 
+def _get_local_trusted_header_proxy_rehearsal(
+    *,
+    principal_header_name: str,
+    roles_header_name: str,
+) -> dict[str, object]:
+    listen_url = (
+        f"http://{LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_HOST}:"
+        f"{LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PORT}"
+    )
+    return {
+        "scope": "loopback_only",
+        "script_path": LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH,
+        "listen_url": listen_url,
+        "upstream_url": LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_UPSTREAM,
+        "trusted_proxy_cidrs": [LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_TRUSTED_PROXY],
+        "command": [
+            "python",
+            LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH,
+            "--upstream",
+            LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_UPSTREAM,
+            "--listen-host",
+            LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_HOST,
+            "--listen-port",
+            str(LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PORT),
+        ],
+        "app_env": {
+            STAFF_AUTH_MODE_ENV_VAR: STAFF_TRUSTED_HEADER_MODE,
+            STAFF_AUTH_SSO_PROVIDER_ENV_VAR: LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PROVIDER,
+            STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR: principal_header_name,
+            STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR: roles_header_name,
+            STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR: LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_TRUSTED_PROXY,
+        },
+        "proxy_env": {
+            LOCAL_TRUSTED_HEADER_PROXY_UPSTREAM_ENV_VAR: LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_UPSTREAM,
+            LOCAL_TRUSTED_HEADER_PROXY_LISTEN_HOST_ENV_VAR: LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_HOST,
+            LOCAL_TRUSTED_HEADER_PROXY_LISTEN_PORT_ENV_VAR: str(
+                LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PORT
+            ),
+            LOCAL_TRUSTED_HEADER_PROXY_PRINCIPAL_ENV_VAR: LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PRINCIPAL,
+            LOCAL_TRUSTED_HEADER_PROXY_ROLES_ENV_VAR: LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_ROLES,
+        },
+        "headers": {
+            principal_header_name: LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PRINCIPAL,
+            roles_header_name: LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_ROLES,
+        },
+        "steps": [
+            "Start CivicClerk on loopback with the app_env values shown here.",
+            "Run the helper command on the same workstation to inject placeholder trusted headers.",
+            "Browse or call the helper listen_url instead of the upstream URL so the backend only trusts loopback proxy traffic.",
+        ],
+        "warnings": [
+            "This helper is for localhost rehearsal only and does not terminate TLS or manage an identity provider.",
+            "The helper strips client-supplied trusted identity headers before forwarding to CivicClerk.",
+        ],
+    }
+
+
 def _get_staff_bearer_auth_readiness() -> dict[str, object]:
     raw_value = os.environ.get(STAFF_AUTH_TOKEN_ROLES_ENV_VAR, "").strip()
     token_map = (
@@ -1265,6 +1341,10 @@ def _get_staff_bearer_auth_readiness() -> dict[str, object]:
 
 def _get_staff_trusted_header_readiness() -> dict[str, object]:
     trusted_header_config = _get_staff_trusted_header_config()
+    local_proxy_rehearsal = _get_local_trusted_header_proxy_rehearsal(
+        principal_header_name=trusted_header_config.principal_header_name,
+        roles_header_name=trusted_header_config.roles_header_name,
+    )
     checks: list[dict[str, str]] = [
         {
             "name": "staff auth mode",
@@ -1302,13 +1382,16 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
             "provider": trusted_header_config.provider_name,
             "principal_header": trusted_header_config.principal_header_name,
             "roles_header": trusted_header_config.roles_header_name,
+            "local_proxy_rehearsal": local_proxy_rehearsal,
             "checks": checks,
             "message": "Trusted-header staff auth is selected, but the reverse-proxy allowlist is missing.",
             "fix": (
                 f"Set {STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR} to the CIDRs allowed to inject "
                 f"{trusted_header_config.principal_header_name} and "
                 f"{trusted_header_config.roles_header_name}, for example "
-                "'10.0.0.0/24,192.168.1.8/32'."
+                f"'10.0.0.0/24,192.168.1.8/32'. For a loopback rehearsal, use "
+                f"'{LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_TRUSTED_PROXY}' and run "
+                f"{LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH}."
             ),
         }
     try:
@@ -1328,9 +1411,14 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
             "provider": trusted_header_config.provider_name,
             "principal_header": trusted_header_config.principal_header_name,
             "roles_header": trusted_header_config.roles_header_name,
+            "local_proxy_rehearsal": local_proxy_rehearsal,
             "checks": checks,
             "message": "Trusted-header staff auth has an invalid reverse-proxy allowlist.",
-            "fix": f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR}: {exc}",
+            "fix": (
+                f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR}: {exc}. For a loopback rehearsal, use "
+                f"'{LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_TRUSTED_PROXY}' and run "
+                f"{LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH}."
+            ),
         }
     checks.append(
         {
@@ -1347,6 +1435,7 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
         "principal_header": trusted_header_config.principal_header_name,
         "roles_header": trusted_header_config.roles_header_name,
         "trusted_proxy_cidrs": list(trusted_header_config.trusted_proxy_cidrs),
+        "local_proxy_rehearsal": local_proxy_rehearsal,
         "checks": checks,
         "message": "Trusted-header staff auth is configured for reverse-proxy deployment readiness.",
         "fix": (
@@ -1388,7 +1477,7 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
 
 
 def _is_staff_protected_path(path: str) -> bool:
-    if path in {"/", "/health", "/staff", "/staff/auth-readiness"}:
+    if path in {"/", "/health", "/staff", "/staff/auth-readiness", "/favicon.ico"}:
         return False
     if path.startswith("/public/"):
         return False

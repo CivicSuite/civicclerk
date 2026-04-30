@@ -35,6 +35,9 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "deployment-ready staff auth contract" in html
     assert "Session probe" in html
     assert "Write probe" in html
+    assert "Local proxy rehearsal" in html
+    assert "scripts/local_trusted_header_proxy.py" in html
+    assert "127.0.0.1/32" in html
     assert "/staff/session" in html
     assert "CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER" in html
     assert "CIVICCLERK_STAFF_SSO_ROLES_HEADER" in html
@@ -147,6 +150,14 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         assert api_path in html
 
 
+async def test_favicon_is_public_and_empty() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/favicon.ico")
+
+    assert response.status_code == 204
+    assert response.text == ""
+
+
 def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     docs = "\n".join(
         [
@@ -159,6 +170,9 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
 
     assert "/staff" in docs
     assert "staff workflow screens" in docs
+    assert "local_proxy_rehearsal" in docs
+    assert "scripts/local_trusted_header_proxy.py" in docs
+    assert "127.0.0.1/32" in docs
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-desktop.png").exists()
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-mobile.png").exists()
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-summary.md").exists()
@@ -179,12 +193,23 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     assert (ROOT / "docs" / "browser-qa-production-depth-live-packet-export-screen-summary.md").exists()
 
 
+def test_local_trusted_header_proxy_helper_is_shipped() -> None:
+    helper = ROOT / "scripts" / "local_trusted_header_proxy.py"
+
+    assert helper.exists()
+    text = helper.read_text(encoding="utf-8")
+    assert "Loopback-only trusted-header proxy rehearsal helper for CivicClerk." in text
+    assert "CIVICCLERK_LOCAL_PROXY_UPSTREAM" in text
+    assert "X-Forwarded-For" not in text
+
+
 def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
     script = (ROOT / "scripts" / "verify-browser-qa.py").read_text(encoding="utf-8")
 
     assert "milestone13-staff-ui-desktop.png" in script
     assert "milestone13-staff-ui-mobile.png" in script
     assert "milestone13-staff-ui-summary.md" in script
+    assert "local proxy" in script.lower()
     assert "browser-qa-production-depth-live-meeting-outcomes-screen-desktop.png" in script
     assert "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png" in script
     assert "browser-qa-production-depth-live-minutes-draft-screen-desktop.png" in script

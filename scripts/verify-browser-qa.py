@@ -80,6 +80,7 @@ def main() -> int:
         milestone13_text = milestone13_summary.read_text(encoding="utf-8").lower()
         for required_phrase in (
             "trusted-header",
+            "local proxy",
             "session probe",
             "write probe",
             "desktop",

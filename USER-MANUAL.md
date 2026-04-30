@@ -93,6 +93,11 @@ When bearer or trusted-header mode is ready, the readiness response now
 includes a concrete session probe and a protected write probe so IT staff can
 test the real deployment path instead of inferring the next request from env
 vars alone.
+When trusted-header mode is still being staged on one workstation, the
+readiness response also includes a `local_proxy_rehearsal` block that points to
+`scripts/local_trusted_header_proxy.py`, pre-fills `127.0.0.1/32` as the safe
+starter allowlist, and tells operators to browse the helper URL instead of
+calling the upstream app directly.
 The broader multi-role React clerk console remains future work.
 
 ## Part 2: IT and Technical Overview
@@ -149,6 +154,11 @@ workflows, move to `bearer` or `trusted_header` before user testing and use
 contract instead of a local-only rehearsal mode. In protected modes, use the
 returned `session_probe` first and the returned `write_probe` second so the
 deployment check covers both identity acceptance and a live staff write.
+If trusted-header testing is happening on one loopback workstation before a
+real reverse proxy is available, use the returned `local_proxy_rehearsal`
+contract, set `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32`, run
+`python scripts/local_trusted_header_proxy.py`, and send the browser through
+that helper so CivicClerk only trusts loopback proxy traffic during rehearsal.
 
 ### Security posture
 
