@@ -9,11 +9,13 @@ from pathlib import Path
 from civiccore.auth import (
     AuthenticatedPrincipal,
     authorize_bearer_roles,
+    parse_token_role_map,
     authorize_trusted_header_roles,
     enforce_trusted_proxy_source,
     load_trusted_header_auth_config,
     resolve_optional_bearer_roles,
 )
+from civiccore.security import normalize_trusted_proxy_cidrs
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -377,6 +379,40 @@ async def staff_session(request: Request) -> dict[str, object]:
     response["principal_header"] = trusted_header_config.principal_header_name
     response["roles_header"] = trusted_header_config.roles_header_name
     return response
+
+
+@app.get("/staff/auth-readiness")
+async def staff_auth_readiness() -> dict[str, object]:
+    """Report whether the current staff auth mode is configured for safe use."""
+
+    mode = _get_staff_auth_mode()
+    if mode == STAFF_OPEN_MODE:
+        return {
+            "mode": STAFF_OPEN_MODE,
+            "ready": True,
+            "deployment_ready": False,
+            "checks": [
+                {
+                    "name": "staff auth mode",
+                    "status": "configured",
+                    "value": STAFF_OPEN_MODE,
+                },
+                {
+                    "name": "deployment posture",
+                    "status": "warning",
+                    "value": "local rehearsal only",
+                },
+            ],
+            "message": "Local open mode is ready for rehearsal, but not for real staff deployment.",
+            "fix": (
+                f"Set {STAFF_AUTH_MODE_ENV_VAR}={STAFF_BEARER_MODE} with "
+                f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR}, or switch to "
+                f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_TRUSTED_HEADER_MODE} behind a trusted reverse proxy."
+            ),
+        }
+    if mode == STAFF_BEARER_MODE:
+        return _get_staff_bearer_auth_readiness()
+    return _get_staff_trusted_header_readiness()
 
 
 @app.post("/agenda-items", status_code=201)
@@ -1157,8 +1193,153 @@ def _get_staff_trusted_header_config():
     )
 
 
+def _get_staff_bearer_auth_readiness() -> dict[str, object]:
+    raw_value = os.environ.get(STAFF_AUTH_TOKEN_ROLES_ENV_VAR, "").strip()
+    token_map = (
+        parse_token_role_map(raw_value, env_var=STAFF_AUTH_TOKEN_ROLES_ENV_VAR)
+        if raw_value
+        else {}
+    )
+    if not token_map:
+        return {
+            "mode": STAFF_BEARER_MODE,
+            "ready": False,
+            "deployment_ready": False,
+            "checks": [
+                {
+                    "name": "staff auth mode",
+                    "status": "configured",
+                    "value": STAFF_BEARER_MODE,
+                },
+                {
+                    "name": STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
+                    "status": "missing",
+                    "value": "no token-to-role mappings configured",
+                },
+            ],
+            "message": "Bearer staff auth is enabled, but no staff token mappings are configured yet.",
+            "fix": (
+                f"Set {STAFF_AUTH_TOKEN_ROLES_ENV_VAR} to JSON like "
+                '\'{"clerk-token":["clerk_admin","meeting_editor"]}\' before testing staff APIs.'
+            ),
+        }
+    return {
+        "mode": STAFF_BEARER_MODE,
+        "ready": True,
+        "deployment_ready": True,
+        "checks": [
+            {
+                "name": "staff auth mode",
+                "status": "configured",
+                "value": STAFF_BEARER_MODE,
+            },
+            {
+                "name": STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
+                "status": "configured",
+                "value": f"{len(token_map)} token mapping(s)",
+            },
+        ],
+        "message": "Bearer staff auth is configured and ready for token-based staff access checks.",
+        "fix": "Use a configured bearer token below to confirm the current browser session can reach staff routes.",
+    }
+
+
+def _get_staff_trusted_header_readiness() -> dict[str, object]:
+    trusted_header_config = _get_staff_trusted_header_config()
+    checks: list[dict[str, str]] = [
+        {
+            "name": "staff auth mode",
+            "status": "configured",
+            "value": STAFF_TRUSTED_HEADER_MODE,
+        },
+        {
+            "name": STAFF_AUTH_SSO_PROVIDER_ENV_VAR,
+            "status": "configured" if trusted_header_config.provider_name else "missing",
+            "value": trusted_header_config.provider_name or DEFAULT_STAFF_SSO_PROVIDER,
+        },
+        {
+            "name": STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR,
+            "status": "configured",
+            "value": trusted_header_config.principal_header_name,
+        },
+        {
+            "name": STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR,
+            "status": "configured",
+            "value": trusted_header_config.roles_header_name,
+        },
+    ]
+    if not trusted_header_config.trusted_proxy_cidrs:
+        checks.append(
+            {
+                "name": STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
+                "status": "missing",
+                "value": "no trusted proxy CIDRs configured",
+            }
+        )
+        return {
+            "mode": STAFF_TRUSTED_HEADER_MODE,
+            "ready": False,
+            "deployment_ready": False,
+            "provider": trusted_header_config.provider_name,
+            "principal_header": trusted_header_config.principal_header_name,
+            "roles_header": trusted_header_config.roles_header_name,
+            "checks": checks,
+            "message": "Trusted-header staff auth is selected, but the reverse-proxy allowlist is missing.",
+            "fix": (
+                f"Set {STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR} to the CIDRs allowed to inject "
+                f"{trusted_header_config.principal_header_name} and "
+                f"{trusted_header_config.roles_header_name}, for example "
+                "'10.0.0.0/24,192.168.1.8/32'."
+            ),
+        }
+    try:
+        normalize_trusted_proxy_cidrs(trusted_header_config.trusted_proxy_cidrs)
+    except ValueError as exc:
+        checks.append(
+            {
+                "name": STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
+                "status": "invalid",
+                "value": ", ".join(trusted_header_config.trusted_proxy_cidrs),
+            }
+        )
+        return {
+            "mode": STAFF_TRUSTED_HEADER_MODE,
+            "ready": False,
+            "deployment_ready": False,
+            "provider": trusted_header_config.provider_name,
+            "principal_header": trusted_header_config.principal_header_name,
+            "roles_header": trusted_header_config.roles_header_name,
+            "checks": checks,
+            "message": "Trusted-header staff auth has an invalid reverse-proxy allowlist.",
+            "fix": f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR}: {exc}",
+        }
+    checks.append(
+        {
+            "name": STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
+            "status": "configured",
+            "value": ", ".join(trusted_header_config.trusted_proxy_cidrs),
+        }
+    )
+    return {
+        "mode": STAFF_TRUSTED_HEADER_MODE,
+        "ready": True,
+        "deployment_ready": True,
+        "provider": trusted_header_config.provider_name,
+        "principal_header": trusted_header_config.principal_header_name,
+        "roles_header": trusted_header_config.roles_header_name,
+        "trusted_proxy_cidrs": list(trusted_header_config.trusted_proxy_cidrs),
+        "checks": checks,
+        "message": "Trusted-header staff auth is configured for reverse-proxy deployment readiness.",
+        "fix": (
+            f"Send staff traffic through {trusted_header_config.provider_name}, strip client-supplied "
+            f"{trusted_header_config.principal_header_name} and {trusted_header_config.roles_header_name}, "
+            "and test authenticated staff requests through that proxy path."
+        ),
+    }
+
+
 def _is_staff_protected_path(path: str) -> bool:
-    if path in {"/", "/health", "/staff"}:
+    if path in {"/", "/health", "/staff", "/staff/auth-readiness"}:
         return False
     if path.startswith("/public/"):
         return False
