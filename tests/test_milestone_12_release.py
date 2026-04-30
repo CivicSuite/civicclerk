@@ -113,13 +113,19 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
 
 def test_protected_demo_rehearsal_script_prints_expected_plan() -> None:
     import subprocess
+    import shutil
+
+    import pytest
 
     script = ROOT / "scripts" / "start_protected_demo_rehearsal.ps1"
     assert script.exists()
+    shell = shutil.which("pwsh") or shutil.which("powershell")
+    if shell is None:
+        pytest.skip("PowerShell runtime is not available in this environment.")
 
     result = subprocess.run(
         [
-            "powershell",
+            shell,
             "-ExecutionPolicy",
             "Bypass",
             "-File",
