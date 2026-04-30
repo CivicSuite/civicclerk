@@ -103,6 +103,8 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
         "http://127.0.0.1:8776/health",
         "/staff/auth-readiness",
         '$env:CIVICCLERK_STAFF_AUTH_MODE="open"',
+        "scripts/start_fresh_install_rehearsal.ps1",
+        ".fresh-install-rehearsal",
         "docs/examples/trusted-header-nginx.conf",
         "reverse_proxy_reference",
         "scripts/start_protected_demo_rehearsal.ps1",
@@ -154,6 +156,57 @@ def test_protected_demo_rehearsal_script_prints_expected_plan() -> None:
         "Smoke check: GET http://127.0.0.1:8877/health",
         "Readiness check: GET http://127.0.0.1:8877/staff/auth-readiness",
         "Browser check: open http://127.0.0.1:8878/staff",
+    ]:
+        assert expected in output
+
+
+def test_fresh_install_rehearsal_script_prints_expected_plan() -> None:
+    import subprocess
+    import shutil
+
+    import pytest
+
+    script = ROOT / "scripts" / "start_fresh_install_rehearsal.ps1"
+    assert script.exists()
+    shell = shutil.which("pwsh") or shutil.which("powershell")
+    if shell is None:
+        pytest.skip("PowerShell runtime is not available in this environment.")
+
+    result = subprocess.run(
+        [
+            shell,
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(script),
+            "-PrintOnly",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    output = result.stdout
+    for expected in [
+        "Fresh install rehearsal profile",
+        "Wheel path:",
+        "Rehearsal root:",
+        ".fresh-install-rehearsal",
+        "Create venv: python -m venv",
+        "Upgrade pip:",
+        "Install wheel:",
+        "Set CIVICCLERK_STAFF_AUTH_MODE=open",
+        "App command:",
+        "python.exe -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776",
+        "Smoke check: GET http://127.0.0.1:8776/health",
+        "Readiness check: GET http://127.0.0.1:8776/staff/auth-readiness",
+        "Browser check: open http://127.0.0.1:8776/staff",
+        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"0.1.11\",\"civiccore\":\"0.16.0\"}",
+        "If the wheel is missing, build it first with: python -m build",
+        "If port 8776 is already in use, stop the existing process or rerun with -AppPort set to an available port.",
+        "pass -KeepServer to keep it running",
     ]:
         assert expected in output
 
