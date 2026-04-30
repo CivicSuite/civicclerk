@@ -37,6 +37,7 @@ def main() -> int:
         ROOT / "docs" / "browser-qa-production-depth-agenda-item-persistence-desktop.png",
         ROOT / "docs" / "browser-qa-production-depth-agenda-item-persistence-mobile.png",
     ]
+    milestone13_summary = ROOT / "docs" / "screenshots" / "milestone13-staff-ui-summary.md"
 
     if not checklist.exists():
         failures.append("missing docs/browser-qa/milestone11-checklist.md")
@@ -72,6 +73,24 @@ def main() -> int:
             failures.append(f"missing screenshot: {screenshot.relative_to(ROOT)}")
         elif screenshot.stat().st_size <= 20_000:
             failures.append(f"screenshot too small to be credible evidence: {screenshot.relative_to(ROOT)}")
+
+    if not milestone13_summary.exists():
+        failures.append("missing protected staff UI summary: docs/screenshots/milestone13-staff-ui-summary.md")
+    else:
+        milestone13_text = milestone13_summary.read_text(encoding="utf-8").lower()
+        for required_phrase in (
+            "trusted-header",
+            "session probe",
+            "write probe",
+            "desktop",
+            "mobile",
+            "console: 0",
+        ):
+            if required_phrase not in milestone13_text:
+                failures.append(
+                    "protected staff UI summary missing phrase: "
+                    f"{required_phrase}"
+                )
 
     try:
         release_result = validate_release_browser_evidence(

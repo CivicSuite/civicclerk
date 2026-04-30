@@ -33,6 +33,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert 'id="staff-auth-status"' in html
     assert "/staff/auth-readiness" in html
     assert "deployment-ready staff auth contract" in html
+    assert "Session probe" in html
+    assert "Write probe" in html
     assert "/staff/session" in html
     assert "CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER" in html
     assert "CIVICCLERK_STAFF_SSO_ROLES_HEADER" in html
@@ -159,6 +161,7 @@ def test_staff_ui_has_current_facing_docs_and_browser_qa_evidence() -> None:
     assert "staff workflow screens" in docs
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-desktop.png").exists()
     assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-mobile.png").exists()
+    assert (ROOT / "docs" / "screenshots" / "milestone13-staff-ui-summary.md").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-desktop.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png").exists()
     assert (ROOT / "docs" / "browser-qa-production-depth-live-meeting-outcomes-screen-summary.md").exists()
@@ -181,6 +184,7 @@ def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:
 
     assert "milestone13-staff-ui-desktop.png" in script
     assert "milestone13-staff-ui-mobile.png" in script
+    assert "milestone13-staff-ui-summary.md" in script
     assert "browser-qa-production-depth-live-meeting-outcomes-screen-desktop.png" in script
     assert "browser-qa-production-depth-live-meeting-outcomes-screen-mobile.png" in script
     assert "browser-qa-production-depth-live-minutes-draft-screen-desktop.png" in script

@@ -89,6 +89,10 @@ Trusted-header mode uses `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus
 `CIVICCLERK_STAFF_SSO_ROLES_HEADER`,
 `CIVICCLERK_STAFF_SSO_PROVIDER`, and
 `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES`; full OIDC login is still future work.
+When bearer or trusted-header mode is ready, the readiness response now
+includes a concrete session probe and a protected write probe so IT staff can
+test the real deployment path instead of inferring the next request from env
+vars alone.
 The broader multi-role React clerk console remains future work.
 
 ## Part 2: IT and Technical Overview
@@ -142,7 +146,9 @@ If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
 workflows, move to `bearer` or `trusted_header` before user testing and use
 `/staff/auth-readiness` to confirm the service reports a deployment-ready
-contract instead of a local-only rehearsal mode.
+contract instead of a local-only rehearsal mode. In protected modes, use the
+returned `session_probe` first and the returned `write_probe` second so the
+deployment check covers both identity acceptance and a live staff write.
 
 ### Security posture
 

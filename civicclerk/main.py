@@ -1241,6 +1241,25 @@ def _get_staff_bearer_auth_readiness() -> dict[str, object]:
         ],
         "message": "Bearer staff auth is configured and ready for token-based staff access checks.",
         "fix": "Use a configured bearer token below to confirm the current browser session can reach staff routes.",
+        "session_probe": {
+            "method": "GET",
+            "path": "/staff/session",
+            "headers": {"Authorization": "Bearer <configured token>"},
+            "note": "Run this through the same browser, proxy, or API client that will reach protected staff pages.",
+        },
+        "write_probe": {
+            "method": "POST",
+            "path": "/agenda-intake",
+            "headers": {"Authorization": "Bearer <configured token>"},
+            "body": {
+                "title": "Protected deployment smoke check",
+                "department_name": "Clerk",
+                "submitted_by": "clerk@example.gov",
+                "summary": "Confirm bearer-protected staff writes succeed after the session probe passes.",
+                "source_references": [{"label": "Smoke check memo", "url": "https://city.example.gov/memo"}],
+            },
+            "note": "This write probe should return 201 only after the bearer session probe proves the operator token is mapped to a staff role.",
+        },
     }
 
 
@@ -1335,6 +1354,36 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
             f"{trusted_header_config.principal_header_name} and {trusted_header_config.roles_header_name}, "
             "and test authenticated staff requests through that proxy path."
         ),
+        "session_probe": {
+            "method": "GET",
+            "path": "/staff/session",
+            "headers": {
+                trusted_header_config.principal_header_name: "clerk@example.gov",
+                trusted_header_config.roles_header_name: "clerk_admin,meeting_editor",
+            },
+            "note": (
+                f"Only send these headers through {trusted_header_config.provider_name} from a source inside "
+                f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR}; direct browser requests should not be trusted."
+            ),
+        },
+        "write_probe": {
+            "method": "POST",
+            "path": "/agenda-intake",
+            "headers": {
+                trusted_header_config.principal_header_name: "clerk@example.gov",
+                trusted_header_config.roles_header_name: "clerk_admin,meeting_editor",
+            },
+            "body": {
+                "title": "Trusted proxy deployment smoke check",
+                "department_name": "Clerk",
+                "submitted_by": "clerk@example.gov",
+                "summary": "Confirm trusted-header protected staff writes succeed after the session probe passes.",
+                "source_references": [{"label": "Smoke check memo", "url": "https://city.example.gov/memo"}],
+            },
+            "note": (
+                "Use this only behind the trusted reverse proxy after it strips client-supplied identity headers."
+            ),
+        },
     }
 
 
