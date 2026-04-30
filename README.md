@@ -117,12 +117,32 @@ A new user can inspect and run the foundation, open first staff workflow screens
 1. Read this README.
 2. Read `USER-MANUAL.md`.
 3. Read `docs/roadmap/mvp-plan.md`.
-4. For an IT smoke check, run the FastAPI app at `civicclerk.main:app`, call `/health`, and open `/staff`.
-5. Exercise `/agenda-intake`, `/agenda-intake/{id}/review`, `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/packet-assemblies`, `/packet-assemblies/{id}/finalize`, `/meetings/{id}/notice-checklists`, `/notice-checklists/{id}/posting-proof`, `/meetings/{id}/export-bundle`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, `/public/archive/search`, and `/imports/{connector}/meetings` to smoke-check Milestone 10 plus the production-depth live staff action slices.
-6. Run `CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py` before changing prompt YAML.
-7. Set `CIVICCLERK_AGENDA_ITEM_DB_URL` before agenda item lifecycle persistence smoke checks, set `CIVICCLERK_MEETING_DB_URL` before meeting persistence smoke checks, and set `CIVICCLERK_EXPORT_ROOT` before API packet export smoke checks; API callers provide a relative `bundle_name`, not an arbitrary filesystem path.
-8. Run `python scripts/verify-browser-qa.py` before landing frontend or browser-visible documentation changes.
-9. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
+4. On Windows PowerShell, create a fresh virtual environment and install the current wheel:
+
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install --upgrade pip
+   python -m pip install dist/civicclerk-0.1.11-py3-none-any.whl
+   ```
+
+5. Start the FastAPI app from the installed package:
+
+   ```powershell
+   $env:CIVICCLERK_STAFF_AUTH_MODE="open"
+   python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776
+   ```
+
+6. Confirm the fresh-machine smoke-check path:
+   - `GET http://127.0.0.1:8776/health` must return `{"status":"ok","service":"civicclerk","version":"0.1.11","civiccore":"0.16.0"}`
+   - `GET http://127.0.0.1:8776/staff/auth-readiness` must report `mode: "open"` and explain how to switch to bearer or trusted-header deployment
+   - Open `http://127.0.0.1:8776/staff` and confirm the first workflow shell loads
+   - This exact rehearsal path is verified for Windows PowerShell in the current release; Linux and Unix shell parity still needs a dedicated rehearsal before those commands are documented as supported
+7. Exercise `/agenda-intake`, `/agenda-intake/{id}/review`, `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/packet-assemblies`, `/packet-assemblies/{id}/finalize`, `/meetings/{id}/notice-checklists`, `/notice-checklists/{id}/posting-proof`, `/meetings/{id}/export-bundle`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, `/public/archive/search`, and `/imports/{connector}/meetings` to smoke-check Milestone 10 plus the production-depth live staff action slices.
+8. Set `CIVICCLERK_AGENDA_ITEM_DB_URL` before agenda item lifecycle persistence smoke checks, set `CIVICCLERK_MEETING_DB_URL` before meeting persistence smoke checks, and set `CIVICCLERK_EXPORT_ROOT` before API packet export smoke checks; API callers provide a relative `bundle_name`, not an arbitrary filesystem path.
+9. Run `CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py` before changing prompt YAML.
+10. Run `python scripts/verify-browser-qa.py` before landing frontend or browser-visible documentation changes.
+11. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
 
 ## Architecture direction
 

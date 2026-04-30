@@ -11,6 +11,10 @@ All notable changes to CivicClerk are documented here.
   trusted-header staff auth mode is deployment-ready, including actionable
   fix paths for missing token mappings and missing or invalid trusted-proxy
   CIDR allowlists.
+- README, manual, and landing-page install guidance now document the
+  fresh-machine wheel-install rehearsal path, including explicit `uvicorn`
+  startup and first-run smoke checks for `/health`, `/staff/auth-readiness`,
+  and `/staff`.
 
 ### Changed
 - The `/staff` workflow shell now checks auth readiness before attempting a

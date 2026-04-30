@@ -81,3 +81,27 @@ def test_release_workflow_and_docs_reference_v0111_release() -> None:
     assert "civiccore/releases/download/v0.16.0/civiccore-0.16.0-py3-none-any.whl" in workflow
     assert "civicclerk v0.1.11" in docs
     assert "published `civiccore` v0.16.0 release wheel" in docs
+
+
+def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
+    docs = "\n".join(
+        [
+            (ROOT / "README.md").read_text(encoding="utf-8"),
+            (ROOT / "README.txt").read_text(encoding="utf-8"),
+            (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8"),
+            (ROOT / "USER-MANUAL.txt").read_text(encoding="utf-8"),
+            (ROOT / "docs" / "index.html").read_text(encoding="utf-8"),
+            (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"),
+        ]
+    )
+
+    for expected in [
+        "python -m venv .venv",
+        ".\\.venv\\Scripts\\Activate.ps1",
+        "python -m pip install dist/civicclerk-0.1.11-py3-none-any.whl",
+        "python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776",
+        "http://127.0.0.1:8776/health",
+        "/staff/auth-readiness",
+        '$env:CIVICCLERK_STAFF_AUTH_MODE="open"',
+    ]:
+        assert expected in docs
