@@ -20,6 +20,9 @@ All notable changes to CivicClerk are documented here.
 - The `/staff` workflow shell now checks auth readiness before attempting a
   live session check so operators can distinguish direct-browser access from
   deployable staff-auth configuration.
+- `/staff/auth-readiness` and the `/staff` auth panel now expose concrete
+  protected-session and protected-write probes for bearer and trusted-header
+  deployment checks instead of leaving operators with env-var reminders alone.
 
 ## [0.1.10] - 2026-04-29
 

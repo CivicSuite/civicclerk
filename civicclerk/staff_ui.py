@@ -261,7 +261,7 @@ def render_staff_dashboard() -> str:
         <div>
           <h2 id="staff-auth-heading">Staff access and readiness check</h2>
           <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>.</p>
-          <p>The readiness check uses <code>/staff/auth-readiness</code> to tell IT staff whether the current auth mode is deployment-ready before a live authenticated session is tested.</p>
+          <p>The readiness check uses <code>/staff/auth-readiness</code> to tell IT staff whether the current auth mode is deployment-ready before a live authenticated session is tested, and it now returns a concrete session probe plus a protected write probe when bearer or trusted-header mode is ready.</p>
           <label>Bearer token for staff actions
             <input id="staff-auth-token" name="staff_auth_token" placeholder="Paste bearer token when bearer mode is enabled" autocomplete="off">
           </label>
@@ -371,6 +371,31 @@ def render_staff_dashboard() -> str:
       return `<ul>${{items.join("")}}</ul>`;
     }}
 
+    function formatProbe(label, probe) {{
+      if (!probe || typeof probe !== "object") {{
+        return "";
+      }}
+      const headers = probe.headers && typeof probe.headers === "object"
+        ? `<li><strong>Headers:</strong> <code>${{Object.entries(probe.headers).map(([key, value]) => `${{key}}: ${{value}}`).join("; ")}}</code></li>`
+        : "";
+      const body = probe.body
+        ? `<li><strong>Body:</strong><pre>${{JSON.stringify(probe.body, null, 2)}}</pre></li>`
+        : "";
+      const note = probe.note ? `<li><strong>Why this matters:</strong> ${{probe.note}}</li>` : "";
+      return `
+        <div class="probe-card">
+          <strong>${{label}}</strong>
+          <ul>
+            <li><strong>Method:</strong> <code>${{probe.method || "GET"}}</code></li>
+            <li><strong>Path:</strong> <code>${{probe.path || "/"}}</code></li>
+            ${{headers}}
+            ${{body}}
+            ${{note}}
+          </ul>
+        </div>
+      `;
+    }}
+
     async function refreshStaffSession() {{
       setAuthStatus("loading", "<strong>Loading:</strong> checking staff auth readiness...");
       try {{
@@ -383,9 +408,10 @@ def render_staff_dashboard() -> str:
         const readinessChecks = formatReadinessChecks(readiness.checks);
         if (readiness.mode === "trusted_header") {{
           const readinessState = readiness.ready ? "success" : "error";
+          const probes = `${{formatProbe("Session probe", readiness.session_probe)}}${{formatProbe("Write probe", readiness.write_probe)}}`;
           setAuthStatus(
             readinessState,
-            `<strong>${{readiness.ready ? "Ready" : "Not ready"}}:</strong> ${{readiness.message}}<br><strong>Provider:</strong> ${{readiness.provider || "not set"}}<br><strong>Principal header:</strong> <code>${{readiness.principal_header || "not set"}}</code><br><strong>Roles header:</strong> <code>${{readiness.roles_header || "not set"}}</code>${{readinessChecks}}<strong>Next step:</strong> ${{readiness.fix}}`,
+            `<strong>${{readiness.ready ? "Ready" : "Not ready"}}:</strong> ${{readiness.message}}<br><strong>Provider:</strong> ${{readiness.provider || "not set"}}<br><strong>Principal header:</strong> <code>${{readiness.principal_header || "not set"}}</code><br><strong>Roles header:</strong> <code>${{readiness.roles_header || "not set"}}</code>${{readinessChecks}}${{probes}}<strong>Next step:</strong> ${{readiness.fix}}`,
           );
           return;
         }}
@@ -403,20 +429,21 @@ def render_staff_dashboard() -> str:
           );
           return;
         }}
+        const probes = `${{formatProbe("Session probe", readiness.session_probe)}}${{formatProbe("Write probe", readiness.write_probe)}}`;
         const response = await fetch("/staff/session", {{ headers: authHeaders(false) }});
         const data = await response.json();
         if (!response.ok) {{
           const detail = data.detail || {{}};
           setAuthStatus(
             "error",
-            `<strong>Ready, but session check failed:</strong> ${{detail.message || "Staff access check failed."}}${{readinessChecks}}<strong>Next step:</strong> ${{detail.fix || readiness.fix || "Check the configured auth mode and retry."}}`,
+            `<strong>Ready, but session check failed:</strong> ${{detail.message || "Staff access check failed."}}${{readinessChecks}}${{probes}}<strong>Next step:</strong> ${{detail.fix || readiness.fix || "Check the configured auth mode and retry."}}`,
           );
           return;
         }}
         const roles = (data.roles || []).join(", ");
         setAuthStatus(
           "success",
-          `<strong>Success:</strong> mode is <code>${{data.mode}}</code>.<br><strong>Roles:</strong> ${{roles || "none"}}${{readinessChecks}}<strong>Next step:</strong> ${{data.fix || readiness.fix || "Proceed with staff workflow actions."}}`,
+          `<strong>Success:</strong> mode is <code>${{data.mode}}</code>.<br><strong>Roles:</strong> ${{roles || "none"}}${{readinessChecks}}${{probes}}<strong>Next step:</strong> ${{data.fix || readiness.fix || "Proceed with staff workflow actions."}}`,
         );
       }} catch (error) {{
         setAuthStatus("error", `<strong>Error:</strong> ${{error.message}}`);

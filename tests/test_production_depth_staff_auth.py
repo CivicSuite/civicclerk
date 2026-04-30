@@ -156,6 +156,8 @@ async def test_bearer_mode_readiness_requires_token_role_mapping(
     assert response.json()["deployment_ready"] is False
     assert "no staff token mappings are configured yet" in response.json()["message"]
     assert STAFF_AUTH_TOKEN_ROLES_ENV_VAR in response.json()["fix"]
+    assert "session_probe" not in response.json()
+    assert "write_probe" not in response.json()
 
 
 @pytest.mark.asyncio
@@ -239,6 +241,16 @@ async def test_trusted_header_mode_readiness_reports_configured_proxy_bridge(
     assert response.json()["roles_header"] == "X-Staff-Roles"
     assert response.json()["trusted_proxy_cidrs"] == ["10.20.30.0/24"]
     assert "reverse-proxy deployment readiness" in response.json()["message"]
+    assert response.json()["session_probe"]["path"] == "/staff/session"
+    assert response.json()["session_probe"]["headers"] == {
+        "X-Staff-Email": "clerk@example.gov",
+        "X-Staff-Roles": "clerk_admin,meeting_editor",
+    }
+    assert response.json()["write_probe"]["path"] == "/agenda-intake"
+    assert response.json()["write_probe"]["headers"] == {
+        "X-Staff-Email": "clerk@example.gov",
+        "X-Staff-Roles": "clerk_admin,meeting_editor",
+    }
 
 
 @pytest.mark.asyncio
@@ -323,6 +335,38 @@ async def test_trusted_header_mode_readiness_requires_proxy_allowlist(
     assert response.json()["deployment_ready"] is False
     assert "allowlist is missing" in response.json()["message"]
     assert STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR in response.json()["fix"]
+    assert "session_probe" not in response.json()
+    assert "write_probe" not in response.json()
+
+
+@pytest.mark.asyncio
+async def test_bearer_mode_readiness_reports_session_and_write_probes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_BEARER_MODE)
+    monkeypatch.setenv(
+        STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
+        '{"clerk-token": ["clerk_admin", "meeting_editor"]}',
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/auth-readiness")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "bearer"
+    assert response.json()["ready"] is True
+    assert response.json()["deployment_ready"] is True
+    assert response.json()["session_probe"] == {
+        "method": "GET",
+        "path": "/staff/session",
+        "headers": {"Authorization": "Bearer <configured token>"},
+        "note": "Run this through the same browser, proxy, or API client that will reach protected staff pages.",
+    }
+    assert response.json()["write_probe"]["method"] == "POST"
+    assert response.json()["write_probe"]["path"] == "/agenda-intake"
+    assert response.json()["write_probe"]["headers"] == {
+        "Authorization": "Bearer <configured token>"
+    }
 
 
 @pytest.mark.asyncio
