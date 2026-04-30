@@ -144,7 +144,6 @@ Then verify these first-run checks:
 - `GET /health` returns `{"status":"ok","service":"civicclerk","version":"0.1.11","civiccore":"0.16.0"}`
 - `GET /staff/auth-readiness` returns `mode: "open"` and explains how to move to bearer or trusted-header deployment
 - `GET /staff` renders the first workflow shell without console errors
-- Linux and Unix shell parity still needs its own rehearsal before those commands are documented as supported
 
 To rehearse that Windows-first path without hand-copying each command, run:
 
@@ -159,6 +158,19 @@ environment, start the installed app on `127.0.0.1:8776`, verify `/health`,
 verify `/staff/auth-readiness`, and fetch `/staff`. If the release wheel is not
 present, the helper stops with the fix path: build it first with `python -m
 build`.
+
+For the same fresh-install rehearsal from Bash on Linux, macOS, or Git Bash,
+run:
+
+```bash
+bash scripts/start_fresh_install_rehearsal.sh --print-only
+```
+
+The Bash helper prints the same wheel path, isolated
+`.fresh-install-rehearsal/.venv`, app command, and smoke-check URLs. Rerun
+without `--print-only` to execute the install and first-run checks. If the
+default port is already occupied, rerun with `--app-port` set to an available
+loopback port.
 
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
