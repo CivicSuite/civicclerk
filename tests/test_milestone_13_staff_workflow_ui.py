@@ -35,6 +35,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "deployment-ready staff auth contract" in html
     assert "Session probe" in html
     assert "Write probe" in html
+    assert "Trusted proxy reference" in html
+    assert "docs/examples/trusted-header-nginx.conf" in html
     assert "Local proxy rehearsal" in html
     assert "scripts/local_trusted_header_proxy.py" in html
     assert "127.0.0.1/32" in html
@@ -201,6 +203,16 @@ def test_local_trusted_header_proxy_helper_is_shipped() -> None:
     assert "Loopback-only trusted-header proxy rehearsal helper for CivicClerk." in text
     assert "CIVICCLERK_LOCAL_PROXY_UPSTREAM" in text
     assert "X-Forwarded-For" not in text
+
+
+def test_trusted_proxy_reference_config_is_shipped() -> None:
+    config = ROOT / "docs" / "examples" / "trusted-header-nginx.conf"
+
+    assert config.exists()
+    text = config.read_text(encoding="utf-8")
+    assert "proxy_set_header X-Staff-Email \"\";" in text
+    assert "proxy_set_header X-Staff-Roles \"\";" in text
+    assert "proxy_pass http://127.0.0.1:8776;" in text
 
 
 def test_browser_qa_gate_mentions_staff_ui_evidence() -> None:

@@ -80,6 +80,7 @@ LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_UPSTREAM = "http://127.0.0.1:8000"
 LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_PRINCIPAL = "clerk@example.gov"
 LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_ROLES = "clerk_admin,meeting_editor"
 LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_TRUSTED_PROXY = "127.0.0.1/32"
+TRUSTED_PROXY_REFERENCE_CONFIG_PATH = "docs/examples/trusted-header-nginx.conf"
 STAFF_ALLOWED_ROLES = frozenset({"clerk_admin", "clerk_editor", "meeting_editor", "city_attorney"})
 _agenda_intake_repository: AgendaIntakeRepository | None = None
 _agenda_intake_db_url: str | None = None
@@ -1345,6 +1346,23 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
         principal_header_name=trusted_header_config.principal_header_name,
         roles_header_name=trusted_header_config.roles_header_name,
     )
+    reverse_proxy_reference = {
+        "kind": "nginx_trusted_header_bridge",
+        "path": TRUSTED_PROXY_REFERENCE_CONFIG_PATH,
+        "headers": {
+            trusted_header_config.principal_header_name: "<authenticated staff email>",
+            trusted_header_config.roles_header_name: "<comma-separated mapped staff roles>",
+        },
+        "steps": [
+            "Authenticate the operator before CivicClerk and map the trusted staff principal plus roles into proxy-controlled headers.",
+            "Strip any client-supplied copies of the trusted staff headers before setting the proxy-owned values shown here.",
+            f"Set {STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR} to the proxy CIDRs that are allowed to forward those headers to CivicClerk.",
+        ],
+        "warnings": [
+            "This reference config is a starting point; replace the placeholder TLS paths and authenticated identity variables with your real deployment values.",
+            "Do not trust direct browser requests that bypass the reverse proxy, even if they contain matching header names.",
+        ],
+    }
     checks: list[dict[str, str]] = [
         {
             "name": "staff auth mode",
@@ -1383,6 +1401,7 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
             "principal_header": trusted_header_config.principal_header_name,
             "roles_header": trusted_header_config.roles_header_name,
             "local_proxy_rehearsal": local_proxy_rehearsal,
+            "reverse_proxy_reference": reverse_proxy_reference,
             "checks": checks,
             "message": "Trusted-header staff auth is selected, but the reverse-proxy allowlist is missing.",
             "fix": (
@@ -1391,7 +1410,8 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
                 f"{trusted_header_config.roles_header_name}, for example "
                 f"'10.0.0.0/24,192.168.1.8/32'. For a loopback rehearsal, use "
                 f"'{LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_TRUSTED_PROXY}' and run "
-                f"{LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH}."
+                f"{LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH}. For a real proxy deployment, start from "
+                f"{TRUSTED_PROXY_REFERENCE_CONFIG_PATH}."
             ),
         }
     try:
@@ -1412,12 +1432,14 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
             "principal_header": trusted_header_config.principal_header_name,
             "roles_header": trusted_header_config.roles_header_name,
             "local_proxy_rehearsal": local_proxy_rehearsal,
+            "reverse_proxy_reference": reverse_proxy_reference,
             "checks": checks,
             "message": "Trusted-header staff auth has an invalid reverse-proxy allowlist.",
             "fix": (
                 f"{STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR}: {exc}. For a loopback rehearsal, use "
                 f"'{LOCAL_TRUSTED_HEADER_PROXY_DEFAULT_TRUSTED_PROXY}' and run "
-                f"{LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH}."
+                f"{LOCAL_TRUSTED_HEADER_PROXY_SCRIPT_PATH}. For a real proxy deployment, start from "
+                f"{TRUSTED_PROXY_REFERENCE_CONFIG_PATH}."
             ),
         }
     checks.append(
@@ -1436,12 +1458,14 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
         "roles_header": trusted_header_config.roles_header_name,
         "trusted_proxy_cidrs": list(trusted_header_config.trusted_proxy_cidrs),
         "local_proxy_rehearsal": local_proxy_rehearsal,
+        "reverse_proxy_reference": reverse_proxy_reference,
         "checks": checks,
         "message": "Trusted-header staff auth is configured for reverse-proxy deployment readiness.",
         "fix": (
             f"Send staff traffic through {trusted_header_config.provider_name}, strip client-supplied "
             f"{trusted_header_config.principal_header_name} and {trusted_header_config.roles_header_name}, "
-            "and test authenticated staff requests through that proxy path."
+            f"and test authenticated staff requests through that proxy path. Start from "
+            f"{TRUSTED_PROXY_REFERENCE_CONFIG_PATH} for the first nginx bridge contract."
         ),
         "session_probe": {
             "method": "GET",

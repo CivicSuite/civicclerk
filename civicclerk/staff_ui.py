@@ -260,7 +260,7 @@ def render_staff_dashboard() -> str:
       <div class="auth-grid">
         <div>
           <h2 id="staff-auth-heading">Staff access and readiness check</h2>
-          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>. If you need a one-workstation trusted-header rehearsal first, use <code>scripts/local_trusted_header_proxy.py</code> with the loopback starter allowlist <code>127.0.0.1/32</code> instead of sending identity headers straight to the app.</p>
+          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>. Start the first nginx bridge handoff from <code>docs/examples/trusted-header-nginx.conf</code>. If you need a one-workstation trusted-header rehearsal first, use <code>scripts/local_trusted_header_proxy.py</code> with the loopback starter allowlist <code>127.0.0.1/32</code> instead of sending identity headers straight to the app.</p>
           <p>The readiness check uses <code>/staff/auth-readiness</code> to tell IT staff whether the current auth mode is deployment-ready before a live authenticated session is tested, and it now returns a concrete session probe plus a protected write probe when bearer or trusted-header mode is ready.</p>
           <label>Bearer token for staff actions
             <input id="staff-auth-token" name="staff_auth_token" placeholder="Paste bearer token when bearer mode is enabled" autocomplete="off">
@@ -453,6 +453,27 @@ def render_staff_dashboard() -> str:
       `;
     }}
 
+    function formatReverseProxyReference(reference) {{
+      if (!reference || typeof reference !== "object") {{
+        return "";
+      }}
+      return `
+        <div class="probe-card">
+          <strong>Trusted proxy reference</strong>
+          <ul>
+            <li><strong>Kind:</strong> <code>${{reference.kind || "not set"}}</code></li>
+            <li><strong>Config path:</strong> <code>${{reference.path || "not set"}}</code></li>
+          </ul>
+          <strong>Proxy-owned headers</strong>
+          ${{formatKeyValueTable(reference.headers)}}
+          <strong>Steps</strong>
+          ${{formatOrderedList(reference.steps)}}
+          <strong>Warnings</strong>
+          ${{formatWarningList(reference.warnings)}}
+        </div>
+      `;
+    }}
+
     async function refreshStaffSession() {{
       setAuthStatus("loading", "<strong>Loading:</strong> checking staff auth readiness...");
       try {{
@@ -464,12 +485,13 @@ def render_staff_dashboard() -> str:
         }}
         const readinessChecks = formatReadinessChecks(readiness.checks);
         const localProxy = formatLocalProxyRehearsal(readiness.local_proxy_rehearsal);
+        const reverseProxyReference = formatReverseProxyReference(readiness.reverse_proxy_reference);
         if (readiness.mode === "trusted_header") {{
           const readinessState = readiness.ready ? "success" : "error";
           const probes = `${{formatProbe("Session probe", readiness.session_probe)}}${{formatProbe("Write probe", readiness.write_probe)}}`;
           setAuthStatus(
             readinessState,
-            `<strong>${{readiness.ready ? "Ready" : "Not ready"}}:</strong> ${{readiness.message}}<br><strong>Provider:</strong> ${{readiness.provider || "not set"}}<br><strong>Principal header:</strong> <code>${{readiness.principal_header || "not set"}}</code><br><strong>Roles header:</strong> <code>${{readiness.roles_header || "not set"}}</code>${{readinessChecks}}${{localProxy}}${{probes}}<strong>Next step:</strong> ${{readiness.fix}}`,
+            `<strong>${{readiness.ready ? "Ready" : "Not ready"}}:</strong> ${{readiness.message}}<br><strong>Provider:</strong> ${{readiness.provider || "not set"}}<br><strong>Principal header:</strong> <code>${{readiness.principal_header || "not set"}}</code><br><strong>Roles header:</strong> <code>${{readiness.roles_header || "not set"}}</code>${{readinessChecks}}${{reverseProxyReference}}${{localProxy}}${{probes}}<strong>Next step:</strong> ${{readiness.fix}}`,
             );
             return;
           }}

@@ -158,6 +158,10 @@ reverse proxy is available, use the returned `local_proxy_rehearsal` contract,
 set `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32`, run
 `python scripts/local_trusted_header_proxy.py`, and send the browser through
 that helper so CivicClerk only trusts loopback proxy traffic during rehearsal.
+If the deployment is moving to a real reverse proxy, use the returned
+`reverse_proxy_reference` block and start from
+`docs/examples/trusted-header-nginx.conf` before replacing the placeholder TLS
+paths and authenticated identity variables with your real gateway values.
 For a repeatable protected demo profile on Windows PowerShell, run
 `powershell -ExecutionPolicy Bypass -File scripts/start_protected_demo_rehearsal.ps1 -PrintOnly`
 to print the exact env vars, commands, and smoke-check URLs first. When the
