@@ -5,6 +5,9 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `scripts/build_release_handoff_bundle.ps1` now prints and can create a
+  non-installer release handoff zip containing the built artifacts, checksums,
+  current docs, proxy reference, and install rehearsal helpers.
 - `/public` now renders the first resident-facing public portal shell over the
   existing public calendar, public detail, and anonymous archive search APIs,
   with actionable loading, empty, error, and search states.
