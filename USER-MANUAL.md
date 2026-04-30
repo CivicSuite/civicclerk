@@ -199,6 +199,18 @@ and install rehearsal helpers. After `bash scripts/verify-release.sh` has built
 `dist/civicclerk-0.1.11-release-handoff.zip`. If that zip already exists, the
 helpers stop instead of overwriting it.
 
+Before IT moves beyond local rehearsal, print the deployment preflight:
+
+```bash
+python scripts/check_deployment_readiness.py
+```
+
+Use `python scripts/check_deployment_readiness.py --strict` when the check
+should fail unless staff auth, persistent-store env vars, packet export root,
+release artifacts, required docs, and trusted-header proxy references are
+deployment-ready. The report intentionally does not print database URLs or token
+values; it names missing environment variables and gives the next fix step.
+
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
 workflows, move to `bearer` or `trusted_header` before user testing and use
