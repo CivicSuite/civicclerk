@@ -165,6 +165,11 @@ to print the exact env vars, commands, and smoke-check URLs first. When the
 plan looks right, rerun the same script without `-PrintOnly` to launch the app
 on `127.0.0.1:8877` and the helper proxy on `127.0.0.1:8878`, then browse the
 proxy `/staff` URL instead of the upstream app URL.
+For the same protected demo profile from Bash on Linux, macOS, or Git Bash,
+run `bash scripts/start_protected_demo_rehearsal.sh --print-only` first. When
+the printed plan looks right, rerun the same script without `--print-only` to
+launch the same app/proxy pair with Unix-shell `export` commands and the same
+loopback-only smoke checks.
 
 ### Security posture
 

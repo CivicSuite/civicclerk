@@ -139,15 +139,16 @@ A new user can inspect and run the foundation, open first staff workflow screens
    - `GET http://127.0.0.1:8776/health` must return `{"status":"ok","service":"civicclerk","version":"0.1.11","civiccore":"0.16.0"}`
    - `GET http://127.0.0.1:8776/staff/auth-readiness` must report `mode: "open"` and explain how to switch to bearer or trusted-header deployment
    - Open `http://127.0.0.1:8776/staff` and confirm the first workflow shell loads
-   - This exact rehearsal path is verified for Windows PowerShell in the current release; Linux and Unix shell parity still needs a dedicated rehearsal before those commands are documented as supported
+   - Use `powershell -ExecutionPolicy Bypass -File scripts/start_protected_demo_rehearsal.ps1 -PrintOnly` on Windows PowerShell or `bash scripts/start_protected_demo_rehearsal.sh --print-only` on Linux, macOS, or Git Bash to print the protected trusted-header demo profile before launching it
 7. Exercise `/agenda-intake`, `/agenda-intake/{id}/review`, `/agenda-items`, `/agenda-items/{id}/transitions`, `/meetings`, `/meetings/{id}/transitions`, `/meetings/{id}/packet-snapshots`, `/meetings/{id}/packet-assemblies`, `/packet-assemblies/{id}/finalize`, `/meetings/{id}/notice-checklists`, `/notice-checklists/{id}/posting-proof`, `/meetings/{id}/export-bundle`, `/meetings/{id}/notices/post`, `/meetings/{id}/motions`, `/motions/{id}/votes`, `/meetings/{id}/action-items`, `/meetings/{id}/minutes/drafts`, `/meetings/{id}/public-record`, `/public/meetings`, `/public/archive/search`, and `/imports/{connector}/meetings` to smoke-check Milestone 10 plus the production-depth live staff action slices.
 8. Set `CIVICCLERK_AGENDA_ITEM_DB_URL` before agenda item lifecycle persistence smoke checks, set `CIVICCLERK_MEETING_DB_URL` before meeting persistence smoke checks, and set `CIVICCLERK_EXPORT_ROOT` before API packet export smoke checks; API callers provide a relative `bundle_name`, not an arbitrary filesystem path.
 9. In bearer or trusted-header mode, call `/staff/auth-readiness` first and use the returned `session_probe` plus `write_probe` before trusting a protected deployment.
 10. If trusted-header mode is still being rehearsed on one workstation, use the returned `local_proxy_rehearsal` block, set `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32`, run `python scripts/local_trusted_header_proxy.py`, and browse the helper listen URL instead of the upstream app URL.
-11. If you want the trusted-header demo profile without hand-exporting env vars, run `powershell -ExecutionPolicy Bypass -File scripts/start_protected_demo_rehearsal.ps1 -PrintOnly` to print the exact commands, then rerun the same script without `-PrintOnly` to launch the app on `8877` and the helper proxy on `8878`.
-12. Run `CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py` before changing prompt YAML.
-13. Run `python scripts/verify-browser-qa.py` before landing frontend or browser-visible documentation changes.
-14. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
+11. If you want the trusted-header demo profile without hand-exporting env vars on Windows PowerShell, run `powershell -ExecutionPolicy Bypass -File scripts/start_protected_demo_rehearsal.ps1 -PrintOnly` to print the exact commands, then rerun the same script without `-PrintOnly` to launch the app on `8877` and the helper proxy on `8878`.
+12. If you want the same protected demo profile from Bash on Linux, macOS, or Git Bash, run `bash scripts/start_protected_demo_rehearsal.sh --print-only` first, then rerun without `--print-only` to launch the app on `8877` and the helper proxy on `8878`.
+13. Run `CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py` before changing prompt YAML.
+14. Run `python scripts/verify-browser-qa.py` before landing frontend or browser-visible documentation changes.
+15. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
 
 ## Architecture direction
 
@@ -165,6 +166,8 @@ The foundation is intentionally thin. Canonical schema, Alembic scaffolding, age
 The staff experience at `/staff` now includes first workflow screens for agenda intake, packet assembly/export, notice checklist/posting-proof, meeting outcome, minutes draft, public archive, and connector import work. It is intentionally honest: these seven screens can submit their corresponding live API actions, the auth panel now renders concrete protected-session and protected-write probes from `/staff/auth-readiness` when bearer or trusted-header mode is ready, it surfaces the loopback-only local proxy rehearsal command and env vars when trusted-header mode is being staged, and the broader multi-role React clerk console remains future work.
 
 For protected demos on Windows PowerShell, `scripts/start_protected_demo_rehearsal.ps1` now prints and can launch the loopback-only trusted-header profile end to end: the app on `127.0.0.1:8877`, the helper proxy on `127.0.0.1:8878`, the required trusted-header env vars, the health/readiness checks, and the browser target for `/staff`.
+
+For Bash-based operator rehearsals on Linux, macOS, or Git Bash, `scripts/start_protected_demo_rehearsal.sh` now prints and can launch the same loopback-only trusted-header profile with `export` commands and the same smoke-check/browser targets instead of leaving Unix shell parity undocumented.
 
 ## Verification
 

@@ -8,6 +8,9 @@ All notable changes to CivicClerk are documented here.
 - `scripts/start_protected_demo_rehearsal.ps1` now prints and can launch a
   repeatable Windows PowerShell trusted-header demo profile for CivicClerk plus
   the loopback-only helper proxy.
+- `scripts/start_protected_demo_rehearsal.sh` now prints and can launch the
+  same trusted-header demo profile for Bash-based rehearsals on Linux, macOS,
+  and Git Bash.
 - Trusted-header `/staff/auth-readiness` responses now include a structured
   `local_proxy_rehearsal` contract with loopback-only helper command, env vars,
   injected headers, steps, and warnings for `scripts/local_trusted_header_proxy.py`.
