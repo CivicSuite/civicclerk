@@ -112,6 +112,8 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
         "-PrintOnly",
         "scripts/start_protected_demo_rehearsal.sh",
         "--print-only",
+        "scripts/build_release_handoff_bundle.ps1",
+        "scripts/build_release_handoff_bundle.sh",
         "127.0.0.1:8877",
         "127.0.0.1:8878",
     ]:
@@ -282,6 +284,51 @@ def test_release_handoff_bundle_script_prints_expected_plan() -> None:
             "-File",
             str(script),
             "-PrintOnly",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    output = result.stdout
+    for expected in [
+        "CivicClerk release handoff bundle",
+        "Version: 0.1.11",
+        "civicclerk-0.1.11-release-handoff.zip",
+        "dist/civicclerk-0.1.11-py3-none-any.whl",
+        "dist/civicclerk-0.1.11.tar.gz",
+        "dist/SHA256SUMS.txt",
+        "scripts/start_fresh_install_rehearsal.ps1",
+        "scripts/start_fresh_install_rehearsal.sh",
+        "scripts/start_protected_demo_rehearsal.ps1",
+        "scripts/start_protected_demo_rehearsal.sh",
+        "docs/examples/trusted-header-nginx.conf",
+        "Not an installer",
+        "Build release artifacts first with: bash scripts/verify-release.sh",
+    ]:
+        assert expected in output
+
+
+def test_release_handoff_bundle_bash_script_prints_expected_plan() -> None:
+    import shutil
+    import subprocess
+
+    import pytest
+
+    script = ROOT / "scripts" / "build_release_handoff_bundle.sh"
+    relative_script = (Path("scripts") / "build_release_handoff_bundle.sh").as_posix()
+    assert script.exists()
+    shell = shutil.which("bash")
+    if shell is None:
+        pytest.skip("Bash runtime is not available in this environment.")
+
+    result = subprocess.run(
+        [
+            shell,
+            relative_script,
+            "--print-only",
         ],
         cwd=ROOT,
         check=False,

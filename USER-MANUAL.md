@@ -186,12 +186,18 @@ run:
 powershell -ExecutionPolicy Bypass -File scripts/build_release_handoff_bundle.ps1 -PrintOnly
 ```
 
+or from Linux, macOS, or Git Bash:
+
+```bash
+bash scripts/build_release_handoff_bundle.sh --print-only
+```
+
 The bundle helper previews the files that will be packaged, including the built
 wheel, source distribution, checksums, current docs, trusted-header reference,
 and install rehearsal helpers. After `bash scripts/verify-release.sh` has built
-`dist/`, rerun without `-PrintOnly` to create
+`dist/`, rerun without `-PrintOnly` or `--print-only` to create
 `dist/civicclerk-0.1.11-release-handoff.zip`. If that zip already exists, the
-helper stops instead of overwriting it.
+helpers stop instead of overwriting it.
 
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff

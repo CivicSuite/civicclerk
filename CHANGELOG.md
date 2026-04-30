@@ -5,6 +5,8 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `scripts/build_release_handoff_bundle.sh` now mirrors the PowerShell release
+  handoff bundle helper for Linux, macOS, and Git Bash operators.
 - `scripts/build_release_handoff_bundle.ps1` now prints and can create a
   non-installer release handoff zip containing the built artifacts, checksums,
   current docs, proxy reference, and install rehearsal helpers.
