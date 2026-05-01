@@ -79,6 +79,35 @@ def test_packet_assembly_finalize_updates_status_and_audit_hash(tmp_path) -> Non
     ]
 
 
+def test_packet_assembly_repository_lists_recent_records(tmp_path) -> None:
+    repo = PacketAssemblyRepository(db_url=f"sqlite:///{tmp_path / 'packet-assembly.db'}")
+    first = repo.create_draft(
+        meeting_id="meeting-1",
+        packet_snapshot_id="snapshot-1",
+        packet_version=1,
+        title="First packet",
+        actor="clerk@example.gov",
+        agenda_item_ids=["item-1"],
+        source_references=_source_refs(),
+        citations=_citations(),
+    )
+    second = repo.create_draft(
+        meeting_id="meeting-2",
+        packet_snapshot_id="snapshot-2",
+        packet_version=1,
+        title="Second packet",
+        actor="clerk@example.gov",
+        agenda_item_ids=["item-2"],
+        source_references=_source_refs(),
+        citations=_citations(),
+    )
+
+    recent = repo.list_recent(limit=1)
+
+    assert [record.id for record in recent] == [second.id]
+    assert first.id != second.id
+
+
 async def test_api_packet_assembly_create_list_finalize_and_export(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("CIVICCLERK_PACKET_ASSEMBLY_DB_URL", f"sqlite:///{tmp_path / 'api-assembly.db'}")
     monkeypatch.setenv("CIVICCLERK_EXPORT_ROOT", str(tmp_path / "exports"))
