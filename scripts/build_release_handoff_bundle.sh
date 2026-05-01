@@ -67,6 +67,7 @@ bundle_files=(
   "docs/examples/deployment.env.example"
   "docs/examples/trusted-header-nginx.conf"
   "scripts/check_installer_readiness.py"
+  "scripts/check_enterprise_installer_signing.py"
   "scripts/check_connector_sync_readiness.py"
   "scripts/run_connector_import_sync.py"
   "scripts/start_fresh_install_rehearsal.ps1"

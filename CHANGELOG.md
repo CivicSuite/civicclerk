@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Enterprise installer signing readiness is now explicit: the Windows installer
+  build helper can optionally invoke SignTool when `CIVICCLERK_SIGN_INSTALLER`
+  is enabled, and `scripts/check_enterprise_installer_signing.py` verifies the
+  artifact, SignTool path, certificate identity, and timestamp URL without
+  printing secrets.
 - Scheduled local connector import sync is now available through Celery Beat:
   `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true` makes the worker periodically
   normalize approved local Granicus, Legistar, PrimeGov, or NovusAGENDA JSON

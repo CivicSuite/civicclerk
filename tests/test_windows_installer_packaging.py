@@ -76,6 +76,23 @@ def test_build_script_resolves_version_and_checks_required_sources() -> None:
     assert "docs/examples/docker.env.example" in build
     assert "Inno Setup compiler was not found" in build
     assert "CivicClerk-$APP_VERSION-Setup.exe" in build
+    assert "CIVICCLERK_SIGN_INSTALLER" in build
+    assert "CIVICCLERK_SIGNTOOL_PATH" in build
+    assert "CIVICCLERK_SIGNING_CERT_SHA1" in build
+    assert "CIVICCLERK_SIGNING_PFX_PASSWORD_ENV" in build
+    assert "CIVICCLERK_SIGNING_TIMESTAMP_URL" in build
+
+
+def test_enterprise_installer_signing_readiness_helper_documents_non_secret_contract() -> None:
+    script = _read("scripts/check_enterprise_installer_signing.py")
+
+    assert "CivicClerk enterprise installer signing readiness" in script
+    assert "CIVICCLERK_SIGNTOOL_PATH" in script
+    assert "CIVICCLERK_SIGNING_CERT_SHA1" in script
+    assert "CIVICCLERK_SIGNING_PFX" in script
+    assert "CIVICCLERK_SIGNING_PFX_PASSWORD_ENV" in script
+    assert "CIVICCLERK_SIGNING_TIMESTAMP_URL" in script
+    assert "No secrets are printed" in script
 
 
 def test_installer_docs_do_not_overclaim_production_auth_or_data_deletion() -> None:
