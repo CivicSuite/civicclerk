@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import os
 import subprocess
+import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_enterprise_installer_signing_print_only_explains_inputs() -> None:
     result = subprocess.run(
-        ["python", "scripts/check_enterprise_installer_signing.py", "--print-only"],
+        [sys.executable, "scripts/check_enterprise_installer_signing.py", "--print-only"],
         cwd=ROOT,
         check=False,
         capture_output=True,
@@ -28,10 +29,13 @@ def test_enterprise_installer_signing_print_only_explains_inputs() -> None:
 def test_enterprise_installer_signing_fails_actionably_without_cert_inputs(tmp_path: Path) -> None:
     artifact = tmp_path / "CivicClerk-0.1.11-Setup.exe"
     artifact.write_bytes(b"unsigned installer")
+    env = os.environ.copy()
+    env["PATH"] = str(tmp_path)
 
     result = subprocess.run(
-        ["python", "scripts/check_enterprise_installer_signing.py", "--artifact", str(artifact)],
+        [sys.executable, "scripts/check_enterprise_installer_signing.py", "--artifact", str(artifact)],
         cwd=ROOT,
+        env=env,
         check=False,
         capture_output=True,
         text=True,
@@ -61,7 +65,7 @@ def test_enterprise_installer_signing_passes_with_redacted_certificate_contract(
     )
 
     result = subprocess.run(
-        ["python", "scripts/check_enterprise_installer_signing.py", "--artifact", str(artifact)],
+        [sys.executable, "scripts/check_enterprise_installer_signing.py", "--artifact", str(artifact)],
         cwd=ROOT,
         env=env,
         check=False,
