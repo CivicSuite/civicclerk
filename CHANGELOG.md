@@ -4,6 +4,10 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+No unreleased changes yet.
+
+## [0.1.12] - 2026-05-01
+
 ### Added
 - Enterprise installer signing readiness is now explicit: the Windows installer
   build helper can optionally invoke SignTool when `CIVICCLERK_SIGN_INSTALLER`
