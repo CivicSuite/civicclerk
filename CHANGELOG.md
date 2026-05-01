@@ -61,6 +61,9 @@ All notable changes to CivicClerk are documented here.
   records are absent.
 - The nginx-served product path now opens that React Public Posting portal
   directly from `/public`, while public API calls stay behind `/api/public/...`.
+- `scripts/run_connector_import_sync.py` now turns local Granicus, Legistar,
+  PrimeGov, and NovusAGENDA export JSON into a repeatable normalized import
+  ledger without contacting vendor systems.
 - The React staff workspace now includes the first Meeting Outcomes workflow:
   meeting selection, motion capture, roll-call vote capture, action-item
   creation tied to source motions, outcome ledger review, and append-only
