@@ -59,6 +59,8 @@ All notable changes to CivicClerk are documented here.
   separate official agenda/packet/approved-minutes sections, missing-record
   guidance, and copy that avoids implying restricted-session existence when
   records are absent.
+- The nginx-served product path now opens that React Public Posting portal
+  directly from `/public`, while public API calls stay behind `/api/public/...`.
 - The React staff workspace now includes the first Meeting Outcomes workflow:
   meeting selection, motion capture, roll-call vote capture, action-item
   creation tied to source motions, outcome ledger review, and append-only

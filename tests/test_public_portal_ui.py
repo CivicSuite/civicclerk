@@ -26,8 +26,8 @@ async def test_public_portal_renders_accessible_resident_shell() -> None:
     assert 'aria-label="CivicClerk public portal shell"' in html
     assert "Skip to public meeting records" in html
     assert "CivicClerk Public Portal" in html
-    assert "v0.1.11 first public portal shell" in html
-    assert "not the finished full public portal" in html
+    assert "v0.1.11 API-direct public portal fallback" in html
+    assert "Docker/nginx product path" in html
     assert "/public/meetings" in html
     assert "/public/meetings/{id}" in html
     assert "/public/archive/search" in html
@@ -79,8 +79,8 @@ def test_public_portal_docs_and_browser_evidence_are_current() -> None:
     )
 
     assert "/public" in docs
-    assert "first resident-facing public portal shell" in docs
-    assert "finished public portal" in docs
+    assert "resident-facing React public portal" in docs
+    assert "restricted-session" in docs
     assert "closed-session" in docs or "closed session" in docs
     assert (ROOT / "docs" / "screenshots" / "public-portal-shell-desktop.png").exists()
     assert (ROOT / "docs" / "screenshots" / "public-portal-shell-mobile.png").exists()

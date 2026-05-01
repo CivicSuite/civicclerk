@@ -1,0 +1,21 @@
+{
+    "surface": "React Public Posting /public route",
+    "reviewed_at": "2026-05-01T17:50:00Z",
+    "url": "http://127.0.0.1:5189/public?source=demo",
+    "states_checked": [
+        "success",
+        "error"
+    ],
+    "viewports_checked": [
+        "desktop 1440x1100",
+        "mobile 390x1200"
+    ],
+    "screenshots": [
+        "docs/screenshots/react-public-route-desktop-success.png",
+        "docs/screenshots/react-public-route-mobile-success.png",
+        "docs/screenshots/react-public-route-desktop-error.png"
+    ],
+    "console_check": "Chrome headless wrote screenshot byte counts only; no application console error, uncaught exception, or failed resource line was present.",
+    "copy_review": "The /public route opens the React Public Posting workspace directly, keeps public API traffic behind /api/public/..., and preserves restricted-session non-disclosure copy.",
+    "accessibility_review": "Direct-route desktop and mobile renderings preserve heading hierarchy, labelled controls, keyboard-focusable buttons, and actionable API-unavailable copy when the backend is not running."
+}

@@ -37,8 +37,8 @@ React. Compose now seeds a Brookfield demo dataset by default so staff can open
 the React app against live API-backed data immediately. Unsigned Windows
 installer source packaging is now present for the same Docker stack, including
 install/repair and daily-start launchers. Remaining MVP work now centers on a
-signed/enterprise installer release artifact, live sync/deployment hardening,
-and routing the legacy HTML `/public` shell to the React portal.
+signed/enterprise installer release artifact and live sync/deployment
+hardening.
 
 ## Sprint 1
 

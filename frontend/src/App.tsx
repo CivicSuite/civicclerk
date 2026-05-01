@@ -1832,8 +1832,9 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const requestedState = params.get("state");
   const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "minutes", "public"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
+  const routePage = window.location.pathname.replace(/\/+$/, "") === "/public" ? "public" : null;
   return {
-    page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : "dashboard",
+    page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : routePage ?? "dashboard",
     state: states.includes(requestedState as ViewState) ? (requestedState as ViewState) : null,
     audit: params.get("audit") === "1",
     source: params.get("source") === "demo" ? "demo" : "api",

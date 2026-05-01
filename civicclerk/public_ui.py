@@ -86,7 +86,7 @@ def render_public_portal() -> str:
     <section class="hero">
       <div class="eyebrow">Resident public portal shell</div>
       <h1>CivicClerk Public Portal</h1>
-      <p class="status">Status: v{__version__} first public portal shell. This is a browser-visible resident view over the existing public calendar and archive APIs, not the finished full public portal.</p>
+      <p class="status">Status: v{__version__} API-direct public portal fallback. In the Docker/nginx product path, <code>/public</code> opens the React resident portal; this fallback keeps the public calendar and archive APIs visible when operators run the FastAPI service directly.</p>
       <p>Residents can review public meeting records that clerks have published, open a public-safe detail view, and search approved agenda, packet, and minutes text. Anonymous views intentionally exclude closed-session notes and restricted records.</p>
     </section>
 
