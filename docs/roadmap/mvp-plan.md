@@ -17,7 +17,9 @@ calendar, and detail flow now load live meeting records through `/api/meetings`.
 Meeting body CRUD now has a backend API and first React staff dashboard
 management surface. Sprint 1 meeting setup now includes live React scheduling
 and pre-lock schedule editing backed by `POST /meetings` and
-`PATCH /meetings/{id}`. Remaining MVP work now centers on completing Sprints 2-4 in React, standing up the Docker
+`PATCH /meetings/{id}`. Sprint 2 has started in React with agenda intake
+submit/review now wired to the live `/agenda-intake` APIs. Remaining MVP work
+now centers on completing the rest of Sprints 2-4 in React, standing up the Docker
 Compose deployment stack, actual installer packaging beyond the non-installer
 release handoff bundle, the finished public portal, and live sync/deployment
 hardening.
@@ -36,9 +38,12 @@ hardening.
 
 ## Sprint 2
 
-- Agenda item intake
-- Department submitter workflow
-- Clerk review queue
+- Agenda item intake: first React submit/review workflow present
+- Department submitter workflow: first React form present
+- Clerk review queue: first React ready/revision queue present
+- Packet handoff after ready review
+- Browser QA evidence
+- Docs updated
 
 ## Sprint 3
 

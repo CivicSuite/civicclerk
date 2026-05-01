@@ -11,3 +11,4 @@ exports/
 *.tmp
 .tmp-edge-*/
 .tmp-browser-qa-scheduling/
+.tmp-browser-qa-agenda/
