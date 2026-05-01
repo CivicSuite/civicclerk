@@ -127,6 +127,13 @@ STATE_CARDS = [
     ("partial", "Partial", "Partial imports or checks should identify what succeeded, what did not, and what to retry."),
 ]
 
+COCKPIT_ITEMS = [
+    ("3", "Items ready for clerk review", "Agenda intake queue has one ready item, one needs-info item, and one partial item."),
+    ("7", "Live workflow actions", "Intake, packet, notice, outcomes, minutes, archive, and connector import actions are available."),
+    ("0", "Silent dead ends", "Every visible empty, warning, and error state names a fix path before staff retries."),
+    ("2", "Go-live checks", "Run protected deployment smoke and backup/restore rehearsal before trusting a real deployment."),
+]
+
 
 def render_staff_dashboard() -> str:
     """Render the current staff workflow screens as dependency-free HTML."""
@@ -150,6 +157,16 @@ def render_staff_dashboard() -> str:
         """
         for state, label, copy in STATE_CARDS
     )
+    cockpit_items = "\n".join(
+        f"""
+        <article class="cockpit-card">
+          <strong>{value}</strong>
+          <h3>{label}</h3>
+          <p>{copy}</p>
+        </article>
+        """
+        for value, label, copy in COCKPIT_ITEMS
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -169,6 +186,7 @@ def render_staff_dashboard() -> str:
       --error: #8c2f24;
       --good: #26714d;
       --blueprint: rgba(47, 111, 94, .11);
+      --gold: #b98324;
     }}
     * {{ box-sizing: border-box; }}
     html, body {{ margin: 0; overflow-x: hidden; }}
@@ -192,6 +210,60 @@ def render_staff_dashboard() -> str:
     h2 {{ margin-top: 34px; }}
     p {{ max-width: 78ch; }}
     .status {{ color: var(--warn); font-weight: 700; }}
+    .cockpit {{
+      margin: 22px 0;
+      display: grid;
+      grid-template-columns: minmax(260px, .95fr) minmax(300px, 1.45fr);
+      gap: 18px;
+      align-items: stretch;
+    }}
+    .command-strip {{
+      border-radius: 28px;
+      padding: 24px;
+      color: #fffdf8;
+      background:
+        linear-gradient(140deg, rgba(23,71,57,.96), rgba(47,111,94,.88)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.1) 0 1px, transparent 1px 18px);
+      box-shadow: 0 18px 60px rgba(23,32,27,.14);
+      position: relative;
+      overflow: hidden;
+    }}
+    .command-strip::after {{
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      right: -50px;
+      bottom: -70px;
+      border: 26px solid rgba(255,255,255,.12);
+      border-radius: 50%;
+    }}
+    .command-strip .eyebrow {{ color: #d8efe2; }}
+    .command-strip h2 {{ margin: 10px 0 12px; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1; }}
+    .command-strip p {{ margin-bottom: 0; position: relative; z-index: 1; }}
+    .cockpit-grid {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }}
+    .cockpit-card {{
+      background: rgba(255,253,248,.94);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 14px 44px rgba(23,32,27,.07);
+    }}
+    .cockpit-card strong {{ display: block; color: var(--gold); font-size: 2.45rem; line-height: 1; }}
+    .cockpit-card h3 {{ margin: 10px 0 8px; }}
+    .product-lane {{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0 26px;
+    }}
+    .lane-card {{
+      background: #fffaf0;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 16px;
+    }}
+    .lane-card strong {{ color: var(--accent-dark); }}
     .auth-panel {{ margin-top: 22px; background: rgba(255,253,248,.94); border: 1px solid var(--line); border-radius: 24px; padding: 22px; box-shadow: 0 18px 60px rgba(23,32,27,.06); }}
     .auth-panel p {{ margin-top: 0; }}
     .auth-grid {{ display: grid; grid-template-columns: 1.3fr .9fr; gap: 16px; align-items: start; }}
@@ -240,7 +312,7 @@ def render_staff_dashboard() -> str:
     @media (max-width: 640px) {{
       main {{ padding: 30px 14px; }}
       .hero, .screen-panel, .state-card {{ border-radius: 20px; padding: 18px; }}
-      .auth-grid, .screen-nav, .api-strip, .form-grid {{ grid-template-columns: 1fr; }}
+      .cockpit, .cockpit-grid, .product-lane, .auth-grid, .screen-nav, .api-strip, .form-grid {{ grid-template-columns: 1fr; }}
       .work-table {{ display: block; overflow-x: auto; }}
       .grid {{ grid-template-columns: 1fr; }}
     }}
@@ -254,6 +326,23 @@ def render_staff_dashboard() -> str:
       <h1>CivicClerk Staff Workflow Screens</h1>
       <p class="status">These are browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly and export, notice checklist/posting proof, outcome capture, cited minutes drafting, public archive publishing, and connector import work, and they now disclose whether the service is running in local open mode, bearer-protected staff mode, or trusted-header staff mode.</p>
       <p>The screens show the live API paths, safe next actions, required staff states, actionable fix copy, and the first deployment-ready staff auth contract for the service slices available today. Full OIDC login is not shipped yet; this screen is the bridge contract until that lands.</p>
+    </section>
+
+    <section class="cockpit" aria-labelledby="cockpit-heading">
+      <div class="command-strip">
+        <div class="eyebrow">Product cockpit</div>
+        <h2 id="cockpit-heading">Today's clerk desk</h2>
+        <p>This is the shift from foundation to product: a working desk that tells staff what is ready, what is protected, and what to do next without reading raw API notes first.</p>
+      </div>
+      <div class="cockpit-grid">
+        {cockpit_items}
+      </div>
+    </section>
+
+    <section class="product-lane" aria-label="Clerk product flow">
+      <article class="lane-card"><strong>1. Intake</strong><br>Submit or review a department request, then mark it ready or needs-info.</article>
+      <article class="lane-card"><strong>2. Build</strong><br>Assemble packet, notice, motions, votes, actions, and cited minutes from the same meeting trail.</article>
+      <article class="lane-card"><strong>3. Publish</strong><br>Export records and publish public-safe archive material while closed-session content stays filtered.</article>
     </section>
 
     <section class="auth-panel" aria-labelledby="staff-auth-heading">

@@ -1,9 +1,11 @@
 ## Milestone 13 Staff UI Protected-Mode QA
 
-- URL checked: `http://127.0.0.1:8790/staff`
+- URL checked: `http://127.0.0.1:8891/staff` returned the current staff dashboard with `Product cockpit` and `Today's clerk desk`
+- Screenshot render source: the same `civicclerk.staff_ui.render_staff_dashboard()` HTML saved as a local browser fixture for deterministic desktop/mobile capture
 - Auth mode checked: `open` readiness shell with trusted-header deployment guidance rendered
+- Product cockpit checked: `Product cockpit`, `Today's clerk desk`, `Items ready for clerk review`, `Live workflow actions`, `Silent dead ends`, `Go-live checks`, and the `1. Intake` / `2. Build` / `3. Publish` lane render before the workflow forms
 - Desktop evidence: `docs/screenshots/milestone13-staff-ui-desktop.png`
 - Mobile evidence: `docs/screenshots/milestone13-staff-ui-mobile.png`
 - Console: 0 messages expected from the shipped auth panel flow and no browser gate failures in `python scripts/verify-browser-qa.py`
 - Required state verified: the auth panel renders `Trusted proxy reference`, `docs/examples/trusted-header-nginx.conf`, `Local proxy rehearsal`, `scripts/local_trusted_header_proxy.py`, `Session probe`, and `Write probe`
-- Accessibility spot check: keyboard focus ring remains visible on the skip link, auth-panel copy stays readable at desktop and mobile widths, and the deployment guidance gives both real-proxy and localhost rehearsal next steps instead of a dead-end warning
+- Accessibility spot check: keyboard focus ring remains visible on the skip link, cockpit/auth-panel copy stays readable at desktop and mobile widths, and the deployment guidance gives both real-proxy and localhost rehearsal next steps instead of a dead-end warning
