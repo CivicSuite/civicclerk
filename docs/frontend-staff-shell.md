@@ -86,7 +86,9 @@ mockup's browser-global JSX bundle.
 ## What This Slice Does Not Yet Include
 
 - Replacement of the shipped `/staff` HTML reference shell.
-- Installer integration.
+- Signed/enterprise installer release artifact. The unsigned Windows
+  install/repair wrapper now starts the Docker-backed React staff app for local
+  product rehearsal.
 
 ## Docker Demo Data
 
