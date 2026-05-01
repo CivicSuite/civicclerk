@@ -26,6 +26,7 @@ from civicclerk import __version__
 from civicclerk.agenda_intake import AgendaIntakeRepository
 from civicclerk.agenda_lifecycle import AgendaItemRepository, AgendaItemStore
 from civicclerk.connectors import ConnectorImportError, import_meeting_payload
+from civicclerk.meeting_body import MeetingBodyRepository
 from civicclerk.meeting_lifecycle import MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
@@ -92,6 +93,8 @@ _packet_assembly_repository: PacketAssemblyRepository | None = None
 _packet_assembly_db_url: str | None = None
 _notice_checklist_repository: NoticeChecklistRepository | None = None
 _notice_checklist_db_url: str | None = None
+_meeting_body_repository: MeetingBodyRepository | None = None
+_meeting_body_db_url: str | None = None
 _meeting_store: MeetingStore | None = None
 _meeting_db_url: str | None = None
 
@@ -150,6 +153,18 @@ class MeetingCreate(BaseModel):
     title: str = Field(min_length=1)
     meeting_type: str = Field(min_length=1)
     scheduled_start: str | None = None
+
+
+class MeetingBodyCreate(BaseModel):
+    name: str = Field(min_length=1)
+    body_type: str = Field(min_length=1)
+    is_active: bool = True
+
+
+class MeetingBodyUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1)
+    body_type: str | None = Field(default=None, min_length=1)
+    is_active: bool | None = None
 
 
 class MeetingTransitionRequest(BaseModel):
@@ -577,6 +592,66 @@ async def review_agenda_intake_item(
             },
         )
     return item.public_dict()
+
+
+@app.post("/meeting-bodies", status_code=201)
+async def create_meeting_body(payload: MeetingBodyCreate) -> dict[str, str | bool]:
+    """Create a municipal meeting body for staff calendar workflows."""
+
+    return _get_meeting_body_repository().create(
+        name=payload.name,
+        body_type=payload.body_type,
+        is_active=payload.is_active,
+    ).public_dict()
+
+
+@app.get("/meeting-bodies")
+async def list_meeting_bodies(active_only: bool = False) -> dict[str, int | list[dict[str, str | bool]]]:
+    """List municipal meeting bodies for staff setup and scheduling clients."""
+
+    bodies = [
+        body.public_dict()
+        for body in _get_meeting_body_repository().list(active_only=active_only)
+    ]
+    return {"count": len(bodies), "meeting_bodies": bodies}
+
+
+@app.get("/meeting-bodies/{body_id}")
+async def get_meeting_body(body_id: str) -> dict[str, str | bool]:
+    """Return one municipal meeting body."""
+
+    body = _get_meeting_body_repository().get(body_id)
+    if body is None:
+        raise HTTPException(status_code=404, detail="Meeting body not found.")
+    return body.public_dict()
+
+
+@app.patch("/meeting-bodies/{body_id}")
+async def update_meeting_body(
+    body_id: str,
+    payload: MeetingBodyUpdate,
+) -> dict[str, str | bool]:
+    """Update a municipal meeting body without losing its record identity."""
+
+    body = _get_meeting_body_repository().update(
+        body_id=body_id,
+        name=payload.name,
+        body_type=payload.body_type,
+        is_active=payload.is_active,
+    )
+    if body is None:
+        raise HTTPException(status_code=404, detail="Meeting body not found.")
+    return body.public_dict()
+
+
+@app.delete("/meeting-bodies/{body_id}")
+async def deactivate_meeting_body(body_id: str) -> dict[str, str | bool]:
+    """Deactivate a meeting body instead of hard-deleting legal history."""
+
+    body = _get_meeting_body_repository().deactivate(body_id)
+    if body is None:
+        raise HTTPException(status_code=404, detail="Meeting body not found.")
+    return body.public_dict()
 
 
 @app.post("/meetings", status_code=201)
@@ -1661,6 +1736,15 @@ def _get_notice_checklist_repository() -> NoticeChecklistRepository:
         _notice_checklist_db_url = db_url
         _notice_checklist_repository = NoticeChecklistRepository(db_url=db_url)
     return _notice_checklist_repository
+
+
+def _get_meeting_body_repository() -> MeetingBodyRepository:
+    global _meeting_body_db_url, _meeting_body_repository
+    db_url = os.environ.get("CIVICCLERK_MEETING_BODY_DB_URL")
+    if _meeting_body_repository is None or db_url != _meeting_body_db_url:
+        _meeting_body_db_url = db_url
+        _meeting_body_repository = MeetingBodyRepository(db_url=db_url)
+    return _meeting_body_repository
 
 
 def _get_meeting_store() -> MeetingStore:

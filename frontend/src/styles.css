@@ -442,6 +442,72 @@ h2 {
   gap: 16px;
 }
 
+.body-admin {
+  display: grid;
+  gap: 18px;
+}
+
+.body-form,
+.body-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.body-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.body-form input,
+.body-row input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fffaf0;
+  color: var(--ink);
+  font: inherit;
+}
+
+.body-list {
+  display: grid;
+  gap: 10px;
+}
+
+.body-row {
+  grid-template-columns: 1.3fr 1fr auto auto;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fffaf0;
+}
+
+.body-row.inactive {
+  opacity: .62;
+}
+
+.body-row strong,
+.body-row span {
+  display: block;
+}
+
+.body-row span,
+.form-message,
+.empty-inline {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.form-message,
+.empty-inline {
+  margin: 0;
+}
+
 .evidence-card {
   margin-top: 18px;
   padding: 14px;
@@ -545,7 +611,9 @@ h2 {
   .workspace.with-audit,
   .calendar-layout,
   .metric-grid,
-  .detail-grid {
+  .detail-grid,
+  .body-form,
+  .body-row {
     grid-template-columns: 1fr;
   }
 

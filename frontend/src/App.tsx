@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
 type Page = "dashboard" | "meetings" | "meeting-detail";
@@ -31,6 +31,20 @@ type ApiMeeting = {
   meeting_type: string;
   status: string;
   scheduled_start?: string | null;
+};
+
+type MeetingBody = {
+  id: string;
+  name: string;
+  bodyType: string;
+  isActive: boolean;
+};
+
+type ApiMeetingBody = {
+  id: string;
+  name: string;
+  body_type: string;
+  is_active: boolean;
 };
 
 const lifecycle: LifecycleStage[] = [
@@ -89,6 +103,12 @@ const tasks = [
   "Resolve notice warning for Planning Commission",
 ];
 
+const demoBodies: MeetingBody[] = [
+  { id: "body-council", name: "City Council", bodyType: "city_council", isActive: true },
+  { id: "body-planning", name: "Planning Commission", bodyType: "commission", isActive: true },
+  { id: "body-parks", name: "Parks Advisory Board", bodyType: "advisory_board", isActive: true },
+];
+
 function Icon({ label }: { label: string }) {
   return <span className="icon" aria-hidden="true">{label.slice(0, 1)}</span>;
 }
@@ -98,18 +118,24 @@ export function App() {
   const [page, setPage] = useState<Page>(initial.page);
   const [qaState, setQaState] = useState<ViewState | null>(initial.state);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [meetingBodies, setMeetingBodies] = useState<MeetingBody[]>([]);
   const [apiState, setApiState] = useState<ViewState>("loading");
   const [apiError, setApiError] = useState<string | null>(null);
+  const [bodyState, setBodyState] = useState<ViewState>("loading");
+  const [bodyError, setBodyError] = useState<string | null>(null);
   const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
   const [auditOpen, setAuditOpen] = useState(initial.audit);
   const viewState = qaState ?? apiState;
   const visibleMeetings = qaState === null ? meetings : demoMeetings;
+  const visibleBodies = qaState === null ? meetingBodies : demoBodies;
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
 
   useEffect(() => {
     if (initial.source === "demo") {
       setMeetings(demoMeetings);
+      setMeetingBodies(demoBodies);
       setApiState("success");
+      setBodyState("success");
       setActiveMeetingId(demoMeetings[0].id);
       return;
     }
@@ -129,6 +155,19 @@ export function App() {
         if (cancelled) return;
         setApiError(error.message);
         setApiState("error");
+      });
+    setBodyState("loading");
+    fetchMeetingBodies()
+      .then((apiBodies) => {
+        if (cancelled) return;
+        const mapped = apiBodies.map(mapApiMeetingBody);
+        setMeetingBodies(mapped);
+        setBodyState(mapped.length === 0 ? "empty" : "success");
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setBodyError(error.message);
+        setBodyState("error");
       });
     return () => {
       cancelled = true;
@@ -188,6 +227,22 @@ export function App() {
               viewState={viewState}
               apiError={apiError}
               meetings={visibleMeetings}
+              meetingBodies={visibleBodies}
+              bodyState={qaState ?? bodyState}
+              bodyError={bodyError}
+              onCreateBody={async (name, bodyType) => {
+                const body = await createMeetingBody(name, bodyType);
+                setMeetingBodies((current) => [...current, mapApiMeetingBody(body)].sort(sortBodies));
+                setBodyState("success");
+              }}
+              onUpdateBody={async (bodyId, name) => {
+                const body = await updateMeetingBody(bodyId, { name });
+                setMeetingBodies((current) => current.map((item) => item.id === body.id ? mapApiMeetingBody(body) : item).sort(sortBodies));
+              }}
+              onDeactivateBody={async (bodyId) => {
+                const body = await deactivateMeetingBody(bodyId);
+                setMeetingBodies((current) => current.map((item) => item.id === body.id ? mapApiMeetingBody(body) : item).sort(sortBodies));
+              }}
               setPage={setPage}
               setActiveMeetingId={setActiveMeetingId}
             />
@@ -222,6 +277,52 @@ async function fetchMeetings(): Promise<ApiMeeting[]> {
   return Array.isArray(payload.meetings) ? payload.meetings : [];
 }
 
+async function fetchMeetingBodies(): Promise<ApiMeetingBody[]> {
+  const response = await fetch("/api/meeting-bodies", {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Meeting body API returned ${response.status}.`);
+  }
+  const payload = (await response.json()) as { meeting_bodies?: ApiMeetingBody[] };
+  return Array.isArray(payload.meeting_bodies) ? payload.meeting_bodies : [];
+}
+
+async function createMeetingBody(name: string, bodyType: string): Promise<ApiMeetingBody> {
+  const response = await fetch("/api/meeting-bodies", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ name, body_type: bodyType }),
+  });
+  if (!response.ok) {
+    throw new Error(`Meeting body create returned ${response.status}.`);
+  }
+  return response.json();
+}
+
+async function updateMeetingBody(bodyId: string, updates: { name?: string; body_type?: string; is_active?: boolean }): Promise<ApiMeetingBody> {
+  const response = await fetch(`/api/meeting-bodies/${bodyId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(updates),
+  });
+  if (!response.ok) {
+    throw new Error(`Meeting body update returned ${response.status}.`);
+  }
+  return response.json();
+}
+
+async function deactivateMeetingBody(bodyId: string): Promise<ApiMeetingBody> {
+  const response = await fetch(`/api/meeting-bodies/${bodyId}`, {
+    method: "DELETE",
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Meeting body deactivate returned ${response.status}.`);
+  }
+  return response.json();
+}
+
 function mapApiMeeting(meeting: ApiMeeting): Meeting {
   const scheduled = meeting.scheduled_start ? new Date(meeting.scheduled_start) : null;
   return {
@@ -236,6 +337,19 @@ function mapApiMeeting(meeting: ApiMeeting): Meeting {
     packetPages: 0,
     noticeStatus: meeting.status === "SCHEDULED" ? "Blocked" : "Ready",
   };
+}
+
+function mapApiMeetingBody(body: ApiMeetingBody): MeetingBody {
+  return {
+    id: body.id,
+    name: body.name,
+    bodyType: body.body_type,
+    isActive: body.is_active,
+  };
+}
+
+function sortBodies(a: MeetingBody, b: MeetingBody) {
+  return a.name.localeCompare(b.name);
 }
 
 function toMeetingBody(meetingType: string): string {
@@ -318,12 +432,24 @@ function Dashboard({
   viewState,
   apiError,
   meetings,
+  meetingBodies,
+  bodyState,
+  bodyError,
+  onCreateBody,
+  onUpdateBody,
+  onDeactivateBody,
   setPage,
   setActiveMeetingId,
 }: {
   viewState: ViewState;
   apiError: string | null;
   meetings: Meeting[];
+  meetingBodies: MeetingBody[];
+  bodyState: ViewState;
+  bodyError: string | null;
+  onCreateBody: (name: string, bodyType: string) => Promise<void>;
+  onUpdateBody: (bodyId: string, name: string) => Promise<void>;
+  onDeactivateBody: (bodyId: string) => Promise<void>;
   setPage: (page: Page) => void;
   setActiveMeetingId: (id: string) => void;
 }) {
@@ -370,7 +496,123 @@ function Dashboard({
           ))}
         </div>
       </section>
+      <MeetingBodiesPanel
+        meetingBodies={meetingBodies}
+        bodyState={bodyState}
+        bodyError={bodyError}
+        onCreateBody={onCreateBody}
+        onUpdateBody={onUpdateBody}
+        onDeactivateBody={onDeactivateBody}
+      />
     </div>
+  );
+}
+
+function MeetingBodiesPanel({
+  meetingBodies,
+  bodyState,
+  bodyError,
+  onCreateBody,
+  onUpdateBody,
+  onDeactivateBody,
+}: {
+  meetingBodies: MeetingBody[];
+  bodyState: ViewState;
+  bodyError: string | null;
+  onCreateBody: (name: string, bodyType: string) => Promise<void>;
+  onUpdateBody: (bodyId: string, name: string) => Promise<void>;
+  onDeactivateBody: (bodyId: string) => Promise<void>;
+}) {
+  const [name, setName] = useState("");
+  const [bodyType, setBodyType] = useState("board");
+  const [draftNames, setDraftNames] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function submitBody(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    try {
+      await onCreateBody(name.trim(), bodyType.trim());
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Meeting body create failed."} Check the API, then retry.`);
+      return;
+    }
+    setName("");
+    setBodyType("board");
+    setMessage("Meeting body created. It is now available for scheduling.");
+  }
+
+  async function saveBody(body: MeetingBody) {
+    const nextName = (draftNames[body.id] ?? body.name).trim();
+    if (!nextName) {
+      setMessage("Name is required before saving a meeting body.");
+      return;
+    }
+    try {
+      await onUpdateBody(body.id, nextName);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Meeting body update failed."} Check the API, then retry.`);
+      return;
+    }
+    setMessage("Meeting body updated without changing its record identity.");
+  }
+
+  async function deactivate(body: MeetingBody) {
+    try {
+      await onDeactivateBody(body.id);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Meeting body deactivate failed."} Check the API, then retry.`);
+      return;
+    }
+    setMessage(`${body.name} was deactivated. Existing meeting history is preserved.`);
+  }
+
+  if (bodyState === "loading" || bodyState === "error" || bodyState === "partial") {
+    return <StateMessage state={bodyState} context="meeting bodies" apiError={bodyError} />;
+  }
+
+  return (
+    <section className="panel body-admin" aria-label="Meeting body management">
+      <div className="panel-heading">
+        <div>
+          <h2>Meeting bodies</h2>
+          <p>Create, rename, and deactivate boards without losing meeting history.</p>
+        </div>
+        <StatusBadge tone="Ready" label={`${meetingBodies.filter((body) => body.isActive).length} active`} />
+      </div>
+      <form className="body-form" onSubmit={submitBody}>
+        <label>
+          Body name
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Library Board" required />
+        </label>
+        <label>
+          Body type
+          <input value={bodyType} onChange={(event) => setBodyType(event.target.value)} placeholder="board" required />
+        </label>
+        <button type="submit">Create meeting body</button>
+      </form>
+      {message && <p className="form-message">{message}</p>}
+      <div className="body-list">
+        {meetingBodies.length === 0 && (
+          <p className="empty-inline">No meeting bodies exist yet. Create City Council, Planning Commission, or another board to start scheduling real meetings.</p>
+        )}
+        {meetingBodies.map((body) => (
+          <article key={body.id} className={body.isActive ? "body-row" : "body-row inactive"}>
+            <div>
+              <strong>{body.name}</strong>
+              <span>{body.bodyType.replace(/_/g, " ")} - {body.isActive ? "Active" : "Inactive"}</span>
+            </div>
+            <input
+              aria-label={`Rename ${body.name}`}
+              value={draftNames[body.id] ?? body.name}
+              onChange={(event) => setDraftNames((current) => ({ ...current, [body.id]: event.target.value }))}
+            />
+            <button className="secondary" onClick={() => saveBody(body)}>Save name</button>
+            <button className="secondary" onClick={() => deactivate(body)} disabled={!body.isActive}>Deactivate</button>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
