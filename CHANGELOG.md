@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `scripts/check_docker_backup_restore_rehearsal.py` plus PowerShell and Bash
+  wrappers now rehearse the Docker Compose PostgreSQL backup path with
+  `pg_dump`, restore into a temporary database with `pg_restore`, verify
+  restored application tables, write `civicclerk-docker-backup-manifest.json`, and
+  avoid overwriting the source database.
 - `frontend/` now contains the first CivicClerk React/Vite staff workspace
   slice, adapted from the CivicSuite mockup into production TypeScript rather
   than copied as a browser-global prototype.
@@ -76,8 +81,8 @@ All notable changes to CivicClerk are documented here.
 - The README and user manual now describe CivicClerk as an end-to-end
   React/Docker local product rehearsal with all four MVP workflow surfaces
   present, and narrow the remaining deployment gaps to production OIDC, a
-  signed installer, Docker/PostgreSQL backup and restore, live sync, and
-  deployment hardening.
+  signed installer, live sync, city-approved backup retention/off-host storage,
+  and deployment hardening.
 - The React staff workspace now includes a resident-oriented Public Posting
   portal: public meeting list/detail/search over the public archive APIs,
   separate official agenda/packet/approved-minutes sections, missing-record

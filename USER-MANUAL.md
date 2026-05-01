@@ -390,6 +390,28 @@ then reopens the restored records through CivicClerk repositories. If a check
 fails, keep the run directory, inspect the named file or record, fix the backup
 source or environment variable, and rerun with a new run id.
 
+For the Docker Compose product path, rehearse PostgreSQL backup and restore
+instead of the SQLite wheel stores:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start_docker_backup_restore_rehearsal.ps1 -PrintOnly
+```
+
+or from Linux, macOS, or Git Bash:
+
+```bash
+bash scripts/start_docker_backup_restore_rehearsal.sh --print-only
+```
+
+After `docker compose up -d` is running, rerun the same command without the
+print-only flag. The helper creates `.docker-backup-restore-rehearsal`, runs
+`pg_dump` from the `postgres` container into
+`backup/civicclerk-postgres.dump`, creates a temporary restore database, runs
+`pg_restore`, verifies restored application tables, writes
+`backup/civicclerk-docker-backup-manifest.json`, and drops the temporary restore
+database unless `--keep-restore-database` is supplied. It does not drop, clean,
+or overwrite the source CivicClerk database.
+
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
 workflows, move to `bearer` or `trusted_header` before user testing and use
@@ -509,9 +531,10 @@ staff workspace now covers meeting body setup, scheduling, calendar viewing,
 detail viewing, pre-lock schedule editing, agenda intake, packet building,
 notice checklist/posting-proof work, public posting, meeting outcomes, and
 minutes draft work against live API-backed data. Production municipal use still
-requires the remaining OIDC, signed installer, Docker/PostgreSQL backup and
-restore, and live-sync hardening work before IT should treat it as a shared
-deployment.
+requires the remaining OIDC, signed installer, and live-sync hardening work
+before IT should treat it as a shared deployment; the Docker/PostgreSQL
+backup/restore path now has a rehearsal helper, but cities still need their own
+retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility
 evidence before browser-visible changes merge.
 
