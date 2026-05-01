@@ -662,7 +662,7 @@ async def staff_oidc_callback(request: Request) -> RedirectResponse:
         )
 
     token_response = _exchange_oidc_authorization_code(code, config, code_verifier=code_verifier)
-    raw_token = token_response.get("id_token") or token_response.get("access_token")
+    raw_token = token_response.get("access_token") or token_response.get("id_token")
     if not isinstance(raw_token, str) or not raw_token.strip():
         raise HTTPException(
             status_code=502,

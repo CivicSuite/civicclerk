@@ -379,6 +379,38 @@ async def test_oidc_callback_sets_browser_session_cookie(
 
 
 @pytest.mark.asyncio
+async def test_oidc_callback_prefers_access_token_when_id_token_has_client_audience(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    access_token = _configure_oidc_browser(monkeypatch, roles=["clerk_admin"])
+    id_token = _make_oidc_token(roles=["clerk_admin"], audience="civicclerk-client")
+
+    from civicclerk import main as main_module
+
+    monkeypatch.setattr(
+        main_module,
+        "_exchange_oidc_authorization_code",
+        lambda code, config, *, code_verifier: {
+            "id_token": id_token,
+            "access_token": access_token,
+        },
+    )
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://clerk.example.gov") as client:
+        client.cookies.set(STAFF_OIDC_STATE_COOKIE_NAME, "state-123", domain="clerk.example.gov")
+        client.cookies.set(STAFF_OIDC_PKCE_COOKIE_NAME, "pkce-verifier-123", domain="clerk.example.gov")
+        callback = await client.get(
+            "/staff/oidc/callback?code=abc123&state=state-123",
+            follow_redirects=False,
+        )
+        session = await client.get("/staff/session")
+
+    assert callback.status_code == 302
+    assert session.status_code == 200
+    assert session.json()["auth_method"] == "oidc_browser_session"
+
+
+@pytest.mark.asyncio
 async def test_oidc_callback_rejects_state_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
     _configure_oidc_browser(monkeypatch, roles=["clerk_admin"])
 
@@ -747,6 +779,13 @@ def _configure_oidc(monkeypatch: pytest.MonkeyPatch, *, roles: list[str]) -> str
             }
         ),
     )
+    return _make_oidc_token(roles=roles, audience=audience)
+
+
+def _make_oidc_token(*, roles: list[str], audience: str) -> str:
+    secret = "brookfield-oidc-test-secret-with-32-bytes"
+    issuer = "https://login.example.gov/brookfield/v2.0"
+    key_id = "brookfield-key-1"
     now = datetime.now(UTC)
     return jwt.encode(
         {
