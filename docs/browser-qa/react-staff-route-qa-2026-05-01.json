@@ -1,0 +1,26 @@
+{
+  "surface": "React Staff Dashboard /staff route",
+  "captured_at": "2026-05-01T19:20:00Z",
+  "url": "http://127.0.0.1:4176/staff?source=demo",
+  "browser": {
+    "in_app_browser": {
+      "required_text": [
+        "Good morning, City Clerk.",
+        "Meeting runbook"
+      ],
+      "forbidden_text": [
+        "Find posted meetings without needing to understand clerk workflows."
+      ],
+      "result": "The /staff product route opened the React staff dashboard instead of the resident Public Posting portal.",
+      "console_errors": 0
+    },
+    "screenshots": {
+      "desktop_success": "docs/screenshots/react-staff-route-dashboard.png"
+    },
+    "accessibility": {
+      "keyboard": "The direct /staff route preserves the dashboard's existing keyboard-reachable navigation, workspace buttons, and focus-visible styling.",
+      "copy_review": "Route copy remains staff-oriented and exposes the Meeting Runbook as the clerk's first next-action surface.",
+      "viewport": "Desktop route capture rendered the dashboard without SPA fallback or public-portal leakage."
+    }
+  }
+}

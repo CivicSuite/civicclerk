@@ -121,6 +121,10 @@ Shipped in this foundation:
   packet, notice, outcomes, minutes, and public posting records into an
   end-to-end ready/warning/blocked lifecycle checklist with a next-safe-action
   button for clerks
+- nginx-served Docker/installer product routing for `/staff`, `/staff/...`,
+  `/public`, and `/public/...`, with workflow API calls staying under
+  `/api/...` and staff auth-readiness/session contracts still proxied to the
+  backend
 - React staff dashboard meeting-body management for creating, renaming, and
   deactivating boards and commissions without hard-deleting meeting history
 - React staff dashboard meeting scheduling for creating live calendar records
@@ -278,7 +282,7 @@ Copy-Item docs\examples\docker.env.example .env
 docker compose up --build
 ```
 
-Then open `http://127.0.0.1:8080` for the React staff app, or
+Then open `http://127.0.0.1:8080/staff` for the React staff app, or
 `http://127.0.0.1:8776/health` for the API health check. The default
 `CIVICCLERK_STAFF_AUTH_MODE=open` value is for local rehearsal only; switch to
 bearer or trusted-header mode before shared deployment. The Compose profile
