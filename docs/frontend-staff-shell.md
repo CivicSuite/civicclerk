@@ -86,8 +86,15 @@ mockup's browser-global JSX bundle.
 ## What This Slice Does Not Yet Include
 
 - Replacement of the shipped `/staff` HTML reference shell.
-- Seeded Docker demo data.
 - Installer integration.
+
+## Docker Demo Data
+
+The Docker Compose profile sets `CIVICCLERK_DEMO_SEED=1` by default. When the
+API process starts, it seeds Brookfield meeting bodies, three meetings across
+the lifecycle, promoted agenda intake, a finalized packet, a legally explicit
+posted notice checklist, captured outcomes, cited minutes, and a public archive
+record. Set `CIVICCLERK_DEMO_SEED=0` for an empty local rehearsal database.
 
 ## Local Frontend Commands
 

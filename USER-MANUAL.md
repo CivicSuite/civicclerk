@@ -188,6 +188,13 @@ at `http://127.0.0.1:8776`, and nginx proxies React `/api/*` requests to the
 FastAPI service. The Compose profile is not the Windows installer; installer
 packaging remains future work.
 
+By default, Compose sets `CIVICCLERK_DEMO_SEED=1`. On API startup, CivicClerk
+creates a Brookfield rehearsal dataset with meeting bodies, meetings in multiple
+lifecycle states, one promoted agenda intake item, a finalized packet, a posted
+notice checklist with statutory basis and posting proof, captured motion/vote
+outcomes, citation-gated minutes, and a public archive record. Set
+`CIVICCLERK_DEMO_SEED=0` in `.env` when IT wants an empty local database instead.
+
 ### Planned dependency
 
 The runtime foundation now pins to the published `civiccore` v0.16.0 release wheel. Agenda intake uses
