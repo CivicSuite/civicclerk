@@ -28,6 +28,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Today's clerk desk" in html
     assert "This is the shift from foundation to product" in html
     assert "Items ready for clerk review" in html
+    assert "Live agenda intake queue is empty; submit a department item to start the clerk desk." in html
     assert "Live workflow actions" in html
     assert "Silent dead ends" in html
     assert "Go-live checks" in html
@@ -160,6 +161,55 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
         "NovusAGENDA",
     ]:
         assert api_path in html
+
+
+async def test_staff_product_cockpit_uses_live_agenda_intake_counts(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("CIVICCLERK_AGENDA_INTAKE_DB_URL", f"sqlite:///{tmp_path / 'staff-cockpit.db'}")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        ready_item = await client.post(
+            "/agenda-intake",
+            json={
+                "title": "Approve paving contract",
+                "department_name": "Public Works",
+                "submitted_by": "pw@example.gov",
+                "summary": "Contract award for arterial paving.",
+                "source_references": [{"source_id": "staff-report", "title": "Staff report"}],
+            },
+        )
+        revision_item = await client.post(
+            "/agenda-intake",
+            json={
+                "title": "Adopt fee schedule",
+                "department_name": "Finance",
+                "submitted_by": "finance@example.gov",
+                "summary": "Annual fee schedule update.",
+                "source_references": [{"source_id": "fee-table", "title": "Fee table"}],
+            },
+        )
+        await client.post(
+            f"/agenda-intake/{ready_item.json()['id']}/review",
+            json={"reviewer": "clerk@example.gov", "ready": True, "notes": "Complete for packet."},
+        )
+        await client.post(
+            f"/agenda-intake/{revision_item.json()['id']}/review",
+            json={"reviewer": "clerk@example.gov", "ready": False, "notes": "Missing attachment."},
+        )
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "Live agenda intake queue reports 1 ready, 0 pending, and 1 needing revision." in response.text
+    assert "Items ready for clerk review" in response.text
+
+
+async def test_staff_product_cockpit_handles_unavailable_intake_store(monkeypatch) -> None:
+    monkeypatch.setenv("CIVICCLERK_AGENDA_INTAKE_DB_URL", "sqlite:///Z:/missing/civicclerk.db")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "Agenda intake queue is unavailable" in response.text
+    assert "check CIVICCLERK_AGENDA_INTAKE_DB_URL" in response.text
+    assert "reload the staff desk" in response.text
 
 
 async def test_favicon_is_public_and_empty() -> None:

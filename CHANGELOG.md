@@ -8,6 +8,8 @@ All notable changes to CivicClerk are documented here.
 - `/staff` now opens with a product cockpit that summarizes the clerk desk,
   visible workflow actions, no-dead-end state promise, and go-live checks before
   staff drill into the live API workflow forms.
+- The `/staff` product cockpit now reads the live agenda intake queue and
+  reports ready, pending, and needs-revision counts when intake records exist.
 - `scripts/check_connector_sync_readiness.py` now verifies the supported
   Granicus, Legistar, PrimeGov, and NovusAGENDA local payload contracts without
   outbound network calls before future scheduled live-sync work.

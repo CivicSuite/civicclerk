@@ -20,6 +20,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import SQLAlchemyError
 
 from civicclerk import __version__
 from civicclerk.agenda_intake import AgendaIntakeRepository
@@ -39,7 +40,7 @@ from civicclerk.packet_notice import (
 )
 from civicclerk.public_archive import PublicArchiveStore, can_view_closed_sessions
 from civicclerk.public_ui import render_public_portal
-from civicclerk.staff_ui import render_staff_dashboard
+from civicclerk.staff_ui import build_staff_cockpit_items, render_staff_dashboard
 from civiccore import __version__ as CIVICCORE_VERSION
 
 app = FastAPI(
@@ -341,7 +342,14 @@ async def favicon() -> Response:
 @app.get("/staff", response_class=HTMLResponse)
 async def staff_dashboard() -> str:
     """Render the staff-facing workflow foundation."""
-    return render_staff_dashboard()
+    try:
+        intake_items = _get_agenda_intake_repository().list_queue()
+        cockpit_items = build_staff_cockpit_items(agenda_intake_items=intake_items)
+    except SQLAlchemyError:
+        cockpit_items = build_staff_cockpit_items(agenda_intake_available=False)
+    return render_staff_dashboard(
+        cockpit_items=cockpit_items,
+    )
 
 
 @app.get("/public", response_class=HTMLResponse)
