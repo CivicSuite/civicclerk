@@ -64,6 +64,10 @@ mockup's browser-global JSX bundle.
   posted agenda, packet, and approved minutes into official-record sections,
   provides missing-record clerk-contact guidance, and avoids implying
   restricted-session existence, counts, or summaries.
+- Product routing: the nginx-served Docker/installer path maps `/public` and
+  `/public/...` to this React portal while API traffic remains under
+  `/api/public/...`; the React shell also selects the Public Posting workspace
+  when loaded from the `/public` pathname.
 - First Meeting Outcomes workflow: staff can choose a meeting, capture motions
   through `POST /api/meetings/{id}/motions`, load the meeting's captured
   motions, record roll-call votes through `POST /api/motions/{id}/votes`, and

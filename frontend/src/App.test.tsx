@@ -750,6 +750,15 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getAllByRole("button", { name: "Open public record" }).length).toBeGreaterThan(0);
   });
 
+  it("opens the resident public portal directly from the /public product route", async () => {
+    window.history.replaceState({}, "", "/public");
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Find posted meetings without needing to understand clerk workflows." })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Good morning, City Clerk." })).not.toBeInTheDocument();
+    expect(screen.getByText(/Only public archive API records appear here/)).toBeInTheDocument();
+  });
+
   it("captures motions, votes, and action items from the meeting outcomes workspace", async () => {
     render(<App />);
 

@@ -18,8 +18,12 @@ def test_docker_compose_stack_declares_real_runtime_services() -> None:
     assert '"psycopg2-binary>=2.9.0,<3.0.0"' in pyproject
     assert "uvicorn\", \"civicclerk.main:app\"" in (ROOT / "Dockerfile.backend").read_text(encoding="utf-8")
     assert "celery -A civicclerk.worker worker" in compose
-    assert "proxy_pass http://api:8776;" in (ROOT / "docker" / "nginx.conf").read_text(encoding="utf-8")
-    assert "proxy_pass http://api:8776/;" not in (ROOT / "docker" / "nginx.conf").read_text(encoding="utf-8")
+    nginx = (ROOT / "docker" / "nginx.conf").read_text(encoding="utf-8")
+    assert "proxy_pass http://api:8776;" in nginx
+    assert "proxy_pass http://api:8776/;" not in nginx
+    assert "location = /public" in nginx
+    assert "location /public/" in nginx
+    assert "try_files /index.html =404;" in nginx
 
 
 def test_docker_env_example_is_safe_for_local_rehearsal_only() -> None:
