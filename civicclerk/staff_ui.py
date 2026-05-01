@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+
 from civicclerk import __version__
 
 SCREEN_CARDS = [
@@ -127,15 +129,47 @@ STATE_CARDS = [
     ("partial", "Partial", "Partial imports or checks should identify what succeeded, what did not, and what to retry."),
 ]
 
-COCKPIT_ITEMS = [
-    ("3", "Items ready for clerk review", "Agenda intake queue has one ready item, one needs-info item, and one partial item."),
-    ("7", "Live workflow actions", "Intake, packet, notice, outcomes, minutes, archive, and connector import actions are available."),
-    ("0", "Silent dead ends", "Every visible empty, warning, and error state names a fix path before staff retries."),
-    ("2", "Go-live checks", "Run protected deployment smoke and backup/restore rehearsal before trusting a real deployment."),
-]
+def build_staff_cockpit_items(
+    *,
+    agenda_intake_items: Sequence[object] = (),
+    agenda_intake_available: bool = True,
+) -> list[tuple[str, str, str]]:
+    """Build cockpit cards from live workflow data that is available today."""
+
+    if not agenda_intake_available:
+        ready_count = "!"
+        intake_copy = (
+            "Agenda intake queue is unavailable; check CIVICCLERK_AGENDA_INTAKE_DB_URL "
+            "and database reachability, then reload the staff desk."
+        )
+    elif agenda_intake_items:
+        ready_count = str(_count_readiness_status(agenda_intake_items, "READY"))
+        pending_count = _count_readiness_status(agenda_intake_items, "PENDING")
+        needs_revision_count = _count_readiness_status(agenda_intake_items, "NEEDS_REVISION")
+        intake_copy = (
+            "Live agenda intake queue reports "
+            f"{ready_count} ready, {pending_count} pending, and "
+            f"{needs_revision_count} needing revision."
+        )
+    else:
+        ready_count = "0"
+        intake_copy = "Live agenda intake queue is empty; submit a department item to start the clerk desk."
+    return [
+        (ready_count, "Items ready for clerk review", intake_copy),
+        (
+            str(len(SCREEN_CARDS)),
+            "Live workflow actions",
+            "Intake, packet, notice, outcomes, minutes, archive, and connector import actions are available.",
+        ),
+        ("0", "Silent dead ends", "Every visible empty, warning, and error state names a fix path before staff retries."),
+        ("2", "Go-live checks", "Run protected deployment smoke and backup/restore rehearsal before trusting a real deployment."),
+    ]
 
 
-def render_staff_dashboard() -> str:
+def render_staff_dashboard(
+    *,
+    cockpit_items: Sequence[tuple[str, str, str]] | None = None,
+) -> str:
     """Render the current staff workflow screens as dependency-free HTML."""
     nav_buttons = "\n".join(
         f"""
@@ -165,7 +199,7 @@ def render_staff_dashboard() -> str:
           <p>{copy}</p>
         </article>
         """
-        for value, label, copy in COCKPIT_ITEMS
+        for value, label, copy in (cockpit_items or build_staff_cockpit_items())
     )
     return f"""<!doctype html>
 <html lang="en">
@@ -859,6 +893,18 @@ def render_staff_dashboard() -> str:
   </script>
 </body>
 </html>"""
+
+
+def _count_readiness_status(items: Sequence[object], status: str) -> int:
+    return sum(1 for item in items if _readiness_status(item) == status)
+
+
+def _readiness_status(item: object) -> str | None:
+    if isinstance(item, Mapping):
+        value = item.get("readiness_status")
+    else:
+        value = getattr(item, "readiness_status", None)
+    return str(value) if value is not None else None
 
 
 def _render_screen_card(card: dict, active: bool) -> str:
