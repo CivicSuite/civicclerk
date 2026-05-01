@@ -7,7 +7,7 @@ Current status after CivicClerk v0.1.11: all four MVP sprint goals below are
 API-complete, tested, and represented by live-backed `/staff` cockpit panels.
 The runtime foundation, staff workflow HTML reference shell, prompt gates,
 release gates, connector import normalization, public archive filtering, the
-first public portal shell, packet export bundles, backup/restore rehearsal,
+React public portal, packet export bundles, backup/restore rehearsal,
 protected staff-auth rehearsal, deployment preflight, and fresh-install
 rehearsal helpers are present. The first React app slice now exists under
 `frontend/`: it translates the CivicSuite mockup into a typed staff shell,
@@ -37,10 +37,11 @@ React. Compose now seeds a Brookfield demo dataset by default so staff can open
 the React app against live API-backed data immediately. Unsigned Windows
 installer source packaging is now present for the same Docker stack, including
 install/repair and daily-start launchers. Remaining MVP work now centers on a
-signed/enterprise installer release artifact and live sync/deployment
-hardening. The connector path now has a local import-sync runner that produces
-normalized ledgers from exported agenda-system JSON without claiming scheduled
-vendor live sync.
+signed/enterprise installer release artifact, production OIDC, Docker/PostgreSQL
+backup and restore rehearsal for the Compose product path, scheduled live sync,
+and deployment hardening. The connector path now has a local import-sync runner
+that produces normalized ledgers from exported agenda-system JSON without
+claiming scheduled vendor live sync.
 
 ## Sprint 1
 

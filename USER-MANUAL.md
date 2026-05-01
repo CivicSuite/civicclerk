@@ -110,13 +110,12 @@ readiness response also includes a `local_proxy_rehearsal` block that points to
 `scripts/local_trusted_header_proxy.py`, pre-fills `127.0.0.1/32` as the safe
 starter allowlist, and tells operators to browse the helper URL instead of
 calling the upstream app directly.
-The first resident-facing `/public` shell now loads public calendar records,
+The resident-facing `/public` portal now loads public calendar records,
 public-safe detail, and anonymous archive search from the live public APIs. It
 also explains empty public-record states and keeps closed-session material out
-of anonymous resident views. The broader multi-role React clerk console and the
-finished public portal remain future work. The first React staff workspace slice
-now exists under `frontend/`. It translates the CivicSuite mockup into the real
-CivicClerk frontend direction: staff shell, meeting calendar, meeting detail
+of anonymous resident views. The React staff workspace now exists under
+`frontend/`. It translates the CivicSuite mockup into the real CivicClerk
+frontend direction: staff shell, meeting calendar, meeting detail
 lifecycle ribbon, audit/evidence drawer, and loading/success/empty/error/partial
 states with actionable copy. It now loads the live `/api/meetings` list for
 dashboard metrics, meeting calendar cards, and meeting detail selection, with
@@ -127,8 +126,9 @@ meetings from active meeting bodies and edit pre-lock schedule fields from the
 meeting detail view, including title, body, type, start time, and location. The
 API rejects nonexistent or inactive body ids, writes audit entries for schedule
 edits, and blocks those edits after the meeting reaches the in-session lock
-point. This slice does not replace `/staff`
-until the remaining Sprint 3-4 workflow surfaces are wired.
+point. This React staff route is now the primary clerk workspace for local
+product rehearsal; the older HTML staff cockpit remains useful as a lightweight
+reference shell, not as the target product surface.
 
 The first React Sprint 2 surface is now also present. Staff can open Agenda
 Intake from the React navigation, submit a department agenda request with source
@@ -504,11 +504,14 @@ records with posting-proof metadata; live staff form actions for minutes
 draft creation; live staff form actions for public archive publishing; and
 live staff form actions for local connector import normalization and packet
 export bundle creation. Public
-packet exports reject closed-session and restricted source files. Full UI
-screens beyond the HTML staff workflow remain planned work, but the first React
-surfaces now cover meeting body setup, scheduling, calendar viewing, detail
-viewing, pre-lock schedule editing, agenda intake, packet building, and notice
-checklist/posting-proof work, plus the first public posted-meeting view.
+packet exports reject closed-session and restricted source files. The React
+staff workspace now covers meeting body setup, scheduling, calendar viewing,
+detail viewing, pre-lock schedule editing, agenda intake, packet building,
+notice checklist/posting-proof work, public posting, meeting outcomes, and
+minutes draft work against live API-backed data. Production municipal use still
+requires the remaining OIDC, signed installer, Docker/PostgreSQL backup and
+restore, and live-sync hardening work before IT should treat it as a shared
+deployment.
 Browser QA gates now verify the required state fixtures and accessibility
 evidence before browser-visible changes merge.
 
