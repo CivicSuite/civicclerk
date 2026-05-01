@@ -120,9 +120,11 @@ CivicClerk frontend direction: staff shell, meeting calendar, meeting detail
 lifecycle ribbon, audit/evidence drawer, and loading/success/empty/error/partial
 states with actionable copy. It now loads the live `/api/meetings` list for
 dashboard metrics, meeting calendar cards, and meeting detail selection, with
-`?source=demo` retained for deterministic QA evidence. This slice does not
-replace `/staff` until the remaining Sprint 1 work, including meeting body CRUD,
-is wired.
+`?source=demo` retained for deterministic QA evidence. The dashboard also
+loads `/api/meeting-bodies` so staff can create, rename, and deactivate boards
+or commissions without hard-deleting meeting history. This slice does not
+replace `/staff` until the remaining Sprint 1 scheduling and editing work is
+wired.
 
 ## Part 2: IT and Technical Overview
 
@@ -144,7 +146,8 @@ CivicClerk will follow the CivicSuite deployment pattern:
 The runtime foundation now pins to the published `civiccore` v0.16.0 release wheel. Agenda intake uses
 `CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; agenda item lifecycle records use
 `CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records use
-`CIVICCLERK_MEETING_DB_URL` when set; packet assembly records use
+`CIVICCLERK_MEETING_DB_URL` when set; meeting body records use
+`CIVICCLERK_MEETING_BODY_DB_URL` when set; packet assembly records use
 `CIVICCLERK_PACKET_ASSEMBLY_DB_URL` when set; notice checklist records use
 `CIVICCLERK_NOTICE_CHECKLIST_DB_URL` when set. If unset, each repository uses
 an in-memory SQLite database suitable for local smoke checks.

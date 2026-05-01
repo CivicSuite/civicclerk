@@ -18,13 +18,14 @@ mockup's browser-global JSX bundle.
 - Right-side audit/evidence drawer per meeting object.
 - Live `/api/meetings` list loading for dashboard metrics, calendar cards, and
   detail selection, with a `?source=demo` fallback for deterministic QA states.
+- Live `/api/meeting-bodies` management on the dashboard so clerks can create,
+  rename, and deactivate boards or commissions before scheduling meetings.
 - Explicit QA state controls for success, loading, empty, error, and partial
   states.
 - Actionable state copy that tells staff or IT what to do next.
 
 ## What This Slice Does Not Yet Include
 
-- Meeting body CRUD.
 - Replacement of the shipped `/staff` HTML reference shell.
 - Docker/nginx packaging.
 - Installer integration.

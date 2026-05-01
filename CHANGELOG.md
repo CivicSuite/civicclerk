@@ -16,6 +16,11 @@ All notable changes to CivicClerk are documented here.
   retaining `?source=demo` for deterministic browser QA captures.
 - The FastAPI app now exposes `GET /meetings` so the React staff calendar can
   load scheduled meetings in calendar order without depending on fixture data.
+- The FastAPI app now exposes meeting body CRUD at `/meeting-bodies`, backed by
+  the canonical `meeting_bodies` table; deletes are implemented as
+  deactivation so meeting history is not destroyed.
+- The React staff dashboard now includes a live Meeting Bodies panel for
+  creating, renaming, and deactivating boards and commissions.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
   meeting detail navigation, required error/empty state copy, and audit drawer
   toggling.

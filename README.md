@@ -38,6 +38,8 @@ Shipped in this foundation:
 - first `frontend/` React/Vite staff workspace slice adapted from the CivicSuite
   mockup into production TypeScript
 - live `GET /meetings` endpoint for staff calendar/list views
+- live `/meeting-bodies` create/list/read/update/deactivate endpoints backed by
+  the canonical meeting body table
 - FastAPI application import path at `civicclerk.main:app`
 - root endpoint that explains the current product state
 - `/health` endpoint for IT staff
@@ -108,6 +110,8 @@ Shipped in this foundation:
 - React staff shell live meeting-list wiring for dashboard metrics, calendar
   cards, and meeting detail selection, with `?source=demo` retained for
   deterministic QA state capture
+- React staff dashboard meeting-body management for creating, renaming, and
+  deactivating boards and commissions without hard-deleting meeting history
 - CivicClerk v0.1.11 release gate and build artifacts
 - `scripts/start_fresh_install_rehearsal.ps1` to rehearse the documented
   Windows-first wheel install and first-run smoke checks from an isolated
@@ -151,7 +155,7 @@ Not shipped yet:
 
 ## New user experience today
 
-A new user can inspect and run the foundation, open first staff workflow screens at `/staff`, open the first resident-facing public portal shell at `/public`, inspect the first React staff workspace slice in `frontend/`, load live meetings into the React dashboard/calendar/detail flow through `/api/meetings`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, create/finalize packet assembly records from the browser, persist notice checklist/posting-proof records from the browser, capture motions/votes/action items from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
+A new user can inspect and run the foundation, open first staff workflow screens at `/staff`, open the first resident-facing public portal shell at `/public`, inspect the first React staff workspace slice in `frontend/`, create and maintain meeting bodies through the React dashboard and `/api/meeting-bodies`, load live meetings into the React dashboard/calendar/detail flow through `/api/meetings`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, create/finalize packet assembly records from the browser, persist notice checklist/posting-proof records from the browser, capture motions/votes/action items from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
 
 1. Read this README.
 2. Read `USER-MANUAL.md`.

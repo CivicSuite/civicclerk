@@ -6,26 +6,82 @@ describe("CivicClerk staff workspace", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          meetings: [
-            {
-              id: "meeting-1",
-              title: "Regular Meeting",
-              meeting_type: "city_council",
-              status: "PACKET_POSTED",
-              scheduled_start: "2026-05-05T18:00:00Z",
-            },
-            {
-              id: "meeting-2",
-              title: "Special Session",
-              meeting_type: "planning_commission",
-              status: "NOTICED",
-              scheduled_start: "2026-05-07T18:00:00Z",
-            },
-          ],
-        }),
+      vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+        if (url === "/api/meeting-bodies" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "body-3",
+              name: "Library Board",
+              body_type: "board",
+              is_active: true,
+            }),
+          });
+        }
+        if (url === "/api/meeting-bodies/body-1" && init?.method === "PATCH") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "body-1",
+              name: "Brookfield City Council",
+              body_type: "city_council",
+              is_active: true,
+            }),
+          });
+        }
+        if (url === "/api/meeting-bodies/body-1" && init?.method === "DELETE") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "body-1",
+              name: "City Council",
+              body_type: "city_council",
+              is_active: false,
+            }),
+          });
+        }
+        if (url === "/api/meeting-bodies") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              meeting_bodies: [
+                {
+                  id: "body-1",
+                  name: "City Council",
+                  body_type: "city_council",
+                  is_active: true,
+                },
+                {
+                  id: "body-2",
+                  name: "Planning Commission",
+                  body_type: "commission",
+                  is_active: true,
+                },
+              ],
+            }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            meetings: [
+              {
+                id: "meeting-1",
+                title: "Regular Meeting",
+                meeting_type: "city_council",
+                status: "PACKET_POSTED",
+                scheduled_start: "2026-05-05T18:00:00Z",
+              },
+              {
+                id: "meeting-2",
+                title: "Special Session",
+                meeting_type: "planning_commission",
+                status: "NOTICED",
+                scheduled_start: "2026-05-07T18:00:00Z",
+              },
+            ],
+          }),
+        });
       }),
     );
   });
@@ -41,7 +97,26 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByText("CivicSuite")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Good morning, City Clerk." })).toBeInTheDocument();
     expect(screen.getByText("Live from CivicClerk meeting API")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Meeting bodies" })).toBeInTheDocument();
     expect(screen.getByText("Partial install")).toBeInTheDocument();
+  });
+
+  it("creates, updates, and deactivates meeting bodies from the staff dashboard", async () => {
+    render(<App />);
+
+    expect(await screen.findByDisplayValue("City Council")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Body name"), { target: { value: "Library Board" } });
+    fireEvent.change(screen.getByLabelText("Body type"), { target: { value: "board" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create meeting body" }));
+    expect(await screen.findByText("Meeting body created. It is now available for scheduling.")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Rename City Council"), { target: { value: "Brookfield City Council" } });
+    fireEvent.click(screen.getAllByRole("button", { name: "Save name" })[0]);
+    expect(await screen.findByText("Meeting body updated without changing its record identity.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Deactivate" })[0]);
+    expect(await screen.findByText("Brookfield City Council was deactivated. Existing meeting history is preserved.")).toBeInTheDocument();
   });
 
   it("opens the meeting calendar and a meeting detail workspace", async () => {
