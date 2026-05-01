@@ -9,7 +9,10 @@ The runtime foundation, staff workflow HTML reference shell, prompt gates,
 release gates, connector import normalization, public archive filtering, the
 React public portal, packet export bundles, backup/restore rehearsal,
 OIDC staff-token validation, protected staff-auth rehearsal, deployment preflight, and fresh-install
-rehearsal helpers are present. The first React app slice now exists under
+rehearsal helpers are present, and the first OIDC browser sign-in/session
+foundation now starts authorization-code sign-in at `/staff/login`, accepts the
+callback at `/staff/oidc/callback`, uses PKCE, and issues a signed HttpOnly
+CivicClerk staff session cookie for protected staff APIs. The first React app slice now exists under
 `frontend/`: it translates the CivicSuite mockup into a typed staff shell,
 meeting calendar, meeting detail lifecycle ribbon, audit/evidence drawer, and
 explicit loading/success/empty/error/partial QA states, and the staff dashboard,
@@ -37,8 +40,8 @@ React. Compose now seeds a Brookfield demo dataset by default so staff can open
 the React app against live API-backed data immediately. Unsigned Windows
 installer source packaging is now present for the same Docker stack, including
 install/repair and daily-start launchers. Remaining MVP work now centers on a
-signed/enterprise installer release artifact, browser redirect sign-in/session UX,
-scheduled live sync, and deployment hardening. The Docker/PostgreSQL backup and restore
+signed/enterprise installer release artifact, React sign-in polish around the
+OIDC browser-session foundation, scheduled live sync, and deployment hardening. The Docker/PostgreSQL backup and restore
 rehearsal for the Compose product path is now present; real deployments still
 need an approved retention schedule and off-host storage target. The connector
 path now has a local import-sync runner that produces normalized ledgers from

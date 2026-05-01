@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -24,6 +25,12 @@ class OidcStaffAuthConfig:
     jwks_json: str | None
     role_claims: tuple[str, ...]
     algorithms: tuple[str, ...]
+    authorization_url: str | None
+    token_url: str | None
+    client_id: str | None
+    client_secret: str | None
+    redirect_uri: str | None
+    session_cookie_secret: str | None
 
 
 def load_oidc_staff_auth_config(
@@ -35,6 +42,12 @@ def load_oidc_staff_auth_config(
     jwks_json_env_var: str,
     role_claims_env_var: str,
     algorithms_env_var: str,
+    authorization_url_env_var: str,
+    token_url_env_var: str,
+    client_id_env_var: str,
+    client_secret_env_var: str,
+    redirect_uri_env_var: str,
+    session_cookie_secret_env_var: str,
 ) -> OidcStaffAuthConfig:
     """Load the minimal OIDC configuration needed to validate staff access tokens."""
 
@@ -47,6 +60,12 @@ def load_oidc_staff_auth_config(
         jwks_json=os.environ.get(jwks_json_env_var, "").strip() or None,
         role_claims=_split_csv(os.environ.get(role_claims_env_var, "roles,groups")),
         algorithms=_split_csv(os.environ.get(algorithms_env_var, "RS256")),
+        authorization_url=os.environ.get(authorization_url_env_var, "").strip() or None,
+        token_url=os.environ.get(token_url_env_var, "").strip() or None,
+        client_id=os.environ.get(client_id_env_var, "").strip() or None,
+        client_secret=os.environ.get(client_secret_env_var, "").strip() or None,
+        redirect_uri=os.environ.get(redirect_uri_env_var, "").strip() or None,
+        session_cookie_secret=os.environ.get(session_cookie_secret_env_var, "").strip() or None,
     )
 
 
@@ -67,6 +86,25 @@ def oidc_config_errors(config: OidcStaffAuthConfig) -> list[str]:
         errors.append("role_claims")
     if not config.algorithms:
         errors.append("algorithms")
+    return errors
+
+
+def oidc_browser_login_config_errors(config: OidcStaffAuthConfig) -> list[str]:
+    """Return missing browser authorization-code flow settings."""
+
+    errors: list[str] = []
+    if not config.authorization_url or _looks_like_placeholder(config.authorization_url):
+        errors.append("authorization_url")
+    if not config.token_url or _looks_like_placeholder(config.token_url):
+        errors.append("token_url")
+    if not config.client_id or _looks_like_placeholder(config.client_id):
+        errors.append("client_id")
+    if not config.client_secret or _looks_like_placeholder(config.client_secret):
+        errors.append("client_secret")
+    if not config.redirect_uri or _looks_like_placeholder(config.redirect_uri):
+        errors.append("redirect_uri")
+    if not config.session_cookie_secret or _looks_like_placeholder(config.session_cookie_secret):
+        errors.append("session_cookie_secret")
     return errors
 
 
@@ -161,6 +199,112 @@ def authorize_oidc_staff_token(
         auth_method="oidc",
         subject=subject,
         provider=config.provider,
+    )
+
+
+def encode_oidc_staff_session(
+    principal: AuthenticatedPrincipal,
+    *,
+    config: OidcStaffAuthConfig,
+    max_age_seconds: int,
+) -> str:
+    """Create a short-lived signed browser session from an already-validated OIDC identity."""
+
+    if not config.session_cookie_secret:
+        raise ValueError("OIDC staff session cookie secret is missing.")
+    now = int(time.time())
+    expires_at = now + max_age_seconds
+    return jwt.encode(
+        {
+            "iss": "civicclerk-staff-session",
+            "aud": "civicclerk-staff-browser",
+            "iat": now,
+            "exp": expires_at,
+            "auth_method": "oidc_browser_session",
+            "provider": principal.provider,
+            "subject": principal.subject,
+            "roles": sorted(principal.roles),
+            "oidc_token_fingerprint": principal.token_fingerprint,
+        },
+        config.session_cookie_secret,
+        algorithm="HS256",
+    )
+
+
+def authorize_oidc_staff_session_cookie(
+    session_cookie: str | None,
+    *,
+    config: OidcStaffAuthConfig,
+    allowed_roles: Iterable[str],
+    env_names: dict[str, str],
+) -> AuthenticatedPrincipal:
+    """Validate a signed CivicClerk browser session cookie for OIDC staff routes."""
+
+    if not session_cookie:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "message": "OIDC sign-in required.",
+                "fix": "Open /staff/login to sign in with the configured municipal identity provider.",
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not config.session_cookie_secret or _looks_like_placeholder(config.session_cookie_secret):
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "message": "OIDC browser session signing is not configured.",
+                "fix": f"Set {env_names['session_cookie_secret']} to a strong random value before browser sign-in.",
+            },
+        )
+    try:
+        claims = jwt.decode(
+            session_cookie,
+            config.session_cookie_secret,
+            algorithms=["HS256"],
+            audience="civicclerk-staff-browser",
+            issuer="civicclerk-staff-session",
+        )
+    except jwt.ExpiredSignatureError as exc:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "message": "OIDC browser session has expired.",
+                "fix": "Open /staff/login and sign in again before retrying the staff action.",
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+    except jwt.PyJWTError as exc:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "message": "OIDC browser session could not be validated.",
+                "fix": "Clear the CivicClerk staff session cookie, sign in again, and confirm the session secret has not changed.",
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+    principal_roles = _extract_roles(claims, ("roles",))
+    normalized_allowed = frozenset(role.strip().lower() for role in allowed_roles if role.strip())
+    matching_roles = principal_roles & normalized_allowed
+    if not matching_roles:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "message": "OIDC browser session lacks an allowed staff role.",
+                "fix": "Ask IT to map the identity provider app role or group claim to a CivicClerk staff role, then sign in again.",
+                "required_roles": sorted(normalized_allowed),
+                "principal_roles": sorted(principal_roles),
+            },
+        )
+
+    fingerprint_source = str(claims.get("oidc_token_fingerprint") or session_cookie)
+    return AuthenticatedPrincipal(
+        token_fingerprint=hashlib.sha256(fingerprint_source.encode("utf-8")).hexdigest()[:16],
+        roles=frozenset(sorted(matching_roles)),
+        auth_method="oidc_browser_session",
+        subject=_first_string_claim(claims, ("subject", "sub")),
+        provider=_first_string_claim(claims, ("provider",)),
     )
 
 

@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import json
 import os
+import secrets
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
@@ -18,7 +25,7 @@ from civiccore.auth import (
 from civiccore.security import normalize_trusted_proxy_cidrs
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -32,7 +39,10 @@ from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMateria
 from civicclerk.motion_vote import MotionVoteStore
 from civicclerk.notice_checklist import NoticeChecklistRepository
 from civicclerk.oidc_auth import (
+    authorize_oidc_staff_session_cookie,
     authorize_oidc_staff_token,
+    encode_oidc_staff_session,
+    oidc_browser_login_config_errors,
     load_oidc_staff_auth_config,
     oidc_config_errors,
 )
@@ -80,6 +90,17 @@ STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR = "CIVICCLERK_STAFF_OIDC_JWKS_URL"
 STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR = "CIVICCLERK_STAFF_OIDC_JWKS_JSON"
 STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR = "CIVICCLERK_STAFF_OIDC_ROLE_CLAIMS"
 STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR = "CIVICCLERK_STAFF_OIDC_ALGORITHMS"
+STAFF_AUTH_OIDC_AUTHORIZATION_URL_ENV_VAR = "CIVICCLERK_STAFF_OIDC_AUTHORIZATION_URL"
+STAFF_AUTH_OIDC_TOKEN_URL_ENV_VAR = "CIVICCLERK_STAFF_OIDC_TOKEN_URL"
+STAFF_AUTH_OIDC_CLIENT_ID_ENV_VAR = "CIVICCLERK_STAFF_OIDC_CLIENT_ID"
+STAFF_AUTH_OIDC_CLIENT_SECRET_ENV_VAR = "CIVICCLERK_STAFF_OIDC_CLIENT_SECRET"
+STAFF_AUTH_OIDC_REDIRECT_URI_ENV_VAR = "CIVICCLERK_STAFF_OIDC_REDIRECT_URI"
+STAFF_AUTH_OIDC_SESSION_SECRET_ENV_VAR = "CIVICCLERK_STAFF_OIDC_SESSION_COOKIE_SECRET"
+STAFF_OIDC_SESSION_COOKIE_NAME = "civicclerk_staff_session"
+STAFF_OIDC_STATE_COOKIE_NAME = "civicclerk_oidc_state"
+STAFF_OIDC_PKCE_COOKIE_NAME = "civicclerk_oidc_pkce"
+STAFF_OIDC_SESSION_MAX_AGE_SECONDS = 3600
+STAFF_OIDC_STATE_MAX_AGE_SECONDS = 600
 DEMO_SEED_ENV_VAR = "CIVICCLERK_DEMO_SEED"
 DEFAULT_STAFF_SSO_PROVIDER = "trusted reverse proxy"
 DEFAULT_STAFF_SSO_PRINCIPAL_HEADER = "X-Forwarded-Email"
@@ -498,6 +519,10 @@ async def staff_session(request: Request) -> dict[str, object]:
         )
         return response
     if mode == STAFF_OIDC_MODE:
+        if principal.auth_method == "oidc_browser_session":
+            response["message"] = "OIDC browser session accepted from the configured municipal provider."
+            response["fix"] = "Use /staff/logout before leaving a shared workstation."
+            return response
         response["message"] = "OIDC staff identity accepted from the configured municipal provider."
         response["fix"] = (
             "Keep the identity provider app roles or groups mapped to CivicClerk staff roles."
@@ -513,6 +538,172 @@ async def staff_session(request: Request) -> dict[str, object]:
     )
     response["principal_header"] = trusted_header_config.principal_header_name
     response["roles_header"] = trusted_header_config.roles_header_name
+    return response
+
+
+@app.get("/staff/login")
+async def staff_login(request: Request) -> RedirectResponse:
+    """Start the municipal OIDC browser sign-in flow for staff users."""
+
+    mode = _get_staff_auth_mode()
+    if mode != STAFF_OIDC_MODE:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "OIDC browser sign-in is available only when staff auth mode is oidc.",
+                "fix": f"Set {STAFF_AUTH_MODE_ENV_VAR}={STAFF_OIDC_MODE} before using /staff/login.",
+            },
+        )
+    config = _get_staff_oidc_config()
+    missing = oidc_browser_login_config_errors(config)
+    if missing:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "message": "OIDC browser sign-in is not fully configured.",
+                "fix": _oidc_browser_login_fix(missing),
+            },
+        )
+
+    state = secrets.token_urlsafe(32)
+    code_verifier = secrets.token_urlsafe(64)
+    code_challenge = _pkce_s256_challenge(code_verifier)
+    query = urllib.parse.urlencode(
+        {
+            "client_id": config.client_id,
+            "redirect_uri": config.redirect_uri,
+            "response_type": "code",
+            "scope": "openid profile email",
+            "state": state,
+            "code_challenge": code_challenge,
+            "code_challenge_method": "S256",
+        }
+    )
+    response = RedirectResponse(f"{config.authorization_url}?{query}", status_code=302)
+    response.set_cookie(
+        STAFF_OIDC_STATE_COOKIE_NAME,
+        state,
+        max_age=STAFF_OIDC_STATE_MAX_AGE_SECONDS,
+        httponly=True,
+        secure=_request_is_https(request),
+        samesite="lax",
+    )
+    response.set_cookie(
+        STAFF_OIDC_PKCE_COOKIE_NAME,
+        code_verifier,
+        max_age=STAFF_OIDC_STATE_MAX_AGE_SECONDS,
+        httponly=True,
+        secure=_request_is_https(request),
+        samesite="lax",
+    )
+    return response
+
+
+@app.get("/staff/oidc/callback")
+async def staff_oidc_callback(request: Request) -> RedirectResponse:
+    """Complete the OIDC authorization-code callback and issue a staff session cookie."""
+
+    mode = _get_staff_auth_mode()
+    if mode != STAFF_OIDC_MODE:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "OIDC callback received while staff auth mode is not oidc.",
+                "fix": f"Set {STAFF_AUTH_MODE_ENV_VAR}={STAFF_OIDC_MODE}, then restart sign-in from /staff/login.",
+            },
+        )
+    callback_error = request.query_params.get("error")
+    if callback_error:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "OIDC provider returned a sign-in error.",
+                "fix": f"Review the provider response '{callback_error}', then restart sign-in from /staff/login.",
+            },
+        )
+    expected_state = request.cookies.get(STAFF_OIDC_STATE_COOKIE_NAME)
+    received_state = request.query_params.get("state")
+    if not expected_state or not received_state or not secrets.compare_digest(expected_state, received_state):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "OIDC sign-in state did not match.",
+                "fix": "Restart sign-in from /staff/login. If this repeats, confirm cookies are allowed for the CivicClerk host.",
+            },
+        )
+    code_verifier = request.cookies.get(STAFF_OIDC_PKCE_COOKIE_NAME)
+    if not code_verifier:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "OIDC sign-in PKCE verifier is missing.",
+                "fix": "Restart sign-in from /staff/login. If this repeats, confirm cookies are allowed for the CivicClerk host.",
+            },
+        )
+    code = request.query_params.get("code")
+    if not code:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "OIDC callback did not include an authorization code.",
+                "fix": "Restart sign-in from /staff/login and confirm the provider uses authorization-code flow.",
+            },
+        )
+
+    config = _get_staff_oidc_config()
+    missing = oidc_browser_login_config_errors(config)
+    if missing:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "message": "OIDC browser sign-in is not fully configured.",
+                "fix": _oidc_browser_login_fix(missing),
+            },
+        )
+
+    token_response = _exchange_oidc_authorization_code(code, config, code_verifier=code_verifier)
+    raw_token = token_response.get("access_token") or token_response.get("id_token")
+    if not isinstance(raw_token, str) or not raw_token.strip():
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": "OIDC token response did not include an ID token or access token.",
+                "fix": "Confirm the provider app registration issues an ID token or API access token for CivicClerk.",
+            },
+        )
+    principal = authorize_oidc_staff_token(
+        HTTPAuthorizationCredentials(scheme="Bearer", credentials=raw_token),
+        config=config,
+        allowed_roles=STAFF_ALLOWED_ROLES,
+        env_names=_staff_oidc_env_names(),
+    )
+    session_cookie = encode_oidc_staff_session(
+        principal,
+        config=config,
+        max_age_seconds=STAFF_OIDC_SESSION_MAX_AGE_SECONDS,
+    )
+    response = RedirectResponse("/staff", status_code=302)
+    response.set_cookie(
+        STAFF_OIDC_SESSION_COOKIE_NAME,
+        session_cookie,
+        max_age=STAFF_OIDC_SESSION_MAX_AGE_SECONDS,
+        httponly=True,
+        secure=_request_is_https(request),
+        samesite="lax",
+    )
+    response.delete_cookie(STAFF_OIDC_STATE_COOKIE_NAME)
+    response.delete_cookie(STAFF_OIDC_PKCE_COOKIE_NAME)
+    return response
+
+
+@app.get("/staff/logout")
+async def staff_logout() -> RedirectResponse:
+    """Clear the local CivicClerk staff browser session."""
+
+    response = RedirectResponse("/staff", status_code=302)
+    response.delete_cookie(STAFF_OIDC_SESSION_COOKIE_NAME)
+    response.delete_cookie(STAFF_OIDC_STATE_COOKIE_NAME)
+    response.delete_cookie(STAFF_OIDC_PKCE_COOKIE_NAME)
     return response
 
 
@@ -1502,8 +1693,15 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
                 scheme=scheme,
                 credentials=token.strip(),
             )
-        return authorize_oidc_staff_token(
-            credentials,
+            return authorize_oidc_staff_token(
+                credentials,
+                config=_get_staff_oidc_config(),
+                allowed_roles=STAFF_ALLOWED_ROLES,
+                env_names=_staff_oidc_env_names(),
+            )
+        session_cookie = request.cookies.get(STAFF_OIDC_SESSION_COOKIE_NAME)
+        return authorize_oidc_staff_session_cookie(
+            session_cookie,
             config=_get_staff_oidc_config(),
             allowed_roles=STAFF_ALLOWED_ROLES,
             env_names=_staff_oidc_env_names(),
@@ -1687,6 +1885,12 @@ def _get_staff_oidc_config():
         jwks_json_env_var=STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
         role_claims_env_var=STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
         algorithms_env_var=STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
+        authorization_url_env_var=STAFF_AUTH_OIDC_AUTHORIZATION_URL_ENV_VAR,
+        token_url_env_var=STAFF_AUTH_OIDC_TOKEN_URL_ENV_VAR,
+        client_id_env_var=STAFF_AUTH_OIDC_CLIENT_ID_ENV_VAR,
+        client_secret_env_var=STAFF_AUTH_OIDC_CLIENT_SECRET_ENV_VAR,
+        redirect_uri_env_var=STAFF_AUTH_OIDC_REDIRECT_URI_ENV_VAR,
+        session_cookie_secret_env_var=STAFF_AUTH_OIDC_SESSION_SECRET_ENV_VAR,
     )
 
 
@@ -1699,6 +1903,12 @@ def _staff_oidc_env_names() -> dict[str, str]:
         "jwks_json": STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
         "role_claims": STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
         "algorithms": STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
+        "authorization_url": STAFF_AUTH_OIDC_AUTHORIZATION_URL_ENV_VAR,
+        "token_url": STAFF_AUTH_OIDC_TOKEN_URL_ENV_VAR,
+        "client_id": STAFF_AUTH_OIDC_CLIENT_ID_ENV_VAR,
+        "client_secret": STAFF_AUTH_OIDC_CLIENT_SECRET_ENV_VAR,
+        "redirect_uri": STAFF_AUTH_OIDC_REDIRECT_URI_ENV_VAR,
+        "session_cookie_secret": STAFF_AUTH_OIDC_SESSION_SECRET_ENV_VAR,
     }
 
 
@@ -1706,6 +1916,20 @@ def _get_staff_oidc_auth_readiness() -> dict[str, object]:
     config = _get_staff_oidc_config()
     env_names = _staff_oidc_env_names()
     missing = oidc_config_errors(config)
+    browser_missing = oidc_browser_login_config_errors(config)
+    browser_login = {
+        "ready": not browser_missing,
+        "login_path": "/staff/login",
+        "callback_path": "/staff/oidc/callback",
+        "logout_path": "/staff/logout",
+        "session_cookie": STAFF_OIDC_SESSION_COOKIE_NAME,
+        "missing": [env_names[name] for name in browser_missing if name in env_names],
+        "fix": (
+            "Browser sign-in is configured."
+            if not browser_missing
+            else _oidc_browser_login_fix(browser_missing)
+        ),
+    }
     checks = [
         {
             "name": "staff auth mode",
@@ -1742,6 +1966,11 @@ def _get_staff_oidc_auth_readiness() -> dict[str, object]:
             "status": "configured" if config.algorithms else "missing",
             "value": ",".join(config.algorithms) or "missing algorithms",
         },
+        {
+            "name": "OIDC browser login flow",
+            "status": "configured" if not browser_missing else "missing",
+            "value": "configured" if not browser_missing else "missing browser sign-in settings",
+        },
     ]
     if missing:
         missing_names = ", ".join(env_names[name] for name in missing if name in env_names)
@@ -1759,6 +1988,7 @@ def _get_staff_oidc_auth_readiness() -> dict[str, object]:
             "audience": "configured" if config.audience else None,
             "role_claims": list(config.role_claims),
             "algorithms": list(config.algorithms),
+            "browser_login": browser_login,
             "checks": checks,
             "message": "OIDC staff auth is selected, but required provider settings are missing.",
             "fix": f"Set {missing_names} before testing protected staff routes.",
@@ -1773,14 +2003,20 @@ def _get_staff_oidc_auth_readiness() -> dict[str, object]:
         "jwks": "configured",
         "role_claims": list(config.role_claims),
         "algorithms": list(config.algorithms),
+        "browser_login": browser_login,
         "checks": checks,
         "message": "OIDC staff auth is configured for municipal identity-provider access tokens.",
-        "fix": "Use an access token with a CivicClerk staff app role or group claim before user testing.",
+        "fix": (
+            "Use /staff/login for browser sign-in, or use an access token with a CivicClerk staff "
+            "app role or group claim for API smoke checks."
+            if not browser_missing
+            else "Token validation is configured; finish the browser_login settings before clerk browser testing."
+        ),
         "session_probe": {
             "method": "GET",
             "path": "/staff/session",
             "headers": {"Authorization": "Bearer <OIDC access token>"},
-            "note": "Run this with an access token issued for the configured CivicClerk audience.",
+            "note": "Run this with an access token, or sign in through /staff/login and rerun with the session cookie.",
         },
         "write_probe": {
             "method": "POST",
@@ -1958,8 +2194,85 @@ def _get_staff_trusted_header_readiness() -> dict[str, object]:
     }
 
 
+def _oidc_browser_login_fix(missing: list[str]) -> str:
+    env_names = _staff_oidc_env_names()
+    readable = ", ".join(env_names[name] for name in missing if name in env_names)
+    return (
+        f"Set {readable} before clerk browser sign-in. The redirect URI must point to "
+        "/staff/oidc/callback on the same CivicClerk host."
+    )
+
+
+def _exchange_oidc_authorization_code(code: str, config, *, code_verifier: str) -> dict[str, object]:
+    form = urllib.parse.urlencode(
+        {
+            "grant_type": "authorization_code",
+            "code": code,
+            "client_id": config.client_id,
+            "client_secret": config.client_secret,
+            "redirect_uri": config.redirect_uri,
+            "code_verifier": code_verifier,
+        }
+    ).encode("utf-8")
+    request = urllib.request.Request(
+        config.token_url,
+        data=form,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            body = response.read().decode("utf-8")
+    except urllib.error.URLError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": "OIDC token exchange failed.",
+                "fix": "Confirm the token URL, client ID, client secret, redirect URI, and network path to the identity provider.",
+            },
+        ) from exc
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": "OIDC token endpoint returned invalid JSON.",
+                "fix": "Confirm the configured token URL points to the identity provider token endpoint.",
+            },
+        ) from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": "OIDC token endpoint returned an unexpected response.",
+                "fix": "Confirm the token endpoint returns a JSON object with access_token or id_token.",
+            },
+        )
+    return payload
+
+
+def _request_is_https(request: Request) -> bool:
+    forwarded_proto = request.headers.get("x-forwarded-proto", "").split(",", 1)[0].strip().lower()
+    return request.url.scheme == "https" or forwarded_proto == "https"
+
+
+def _pkce_s256_challenge(code_verifier: str) -> str:
+    digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
+    return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+
+
 def _is_staff_protected_path(path: str) -> bool:
-    if path in {"/", "/health", "/staff", "/staff/auth-readiness", "/favicon.ico"}:
+    if path in {
+        "/",
+        "/health",
+        "/staff",
+        "/staff/auth-readiness",
+        "/staff/login",
+        "/staff/oidc/callback",
+        "/staff/logout",
+        "/favicon.ico",
+    }:
         return False
     if path == "/public" or path.startswith("/public/"):
         return False

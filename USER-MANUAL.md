@@ -92,21 +92,30 @@ citation-gated minutes draft records, publishes public archive records, and
 normalizes local connector exports, and creates records-ready packet export
 bundles. The staff shell now checks `/staff/session` so IT staff and clerks can
 see whether the service is in local open mode, OIDC-protected staff mode,
-bearer-protected staff mode, or trusted-header staff mode.
+OIDC browser-session mode, bearer-protected staff mode, or trusted-header staff
+mode.
 `/staff/auth-readiness` now reports whether the configured OIDC,
 bearer-token, or trusted-proxy bridge is deployment-ready before a live session
 check. OIDC mode uses `CIVICCLERK_STAFF_AUTH_MODE=oidc` plus
 `CIVICCLERK_STAFF_OIDC_PROVIDER`, `CIVICCLERK_STAFF_OIDC_ISSUER`,
 `CIVICCLERK_STAFF_OIDC_AUDIENCE`, `CIVICCLERK_STAFF_OIDC_JWKS_URL`,
 `CIVICCLERK_STAFF_OIDC_ROLE_CLAIMS`, and
-`CIVICCLERK_STAFF_OIDC_ALGORITHMS`. Bearer mode uses
+`CIVICCLERK_STAFF_OIDC_ALGORITHMS` for token validation. Browser sign-in adds
+`CIVICCLERK_STAFF_OIDC_AUTHORIZATION_URL`,
+`CIVICCLERK_STAFF_OIDC_TOKEN_URL`, `CIVICCLERK_STAFF_OIDC_CLIENT_ID`,
+`CIVICCLERK_STAFF_OIDC_CLIENT_SECRET`,
+`CIVICCLERK_STAFF_OIDC_REDIRECT_URI`, and
+`CIVICCLERK_STAFF_OIDC_SESSION_COOKIE_SECRET`; `/staff/login` redirects to the
+provider with authorization-code + PKCE parameters, `/staff/oidc/callback`
+validates the returned token, and CivicClerk stores a signed HttpOnly staff
+session cookie rather than the raw OIDC token.
+Bearer mode uses
 `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`.
 Trusted-header mode uses `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus
 `CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER`,
 `CIVICCLERK_STAFF_SSO_ROLES_HEADER`,
 `CIVICCLERK_STAFF_SSO_PROVIDER`, and
-`CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES`; browser redirect sign-in/session UX is
-still future work. When OIDC, bearer, or trusted-header mode is ready, the
+`CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES`. When OIDC, bearer, or trusted-header mode is ready, the
 readiness response now
 includes a concrete session probe and a protected write probe so IT staff can
 test the real deployment path instead of inferring the next request from env
@@ -259,7 +268,7 @@ python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776
 Then verify these first-run checks:
 
 - `GET /health` returns `{"status":"ok","service":"civicclerk","version":"0.1.11","civiccore":"0.16.0"}`
-- `GET /staff/auth-readiness` returns `mode: "open"` and explains how to move to bearer or trusted-header deployment
+- `GET /staff/auth-readiness` returns `mode: "open"` and explains how to move to OIDC, bearer, or trusted-header deployment
 - `GET /staff` renders the first workflow shell without console errors
 
 To rehearse that Windows-first path without hand-copying each command, run:
@@ -425,6 +434,9 @@ workflows, move to `oidc`, `bearer`, or `trusted_header` before user testing and
 contract instead of a local-only rehearsal mode. In protected modes, use the
 returned `session_probe` first and the returned `write_probe` second so the
 deployment check covers both identity acceptance and a live staff write.
+In OIDC mode, complete the browser-login fields, open `/staff/login`, finish
+the municipal provider sign-in, and confirm `/staff/session` reports
+`auth_method: "oidc_browser_session"` before clerks use the browser app.
 If trusted-header testing is happening on one loopback workstation before a
 real reverse proxy is available, use the returned `local_proxy_rehearsal`
 contract, set `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32`, run
@@ -537,8 +549,8 @@ staff workspace now covers meeting body setup, scheduling, calendar viewing,
 detail viewing, pre-lock schedule editing, agenda intake, packet building,
 notice checklist/posting-proof work, public posting, meeting outcomes, and
 minutes draft work against live API-backed data. Production municipal use still
-requires browser redirect sign-in UX, signed installer, and live-sync hardening
-work before IT should treat it as a shared deployment; the Docker/PostgreSQL
+requires React sign-in polish, signed installer, and live-sync hardening work
+before IT should treat it as a shared deployment; the Docker/PostgreSQL
 backup/restore path now has a rehearsal helper, but cities still need their own
 retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility
