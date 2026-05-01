@@ -706,6 +706,10 @@ describe("CivicClerk staff workspace", () => {
 
     expect(screen.getByRole("heading", { name: "Prove statutory public notice before the meeting proceeds." })).toBeInTheDocument();
     expect(screen.getByText(/The checklist is the city record that proves public notice/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Legal readiness proof chain" })).toBeInTheDocument();
+    expect(screen.getAllByText("Packet finalized").length).toBeGreaterThan(0);
+    expect(screen.getByText("Statutory deadline met")).toBeInTheDocument();
+    expect(screen.getByText("Human approval recorded")).toBeInTheDocument();
     expect(screen.getByText(/Computed deadline/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Run notice checklist" }));
@@ -726,7 +730,10 @@ describe("CivicClerk staff workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Run notice checklist" }));
 
     expect(await screen.findByText(/statutory deadline was/)).toBeInTheDocument();
-    expect(screen.getAllByText(/Reschedule the meeting or document the lawful emergency basis/)).toHaveLength(2);
+    expect(screen.getByRole("alert", { name: "Notice legal blocker" })).toHaveTextContent("Statutory notice is blocked");
+    expect(screen.getByText(/Deadline missed: required by/)).toBeInTheDocument();
+    expect(screen.getByText(/You cannot attach posting proof until this is corrected/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Reschedule the meeting or document the lawful emergency basis/).length).toBeGreaterThanOrEqual(2);
     expect(screen.getByRole("button", { name: "Attach posting proof" })).toBeDisabled();
   });
 

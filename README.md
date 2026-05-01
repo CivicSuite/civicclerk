@@ -132,8 +132,9 @@ Shipped in this foundation:
 - React Notice Checklist workflow for selecting a meeting, previewing the
   statutory deadline, capturing notice type, posting time, statutory basis,
   human approval, and actor, running the live compliance check, attaching
-  posting proof after a passing check, and showing legal-blocker plus immutable
-  audit-hash evidence from the live notice checklist APIs
+  posting proof after a passing check, and showing a legal readiness proof
+  chain, legal-blocker copy, and immutable audit-hash evidence from the live
+  notice checklist APIs
 - React Public Posting portal for resident-safe public meeting list/detail and
   archive search over posted agenda, posted packet, and approved minutes
   records, with official-record sections, missing-record guidance, and

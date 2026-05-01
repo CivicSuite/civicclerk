@@ -54,6 +54,10 @@ All notable changes to CivicClerk are documented here.
 - Notice Checklist error and blocked states now explain when the statutory
   deadline has passed, why posting proof cannot be attached, and what the clerk
   must do next before treating a meeting as lawfully noticed.
+- Notice Checklist now shows a legal readiness proof chain for packet
+  finalization, statutory deadline, statutory basis, human approval, posting
+  proof, and immutable audit hash so clerks can see exactly which obligation is
+  still missing.
 - The React staff workspace now includes a resident-oriented Public Posting
   portal: public meeting list/detail/search over the public archive APIs,
   separate official agenda/packet/approved-minutes sections, missing-record
