@@ -141,6 +141,11 @@ Shipped in this foundation:
   motions/votes/action items, capturing immutable motions, recording
   roll-call votes, creating follow-up action items tied to source motions, and
   warning clerks that corrections are append-only rather than silent edits
+- React Minutes Draft workflow for selecting a meeting, loading citation-gated
+  drafts, creating drafts with explicit source material, sentence-level
+  citations, model/prompt provenance, and human approver, and showing that
+  AI-drafted minutes cannot be publicly posted until a human adoption workflow
+  approves them
 - CivicClerk v0.1.11 release gate and build artifacts
 - `scripts/start_fresh_install_rehearsal.ps1` to rehearse the documented
   Windows-first wheel install and first-run smoke checks from an isolated
@@ -177,17 +182,17 @@ Shipped in this foundation:
 Not shipped yet:
 
 - complete live API-backed full frontend app beyond Sprint 2 agenda/packet work,
-  Sprint 3 notice/public posting workspaces, and first Sprint 4 outcomes
-  workspace
+  Sprint 3 notice/public posting workspaces, and Sprint 4 outcomes/minutes
+  workspaces
 - installer
 - finished public portal beyond the first `/public` HTML shell
 - the integrated multi-role React clerk console beyond the first `frontend/`
   staff shell, meeting setup, agenda intake, packet builder, notice checklist,
-  public posting, and meeting outcomes slices
+  public posting, meeting outcomes, and minutes draft slices
 
 ## New user experience today
 
-A new user can inspect and run the foundation, open first staff workflow screens at `/staff`, open the first resident-facing public portal shell at `/public`, inspect the first React staff workspace slice in `frontend/`, create and maintain meeting bodies through the React dashboard and `/api/meeting-bodies`, schedule meetings through the React dashboard, load live meetings into the React dashboard/calendar/detail flow through `/api/meetings`, edit pre-lock meeting schedule fields through the React meeting detail view and `PATCH /api/meetings/{id}`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, promote ready intake work into agenda lifecycle records, create/finalize packet assembly records from the React Packet Builder, run the React Notice Checklist with statutory deadline, basis, approval, posting-proof, legal-blocker, and audit-hash visibility, inspect the React Public Posting view over resident-safe agenda, packet, minutes, and archive search records, capture immutable motions, roll-call votes, and source-linked action items from the React Meeting Outcomes workspace, persist notice checklist/posting-proof records from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
+A new user can inspect and run the foundation, open first staff workflow screens at `/staff`, open the first resident-facing public portal shell at `/public`, inspect the first React staff workspace slice in `frontend/`, create and maintain meeting bodies through the React dashboard and `/api/meeting-bodies`, schedule meetings through the React dashboard, load live meetings into the React dashboard/calendar/detail flow through `/api/meetings`, edit pre-lock meeting schedule fields through the React meeting detail view and `PATCH /api/meetings/{id}`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, promote ready intake work into agenda lifecycle records, create/finalize packet assembly records from the React Packet Builder, run the React Notice Checklist with statutory deadline, basis, approval, posting-proof, legal-blocker, and audit-hash visibility, inspect the React Public Posting view over resident-safe agenda, packet, minutes, and archive search records, capture immutable motions, roll-call votes, and source-linked action items from the React Meeting Outcomes workspace, create citation-gated minutes drafts with source material, sentence citations, prompt provenance, human approver, and blocked auto-posting visibility from the React Minutes workspace, persist notice checklist/posting-proof records from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
 
 1. Read this README.
 2. Read `USER-MANUAL.md`.

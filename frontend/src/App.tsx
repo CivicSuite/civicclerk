@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "outcomes" | "public";
+type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "outcomes" | "minutes" | "public";
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -296,6 +296,72 @@ type ActionItemPayload = {
   source_motion_id: string;
 };
 
+type SourceMaterialRecord = {
+  sourceId: string;
+  label: string;
+  text: string;
+};
+
+type ApiSourceMaterialRecord = {
+  source_id: string;
+  label: string;
+  text: string;
+};
+
+type MinutesSentenceRecord = {
+  text: string;
+  citations: string[];
+};
+
+type ApiMinutesSentenceRecord = {
+  text: string;
+  citations: string[];
+};
+
+type MinutesProvenanceRecord = {
+  model: string;
+  promptVersion: string;
+  dataSources: string[];
+  humanApprover: string;
+};
+
+type ApiMinutesProvenanceRecord = {
+  model: string;
+  prompt_version: string;
+  data_sources: string[];
+  human_approver: string;
+};
+
+type MinutesDraftRecord = {
+  id: string;
+  meetingId: string;
+  status: string;
+  sentences: MinutesSentenceRecord[];
+  sourceMaterials: SourceMaterialRecord[];
+  provenance: MinutesProvenanceRecord;
+  adopted: boolean;
+  posted: boolean;
+};
+
+type ApiMinutesDraftRecord = {
+  id: string;
+  meeting_id: string;
+  status: string;
+  sentences: ApiMinutesSentenceRecord[];
+  source_materials: ApiSourceMaterialRecord[];
+  provenance: ApiMinutesProvenanceRecord;
+  adopted: boolean;
+  posted: boolean;
+};
+
+type MinutesDraftPayload = {
+  model: string;
+  prompt_version: string;
+  human_approver: string;
+  source_materials: ApiSourceMaterialRecord[];
+  sentences: ApiMinutesSentenceRecord[];
+};
+
 type PublicMeetingRecord = {
   id: string;
   meetingId: string;
@@ -514,6 +580,44 @@ const demoActionItems: ActionItemRecord[] = [
   },
 ];
 
+const demoMinutesDrafts: MinutesDraftRecord[] = [
+  {
+    id: "minutes-demo-1",
+    meetingId: "M-2026-053",
+    status: "DRAFT",
+    adopted: false,
+    posted: false,
+    provenance: {
+      model: "ollama/gemma4",
+      promptVersion: "minutes_draft@0.1.0",
+      dataSources: ["motion-demo-1", "vote-demo-1"],
+      humanApprover: "clerk@example.gov",
+    },
+    sourceMaterials: [
+      {
+        sourceId: "motion-demo-1",
+        label: "Motion text",
+        text: "Move to adopt the annual fee schedule as presented in the packet.",
+      },
+      {
+        sourceId: "vote-demo-1",
+        label: "Vote record",
+        text: "The motion carried with two ayes and one abstention in the demo roll call.",
+      },
+    ],
+    sentences: [
+      {
+        text: "Council considered and adopted the annual fee schedule as presented in the packet.",
+        citations: ["motion-demo-1"],
+      },
+      {
+        text: "The recorded roll call supported adoption with ayes from Rivera and Patel and an abstention from Owens.",
+        citations: ["vote-demo-1"],
+      },
+    ],
+  },
+];
+
 const demoPublicRecords: PublicMeetingRecord[] = [
   {
     id: "public-demo-1",
@@ -552,6 +656,8 @@ export function App() {
   const [votes, setVotes] = useState<VoteRecord[]>([]);
   const [actionItems, setActionItems] = useState<ActionItemRecord[]>([]);
   const [loadedOutcomeMeetingIds, setLoadedOutcomeMeetingIds] = useState<string[]>([]);
+  const [minutesDrafts, setMinutesDrafts] = useState<MinutesDraftRecord[]>([]);
+  const [loadedMinutesMeetingIds, setLoadedMinutesMeetingIds] = useState<string[]>([]);
   const [publicRecords, setPublicRecords] = useState<PublicMeetingRecord[]>([]);
   const [publicRecordDetail, setPublicRecordDetail] = useState<PublicMeetingRecord | null>(null);
   const [apiState, setApiState] = useState<ViewState>("loading");
@@ -564,6 +670,8 @@ export function App() {
   const [noticeError, setNoticeError] = useState<string | null>(null);
   const [outcomeState, setOutcomeState] = useState<ViewState>("loading");
   const [outcomeError, setOutcomeError] = useState<string | null>(null);
+  const [minutesState, setMinutesState] = useState<ViewState>("loading");
+  const [minutesError, setMinutesError] = useState<string | null>(null);
   const [publicState, setPublicState] = useState<ViewState>("loading");
   const [publicError, setPublicError] = useState<string | null>(null);
   const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
@@ -577,6 +685,7 @@ export function App() {
   const visibleMotions = qaState === null ? motions : demoMotions;
   const visibleVotes = qaState === null ? votes : demoVotes;
   const visibleActionItems = qaState === null ? actionItems : demoActionItems;
+  const visibleMinutesDrafts = qaState === null ? minutesDrafts : demoMinutesDrafts;
   const visiblePublicRecords = qaState === null ? publicRecords : demoPublicRecords;
   const visiblePublicDetail = qaState === null ? publicRecordDetail : demoPublicRecords[0];
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
@@ -644,6 +753,21 @@ export function App() {
         setOutcomeState("error");
       }
       try {
+        const apiMinutesDrafts = await fetchMinutesDrafts(mappedMeetings[0].id);
+        if (cancelled()) return;
+        const mappedMinutes = apiMinutesDrafts.map(mapApiMinutesDraftRecord);
+        setMinutesDrafts(mappedMinutes);
+        setLoadedMinutesMeetingIds([mappedMeetings[0].id]);
+        setMinutesError(null);
+        setMinutesState(mappedMinutes.length === 0 ? "empty" : "success");
+      } catch (error) {
+        if (cancelled()) return;
+        setMinutesDrafts([]);
+        setLoadedMinutesMeetingIds([]);
+        setMinutesError(error instanceof Error ? error.message : "Minutes draft API failed.");
+        setMinutesState("error");
+      }
+      try {
         const apiPublicRecords = await fetchPublicMeetings();
         if (cancelled()) return;
         const mappedPublicRecords = apiPublicRecords.map(mapApiPublicMeetingRecord);
@@ -670,6 +794,9 @@ export function App() {
       setActionItems([]);
       setLoadedOutcomeMeetingIds([]);
       setOutcomeState("empty");
+      setMinutesDrafts([]);
+      setLoadedMinutesMeetingIds([]);
+      setMinutesState("empty");
       setPublicRecords([]);
       setPublicRecordDetail(null);
       setPublicState("empty");
@@ -694,6 +821,8 @@ export function App() {
       setVotes(demoVotes);
       setActionItems(demoActionItems);
       setLoadedOutcomeMeetingIds(demoMeetings.map((meeting) => meeting.id));
+      setMinutesDrafts(demoMinutesDrafts);
+      setLoadedMinutesMeetingIds(demoMeetings.map((meeting) => meeting.id));
       setPublicRecords(demoPublicRecords);
       setPublicRecordDetail(demoPublicRecords[0]);
       setApiState("success");
@@ -701,6 +830,7 @@ export function App() {
       setPacketState("success");
       setNoticeState("success");
       setOutcomeState("success");
+      setMinutesState("success");
       setPublicState("success");
       setActiveMeetingId(demoMeetings[0].id);
       return;
@@ -714,12 +844,14 @@ export function App() {
         setPacketError(error.message);
         setNoticeError(error.message);
         setOutcomeError(error.message);
+        setMinutesError(error.message);
         setPublicError(error.message);
         setApiState("error");
         setBodyState("error");
         setPacketState("error");
         setNoticeState("error");
         setOutcomeState("error");
+        setMinutesState("error");
         setPublicState("error");
       });
     return () => {
@@ -830,6 +962,37 @@ export function App() {
     };
   }, [activeMeetingId, initial.source, loadedOutcomeMeetingIds, meetings, qaState]);
 
+  useEffect(() => {
+    if (initial.source === "demo" || qaState !== null || meetings.length === 0 || !activeMeetingId) {
+      return;
+    }
+    if (!meetings.some((meeting) => meeting.id === activeMeetingId) || loadedMinutesMeetingIds.includes(activeMeetingId)) {
+      return;
+    }
+    let cancelled = false;
+    setMinutesState("loading");
+    setMinutesError(null);
+    fetchMinutesDrafts(activeMeetingId)
+      .then((apiDrafts) => {
+        if (cancelled) return;
+        const mappedDrafts = apiDrafts.map(mapApiMinutesDraftRecord);
+        setMinutesDrafts((current) => [
+          ...mappedDrafts,
+          ...current.filter((record) => record.meetingId !== activeMeetingId),
+        ]);
+        setLoadedMinutesMeetingIds((current) => current.includes(activeMeetingId) ? current : [...current, activeMeetingId]);
+        setMinutesState(mappedDrafts.length === 0 ? "empty" : "success");
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setMinutesError(error.message);
+        setMinutesState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMeetingId, initial.source, loadedMinutesMeetingIds, meetings, qaState]);
+
   return (
     <div className="app-shell">
       <aside className="rail" aria-label="CivicClerk navigation">
@@ -862,7 +1025,7 @@ export function App() {
           <button className={page === "public" ? "active" : ""} onClick={() => setPage("public")}>
             <Icon label="Public" /> Public posting
           </button>
-          <button className="muted" aria-disabled="true">
+          <button className={page === "minutes" ? "active" : ""} onClick={() => setPage("minutes")}>
             <Icon label="Minutes" /> Minutes
           </button>
         </nav>
@@ -1044,6 +1207,27 @@ export function App() {
               }}
             />
           )}
+          {page === "minutes" && (
+            <MinutesDraftWorkspace
+              viewState={qaState ?? minutesState}
+              apiError={minutesError}
+              meetings={visibleMeetings}
+              activeMeeting={activeMeeting}
+              drafts={(qaState === "empty" ? [] : visibleMinutesDrafts).filter((record) => record.meetingId === activeMeeting.id)}
+              motions={visibleMotions.filter((record) => record.meetingId === activeMeeting.id)}
+              votes={visibleVotes}
+              setActiveMeetingId={setActiveMeetingId}
+              onCreateDraft={async (meetingId, payload) => {
+                const record = await createMinutesDraft(meetingId, payload);
+                const mapped = mapApiMinutesDraftRecord(record);
+                setMinutesDrafts((current) => [mapped, ...current.filter((item) => item.id !== mapped.id)]);
+                setLoadedMinutesMeetingIds((current) => current.includes(meetingId) ? current : [...current, meetingId]);
+                setMinutesState("success");
+                return mapped;
+              }}
+              onPostDraft={async (draftId) => rejectAutomaticMinutesPosting(draftId)}
+            />
+          )}
           {page === "public" && (
             <PublicPostedMeetingWorkspace
               viewState={qaState ?? publicState}
@@ -1164,6 +1348,17 @@ async function fetchVotes(motionId: string): Promise<ApiVoteRecord[]> {
   }
   const payload = (await response.json()) as { votes?: ApiVoteRecord[] };
   return Array.isArray(payload.votes) ? payload.votes : [];
+}
+
+async function fetchMinutesDrafts(meetingId: string): Promise<ApiMinutesDraftRecord[]> {
+  const response = await fetch(`/api/meetings/${meetingId}/minutes/drafts`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Minutes draft API returned ${response.status}.`);
+  }
+  const payload = (await response.json()) as { drafts?: ApiMinutesDraftRecord[] };
+  return Array.isArray(payload.drafts) ? payload.drafts : [];
 }
 
 async function fetchPublicMeetings(): Promise<ApiPublicMeetingRecord[]> {
@@ -1377,6 +1572,28 @@ async function createActionItem(meetingId: string, payload: ActionItemPayload): 
   return response.json();
 }
 
+async function createMinutesDraft(meetingId: string, payload: MinutesDraftPayload): Promise<ApiMinutesDraftRecord> {
+  const response = await fetch(`/api/meetings/${meetingId}/minutes/drafts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Minutes draft create"));
+  }
+  return response.json();
+}
+
+async function rejectAutomaticMinutesPosting(draftId: string): Promise<void> {
+  const response = await fetch(`/api/minutes/${draftId}/post`, {
+    method: "POST",
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Minutes public posting"));
+  }
+}
+
 async function formatApiError(response: Response, context: string): Promise<string> {
   try {
     const payload = await response.json();
@@ -1518,6 +1735,31 @@ function mapApiActionItemRecord(record: ApiActionItemRecord): ActionItemRecord {
   };
 }
 
+function mapApiMinutesDraftRecord(record: ApiMinutesDraftRecord): MinutesDraftRecord {
+  return {
+    id: record.id,
+    meetingId: record.meeting_id,
+    status: record.status,
+    adopted: record.adopted,
+    posted: record.posted,
+    sourceMaterials: record.source_materials.map((source) => ({
+      sourceId: source.source_id,
+      label: source.label,
+      text: source.text,
+    })),
+    sentences: record.sentences.map((sentence) => ({
+      text: sentence.text,
+      citations: sentence.citations,
+    })),
+    provenance: {
+      model: record.provenance.model,
+      promptVersion: record.provenance.prompt_version,
+      dataSources: record.provenance.data_sources,
+      humanApprover: record.provenance.human_approver,
+    },
+  };
+}
+
 function mapApiPublicMeetingRecord(record: ApiPublicMeetingRecord): PublicMeetingRecord {
   return {
     id: record.id,
@@ -1545,6 +1787,13 @@ function sortMeetings(a: Meeting, b: Meeting) {
   const left = a.scheduledStart ? new Date(a.scheduledStart).getTime() : Number.MAX_SAFE_INTEGER;
   const right = b.scheduledStart ? new Date(b.scheduledStart).getTime() : Number.MAX_SAFE_INTEGER;
   return left - right || a.title.localeCompare(b.title);
+}
+
+function parseCitationList(value: string): string[] {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
 }
 
 function toMeetingBody(meetingType: string): string {
@@ -1581,7 +1830,7 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "public"];
+  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "minutes", "public"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   return {
     page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : "dashboard",
@@ -2772,6 +3021,248 @@ function MeetingOutcomesWorkspace({
   );
 }
 
+function MinutesDraftWorkspace({
+  viewState,
+  apiError,
+  meetings,
+  activeMeeting,
+  drafts,
+  motions,
+  votes,
+  setActiveMeetingId,
+  onCreateDraft,
+  onPostDraft,
+}: {
+  viewState: ViewState;
+  apiError: string | null;
+  meetings: Meeting[];
+  activeMeeting: Meeting;
+  drafts: MinutesDraftRecord[];
+  motions: MotionRecord[];
+  votes: VoteRecord[];
+  setActiveMeetingId: (id: string) => void;
+  onCreateDraft: (meetingId: string, payload: MinutesDraftPayload) => Promise<MinutesDraftRecord>;
+  onPostDraft: (draftId: string) => Promise<void>;
+}) {
+  const firstMotion = motions[0];
+  const firstVote = firstMotion ? votes.find((record) => record.motionId === firstMotion.id) : undefined;
+  const [model, setModel] = useState("ollama/gemma4");
+  const [promptVersion, setPromptVersion] = useState("minutes_draft@0.1.0");
+  const [humanApprover, setHumanApprover] = useState("clerk@example.gov");
+  const [sourceOneId, setSourceOneId] = useState(firstMotion?.id ?? "motion-1");
+  const [sourceOneLabel, setSourceOneLabel] = useState("Motion text");
+  const [sourceOneText, setSourceOneText] = useState(firstMotion?.text ?? "Council approved the sidewalk repair packet.");
+  const [sourceTwoId, setSourceTwoId] = useState(firstVote?.id ?? "vote-1");
+  const [sourceTwoLabel, setSourceTwoLabel] = useState("Vote record");
+  const [sourceTwoText, setSourceTwoText] = useState(firstVote ? `${firstVote.voterName} voted ${firstVote.vote}.` : "The motion passed 5-0.");
+  const [sentenceOne, setSentenceOne] = useState("Council approved the sidewalk repair packet.");
+  const [sentenceOneCitations, setSentenceOneCitations] = useState(firstMotion?.id ?? "motion-1");
+  const [sentenceTwo, setSentenceTwo] = useState("The recorded vote supports the action described in the minutes.");
+  const [sentenceTwoCitations, setSentenceTwoCitations] = useState(firstVote?.id ?? "vote-1");
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMessage(null);
+    if (firstMotion) {
+      setSourceOneId(firstMotion.id);
+      setSourceOneText(firstMotion.text);
+      setSentenceOneCitations(firstMotion.id);
+    }
+    if (firstVote) {
+      setSourceTwoId(firstVote.id);
+      setSourceTwoText(`${firstVote.voterName} voted ${firstVote.vote}.`);
+      setSentenceTwoCitations(firstVote.id);
+    }
+  }, [activeMeeting, firstMotion, firstVote]);
+
+  if (viewState === "loading" || viewState === "error" || viewState === "partial") {
+    return <StateMessage state={viewState} context="minutes draft" apiError={apiError} />;
+  }
+
+  const citationCount = drafts.reduce((total, draft) => total + draft.sentences.reduce((sum, sentence) => sum + sentence.citations.length, 0), 0);
+  const unpostedCount = drafts.filter((draft) => !draft.posted).length;
+
+  async function submitDraft(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    const sources = [
+      { source_id: sourceOneId.trim(), label: sourceOneLabel.trim(), text: sourceOneText.trim() },
+      { source_id: sourceTwoId.trim(), label: sourceTwoLabel.trim(), text: sourceTwoText.trim() },
+    ].filter((source) => source.source_id && source.label && source.text);
+    const sentences = [
+      { text: sentenceOne.trim(), citations: parseCitationList(sentenceOneCitations) },
+      { text: sentenceTwo.trim(), citations: parseCitationList(sentenceTwoCitations) },
+    ].filter((sentence) => sentence.text);
+    if (sentences.some((sentence) => sentence.citations.length === 0)) {
+      setMessage("Minutes draft is blocked because every material sentence needs at least one citation. Add a source ID to each citation field, then create the draft again.");
+      return;
+    }
+    try {
+      const record = await onCreateDraft(activeMeeting.id, {
+        model: model.trim(),
+        prompt_version: promptVersion.trim(),
+        human_approver: humanApprover.trim(),
+        source_materials: sources,
+        sentences,
+      });
+      setMessage(`Draft ${record.id} created with ${record.sentences.length} cited sentences. It is not adopted or posted until a human approval workflow accepts it.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Minutes draft create failed."} Verify every citation exactly matches a source ID, the prompt version exists, and the human approver is filled in before retrying.`);
+    }
+  }
+
+  async function attemptPost(draftId: string) {
+    setMessage(null);
+    try {
+      await onPostDraft(draftId);
+      setMessage("Posting completed. If this appears in production, verify the adoption workflow because AI minutes should not bypass human approval.");
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Minutes posting was blocked."} This is expected until the minutes are cite-checked, adopted, and released through the human approval workflow.`);
+    }
+  }
+
+  return (
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Minutes draft"
+        title="Create cited minutes without letting AI become the official record."
+        description="Every sentence must point back to source material, every draft records prompt provenance, and public posting stays blocked until a clerk-approved adoption workflow completes."
+      />
+      <div className="metric-grid">
+        <MetricCard label="Drafts" value={String(drafts.length)} note={drafts.length ? "Citation-gated records" : "Create first draft"} tone={drafts.length ? undefined : "warn"} />
+        <MetricCard label="Citations" value={String(citationCount)} note={citationCount ? "Sentence-level evidence" : "No cited sentences yet"} tone={citationCount ? undefined : "warn"} />
+        <MetricCard label="Not posted" value={String(unpostedCount)} note="AI drafts require human adoption" />
+      </div>
+      <div className="minutes-guardrail">
+        <strong>Legal record guardrail</strong>
+        <span>Draft minutes are evidence-linked working records. The clerk must be able to explain each sentence from cited motion, vote, packet, or transcript sources before adoption.</span>
+      </div>
+      <div className="agenda-grid">
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Draft builder</h2>
+              <p>Create the AI-assisted draft only after source material and human approver are explicit.</p>
+            </div>
+            <StatusBadge tone="Warning" label="Human approval required" />
+          </div>
+          <form className="intake-form minutes-form" onSubmit={submitDraft}>
+            <label>
+              Meeting
+              <select value={activeMeeting.id} onChange={(event) => setActiveMeetingId(event.target.value)} required>
+                {meetings.map((meeting) => (
+                  <option key={meeting.id} value={meeting.id}>{meeting.body} - {meeting.title}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Model
+              <input value={model} onChange={(event) => setModel(event.target.value)} required />
+            </label>
+            <label>
+              Prompt version
+              <input value={promptVersion} onChange={(event) => setPromptVersion(event.target.value)} required />
+            </label>
+            <label>
+              Human approver
+              <input value={humanApprover} onChange={(event) => setHumanApprover(event.target.value)} required />
+            </label>
+            <fieldset className="wide source-fieldset">
+              <legend>Source material</legend>
+              <div className="source-grid">
+                <label>
+                  Source ID
+                  <input value={sourceOneId} onChange={(event) => setSourceOneId(event.target.value)} required />
+                </label>
+                <label>
+                  Label
+                  <input value={sourceOneLabel} onChange={(event) => setSourceOneLabel(event.target.value)} required />
+                </label>
+                <label className="wide">
+                  Text
+                  <textarea value={sourceOneText} onChange={(event) => setSourceOneText(event.target.value)} required />
+                </label>
+              </div>
+              <div className="source-grid">
+                <label>
+                  Source ID
+                  <input value={sourceTwoId} onChange={(event) => setSourceTwoId(event.target.value)} required />
+                </label>
+                <label>
+                  Label
+                  <input value={sourceTwoLabel} onChange={(event) => setSourceTwoLabel(event.target.value)} required />
+                </label>
+                <label className="wide">
+                  Text
+                  <textarea value={sourceTwoText} onChange={(event) => setSourceTwoText(event.target.value)} required />
+                </label>
+              </div>
+            </fieldset>
+            <label className="wide">
+              Minutes sentence 1
+              <textarea value={sentenceOne} onChange={(event) => setSentenceOne(event.target.value)} required />
+            </label>
+            <label>
+              Citations for sentence 1
+              <input value={sentenceOneCitations} onChange={(event) => setSentenceOneCitations(event.target.value)} required />
+            </label>
+            <label className="wide">
+              Minutes sentence 2
+              <textarea value={sentenceTwo} onChange={(event) => setSentenceTwo(event.target.value)} required />
+            </label>
+            <label>
+              Citations for sentence 2
+              <input value={sentenceTwoCitations} onChange={(event) => setSentenceTwoCitations(event.target.value)} required />
+            </label>
+            <button type="submit">Create cited draft</button>
+          </form>
+          {message && <p className="form-message" role="status">{message}</p>}
+        </section>
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Draft review</h2>
+              <p>Show provenance, citations, and blocked posting behavior before minutes become public.</p>
+            </div>
+            <StatusBadge tone={drafts.length ? "Ready" : "Warning"} label={drafts.length ? "Evidence visible" : "No draft"} />
+          </div>
+          <div className="agenda-list">
+            {drafts.length === 0 && (
+              <p className="empty-inline">No minutes draft exists for this meeting. Create a cited draft after motions and votes are captured.</p>
+            )}
+            {drafts.map((draft) => (
+              <article key={draft.id} className="agenda-row minutes-row">
+                <div>
+                  <div className="row-title">
+                    <h3>{draft.status} minutes draft</h3>
+                    <StatusBadge tone={draft.posted ? "Ready" : "Warning"} label={draft.posted ? "Posted" : "Not posted"} />
+                  </div>
+                  <p>Prompt {draft.provenance.promptVersion} via {draft.provenance.model}. Human approver: {draft.provenance.humanApprover}.</p>
+                  <small>Sources: {draft.provenance.dataSources.join(", ")}</small>
+                  <div className="citation-list">
+                    {draft.sentences.map((sentence, index) => (
+                      <blockquote key={`${draft.id}-${index}`}>
+                        <span>{sentence.text}</span>
+                        <cite>Citations: {sentence.citations.join(", ")}</cite>
+                      </blockquote>
+                    ))}
+                  </div>
+                  <p className="legal-warning">Adopted: {draft.adopted ? "yes" : "no"}. Posted: {draft.posted ? "yes" : "no"}. AI-drafted minutes cannot be auto-posted.</p>
+                </div>
+                <div className="row-actions">
+                  <button className="secondary" type="button" onClick={() => attemptPost(draft.id)}>
+                    Try public posting gate
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function PublicPostedMeetingWorkspace({
   viewState,
   apiError,
@@ -3245,6 +3736,19 @@ function StateMessage({ state, context, apiError }: { state: ViewState; context:
     copy.body = apiError
       ? `${apiError} Confirm the motion/vote/action-item APIs are reachable, then retry before relying on this meeting record.`
       : "The outcomes API did not respond. Confirm the motion/vote/action-item APIs are reachable, then retry before relying on this meeting record.";
+  }
+  if (context === "minutes draft" && state === "empty") {
+    copy.body = "No minutes draft exists for this meeting yet. Capture motions and votes, then create a cited draft with a human approver and prompt provenance.";
+    copy.action = "Create cited draft";
+  }
+  if (context === "minutes draft" && state === "partial") {
+    copy.body = "Minutes drafting is partially available, but citation or provenance data is missing. Check source IDs, prompt version, model name, and human approver before treating the draft as review-ready.";
+    copy.action = "Check citation sources";
+  }
+  if (context === "minutes draft" && state === "error") {
+    copy.body = apiError
+      ? `${apiError} Do not accept AI-drafted minutes until every material sentence cites a known source and a human approver is recorded.`
+      : "The minutes draft API did not respond. Do not accept AI-drafted minutes until every material sentence cites a known source and a human approver is recorded; confirm CivicClerk is running, then retry after verifying citation sources.";
   }
   if (context === "public posted meeting" && state === "empty") {
     copy.body = "No public meeting records are posted yet. Staff should publish a public-safe record from the clerk workflow before residents can see agendas, packets, or approved minutes here.";

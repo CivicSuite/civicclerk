@@ -2,7 +2,8 @@
 
 Status: Sprint 4 implementation slice with live agenda intake promotion,
 packet builder draft/finalize workflow, legally explicit notice checklist work,
-first public posted-meeting workspace, and first meeting outcomes workspace.
+first public posted-meeting workspace, first meeting outcomes workspace, and
+first minutes draft workspace.
 
 The `frontend/` package is the start of the production React app that will
 replace the HTML reference shell at `/staff`. It is adapted from the CivicSuite
@@ -63,6 +64,15 @@ mockup's browser-global JSX bundle.
 - Meeting Outcomes copy explains that motions and votes are immutable official
   records, that corrections must be append-only, and that action items cannot
   be created until they reference a captured motion from the selected meeting.
+- First Minutes Draft workflow: staff can choose a meeting, load existing
+  citation-gated drafts through `GET /api/meetings/{id}/minutes/drafts`, create
+  a draft through `POST /api/meetings/{id}/minutes/drafts` with source
+  material, sentence-level citations, model, prompt version, and human
+  approver, and see `POST /api/minutes/{id}/post` block automatic public
+  posting until a human adoption workflow approves the minutes.
+- Minutes Draft copy makes clear that AI output is not the official record,
+  every material sentence must cite a known source, and missing citation or
+  provenance data is a clerk/IT fix path rather than a generic failure.
 - Explicit QA state controls for success, loading, empty, error, and partial
   states.
 - Actionable state copy that tells staff or IT what to do next.
@@ -70,7 +80,6 @@ mockup's browser-global JSX bundle.
 ## What This Slice Does Not Yet Include
 
 - Replacement of the shipped `/staff` HTML reference shell.
-- Minutes draft React workspace.
 - Docker/nginx packaging.
 - Installer integration.
 
@@ -101,7 +110,7 @@ Before any commit that touches this frontend, capture browser evidence for:
 
 For direct QA capture, the app accepts these query parameters:
 
-- `?page=dashboard|meetings|meeting-detail|agenda|packet|notice|outcomes|public`
+- `?page=dashboard|meetings|meeting-detail|agenda|packet|notice|outcomes|minutes|public`
 - `?state=success|loading|empty|error|partial`
 - `?audit=1`
 - `?source=demo` to bypass the live API and render fixed demo data
