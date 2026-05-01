@@ -7,6 +7,21 @@ describe("CivicClerk staff workspace", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+        if (url === "/staff/session") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              mode: "oidc",
+              authenticated: true,
+              auth_method: "oidc_browser_session",
+              subject: "clerk@example.gov",
+              provider: "Brookfield Entra ID",
+              roles: ["clerk_admin", "meeting_editor"],
+              message: "Staff browser session is active.",
+              fix: "Continue with clerk workflow actions.",
+            }),
+          });
+        }
         if (url === "/api/meeting-bodies" && init?.method === "POST") {
           return Promise.resolve({
             ok: true,
@@ -605,6 +620,92 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByText("Partial install")).toBeInTheDocument();
   });
 
+  it("shows the active municipal SSO session in the staff dashboard", async () => {
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Signed in with municipal SSO" })).toBeInTheDocument();
+    expect(screen.getByText("clerk@example.gov")).toBeInTheDocument();
+    expect(screen.getByText("Brookfield Entra ID")).toBeInTheDocument();
+    expect(screen.getByText("oidc browser session")).toBeInTheDocument();
+    expect(screen.getByText("clerk admin")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Sign out" })).toHaveAttribute("href", "/staff/logout");
+    expect(screen.getByRole("link", { name: "IT auth readiness" })).toHaveAttribute("href", "/staff/auth-readiness");
+  });
+
+  it("gives clerks and IT an actionable path when staff session verification fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url === "/staff/session") {
+          return Promise.resolve({
+            ok: false,
+            status: 401,
+            json: async () => ({
+              detail: {
+                message: "Staff browser session is missing or expired.",
+                fix: "Sign in again or ask IT to verify OIDC browser login configuration.",
+              },
+            }),
+          });
+        }
+        if (url === "/api/meeting-bodies") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              meeting_bodies: [{ id: "body-1", name: "City Council", body_type: "city_council", is_active: true }],
+            }),
+          });
+        }
+        if (url === "/api/meetings") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              meetings: [{
+                id: "meeting-1",
+                title: "Regular Meeting",
+                meeting_type: "regular",
+                meeting_body_id: "body-1",
+                status: "SCHEDULED",
+                scheduled_start: "2026-05-05T18:00:00Z",
+                location: "Council Chambers",
+              }],
+            }),
+          });
+        }
+        if (url === "/api/agenda-intake") {
+          return Promise.resolve({ ok: true, json: async () => ({ items: [] }) });
+        }
+        if (url === "/api/meetings/meeting-1/packet-assemblies") {
+          return Promise.resolve({ ok: true, json: async () => ({ packet_assemblies: [] }) });
+        }
+        if (url === "/api/meetings/meeting-1/notice-checklists") {
+          return Promise.resolve({ ok: true, json: async () => ({ notice_checklists: [] }) });
+        }
+        if (url === "/api/meetings/meeting-1/motions") {
+          return Promise.resolve({ ok: true, json: async () => ({ motions: [] }) });
+        }
+        if (url === "/api/meetings/meeting-1/action-items") {
+          return Promise.resolve({ ok: true, json: async () => ({ action_items: [] }) });
+        }
+        if (url === "/api/meetings/meeting-1/minutes/drafts") {
+          return Promise.resolve({ ok: true, json: async () => ({ drafts: [] }) });
+        }
+        if (url === "/api/public/meetings") {
+          return Promise.resolve({ ok: true, json: async () => ({ meetings: [] }) });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({}) });
+      }),
+    );
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Staff sign-in needed" })).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("Staff browser session is missing or expired");
+    expect(screen.getByRole("alert")).toHaveTextContent("Sign in again or ask IT to verify OIDC browser login configuration");
+    expect(screen.getByRole("alert")).toHaveTextContent("/staff/auth-readiness");
+    expect(screen.getByRole("link", { name: "Sign in with municipal SSO" })).toHaveAttribute("href", "/staff/login");
+  });
+
   it("routes clerks from the meeting runbook into the next safe workspace", async () => {
     render(<App />);
 
@@ -761,6 +862,7 @@ describe("CivicClerk staff workspace", () => {
     render(<App />);
 
     await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    expect(await screen.findByRole("heading", { name: "Signed in with municipal SSO" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Notice checklist/ }));
 
     expect(screen.getByRole("heading", { name: "Official notice record" })).toBeInTheDocument();
@@ -891,6 +993,7 @@ describe("CivicClerk staff workspace", () => {
     render(<App />);
 
     await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    expect(await screen.findByRole("heading", { name: "Signed in with municipal SSO" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Meetings/ }));
     expect(screen.getByRole("heading", { name: "May 2026 clerk calendar" })).toBeInTheDocument();
 

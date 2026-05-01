@@ -320,6 +320,94 @@ h2 {
   padding: 22px;
 }
 
+.staff-access-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 18px 20px;
+  border: 1px solid rgba(31, 98, 74, 0.26);
+  border-radius: 26px;
+  background:
+    linear-gradient(135deg, rgba(238, 247, 241, 0.94), rgba(255, 253, 247, 0.82)),
+    radial-gradient(circle at top right, rgba(31, 98, 74, 0.16), transparent 36%);
+  box-shadow: var(--shadow);
+}
+
+.staff-access-card.warning {
+  border-color: rgba(197, 170, 74, 0.42);
+  background:
+    linear-gradient(135deg, rgba(255, 248, 223, 0.96), rgba(255, 253, 247, 0.84)),
+    radial-gradient(circle at top right, rgba(197, 170, 74, 0.24), transparent 36%);
+}
+
+.staff-access-card.error {
+  border-color: rgba(164, 54, 39, 0.32);
+  background:
+    linear-gradient(135deg, rgba(255, 245, 243, 0.98), rgba(255, 253, 247, 0.84)),
+    radial-gradient(circle at top right, rgba(164, 54, 39, 0.16), transparent 36%);
+}
+
+.staff-access-card h2 {
+  margin: 4px 0 6px;
+}
+
+.staff-access-card p {
+  max-width: 780px;
+  margin: 0;
+}
+
+.staff-access-card code {
+  margin-left: 4px;
+  margin-right: 4px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(18, 36, 57, 0.08);
+}
+
+.session-facts,
+.role-list,
+.access-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.session-facts {
+  margin-top: 12px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.session-facts span,
+.session-facts strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.role-list {
+  margin-top: 10px;
+}
+
+.role-list span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(18, 36, 57, 0.08);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.access-actions {
+  justify-content: flex-end;
+  min-width: 260px;
+}
+
+.access-actions a {
+  text-decoration: none;
+}
+
 .panel-heading {
   display: flex;
   justify-content: space-between;
@@ -1439,6 +1527,7 @@ h2 {
 
   .page-stack,
   .page-header,
+  .staff-access-card,
   .panel,
   .metric,
   .public-portal-hero,
@@ -1446,6 +1535,21 @@ h2 {
   .public-record-card,
   .public-document-grid article {
     min-width: 0;
+  }
+
+  .staff-access-card {
+    flex-direction: column;
+  }
+
+  .access-actions {
+    justify-content: flex-start;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .session-facts,
+  .role-list {
+    max-width: min(100%, 270px);
   }
 
   .runbook-panel::before {

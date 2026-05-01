@@ -23,6 +23,15 @@ All notable changes to CivicClerk are documented here.
   HttpOnly CivicClerk session cookie, `/staff/logout` clears it, and protected
   staff APIs accept that browser session without storing raw OIDC tokens in the
   browser.
+- The React dashboard now includes a staff access panel that reads
+  `/staff/session`, shows the current auth mode, signed-in subject, provider,
+  roles, and OIDC browser-session method, and gives clerks/IT direct
+  `/staff/login`, `/staff/logout`, and `/staff/auth-readiness` paths with
+  actionable sign-in failure copy.
+- Docker Compose now forwards the OIDC browser-login, bearer-token, and
+  trusted-header staff auth environment variables from `.env` into the API,
+  worker, and beat services so protected pilot profiles behave like the
+  documented `/staff/auth-readiness` contract.
 - `frontend/` now contains the first CivicClerk React/Vite staff workspace
   slice, adapted from the CivicSuite mockup into production TypeScript rather
   than copied as a browser-global prototype.
@@ -94,9 +103,9 @@ All notable changes to CivicClerk are documented here.
 - The README and user manual now describe CivicClerk as an end-to-end
   React/Docker local product rehearsal with all four MVP workflow surfaces
   present, OIDC staff-token validation and browser-session foundation
-  available, and the remaining deployment gaps narrowed to React sign-in polish,
-  a signed installer, live sync, city-approved backup retention/off-host
-  storage, and deployment hardening.
+  available, React staff access/session status visible on the dashboard, and
+  the remaining deployment gaps narrowed to a signed installer, live sync,
+  city-approved backup retention/off-host storage, and deployment hardening.
 - The React staff workspace now includes a resident-oriented Public Posting
   portal: public meeting list/detail/search over the public archive APIs,
   separate official agenda/packet/approved-minutes sections, missing-record

@@ -15,6 +15,17 @@ def test_docker_compose_stack_declares_real_runtime_services() -> None:
     assert "redis:7.2-alpine" in compose
     assert "ollama/ollama:latest" in compose
     assert "postgresql+psycopg2://" in compose
+    for variable in (
+        "CIVICCLERK_STAFF_OIDC_AUTHORIZATION_URL",
+        "CIVICCLERK_STAFF_OIDC_TOKEN_URL",
+        "CIVICCLERK_STAFF_OIDC_CLIENT_ID",
+        "CIVICCLERK_STAFF_OIDC_CLIENT_SECRET",
+        "CIVICCLERK_STAFF_OIDC_REDIRECT_URI",
+        "CIVICCLERK_STAFF_OIDC_SESSION_COOKIE_SECRET",
+        "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES",
+        "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES",
+    ):
+        assert variable in compose
     assert '"psycopg2-binary>=2.9.0,<3.0.0"' in pyproject
     assert "uvicorn\", \"civicclerk.main:app\"" in (ROOT / "Dockerfile.backend").read_text(encoding="utf-8")
     assert "celery -A civicclerk.worker worker" in compose

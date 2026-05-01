@@ -121,6 +121,10 @@ Shipped in this foundation:
   packet, notice, outcomes, minutes, and public posting records into an
   end-to-end ready/warning/blocked lifecycle checklist with a next-safe-action
   button for clerks
+- React staff dashboard access panel that reads `/staff/session`, shows local
+  open mode, OIDC browser-session mode, bearer mode, or trusted-header mode,
+  displays signed-in subject/provider/roles when available, and links clerks or
+  IT directly to `/staff/login`, `/staff/logout`, and `/staff/auth-readiness`
 - nginx-served Docker/installer product routing for `/staff`, `/staff/...`,
   `/public`, and `/public/...`, with workflow API calls staying under
   `/api/...` and staff auth-readiness/session contracts still proxied to the
@@ -163,6 +167,9 @@ Shipped in this foundation:
 - Docker Compose deployment stack with PostgreSQL 17 + pgvector, Redis 7.2,
   Ollama, FastAPI, Celery worker, Celery Beat, and nginx-served React frontend
   wired to the `/api` proxy path
+- Docker Compose staff-auth env propagation for OIDC browser-login,
+  bearer-token, and trusted-header pilot profiles, so `.env` values reach the
+  API, worker, and beat containers consistently
 - unsigned Windows installer source package with Inno Setup build script,
   Docker Desktop prerequisite check, Install or Repair shortcut, daily Start
   shortcut, `.env` creation from `docs/examples/docker.env.example`, generated
@@ -209,13 +216,12 @@ Shipped in this foundation:
 Not shipped yet:
 
 - signed/enterprise installer release artifact
-- React sign-in polish around the OIDC browser-session foundation
 - scheduled live connector sync and deployment hardening beyond local exported
   JSON import ledgers
 
 ## New user experience today
 
-A new user can inspect and run the foundation, open staff workflow screens at `/staff`, open the resident-facing React public portal at `/public` in the Docker/nginx product path, inspect the React staff workspace in `frontend/`, use the React dashboard Meeting Runbook to see the next safe end-to-end meeting action, create and maintain meeting bodies through the React dashboard and `/api/meeting-bodies`, schedule meetings through the React dashboard, load live meetings into the React dashboard/calendar/detail flow through `/api/meetings`, edit pre-lock meeting schedule fields through the React meeting detail view and `PATCH /api/meetings/{id}`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, promote ready intake work into agenda lifecycle records, create/finalize packet assembly records from the React Packet Builder, run the React Notice Checklist with statutory deadline, Official Notice Record proof summary, basis, approval, posting-proof, legal-blocker, and audit-hash visibility, inspect the React Public Posting view over resident-safe agenda, packet, minutes, and archive search records, capture immutable motions, roll-call votes, and source-linked action items from the React Meeting Outcomes workspace, create citation-gated minutes drafts with source material, sentence citations, prompt provenance, human approver, and blocked auto-posting visibility from the React Minutes workspace, persist notice checklist/posting-proof records from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. The Docker profile is now usable as an end-to-end local product rehearsal or pilot-grade demo with seeded Brookfield data, including a PostgreSQL-native backup/restore rehearsal, OIDC staff-token validation, and the first OIDC browser sign-in/session-cookie foundation; production municipal deployment still needs React sign-in polish, code signing, city-approved retention/off-host backup operations, and live-sync hardening. The correct next experience is:
+A new user can inspect and run the foundation, open staff workflow screens at `/staff`, open the resident-facing React public portal at `/public` in the Docker/nginx product path, inspect the React staff workspace in `frontend/`, see the current staff access mode and municipal SSO session status directly on the React dashboard, use the React dashboard Meeting Runbook to see the next safe end-to-end meeting action, create and maintain meeting bodies through the React dashboard and `/api/meeting-bodies`, schedule meetings through the React dashboard, load live meetings into the React dashboard/calendar/detail flow through `/api/meetings`, edit pre-lock meeting schedule fields through the React meeting detail view and `PATCH /api/meetings/{id}`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, promote ready intake work into agenda lifecycle records, create/finalize packet assembly records from the React Packet Builder, run the React Notice Checklist with statutory deadline, Official Notice Record proof summary, basis, approval, posting-proof, legal-blocker, and audit-hash visibility, inspect the React Public Posting view over resident-safe agenda, packet, minutes, and archive search records, capture immutable motions, roll-call votes, and source-linked action items from the React Meeting Outcomes workspace, create citation-gated minutes drafts with source material, sentence citations, prompt provenance, human approver, and blocked auto-posting visibility from the React Minutes workspace, persist notice checklist/posting-proof records from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. The Docker profile is now usable as an end-to-end local product rehearsal or pilot-grade demo with seeded Brookfield data, including a PostgreSQL-native backup/restore rehearsal, OIDC staff-token validation, OIDC browser sign-in/session-cookie foundation, and React sign-in/session status polish; production municipal deployment still needs code signing, city-approved retention/off-host backup operations, and live-sync hardening. The correct next experience is:
 
 1. Read this README.
 2. Read `USER-MANUAL.md`.
@@ -267,7 +273,7 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
 16. For the React staff workspace slice, run the frontend package from
    `frontend/` with `npm ci`, `npm audit --audit-level=moderate`,
    `npm run dev`, `npm run test`, and `npm run build`.
-17. Follow GitHub issues and discussions as live sync, React sign-in polish, signed installer work, city-approved backup retention/off-host storage, and deployment hardening land.
+17. Follow GitHub issues and discussions as live sync, signed installer work, city-approved backup retention/off-host storage, and deployment hardening land.
 
 ## Architecture direction
 
