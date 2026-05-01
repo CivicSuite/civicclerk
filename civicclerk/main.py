@@ -356,12 +356,20 @@ async def staff_dashboard() -> str:
     except SQLAlchemyError:
         packet_assembly_records = []
         packet_assembly_available = False
+    try:
+        notice_checklist_records = _get_notice_checklist_repository().list_recent()
+        notice_checklist_available = True
+    except SQLAlchemyError:
+        notice_checklist_records = []
+        notice_checklist_available = False
     return render_staff_dashboard(
         cockpit_items=cockpit_items,
         agenda_intake_items=intake_items,
         agenda_intake_available=agenda_intake_available,
         packet_assembly_records=packet_assembly_records,
         packet_assembly_available=packet_assembly_available,
+        notice_checklist_records=notice_checklist_records,
+        notice_checklist_available=notice_checklist_available,
     )
 
 

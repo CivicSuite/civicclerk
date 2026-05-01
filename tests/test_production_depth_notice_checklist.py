@@ -65,6 +65,42 @@ def test_notice_posting_proof_updates_status_and_audit_hash(tmp_path) -> None:
     assert repo.audit_chain.verify()
 
 
+def test_notice_checklist_repository_lists_recent_records(tmp_path) -> None:
+    repo = NoticeChecklistRepository(db_url=f"sqlite:///{tmp_path / 'notice-checklist.db'}")
+    scheduled_start = datetime(2026, 5, 5, 19, 0, tzinfo=UTC)
+    first = repo.record_check(
+        meeting_id="meeting-1",
+        notice_type="regular",
+        compliant=True,
+        http_status=200,
+        warnings=[],
+        deadline_at=scheduled_start - timedelta(hours=72),
+        posted_at=scheduled_start - timedelta(hours=96),
+        minimum_notice_hours=72,
+        statutory_basis="72-hour notice rule",
+        approved_by="clerk@example.gov",
+        actor="clerk@example.gov",
+    )
+    second = repo.record_check(
+        meeting_id="meeting-2",
+        notice_type="special",
+        compliant=True,
+        http_status=200,
+        warnings=[],
+        deadline_at=scheduled_start - timedelta(hours=24),
+        posted_at=scheduled_start - timedelta(hours=48),
+        minimum_notice_hours=24,
+        statutory_basis="24-hour notice rule",
+        approved_by="clerk@example.gov",
+        actor="clerk@example.gov",
+    )
+
+    recent = repo.list_recent(limit=1)
+
+    assert [record.id for record in recent] == [second.id]
+    assert first.id != second.id
+
+
 async def test_api_notice_checklist_create_list_and_attach_proof(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("CIVICCLERK_NOTICE_CHECKLIST_DB_URL", f"sqlite:///{tmp_path / 'api-notice.db'}")
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:

@@ -174,6 +174,8 @@ def render_staff_dashboard(
     agenda_intake_available: bool = True,
     packet_assembly_records: Sequence[object] = (),
     packet_assembly_available: bool = True,
+    notice_checklist_records: Sequence[object] = (),
+    notice_checklist_available: bool = True,
 ) -> str:
     """Render the current staff workflow screens as dependency-free HTML."""
     screen_cards_data = _screen_cards_with_live_intake(
@@ -181,6 +183,8 @@ def render_staff_dashboard(
         agenda_intake_available=agenda_intake_available,
         packet_assembly_records=packet_assembly_records,
         packet_assembly_available=packet_assembly_available,
+        notice_checklist_records=notice_checklist_records,
+        notice_checklist_available=notice_checklist_available,
     )
     nav_buttons = "\n".join(
         f"""
@@ -924,6 +928,8 @@ def _screen_cards_with_live_intake(
     agenda_intake_available: bool,
     packet_assembly_records: Sequence[object],
     packet_assembly_available: bool,
+    notice_checklist_records: Sequence[object],
+    notice_checklist_available: bool,
 ) -> list[dict]:
     screen_cards = [dict(card) for card in SCREEN_CARDS]
     screen_cards[0]["rows"] = _agenda_intake_rows(
@@ -933,6 +939,10 @@ def _screen_cards_with_live_intake(
     screen_cards[1]["rows"] = _packet_assembly_rows(
         packet_assembly_records=packet_assembly_records,
         packet_assembly_available=packet_assembly_available,
+    )
+    screen_cards[2]["rows"] = _notice_checklist_rows(
+        notice_checklist_records=notice_checklist_records,
+        notice_checklist_available=notice_checklist_available,
     )
     return screen_cards
 
@@ -1029,6 +1039,58 @@ def _next_packet_step(status: str) -> str:
     if status == "DRAFT":
         return "Review sources and citations, then finalize the packet."
     return "Open the packet assembly and confirm its status."
+
+
+def _notice_checklist_rows(
+    *,
+    notice_checklist_records: Sequence[object],
+    notice_checklist_available: bool,
+) -> list[tuple[str, str, str, str]]:
+    if not notice_checklist_available:
+        return [
+            (
+                "IT",
+                "Notice checklist store unavailable",
+                "ERROR",
+                "Check CIVICCLERK_NOTICE_CHECKLIST_DB_URL and database reachability, then reload the staff desk.",
+            )
+        ]
+    if not notice_checklist_records:
+        return [
+            (
+                "Clerk",
+                "No notice checklist records yet",
+                "EMPTY",
+                "Create a meeting, run the notice checklist, then attach posting proof when posted.",
+            )
+        ]
+    return [
+        (
+            f"Meeting {_field(record, 'meeting_id', 'unknown')}",
+            f"{_field(record, 'notice_type', 'notice')} notice",
+            _field(record, "status", "UNKNOWN"),
+            _next_notice_step(_field(record, "status", "UNKNOWN"), _bool_field(record, "compliant")),
+        )
+        for record in notice_checklist_records
+    ]
+
+
+def _next_notice_step(status: str, compliant: bool | None) -> str:
+    if status == "POSTED":
+        return "Posting proof is attached; keep the record with the meeting packet."
+    if compliant is False:
+        return "Resolve notice warnings before relying on this meeting notice."
+    if status == "CHECKED":
+        return "Attach posting proof after the agenda or notice is posted."
+    return "Open the notice checklist and confirm compliance status."
+
+
+def _bool_field(item: object, name: str) -> bool | None:
+    if isinstance(item, Mapping):
+        value = item.get(name)
+    else:
+        value = getattr(item, name, None)
+    return value if isinstance(value, bool) else None
 
 
 def _render_screen_card(card: dict, active: bool) -> str:

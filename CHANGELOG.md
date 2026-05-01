@@ -16,6 +16,9 @@ All notable changes to CivicClerk are documented here.
 - The `/staff` Packet Assembly panel now renders recent live packet assembly
   records instead of sample data, including escaped packet titles and actionable
   empty or unavailable-store rows.
+- The `/staff` Notice Checklist panel now renders recent live notice checklist
+  records instead of sample data, including posting-proof status plus actionable
+  empty or unavailable-store rows.
 - `scripts/check_connector_sync_readiness.py` now verifies the supported
   Granicus, Legistar, PrimeGov, and NovusAGENDA local payload contracts without
   outbound network calls before future scheduled live-sync work.

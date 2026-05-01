@@ -62,7 +62,9 @@ ready, pending, and needs-revision counts. The Agenda Intake panel also renders
 live queue rows with escaped submitted titles plus actionable empty and
 unavailable-store states. The Packet Assembly panel renders recent live packet
 assembly records with escaped packet titles plus actionable empty and
-unavailable-store states. The workflow forms can submit
+unavailable-store states. The Notice Checklist panel renders recent live notice
+records with posting-proof status plus actionable empty and unavailable-store
+states. The workflow forms can submit
 intake items, record readiness review, create/finalize packet assembly records,
 create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture
 motions/votes/action items, create citation-gated minutes drafts, publish
