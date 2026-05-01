@@ -24,8 +24,9 @@ workspace for creating and finalizing packet assembly records from promoted
 agenda items. Sprint 3 is now present with a legally explicit Notice Checklist
 workspace for statutory deadline review, basis/approval capture, posting-proof
 attachment, legal-blocker copy, and immutable audit-hash visibility, plus a
-first Public Posting workspace for resident-safe public meeting list/detail/search
-over posted agenda, packet, and approved minutes records. Sprint 4 is now
+resident-oriented Public Posting portal for public meeting list/detail/search
+over posted agenda, packet, and approved minutes records with restricted-record
+non-disclosure guidance. Sprint 4 is now
 present with a React Meeting Outcomes workspace for immutable motion capture,
 roll-call vote capture, source-linked action items, and append-only correction
 guidance plus a React Minutes Draft workspace for citation-gated draft creation,
@@ -36,8 +37,8 @@ React. Compose now seeds a Brookfield demo dataset by default so staff can open
 the React app against live API-backed data immediately. Unsigned Windows
 installer source packaging is now present for the same Docker stack, including
 install/repair and daily-start launchers. Remaining MVP work now centers on a
-signed/enterprise installer release artifact, the finished public portal, and
-live sync/deployment hardening.
+signed/enterprise installer release artifact, live sync/deployment hardening,
+and routing the legacy HTML `/public` shell to the React portal.
 
 ## Sprint 1
 
@@ -66,8 +67,9 @@ live sync/deployment hardening.
 
 - Notice checklist: first React statutory deadline, basis, approval, posting
   proof, legal-blocker, and audit-hash workflow present
-- Public posted-meeting page: first React resident-safe list, detail, and
-  archive search workflow present
+- Public posted-meeting page: resident-oriented React list, detail, archive
+  search, official-record sections, and restricted-record non-disclosure
+  guidance present
 
 ## Sprint 4
 

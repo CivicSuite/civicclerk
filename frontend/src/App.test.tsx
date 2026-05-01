@@ -736,15 +736,18 @@ describe("CivicClerk staff workspace", () => {
     await screen.findByRole("heading", { name: "Good morning, City Clerk." });
     fireEvent.click(screen.getByRole("button", { name: /Public posting/ }));
 
-    expect(screen.getByRole("heading", { name: "Show residents the posted agenda, packet, and approved minutes." })).toBeInTheDocument();
-    expect(screen.getByText(/Closed-session material and restricted records are not displayed/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Find posted meetings without needing to understand clerk workflows." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Official meeting materials, in one place." })).toBeInTheDocument();
+    expect(screen.getByText(/Restricted or closed-session material is never exposed/)).toBeInTheDocument();
+    expect(screen.getByText("What residents can do here")).toBeInTheDocument();
     expect(screen.getAllByText("Agenda: approve sidewalk repairs.")).toHaveLength(2);
     expect(screen.getByText("Packet: staff report and fiscal note.")).toBeInTheDocument();
-    expect(screen.getByText(/Closed-session content is not displayed here/)).toBeInTheDocument();
+    expect(screen.getByText(/This portal does not reveal restricted-session existence/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Search public records" }));
     expect(await screen.findByText(/1 public record matched/)).toBeInTheDocument();
     expect(screen.getAllByText("Packet: staff report and fiscal note.")).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Open public record" }).length).toBeGreaterThan(0);
   });
 
   it("captures motions, votes, and action items from the meeting outcomes workspace", async () => {

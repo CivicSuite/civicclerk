@@ -2,7 +2,7 @@
 
 Status: Sprint 4 implementation slice with live agenda intake promotion,
 packet builder draft/finalize workflow, legally explicit notice checklist work,
-first public posted-meeting workspace, first meeting outcomes workspace, and
+resident-oriented public posted-meeting portal, first meeting outcomes workspace, and
 first minutes draft workspace.
 
 The `frontend/` package is the start of the production React app that will
@@ -58,11 +58,12 @@ mockup's browser-global JSX bundle.
   notice obligations were met before a meeting proceeds. Empty and error states
   must name the legal problem and the clerk's next safe action instead of
   surfacing a generic API failure.
-- First Public Posting workflow: staff can open a resident-safe public record
-  view that reads `/api/public/meetings`, `/api/public/meetings/{id}`, and
-  `/api/public/archive/search`, shows posted agenda, packet, and approved
-  minutes text, and avoids implying closed-session existence when records are
-  missing.
+- Resident-oriented Public Posting portal: staff and residents can open a
+  public-record view that reads `/api/public/meetings`,
+  `/api/public/meetings/{id}`, and `/api/public/archive/search`, separates the
+  posted agenda, packet, and approved minutes into official-record sections,
+  provides missing-record clerk-contact guidance, and avoids implying
+  restricted-session existence, counts, or summaries.
 - First Meeting Outcomes workflow: staff can choose a meeting, capture motions
   through `POST /api/meetings/{id}/motions`, load the meeting's captured
   motions, record roll-call votes through `POST /api/motions/{id}/votes`, and

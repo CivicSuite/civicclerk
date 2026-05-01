@@ -3281,6 +3281,7 @@ function PublicPostedMeetingWorkspace({
   const [query, setQuery] = useState("sidewalk");
   const [searchResults, setSearchResults] = useState<PublicMeetingRecord[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const hasSearchResults = searchResults.length > 0;
 
   if (viewState !== "success") {
     return <StateMessage state={viewState} context="public posted meeting" apiError={apiError} />;
@@ -3303,25 +3304,43 @@ function PublicPostedMeetingWorkspace({
   return (
     <div className="page-stack">
       <PageHeader
-        eyebrow="Public posting"
-        title="Show residents the posted agenda, packet, and approved minutes."
-        description="This resident-safe page reads only public meeting records. Closed-session material and restricted records are not displayed or hinted to anonymous visitors."
+        eyebrow="Resident public portal"
+        title="Find posted meetings without needing to understand clerk workflows."
+        description="Residents can open the official agenda, packet, and approved minutes that staff have published to the public archive. Restricted or closed-session material is never exposed or hinted here."
       />
+      <section className="public-portal-hero" aria-labelledby="public-portal-heading">
+        <div>
+          <p className="eyebrow-small">City of Brookfield public records</p>
+          <h2 id="public-portal-heading">Official meeting materials, in one place.</h2>
+          <p>
+            Start with the posted meeting list, open the public record, or search the archive.
+            If expected material is missing, the safe next step is to ask the clerk for the official posted link rather than assuming the meeting is closed or unavailable.
+          </p>
+        </div>
+        <div className="resident-help-card">
+          <strong>What residents can do here</strong>
+          <ul>
+            <li>Read posted agendas before a meeting.</li>
+            <li>Open packets and supporting public materials.</li>
+            <li>Review approved minutes after adoption.</li>
+          </ul>
+        </div>
+      </section>
       <div className="metric-grid">
-        <MetricCard label="Public records" value={String(records.length)} note="Visible to residents" />
-        <MetricCard label="Selected meeting" value={selectedRecord ? "1" : "0"} note={selectedRecord ? "Ready for detail view" : "Pick a posted record"} tone={selectedRecord ? undefined : "warn"} />
+        <MetricCard label="Posted meetings" value={String(records.length)} note="Visible to residents" />
+        <MetricCard label="Open record" value={selectedRecord ? "1" : "0"} note={selectedRecord ? "Agenda, packet, and minutes ready" : "Pick a posted record"} tone={selectedRecord ? undefined : "warn"} />
         <MetricCard label="Restricted material" value="0" note="Never shown here" />
       </div>
       <div className="notice-legal-callout public-callout">
-        <strong>Resident-safe view</strong>
-        <span>Only records returned by the public archive API appear here. If a meeting is missing, staff must publish a public-safe record from the clerk workflow before residents can see it.</span>
+        <strong>Public-record boundary</strong>
+        <span>Only public archive API records appear here. If a meeting is missing, residents get a clerk contact path, not a hint about restricted or closed-session records.</span>
       </div>
       <div className="agenda-grid">
         <section className="panel">
           <div className="panel-heading">
             <div>
               <h2>Posted meetings</h2>
-              <p>Choose the record residents should inspect. Missing meetings are a staff publishing task, not a resident error.</p>
+              <p>Choose a public record. Missing meetings are a staff publishing task, not a resident error.</p>
             </div>
             <StatusBadge tone={records.length ? "Ready" : "Warning"} label={records.length ? "Public" : "No records"} />
           </div>
@@ -3341,7 +3360,7 @@ function PublicPostedMeetingWorkspace({
                 </div>
                 <div className="row-actions">
                   <button className="secondary" type="button" onClick={() => onSelectRecord(record.id)}>
-                    View public record
+                    Open public record
                   </button>
                 </div>
               </article>
@@ -3351,54 +3370,76 @@ function PublicPostedMeetingWorkspace({
         <section className="panel">
           <div className="panel-heading">
             <div>
-              <h2>Resident detail</h2>
-              <p>Agenda, packet, and minutes copy are safe to show publicly.</p>
+              <h2>Official record detail</h2>
+              <p>Agenda, packet, and minutes are separated so residents can quickly find what they came for.</p>
             </div>
             <StatusBadge tone={selectedRecord ? "Ready" : "Warning"} label={selectedRecord ? "Selected" : "Pick record"} />
           </div>
           {selectedRecord ? (
             <div className="public-record-card">
               <h3>{selectedRecord.title}</h3>
-              <dl>
-                <dt>Posted agenda</dt>
-                <dd>{selectedRecord.postedAgenda}</dd>
-                <dt>Posted packet</dt>
-                <dd>{selectedRecord.postedPacket}</dd>
-                <dt>Approved minutes</dt>
-                <dd>{selectedRecord.approvedMinutes}</dd>
-              </dl>
-              <p className="legal-warning muted-warning">Closed-session content is not displayed here. Ask the clerk for the public record link if expected material is missing.</p>
+              <div className="public-document-grid">
+                <article>
+                  <span>Before the meeting</span>
+                  <h4>Posted agenda</h4>
+                  <p>{selectedRecord.postedAgenda}</p>
+                </article>
+                <article>
+                  <span>Supporting materials</span>
+                  <h4>Posted packet</h4>
+                  <p>{selectedRecord.postedPacket}</p>
+                </article>
+                <article>
+                  <span>After adoption</span>
+                  <h4>Approved minutes</h4>
+                  <p>{selectedRecord.approvedMinutes}</p>
+                </article>
+              </div>
+              <div className="resident-next-steps">
+                <strong>If something looks missing</strong>
+                <span>Contact the clerk for the official posted record link. This portal does not reveal restricted-session existence, counts, or summaries.</span>
+              </div>
             </div>
           ) : (
             <p className="empty-inline">Select a posted meeting to show resident-safe detail.</p>
           )}
+        </section>
+      </div>
+      <section className="panel public-search-panel" aria-labelledby="public-search-heading">
+        <div className="panel-heading">
+          <div>
+            <h2 id="public-search-heading">Search public archive</h2>
+            <p>Search only public-safe agendas, packets, and approved minutes.</p>
+          </div>
+          <StatusBadge tone={hasSearchResults ? "Ready" : "Warning"} label={hasSearchResults ? "Results" : "Search"} />
+        </div>
           <form className="search-form" onSubmit={submitSearch}>
             <label>
-              Search public archive
+              Search term
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search posted public records" />
             </label>
             <button type="submit">Search public records</button>
           </form>
           {message && <p className="form-message">{message}</p>}
-          {searchResults.length > 0 && (
-            <div className="agenda-list">
+          {hasSearchResults && (
+            <div className="agenda-list public-search-results">
               {searchResults.map((record) => (
                 <article key={record.id} className="agenda-row">
                   <div>
                     <h3>{record.title}</h3>
                     <p>{record.postedPacket}</p>
+                    <small>Public meeting id: {record.meetingId}</small>
                   </div>
                   <div className="row-actions">
                     <button className="secondary" type="button" onClick={() => onSelectRecord(record.id)}>
-                      Open
+                      Open public record
                     </button>
                   </div>
                 </article>
               ))}
             </div>
           )}
-        </section>
-      </div>
+      </section>
     </div>
   );
 }
