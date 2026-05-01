@@ -17,14 +17,14 @@ calendar, and detail flow now load live meeting records through `/api/meetings`.
 Meeting body CRUD now has a backend API and first React staff dashboard
 management surface. Sprint 1 meeting setup now includes live React scheduling
 and pre-lock schedule editing backed by `POST /meetings` and
-`PATCH /meetings/{id}`. Sprint 2 has started in React with agenda intake
-submit/review wired to the live `/agenda-intake` APIs, plus ready-item
-promotion into canonical agenda lifecycle records through
-`POST /agenda-intake/{id}/promote`. Remaining MVP work now centers on
-completing the rest of Sprints 2-4 in React, standing up the Docker
-Compose deployment stack, actual installer packaging beyond the non-installer
-release handoff bundle, the finished public portal, and live sync/deployment
-hardening.
+`PATCH /meetings/{id}`. Sprint 2 is now present in React through agenda intake
+submit/review, ready-item promotion into canonical agenda lifecycle records
+through `POST /agenda-intake/{id}/promote`, and the first Packet Builder
+workspace for creating and finalizing packet assembly records from promoted
+agenda items. Remaining MVP work now centers on Sprint 3 notice/public posting
+surfaces, Sprint 4 outcome/minutes surfaces, standing up the Docker Compose
+deployment stack, actual installer packaging beyond the non-installer release
+handoff bundle, the finished public portal, and live sync/deployment hardening.
 
 ## Sprint 1
 
@@ -43,14 +43,14 @@ hardening.
 - Agenda item intake: first React submit/review workflow present
 - Department submitter workflow: first React form present
 - Clerk review queue: first React ready/revision queue present
-- Packet handoff after ready review: first promotion into agenda lifecycle
-  present; full meeting packet assignment/finalization UI remains
+- Packet handoff after ready review: promotion into agenda lifecycle present
+- Packet builder: first React meeting assignment, promoted-item selection,
+  draft creation, queue review, and finalization workflow present
 - Browser QA evidence
 - Docs updated
 
 ## Sprint 3
 
-- Packet builder
 - Notice checklist
 - Public posted-meeting page
 

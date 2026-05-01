@@ -128,7 +128,7 @@ meeting detail view, including title, body, type, start time, and location. The
 API rejects nonexistent or inactive body ids, writes audit entries for schedule
 edits, and blocks those edits after the meeting reaches the in-session lock
 point. This slice does not replace `/staff`
-until the remaining Sprint 2-4 workflow surfaces are wired.
+until the remaining Sprint 3-4 workflow surfaces are wired.
 
 The first React Sprint 2 surface is now also present. Staff can open Agenda
 Intake from the React navigation, submit a department agenda request with source
@@ -137,8 +137,11 @@ hash cue that proves the reviewed record changed. Ready records now include a
 Promote to agenda action that creates a canonical agenda item, advances it to
 `CLERK_ACCEPTED`, stores the promoted agenda item id and promotion audit hash on
 the intake record, and tells staff that the next step is adding the item to the
-target meeting packet assembly. The remaining Sprint 2 product step is the full
-packet builder workspace for assigning and finalizing those promoted items.
+target meeting packet assembly. Staff can now open Packet Builder from the
+React navigation, choose a meeting, select promoted agenda items, create a
+packet assembly draft, see the packet queue for that meeting, and finalize the
+draft with a visible audit-hash cue. The next React product work moves into
+Sprint 3 notice checklist and public posted-meeting surfaces.
 
 ## Part 2: IT and Technical Overview
 

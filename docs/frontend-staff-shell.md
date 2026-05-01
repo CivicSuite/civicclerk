@@ -1,6 +1,7 @@
 # CivicClerk React Staff Shell
 
-Status: Sprint 2 implementation slice with live agenda intake promotion.
+Status: Sprint 2 implementation slice with live agenda intake promotion and
+packet builder draft/finalize workflow.
 
 The `frontend/` package is the start of the production React app that will
 replace the HTML reference shell at `/staff`. It is adapted from the CivicSuite
@@ -34,6 +35,12 @@ mockup's browser-global JSX bundle.
   `POST /api/agenda-intake/{id}/promote`, with the generated agenda item id,
   `CLERK_ACCEPTED` status, promotion audit hash, and next packet-assembly step
   visible to staff.
+- First Packet Builder workflow: staff can choose a meeting, select promoted
+  agenda items, create a packet assembly draft through
+  `POST /api/meetings/{id}/packet-assemblies`, review packet queue status, and
+  finalize a draft through `POST /api/packet-assemblies/{id}/finalize`.
+- Packet queues are loaded per selected meeting so staff do not accidentally
+  finalize a packet from the wrong meeting context.
 - Explicit QA state controls for success, loading, empty, error, and partial
   states.
 - Actionable state copy that tells staff or IT what to do next.
@@ -41,8 +48,8 @@ mockup's browser-global JSX bundle.
 ## What This Slice Does Not Yet Include
 
 - Replacement of the shipped `/staff` HTML reference shell.
-- Full packet builder workspace for assigning promoted agenda items to a
-  meeting packet and finalizing the assembly.
+- Notice checklist and public posted-meeting React workspaces.
+- Motion/vote capture and minutes draft React workspaces.
 - Docker/nginx packaging.
 - Installer integration.
 
@@ -73,7 +80,7 @@ Before any commit that touches this frontend, capture browser evidence for:
 
 For direct QA capture, the app accepts these query parameters:
 
-- `?page=dashboard|meetings|meeting-detail|agenda`
+- `?page=dashboard|meetings|meeting-detail|agenda|packet`
 - `?state=success|loading|empty|error|partial`
 - `?audit=1`
 - `?source=demo` to bypass the live API and render fixed demo data

@@ -89,6 +89,70 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/meetings/meeting-1/packet-assemblies" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "packet-1",
+              meeting_id: "meeting-1",
+              packet_snapshot_id: "snapshot-1",
+              packet_version: 1,
+              title: "Council packet draft",
+              status: "DRAFT",
+              agenda_item_ids: ["agenda-99"],
+              source_references: [{ source_id: "fee-table", title: "Fee table", kind: "spreadsheet" }],
+              citations: [{ agenda_item_id: "agenda-99", citation: "Fee table" }],
+              last_audit_hash: "abc123abc123abc123abc123abc123abc123abc123abc123abc123abc123abcd",
+              created_at: "2026-05-01T12:20:00Z",
+              updated_at: "2026-05-01T12:20:00Z",
+              finalized_at: null,
+            }),
+          });
+        }
+        if (url === "/api/meetings/meeting-1/packet-assemblies") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              packet_assemblies: [
+                {
+                  id: "packet-existing",
+                  meeting_id: "meeting-1",
+                  packet_snapshot_id: "snapshot-existing",
+                  packet_version: 1,
+                  title: "Existing finalized packet",
+                  status: "FINALIZED",
+                  agenda_item_ids: ["agenda-99"],
+                  source_references: [{ source_id: "fee-table", title: "Fee table", kind: "spreadsheet" }],
+                  citations: [{ agenda_item_id: "agenda-99", citation: "Fee table" }],
+                  last_audit_hash: "fed456fed456fed456fed456fed456fed456fed456fed456fed456fed456abcd",
+                  created_at: "2026-05-01T12:00:00Z",
+                  updated_at: "2026-05-01T12:05:00Z",
+                  finalized_at: "2026-05-01T12:05:00Z",
+                },
+              ],
+            }),
+          });
+        }
+        if (url === "/api/packet-assemblies/packet-1/finalize" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "packet-1",
+              meeting_id: "meeting-1",
+              packet_snapshot_id: "snapshot-1",
+              packet_version: 1,
+              title: "Council packet draft",
+              status: "FINALIZED",
+              agenda_item_ids: ["agenda-99"],
+              source_references: [{ source_id: "fee-table", title: "Fee table", kind: "spreadsheet" }],
+              citations: [{ agenda_item_id: "agenda-99", citation: "Fee table" }],
+              last_audit_hash: "def456def456def456def456def456def456def456def456def456def456abcd",
+              created_at: "2026-05-01T12:20:00Z",
+              updated_at: "2026-05-01T12:25:00Z",
+              finalized_at: "2026-05-01T12:25:00Z",
+            }),
+          });
+        }
         if (url === "/api/agenda-intake" && init?.method === "POST") {
           return Promise.resolve({
             ok: true,
@@ -184,6 +248,24 @@ describe("CivicClerk staff workspace", () => {
                   last_audit_hash: "abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
                   created_at: "2026-05-01T11:00:00Z",
                   updated_at: "2026-05-01T11:00:00Z",
+                },
+                {
+                  id: "intake-ready",
+                  title: "Adopt annual fee schedule",
+                  department_name: "Finance",
+                  submitted_by: "finance@example.gov",
+                  summary: "Annual update to city service fees.",
+                  readiness_status: "READY",
+                  status: "PROMOTED_TO_AGENDA",
+                  source_references: [{ source_id: "fee-table", title: "Fee table", kind: "spreadsheet" }],
+                  reviewer: "clerk@example.gov",
+                  review_notes: "Attorney review attached.",
+                  promoted_agenda_item_id: "agenda-99",
+                  promoted_at: "2026-05-01T12:15:00Z",
+                  promotion_audit_hash: "fedcba1234567890fedcba1234567890fedcba1234567890fedcba1234567890",
+                  last_audit_hash: "fedcba1234567890fedcba1234567890fedcba1234567890fedcba1234567890",
+                  created_at: "2026-05-01T10:00:00Z",
+                  updated_at: "2026-05-01T12:15:00Z",
                 },
               ],
             }),
@@ -314,6 +396,22 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByText(/Agenda lifecycle: agenda-77 promoted/)).toBeInTheDocument();
   });
 
+  it("creates and finalizes a packet assembly from promoted agenda work", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Packet builder/ }));
+
+    expect(screen.getByRole("heading", { name: "Assemble packet evidence before posting." })).toBeInTheDocument();
+    expect(screen.getByText("Adopt annual fee schedule - Finance")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Create packet draft" }));
+    expect(await screen.findByText(/Packet draft packet-1 created at version 1/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Finalize packet" }));
+    expect(await screen.findByText(/Packet packet-1 finalized with audit hash def456def456/)).toBeInTheDocument();
+    expect(screen.getByText("Ready for notice checklist")).toBeInTheDocument();
+  });
+
   it("opens the meeting calendar and a meeting detail workspace", async () => {
     render(<App />);
 
@@ -367,5 +465,53 @@ describe("CivicClerk staff workspace", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Meeting API returned 503");
     expect(screen.getByRole("button", { name: "Retry after checking API" })).toBeInTheDocument();
+  });
+
+  it("keeps the staff shell usable when only packet assembly loading fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url === "/api/meeting-bodies") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              meeting_bodies: [{ id: "body-1", name: "City Council", body_type: "city_council", is_active: true }],
+            }),
+          });
+        }
+        if (url === "/api/meetings") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              meetings: [{
+                id: "meeting-1",
+                title: "Regular Meeting",
+                meeting_type: "regular",
+                meeting_body_id: "body-1",
+                status: "SCHEDULED",
+                scheduled_start: "2026-05-05T18:00:00Z",
+                location: "Council Chambers",
+              }],
+            }),
+          });
+        }
+        if (url === "/api/agenda-intake") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ items: [] }),
+          });
+        }
+        if (url === "/api/meetings/meeting-1/packet-assemblies") {
+          return Promise.resolve({ ok: false, status: 503 });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({}) });
+      }),
+    );
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Good morning, City Clerk." })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Packet builder/ }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Packet assembly API returned 503");
   });
 });

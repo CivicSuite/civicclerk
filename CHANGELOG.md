@@ -42,9 +42,16 @@ All notable changes to CivicClerk are documented here.
 - The React Agenda Intake workspace now includes a "Promote to agenda" action
   for ready records, blocks premature promotion with an actionable fix path, and
   shows the resulting agenda lifecycle id/status after promotion.
+- The React staff workspace now includes the first Packet Builder workflow:
+  meeting selection, promoted agenda item checkboxes, packet draft creation,
+  packet queue review, per-meeting queue loading, and packet finalization backed
+  by the live packet assembly APIs.
+- Already-promoted agenda intake rows now lock review actions and point staff
+  forward to Packet Builder instead of allowing duplicate readiness work.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
   meeting scheduling, meeting schedule editing, agenda intake submit/review/promote,
-  required error/empty state copy, and audit drawer toggling.
+  packet draft creation/finalization, required error/empty state copy, and
+  audit drawer toggling.
 - CI and `scripts/verify-release.sh` now install, audit, build, and test the
   `frontend/` package so the React app cannot drift outside the release gate.
 - The frontend dev proxy now defaults to the documented CivicClerk FastAPI
