@@ -77,7 +77,7 @@ def seed_demo_data(
         location="Council Chambers, 100 Civic Plaza",
         target_status="PACKET_POSTED",
     )
-    work_session = _ensure_meeting(
+    _ensure_meeting(
         meetings,
         title="Planning Commission Work Session",
         meeting_type="regular",
@@ -108,12 +108,12 @@ def seed_demo_data(
         ),
     )
 
-    packet = _ensure_packet(
+    _ensure_packet(
         packet_assemblies,
         meeting_id=upcoming.id,
         agenda_item_id=intake.promoted_agenda_item_id or "demo-agenda-item",
     )
-    notice = _ensure_notice(
+    _ensure_notice(
         notice_checklists,
         meeting_id=upcoming.id,
         scheduled_start=upcoming.scheduled_start or anchor + timedelta(days=8),
