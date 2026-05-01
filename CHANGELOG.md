@@ -62,6 +62,11 @@ All notable changes to CivicClerk are documented here.
   meeting selection, motion capture, roll-call vote capture, action-item
   creation tied to source motions, outcome ledger review, and append-only
   correction guidance backed by the live motion/vote/action-item APIs.
+- The React staff workspace now includes the first Minutes Draft workflow:
+  meeting selection, existing draft review, explicit source material entry,
+  sentence-level citation capture, model/prompt provenance, human approver
+  capture, and a visible blocked public-posting gate backed by the live
+  minutes draft APIs.
 - Already-promoted agenda intake rows now lock review actions and point staff
   forward to Packet Builder instead of allowing duplicate readiness work.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
@@ -69,6 +74,7 @@ All notable changes to CivicClerk are documented here.
   packet draft creation/finalization, notice compliance/proof attachment,
   statutory-deadline blocking, public posted-meeting list/detail/search,
   meeting outcome motion/vote/action-item capture,
+  citation-gated minutes draft creation and blocked auto-posting,
   required error/empty state copy, and audit drawer toggling.
 - CI and `scripts/verify-release.sh` now install, audit, build, and test the
   `frontend/` package so the React app cannot drift outside the release gate.

@@ -154,8 +154,11 @@ closed-session material. The Meeting Outcomes React surface is now present:
 staff can select a meeting, capture immutable motions, record roll-call votes
 against a selected motion, create action items that reference the source
 motion, and see copy explaining that corrections must be append-only rather
-than silent edits. The next React product work is the Sprint 4 minutes and
-citation workspace.
+than silent edits. The Minutes Draft React surface is now present: staff can
+select a meeting, review existing citation-gated drafts, enter source material,
+draft sentences, sentence-level citations, model, prompt version, and human
+approver, create a cited draft through the live minutes API, and see the public
+posting gate explain that AI-drafted minutes cannot bypass human adoption.
 
 ## Part 2: IT and Technical Overview
 

@@ -316,6 +316,79 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/meetings/meeting-1/minutes/drafts" && init?.method === "POST") {
+          const body = JSON.parse(String(init.body ?? "{}"));
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "minutes-1",
+              meeting_id: "meeting-1",
+              status: "DRAFT",
+              adopted: false,
+              posted: false,
+              source_materials: body.source_materials,
+              sentences: body.sentences,
+              provenance: {
+                model: body.model,
+                prompt_version: body.prompt_version,
+                data_sources: body.source_materials.map((source: { source_id: string }) => source.source_id),
+                human_approver: body.human_approver,
+              },
+            }),
+          });
+        }
+        if (url === "/api/meetings/meeting-1/minutes/drafts") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              drafts: [
+                {
+                  id: "minutes-existing",
+                  meeting_id: "meeting-1",
+                  status: "DRAFT",
+                  adopted: false,
+                  posted: false,
+                  source_materials: [
+                    {
+                      source_id: "motion-existing",
+                      label: "Motion text",
+                      text: "Move to approve sidewalk repairs.",
+                    },
+                    {
+                      source_id: "vote-existing",
+                      label: "Vote record",
+                      text: "Council Member Patel voted aye.",
+                    },
+                  ],
+                  sentences: [
+                    {
+                      text: "Council approved sidewalk repairs.",
+                      citations: ["motion-existing"],
+                    },
+                  ],
+                  provenance: {
+                    model: "ollama/gemma4",
+                    prompt_version: "minutes_draft@0.1.0",
+                    data_sources: ["motion-existing", "vote-existing"],
+                    human_approver: "clerk@example.gov",
+                  },
+                },
+              ],
+            }),
+          });
+        }
+        if (url === "/api/minutes/minutes-existing/post" || url === "/api/minutes/minutes-1/post") {
+          return Promise.resolve({
+            ok: false,
+            status: 409,
+            json: async () => ({
+              detail: {
+                message: "AI-drafted minutes cannot be posted automatically.",
+                fix: "Review, cite-check, and adopt minutes through a human approval workflow before public posting.",
+              },
+            }),
+          });
+        }
         if (url === "/api/public/meetings") {
           return Promise.resolve({
             ok: true,
@@ -694,6 +767,26 @@ describe("CivicClerk staff workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create action item" }));
     expect(await screen.findByText(/Action item action-1 opened for Clerk's Office/)).toBeInTheDocument();
     expect(screen.getAllByText(/Staff to prepare the signed resolution/)).toHaveLength(2);
+  });
+
+  it("creates citation-gated minutes drafts and shows the human posting gate", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Minutes/ }));
+
+    expect(screen.getByRole("heading", { name: "Create cited minutes without letting AI become the official record." })).toBeInTheDocument();
+    expect(screen.getByText(/Every sentence must point back to source material/)).toBeInTheDocument();
+    expect(await screen.findByText("Council approved sidewalk repairs.")).toBeInTheDocument();
+    expect(screen.getByText(/Prompt minutes_draft@0.1.0 via ollama\/gemma4/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Create cited draft" }));
+    expect(await screen.findByText(/Draft minutes-1 created with 2 cited sentences/)).toBeInTheDocument();
+    expect(screen.getAllByText(/AI-drafted minutes cannot be auto-posted/).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Try public posting gate" })[0]);
+    expect(await screen.findByText(/AI-drafted minutes cannot be posted automatically/)).toBeInTheDocument();
+    expect(screen.getByText(/human approval workflow/)).toBeInTheDocument();
   });
 
   it("opens the meeting calendar and a meeting detail workspace", async () => {
