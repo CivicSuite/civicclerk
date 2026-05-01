@@ -470,6 +470,31 @@ h2 {
   grid-column: 1 / -1;
 }
 
+.checklist-fieldset {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+}
+
+.checklist-fieldset legend {
+  padding: 0 6px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
 .body-form label,
 .schedule-form label,
 .intake-form label,
@@ -486,6 +511,7 @@ h2 {
 .schedule-form input,
 .schedule-form select,
 .intake-form input,
+.intake-form select,
 .intake-form textarea,
 .review-controls input {
   width: 100%;

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda";
+type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet";
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -130,6 +130,37 @@ type AgendaPromotionResult = {
   message: string;
 };
 
+type PacketAssemblyRecord = {
+  id: string;
+  meetingId: string;
+  title: string;
+  status: "DRAFT" | "FINALIZED";
+  packetVersion: number;
+  agendaItemIds: string[];
+  auditHash: string;
+  finalizedAt?: string | null;
+};
+
+type ApiPacketAssemblyRecord = {
+  id: string;
+  meeting_id: string;
+  title: string;
+  status: "DRAFT" | "FINALIZED";
+  packet_version: number;
+  agenda_item_ids: string[];
+  audit_hash?: string;
+  last_audit_hash?: string;
+  finalized_at?: string | null;
+};
+
+type PacketAssemblyPayload = {
+  title: string;
+  agenda_item_ids: string[];
+  actor: string;
+  source_references: Array<Record<string, string>>;
+  citations: Array<Record<string, string>>;
+};
+
 const lifecycle: LifecycleStage[] = [
   "Scheduled",
   "Notice posted",
@@ -228,12 +259,25 @@ const demoAgendaItems: AgendaIntakeItem[] = [
     sourceReferences: [{ source_id: "fee-table", title: "Fee table", kind: "spreadsheet" }],
     reviewer: "clerk@example.gov",
     reviewNotes: "Attorney review attached. Ready for packet assembly.",
-    promotedAgendaItemId: null,
-    promotedAt: null,
-    promotionAuditHash: null,
+    promotedAgendaItemId: "agenda-fee-schedule",
+    promotedAt: "2026-05-01T16:15:00Z",
+    promotionAuditHash: "90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd",
     lastAuditHash: "a0b1c2d3e4f506172839405162738495a6b7c8d9e0f112233445566778899001",
     createdAt: "2026-04-30T21:10:00Z",
     updatedAt: "2026-05-01T16:00:00Z",
+  },
+];
+
+const demoPacketAssemblies: PacketAssemblyRecord[] = [
+  {
+    id: "packet-demo-1",
+    meetingId: "M-2026-053",
+    title: "City Council packet draft",
+    status: "DRAFT",
+    packetVersion: 1,
+    agendaItemIds: ["agenda-fee-schedule"],
+    auditHash: "b123456789abcdef0123456789abcdef0123456789abcdef0123456789abcde",
+    finalizedAt: null,
   },
 ];
 
@@ -248,16 +292,21 @@ export function App() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [meetingBodies, setMeetingBodies] = useState<MeetingBody[]>([]);
   const [agendaItems, setAgendaItems] = useState<AgendaIntakeItem[]>([]);
+  const [packetAssemblies, setPacketAssemblies] = useState<PacketAssemblyRecord[]>([]);
+  const [loadedPacketMeetingIds, setLoadedPacketMeetingIds] = useState<string[]>([]);
   const [apiState, setApiState] = useState<ViewState>("loading");
   const [apiError, setApiError] = useState<string | null>(null);
   const [bodyState, setBodyState] = useState<ViewState>("loading");
   const [bodyError, setBodyError] = useState<string | null>(null);
+  const [packetState, setPacketState] = useState<ViewState>("loading");
+  const [packetError, setPacketError] = useState<string | null>(null);
   const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
   const [auditOpen, setAuditOpen] = useState(initial.audit);
   const viewState = qaState ?? apiState;
   const visibleMeetings = qaState === null ? meetings : demoMeetings;
   const visibleBodies = qaState === null ? meetingBodies : demoBodies;
   const visibleAgendaItems = qaState === null ? agendaItems : demoAgendaItems;
+  const visiblePacketAssemblies = qaState === null ? packetAssemblies : demoPacketAssemblies;
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
 
   async function loadWorkspaceData(cancelled: () => boolean) {
@@ -275,6 +324,26 @@ export function App() {
     setMeetingBodies(mappedBodies);
     setMeetings(mappedMeetings);
     setAgendaItems(mappedAgendaItems);
+    if (mappedMeetings[0]) {
+      try {
+        const apiPackets = await fetchPacketAssemblies(mappedMeetings[0].id);
+        if (cancelled()) return;
+        setPacketAssemblies(apiPackets.map(mapApiPacketAssemblyRecord));
+        setLoadedPacketMeetingIds([mappedMeetings[0].id]);
+        setPacketError(null);
+        setPacketState("success");
+      } catch (error) {
+        if (cancelled()) return;
+        setPacketAssemblies([]);
+        setLoadedPacketMeetingIds([]);
+        setPacketError(error instanceof Error ? error.message : "Packet assembly API failed.");
+        setPacketState("error");
+      }
+    } else {
+      setPacketAssemblies([]);
+      setLoadedPacketMeetingIds([]);
+      setPacketState("empty");
+    }
     setBodyState(mappedBodies.length === 0 ? "empty" : "success");
     setApiState(mappedMeetings.length === 0 && mappedAgendaItems.length === 0 ? "empty" : "success");
     if (mappedMeetings[0]) {
@@ -287,8 +356,11 @@ export function App() {
       setMeetings(demoMeetings);
       setMeetingBodies(demoBodies);
       setAgendaItems(demoAgendaItems);
+      setPacketAssemblies(demoPacketAssemblies);
+      setLoadedPacketMeetingIds(demoMeetings.map((meeting) => meeting.id));
       setApiState("success");
       setBodyState("success");
+      setPacketState("success");
       setActiveMeetingId(demoMeetings[0].id);
       return;
     }
@@ -298,13 +370,46 @@ export function App() {
         if (cancelled) return;
         setBodyError(error.message);
         setApiError(error.message);
+        setPacketError(error.message);
         setApiState("error");
         setBodyState("error");
+        setPacketState("error");
       });
     return () => {
       cancelled = true;
     };
   }, [initial.source]);
+
+  useEffect(() => {
+    if (initial.source === "demo" || qaState !== null || meetings.length === 0 || !activeMeetingId) {
+      return;
+    }
+    if (!meetings.some((meeting) => meeting.id === activeMeetingId) || loadedPacketMeetingIds.includes(activeMeetingId)) {
+      return;
+    }
+    let cancelled = false;
+    setPacketState("loading");
+    setPacketError(null);
+    fetchPacketAssemblies(activeMeetingId)
+      .then((apiPackets) => {
+        if (cancelled) return;
+        const mappedPackets = apiPackets.map(mapApiPacketAssemblyRecord);
+        setPacketAssemblies((current) => [
+          ...mappedPackets,
+          ...current.filter((record) => record.meetingId !== activeMeetingId),
+        ]);
+        setLoadedPacketMeetingIds((current) => current.includes(activeMeetingId) ? current : [...current, activeMeetingId]);
+        setPacketState("success");
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setPacketError(error.message);
+        setPacketState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMeetingId, initial.source, loadedPacketMeetingIds, meetings, qaState]);
 
   return (
     <div className="app-shell">
@@ -320,13 +425,13 @@ export function App() {
           <button className={page === "dashboard" ? "active" : ""} onClick={() => setPage("dashboard")}>
             <Icon label="Dashboard" /> Dashboard
           </button>
-          <button className={page !== "dashboard" ? "active" : ""} onClick={() => setPage("meetings")}>
+          <button className={page === "meetings" || page === "meeting-detail" ? "active" : ""} onClick={() => setPage("meetings")}>
             <Icon label="Meetings" /> Meetings
           </button>
           <button className={page === "agenda" ? "active" : ""} onClick={() => setPage("agenda")}>
             <Icon label="Agenda" /> Agenda intake
           </button>
-          <button className="muted" aria-disabled="true">
+          <button className={page === "packet" ? "active" : ""} onClick={() => setPage("packet")}>
             <Icon label="Packet" /> Packet builder
           </button>
           <button className="muted" aria-disabled="true">
@@ -429,6 +534,31 @@ export function App() {
               }}
             />
           )}
+          {page === "packet" && (
+            <PacketBuilderWorkspace
+              viewState={qaState ?? packetState}
+              apiError={packetError}
+              meetings={visibleMeetings}
+              activeMeeting={activeMeeting}
+              agendaItems={visibleAgendaItems}
+              packetAssemblies={visiblePacketAssemblies.filter((record) => record.meetingId === activeMeeting.id)}
+              setActiveMeetingId={setActiveMeetingId}
+              onCreatePacket={async (meetingId, payload) => {
+                const record = await createPacketAssembly(meetingId, payload);
+                const mapped = mapApiPacketAssemblyRecord(record);
+                setPacketAssemblies((current) => [mapped, ...current.filter((item) => item.id !== mapped.id)]);
+                setLoadedPacketMeetingIds((current) => current.includes(meetingId) ? current : [...current, meetingId]);
+                setPacketState("success");
+                return mapped;
+              }}
+              onFinalizePacket={async (recordId, actor) => {
+                const record = await finalizePacketAssembly(recordId, actor);
+                const mapped = mapApiPacketAssemblyRecord(record);
+                setPacketAssemblies((current) => current.map((item) => item.id === mapped.id ? mapped : item));
+                return mapped;
+              }}
+            />
+          )}
         </section>
         {auditOpen && <AuditDrawer meeting={activeMeeting} />}
       </main>
@@ -467,6 +597,17 @@ async function fetchAgendaIntakeItems(): Promise<ApiAgendaIntakeItem[]> {
   }
   const payload = (await response.json()) as { items?: ApiAgendaIntakeItem[] };
   return Array.isArray(payload.items) ? payload.items : [];
+}
+
+async function fetchPacketAssemblies(meetingId: string): Promise<ApiPacketAssemblyRecord[]> {
+  const response = await fetch(`/api/meetings/${meetingId}/packet-assemblies`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Packet assembly API returned ${response.status}.`);
+  }
+  const payload = (await response.json()) as { packet_assemblies?: ApiPacketAssemblyRecord[] };
+  return Array.isArray(payload.packet_assemblies) ? payload.packet_assemblies : [];
 }
 
 async function createMeetingBody(name: string, bodyType: string): Promise<ApiMeetingBody> {
@@ -564,6 +705,30 @@ async function promoteAgendaIntakeItem(itemId: string, payload: AgendaPromotionP
   return response.json();
 }
 
+async function createPacketAssembly(meetingId: string, payload: PacketAssemblyPayload): Promise<ApiPacketAssemblyRecord> {
+  const response = await fetch(`/api/meetings/${meetingId}/packet-assemblies`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Packet assembly create returned ${response.status}.`);
+  }
+  return response.json();
+}
+
+async function finalizePacketAssembly(recordId: string, actor: string): Promise<ApiPacketAssemblyRecord> {
+  const response = await fetch(`/api/packet-assemblies/${recordId}/finalize`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ actor }),
+  });
+  if (!response.ok) {
+    throw new Error(`Packet assembly finalize returned ${response.status}.`);
+  }
+  return response.json();
+}
+
 function mapApiMeeting(meeting: ApiMeeting, meetingBodies: MeetingBody[] = []): Meeting {
   const scheduled = meeting.scheduled_start ? new Date(meeting.scheduled_start) : null;
   const body = meetingBodies.find((item) => item.id === meeting.meeting_body_id);
@@ -614,6 +779,20 @@ function mapApiAgendaIntakeItem(item: ApiAgendaIntakeItem): AgendaIntakeItem {
   };
 }
 
+function mapApiPacketAssemblyRecord(record: ApiPacketAssemblyRecord): PacketAssemblyRecord {
+  const auditHash = record.audit_hash ?? record.last_audit_hash ?? "audit-hash-pending";
+  return {
+    id: record.id,
+    meetingId: record.meeting_id,
+    title: record.title,
+    status: record.status,
+    packetVersion: record.packet_version,
+    agendaItemIds: record.agenda_item_ids,
+    auditHash,
+    finalizedAt: record.finalized_at,
+  };
+}
+
 function sortBodies(a: MeetingBody, b: MeetingBody) {
   return a.name.localeCompare(b.name);
 }
@@ -658,7 +837,7 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda"];
+  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   return {
     page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : "dashboard",
@@ -1153,7 +1332,8 @@ function AgendaIntakeWorkspace({
             {items.map((item) => (
               <article key={item.id} className="agenda-row">
                 {(() => {
-                  const cannotPromote = item.readinessStatus !== "READY" || Boolean(item.promotedAgendaItemId);
+                  const isPromoted = Boolean(item.promotedAgendaItemId);
+                  const cannotPromote = item.readinessStatus !== "READY" || isPromoted;
                   const promotionLabel = item.promotedAgendaItemId
                     ? "Promoted"
                     : item.readinessStatus === "READY"
@@ -1164,7 +1344,7 @@ function AgendaIntakeWorkspace({
                 <div>
                   <div className="row-title">
                     <h3>{item.title}</h3>
-                    <StatusBadge tone={statusTone(item.readinessStatus)} label={readinessLabel(item.readinessStatus)} />
+                    <StatusBadge tone={isPromoted ? "Ready" : statusTone(item.readinessStatus)} label={isPromoted ? "Promoted" : readinessLabel(item.readinessStatus)} />
                   </div>
                   <p>{item.departmentName} - {item.submittedBy}</p>
                   <p>{item.summary}</p>
@@ -1176,14 +1356,30 @@ function AgendaIntakeWorkspace({
                   {promotionMessages[item.id] && <p className="handoff-message">{promotionMessages[item.id]}</p>}
                 </div>
                 <div className="row-actions">
-                  <button className="secondary" type="button" onClick={() => reviewItem(item.id, true)}>Mark ready</button>
-                  <button className="secondary ghost" type="button" onClick={() => reviewItem(item.id, false)}>Needs revision</button>
+                  <button
+                    className="secondary"
+                    type="button"
+                    onClick={() => reviewItem(item.id, true)}
+                    disabled={isPromoted}
+                    title={isPromoted ? "This item is already promoted. Continue in Packet Builder." : undefined}
+                  >
+                    {isPromoted ? "Ready locked" : "Mark ready"}
+                  </button>
+                  <button
+                    className="secondary ghost"
+                    type="button"
+                    onClick={() => reviewItem(item.id, false)}
+                    disabled={isPromoted}
+                    title={isPromoted ? "This item is already promoted. Continue in Packet Builder." : undefined}
+                  >
+                    Needs revision
+                  </button>
                   <button
                     className="secondary"
                     type="button"
                     onClick={() => promoteItem(item)}
                     disabled={cannotPromote}
-                    title={item.readinessStatus !== "READY" ? "Mark this item ready before promotion." : undefined}
+                    title={isPromoted ? "This item is already in agenda lifecycle work." : item.readinessStatus !== "READY" ? "Mark this item ready before promotion." : undefined}
                   >
                     {promotionLabel}
                   </button>
@@ -1191,6 +1387,184 @@ function AgendaIntakeWorkspace({
                     </>
                   );
                 })()}
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function PacketBuilderWorkspace({
+  viewState,
+  apiError,
+  meetings,
+  activeMeeting,
+  agendaItems,
+  packetAssemblies,
+  setActiveMeetingId,
+  onCreatePacket,
+  onFinalizePacket,
+}: {
+  viewState: ViewState;
+  apiError: string | null;
+  meetings: Meeting[];
+  activeMeeting: Meeting;
+  agendaItems: AgendaIntakeItem[];
+  packetAssemblies: PacketAssemblyRecord[];
+  setActiveMeetingId: (id: string) => void;
+  onCreatePacket: (meetingId: string, payload: PacketAssemblyPayload) => Promise<PacketAssemblyRecord>;
+  onFinalizePacket: (recordId: string, actor: string) => Promise<PacketAssemblyRecord>;
+}) {
+  const promotedItems = agendaItems.filter((item) => item.promotedAgendaItemId);
+  const [packetTitle, setPacketTitle] = useState("Council packet draft");
+  const [actor, setActor] = useState("clerk@example.gov");
+  const [selectedIds, setSelectedIds] = useState<string[]>(promotedItems[0]?.promotedAgendaItemId ? [promotedItems[0].promotedAgendaItemId] : []);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedIds.length === 0 && promotedItems[0]?.promotedAgendaItemId) {
+      setSelectedIds([promotedItems[0].promotedAgendaItemId]);
+    }
+  }, [promotedItems, selectedIds.length]);
+
+  if (viewState !== "success") {
+    return <StateMessage state={viewState} context="packet builder" apiError={apiError} />;
+  }
+
+  function toggleAgendaItem(agendaItemId: string) {
+    setSelectedIds((current) => current.includes(agendaItemId)
+      ? current.filter((item) => item !== agendaItemId)
+      : [...current, agendaItemId]);
+  }
+
+  async function createDraft(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    if (selectedIds.length === 0) {
+      setMessage("Choose at least one promoted agenda item before creating a packet draft. Promote an intake item first if this list is empty.");
+      return;
+    }
+    const selectedItems = promotedItems.filter((item) => item.promotedAgendaItemId && selectedIds.includes(item.promotedAgendaItemId));
+    try {
+      const record = await onCreatePacket(activeMeeting.id, {
+        title: packetTitle.trim(),
+        agenda_item_ids: selectedIds,
+        actor: actor.trim(),
+        source_references: selectedItems.flatMap((item) => item.sourceReferences),
+        citations: selectedItems.map((item) => ({
+          agenda_item_id: item.promotedAgendaItemId ?? "",
+          citation: item.sourceReferences[0]?.title ?? item.title,
+        })),
+      });
+      setMessage(`Packet draft ${record.id} created at version ${record.packetVersion}. Review source evidence, then finalize when ready to post.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Packet assembly create failed."} Confirm the meeting exists, choose promoted agenda items, then retry.`);
+    }
+  }
+
+  async function finalizeDraft(record: PacketAssemblyRecord) {
+    setMessage(null);
+    try {
+      const finalized = await onFinalizePacket(record.id, actor.trim());
+      setMessage(`Packet ${finalized.id} finalized with audit hash ${finalized.auditHash.slice(0, 12)}. Next step: run notice checklist before public posting.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Packet finalization failed."} Create a packet draft first, confirm it still exists, then retry.`);
+    }
+  }
+
+  return (
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Packet builder"
+        title="Assemble packet evidence before posting."
+        description="Choose a meeting, pull in promoted agenda items, create the packet draft, and finalize it with audit evidence."
+      />
+      <div className="metric-grid">
+        <MetricCard label="Promoted agenda items" value={String(promotedItems.length)} note="Ready to add to packet drafts" />
+        <MetricCard label="Packet drafts" value={String(packetAssemblies.filter((record) => record.status === "DRAFT").length)} note="Need final review" />
+        <MetricCard label="Finalized packets" value={String(packetAssemblies.filter((record) => record.status === "FINALIZED").length)} note="Ready for notice checklist" />
+      </div>
+      <div className="agenda-grid">
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Create packet draft</h2>
+              <p>Attach promoted agenda items and source citations to the meeting packet.</p>
+            </div>
+            <StatusBadge tone={promotedItems.length ? "Ready" : "Blocked"} label={promotedItems.length ? "Ready" : "Needs promoted item"} />
+          </div>
+          <form className="intake-form" onSubmit={createDraft}>
+            <label>
+              Meeting
+              <select value={activeMeeting.id} onChange={(event) => setActiveMeetingId(event.target.value)} required>
+                {meetings.map((meeting) => (
+                  <option key={meeting.id} value={meeting.id}>{meeting.body} - {meeting.title}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Packet title
+              <input value={packetTitle} onChange={(event) => setPacketTitle(event.target.value)} required />
+            </label>
+            <label>
+              Actor
+              <input value={actor} onChange={(event) => setActor(event.target.value)} required />
+            </label>
+            <fieldset className="wide checklist-fieldset">
+              <legend>Promoted agenda items</legend>
+              {promotedItems.length === 0 && (
+                <p className="empty-inline">No promoted agenda items yet. Open Agenda Intake, mark an item ready, then promote it into agenda lifecycle work.</p>
+              )}
+              {promotedItems.map((item) => (
+                <label key={item.id} className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(item.promotedAgendaItemId && selectedIds.includes(item.promotedAgendaItemId))}
+                    onChange={() => item.promotedAgendaItemId && toggleAgendaItem(item.promotedAgendaItemId)}
+                  />
+                  <span>{item.title} - {item.departmentName}</span>
+                </label>
+              ))}
+            </fieldset>
+            <button type="submit">Create packet draft</button>
+          </form>
+          {message && <p className="form-message">{message}</p>}
+        </section>
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Packet assembly queue</h2>
+              <p>Finalize drafts only after source evidence and citations are attached.</p>
+            </div>
+            <StatusBadge tone={packetAssemblies.length ? "Ready" : "Warning"} label={`${packetAssemblies.length} packets`} />
+          </div>
+          <div className="agenda-list">
+            {packetAssemblies.length === 0 && (
+              <p className="empty-inline">No packet drafts exist for this meeting yet. Choose promoted agenda items and create the first draft.</p>
+            )}
+            {packetAssemblies.map((record) => (
+              <article key={record.id} className="agenda-row">
+                <div>
+                  <div className="row-title">
+                    <h3>{record.title}</h3>
+                    <StatusBadge tone={record.status === "FINALIZED" ? "Ready" : "Warning"} label={record.status === "FINALIZED" ? "Finalized" : "Draft"} />
+                  </div>
+                  <p>Version {record.packetVersion} - {record.agendaItemIds.length} agenda item(s)</p>
+                  <small>Audit hash: {record.auditHash.slice(0, 12)}...</small>
+                  {record.finalizedAt && <small>Finalized: {new Date(record.finalizedAt).toLocaleString()}</small>}
+                </div>
+                <div className="row-actions">
+                  <button
+                    className="secondary"
+                    type="button"
+                    disabled={record.status === "FINALIZED"}
+                    onClick={() => finalizeDraft(record)}
+                  >
+                    {record.status === "FINALIZED" ? "Finalized" : "Finalize packet"}
+                  </button>
+                </div>
               </article>
             ))}
           </div>
