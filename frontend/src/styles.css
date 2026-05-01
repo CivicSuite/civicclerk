@@ -560,6 +560,14 @@ h2 {
   color: var(--ink-soft);
 }
 
+.handoff-message {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(45, 106, 79, 0.1);
+  color: var(--green);
+  font-size: 13px;
+}
+
 .row-title {
   display: flex;
   align-items: center;
@@ -577,6 +585,11 @@ h2 {
 .secondary.ghost {
   background: #efe4d0;
   color: var(--ink);
+}
+
+.secondary:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
 }
 
 .body-list {

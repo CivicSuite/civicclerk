@@ -138,3 +138,99 @@ async def test_api_agenda_intake_review_unknown_item_is_actionable(monkeypatch, 
 
     assert response.status_code == 404
     assert response.json()["detail"]["fix"] == "Submit the agenda item into the intake queue before review."
+
+
+async def test_api_agenda_intake_promotes_ready_item_to_agenda_lifecycle(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setenv("CIVICCLERK_AGENDA_INTAKE_DB_URL", f"sqlite:///{tmp_path / 'api-promote-intake.db'}")
+    monkeypatch.setenv("CIVICCLERK_AGENDA_ITEM_DB_URL", f"sqlite:///{tmp_path / 'api-promote-agenda.db'}")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        submitted = await client.post(
+            "/agenda-intake",
+            json={
+                "title": "Adopt fee schedule",
+                "department_name": "Finance",
+                "submitted_by": "finance@example.gov",
+                "summary": "Annual fee schedule update.",
+                "source_references": [
+                    {
+                        "source_id": "fee-table",
+                        "title": "Fee table",
+                        "kind": "spreadsheet",
+                    }
+                ],
+            },
+        )
+        reviewed = await client.post(
+            f"/agenda-intake/{submitted.json()['id']}/review",
+            json={
+                "reviewer": "clerk@example.gov",
+                "ready": True,
+                "notes": "Attorney review attached.",
+            },
+        )
+        promoted = await client.post(
+            f"/agenda-intake/{submitted.json()['id']}/promote",
+            json={
+                "reviewer": "clerk@example.gov",
+                "notes": "Ready for agenda lifecycle.",
+            },
+        )
+        repeated = await client.post(
+            f"/agenda-intake/{submitted.json()['id']}/promote",
+            json={
+                "reviewer": "clerk@example.gov",
+                "notes": "Repeated promotion click.",
+            },
+        )
+
+    assert reviewed.status_code == 200
+    assert promoted.status_code == 201
+    payload = promoted.json()
+    assert payload["message"] == "Agenda intake item promoted into the agenda lifecycle."
+    assert payload["agenda_item"]["title"] == "Adopt fee schedule"
+    assert payload["agenda_item"]["status"] == "CLERK_ACCEPTED"
+    assert payload["intake_item"]["status"] == "PROMOTED_TO_AGENDA"
+    assert payload["intake_item"]["promoted_agenda_item_id"] == payload["agenda_item"]["id"]
+    assert len(payload["intake_item"]["promotion_audit_hash"]) == 64
+    assert payload["next_step"] == "Add the agenda item to the target meeting packet assembly."
+    assert repeated.status_code == 200
+    assert repeated.json()["message"] == "Agenda intake item was already promoted."
+    assert repeated.json()["intake_item"]["promoted_agenda_item_id"] == payload["agenda_item"]["id"]
+
+
+async def test_api_agenda_intake_promote_requires_ready_review(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("CIVICCLERK_AGENDA_INTAKE_DB_URL", f"sqlite:///{tmp_path / 'api-promote-blocked-intake.db'}")
+    monkeypatch.setenv("CIVICCLERK_AGENDA_ITEM_DB_URL", f"sqlite:///{tmp_path / 'api-promote-blocked-agenda.db'}")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        submitted = await client.post(
+            "/agenda-intake",
+            json={
+                "title": "Approve paving contract",
+                "department_name": "Public Works",
+                "submitted_by": "pw@example.gov",
+                "summary": "Contract award for arterial paving.",
+                "source_references": [
+                    {
+                        "source_id": "paving-report",
+                        "title": "Paving staff report",
+                        "kind": "document",
+                    }
+                ],
+            },
+        )
+        promoted = await client.post(
+            f"/agenda-intake/{submitted.json()['id']}/promote",
+            json={
+                "reviewer": "clerk@example.gov",
+                "notes": "Trying before readiness review.",
+            },
+        )
+
+    assert promoted.status_code == 409
+    assert promoted.json()["detail"]["current_readiness_status"] == "PENDING"
+    assert promoted.json()["detail"]["fix"] == (
+        "Mark the item ready in the clerk review queue, then promote it to agenda work."
+    )

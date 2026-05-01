@@ -34,8 +34,16 @@ All notable changes to CivicClerk are documented here.
   department submission, live clerk review queue, readiness metrics, ready/revision
   review actions, audit-hash visibility, and no-dead-end state copy backed by
   `/api/agenda-intake`.
+- Ready agenda intake records can now be promoted into canonical agenda item
+  lifecycle work through `POST /agenda-intake/{id}/promote`; the promotion
+  stores the generated agenda item id, promotion timestamp, and audit hash on
+  the intake record, advances the agenda item to `CLERK_ACCEPTED`, and returns
+  the next packet-assembly step for staff.
+- The React Agenda Intake workspace now includes a "Promote to agenda" action
+  for ready records, blocks premature promotion with an actionable fix path, and
+  shows the resulting agenda lifecycle id/status after promotion.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
-  meeting scheduling, meeting schedule editing, agenda intake submit/review,
+  meeting scheduling, meeting schedule editing, agenda intake submit/review/promote,
   required error/empty state copy, and audit drawer toggling.
 - CI and `scripts/verify-release.sh` now install, audit, build, and test the
   `frontend/` package so the React app cannot drift outside the release gate.

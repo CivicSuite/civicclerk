@@ -72,6 +72,9 @@ type AgendaIntakeItem = {
   sourceReferences: Array<Record<string, string>>;
   reviewer?: string | null;
   reviewNotes?: string | null;
+  promotedAgendaItemId?: string | null;
+  promotedAt?: string | null;
+  promotionAuditHash?: string | null;
   lastAuditHash: string;
   createdAt: string;
   updatedAt: string;
@@ -88,6 +91,9 @@ type ApiAgendaIntakeItem = {
   source_references: Array<Record<string, string>>;
   reviewer?: string | null;
   review_notes?: string | null;
+  promoted_agenda_item_id?: string | null;
+  promoted_at?: string | null;
+  promotion_audit_hash?: string | null;
   last_audit_hash: string;
   created_at: string;
   updated_at: string;
@@ -105,6 +111,23 @@ type AgendaReviewPayload = {
   reviewer: string;
   ready: boolean;
   notes: string;
+};
+
+type AgendaPromotionPayload = {
+  reviewer: string;
+  notes: string;
+};
+
+type AgendaPromotionResult = {
+  intake_item: ApiAgendaIntakeItem;
+  agenda_item: {
+    id: string;
+    title: string;
+    department_name: string;
+    status: string;
+  } | null;
+  next_step: string;
+  message: string;
 };
 
 const lifecycle: LifecycleStage[] = [
@@ -205,6 +228,9 @@ const demoAgendaItems: AgendaIntakeItem[] = [
     sourceReferences: [{ source_id: "fee-table", title: "Fee table", kind: "spreadsheet" }],
     reviewer: "clerk@example.gov",
     reviewNotes: "Attorney review attached. Ready for packet assembly.",
+    promotedAgendaItemId: null,
+    promotedAt: null,
+    promotionAuditHash: null,
     lastAuditHash: "a0b1c2d3e4f506172839405162738495a6b7c8d9e0f112233445566778899001",
     createdAt: "2026-04-30T21:10:00Z",
     updatedAt: "2026-05-01T16:00:00Z",
@@ -396,6 +422,11 @@ export function App() {
                 const item = await reviewAgendaIntakeItem(itemId, payload);
                 setAgendaItems((current) => current.map((entry) => entry.id === item.id ? mapApiAgendaIntakeItem(item) : entry));
               }}
+              onPromoteItem={async (itemId, payload) => {
+                const result = await promoteAgendaIntakeItem(itemId, payload);
+                setAgendaItems((current) => current.map((entry) => entry.id === result.intake_item.id ? mapApiAgendaIntakeItem(result.intake_item) : entry));
+                return result;
+              }}
             />
           )}
         </section>
@@ -521,6 +552,18 @@ async function reviewAgendaIntakeItem(itemId: string, payload: AgendaReviewPaylo
   return response.json();
 }
 
+async function promoteAgendaIntakeItem(itemId: string, payload: AgendaPromotionPayload): Promise<AgendaPromotionResult> {
+  const response = await fetch(`/api/agenda-intake/${itemId}/promote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Agenda promotion returned ${response.status}.`);
+  }
+  return response.json();
+}
+
 function mapApiMeeting(meeting: ApiMeeting, meetingBodies: MeetingBody[] = []): Meeting {
   const scheduled = meeting.scheduled_start ? new Date(meeting.scheduled_start) : null;
   const body = meetingBodies.find((item) => item.id === meeting.meeting_body_id);
@@ -562,6 +605,9 @@ function mapApiAgendaIntakeItem(item: ApiAgendaIntakeItem): AgendaIntakeItem {
     sourceReferences: item.source_references,
     reviewer: item.reviewer,
     reviewNotes: item.review_notes,
+    promotedAgendaItemId: item.promoted_agenda_item_id,
+    promotedAt: item.promoted_at,
+    promotionAuditHash: item.promotion_audit_hash,
     lastAuditHash: item.last_audit_hash,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
@@ -943,12 +989,14 @@ function AgendaIntakeWorkspace({
   items,
   onSubmitItem,
   onReviewItem,
+  onPromoteItem,
 }: {
   viewState: ViewState;
   apiError: string | null;
   items: AgendaIntakeItem[];
   onSubmitItem: (payload: AgendaIntakePayload) => Promise<void>;
   onReviewItem: (itemId: string, payload: AgendaReviewPayload) => Promise<void>;
+  onPromoteItem: (itemId: string, payload: AgendaPromotionPayload) => Promise<AgendaPromotionResult>;
 }) {
   const [title, setTitle] = useState("Approve downtown zoning study");
   const [departmentName, setDepartmentName] = useState("Planning");
@@ -958,6 +1006,7 @@ function AgendaIntakeWorkspace({
   const [reviewer, setReviewer] = useState("clerk@example.gov");
   const [reviewNotes, setReviewNotes] = useState("Complete for packet assembly.");
   const [message, setMessage] = useState<string | null>(null);
+  const [promotionMessages, setPromotionMessages] = useState<Record<string, string>>({});
   const pendingCount = items.filter((item) => item.readinessStatus === "PENDING").length;
   const readyCount = items.filter((item) => item.readinessStatus === "READY").length;
   const revisionCount = items.filter((item) => item.readinessStatus === "NEEDS_REVISION").length;
@@ -1003,6 +1052,34 @@ function AgendaIntakeWorkspace({
       return;
     }
     setMessage(ready ? "Marked ready for clerk packet work. The audit hash changed for this review." : "Sent back for revision with clerk notes and audit evidence.");
+  }
+
+  async function promoteItem(item: AgendaIntakeItem) {
+    setMessage(null);
+    if (item.readinessStatus !== "READY") {
+      setPromotionMessages((current) => ({
+        ...current,
+        [item.id]: "This item must be marked ready before promotion. Use Mark ready, confirm the audit hash changes, then promote it.",
+      }));
+      return;
+    }
+    try {
+      const result = await onPromoteItem(item.id, {
+        reviewer: reviewer.trim(),
+        notes: reviewNotes.trim(),
+      });
+      const agendaId = result.agenda_item?.id ?? result.intake_item.promoted_agenda_item_id ?? "created agenda item";
+      const status = result.agenda_item?.status ?? "agenda lifecycle";
+      setPromotionMessages((current) => ({
+        ...current,
+        [item.id]: `${result.message} Agenda item ${agendaId} is now ${status}. Next step: ${result.next_step}`,
+      }));
+    } catch (error) {
+      setPromotionMessages((current) => ({
+        ...current,
+        [item.id]: `${error instanceof Error ? error.message : "Agenda promotion failed."} Mark the item ready, confirm the API is running, then retry promotion.`,
+      }));
+    }
   }
 
   return (
@@ -1075,6 +1152,15 @@ function AgendaIntakeWorkspace({
             )}
             {items.map((item) => (
               <article key={item.id} className="agenda-row">
+                {(() => {
+                  const cannotPromote = item.readinessStatus !== "READY" || Boolean(item.promotedAgendaItemId);
+                  const promotionLabel = item.promotedAgendaItemId
+                    ? "Promoted"
+                    : item.readinessStatus === "READY"
+                      ? "Promote to agenda"
+                      : "Review first";
+                  return (
+                    <>
                 <div>
                   <div className="row-title">
                     <h3>{item.title}</h3>
@@ -1084,11 +1170,27 @@ function AgendaIntakeWorkspace({
                   <p>{item.summary}</p>
                   <small>Audit hash: {item.lastAuditHash.slice(0, 12)}... Source: {item.sourceReferences[0]?.title ?? "No source title"}</small>
                   {item.reviewNotes && <small>Last review: {item.reviewNotes}</small>}
+                  {item.promotedAgendaItemId && (
+                    <small>Agenda lifecycle: {item.promotedAgendaItemId} promoted {item.promotedAt ? new Date(item.promotedAt).toLocaleString() : "today"}</small>
+                  )}
+                  {promotionMessages[item.id] && <p className="handoff-message">{promotionMessages[item.id]}</p>}
                 </div>
                 <div className="row-actions">
                   <button className="secondary" type="button" onClick={() => reviewItem(item.id, true)}>Mark ready</button>
                   <button className="secondary ghost" type="button" onClick={() => reviewItem(item.id, false)}>Needs revision</button>
+                  <button
+                    className="secondary"
+                    type="button"
+                    onClick={() => promoteItem(item)}
+                    disabled={cannotPromote}
+                    title={item.readinessStatus !== "READY" ? "Mark this item ready before promotion." : undefined}
+                  >
+                    {promotionLabel}
+                  </button>
                 </div>
+                    </>
+                  );
+                })()}
               </article>
             ))}
           </div>
