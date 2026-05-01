@@ -757,6 +757,26 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByRole("button", { name: "Attach posting proof" })).toBeDisabled();
   });
 
+  it("shows each official notice proof obligation before legal proof is complete", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Notice checklist/ }));
+
+    expect(screen.getByRole("heading", { name: "Official notice record" })).toBeInTheDocument();
+    expect(screen.getAllByText("Proof incomplete").length).toBeGreaterThan(0);
+    expect(screen.getByText("Finalized packet available before notice proof.")).toBeInTheDocument();
+    expect(screen.getByText(/Computed deadline/)).toBeInTheDocument();
+    expect(screen.getByText("Missing statutory basis. Enter the law, ordinance, or emergency/special basis.")).toBeInTheDocument();
+    expect(screen.getByText("No clerk or authorized approver recorded yet.")).toBeInTheDocument();
+    expect(screen.getByText("No public URL or physical posting location attached yet.")).toBeInTheDocument();
+    expect(screen.getByText("No audit hash visible yet.")).toBeInTheDocument();
+    expect(screen.getAllByText("Packet finalized").length).toBeGreaterThan(0);
+    expect(screen.getByText("Statutory deadline met")).toBeInTheDocument();
+    expect(screen.getByText("Human approval")).toBeInTheDocument();
+    expect(screen.getByText("Posting proof")).toBeInTheDocument();
+  });
+
   it("shows resident-safe public posted meeting records and archive search", async () => {
     render(<App />);
 
@@ -817,6 +837,21 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getAllByText(/Staff to prepare the signed resolution/)).toHaveLength(2);
   });
 
+  it("keeps meeting outcomes visibly append-only and source-linked", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Outcomes/ }));
+
+    expect(screen.getByRole("heading", { name: "Outcome ledger" })).toBeInTheDocument();
+    expect(screen.getByText("Append-only")).toBeInTheDocument();
+    expect(screen.getByText(/Motions and votes are immutable/)).toBeInTheDocument();
+    expect(await screen.findAllByText("Move to approve sidewalk repairs.")).toHaveLength(2);
+    expect(screen.getByText(/Motion ID: motion-existing/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Votes for Move to approve sidewalk repairs.")).toHaveTextContent("Council Member Patel: aye");
+    expect(screen.getByText(/action items linked/)).toBeInTheDocument();
+  });
+
   it("creates citation-gated minutes drafts and shows the human posting gate", async () => {
     render(<App />);
 
@@ -835,6 +870,21 @@ describe("CivicClerk staff workspace", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Try public posting gate" })[0]);
     expect(await screen.findByText(/AI-drafted minutes cannot be posted automatically/)).toBeInTheDocument();
     expect(screen.getByText(/human approval workflow/)).toBeInTheDocument();
+  });
+
+  it("blocks minutes draft creation when any material sentence lacks a citation", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Minutes/ }));
+    expect(screen.getByText(/Every sentence must point back to source material/)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Citations for sentence 2"), { target: { value: "   " } });
+    fireEvent.click(screen.getByRole("button", { name: "Create cited draft" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("every material sentence needs at least one citation");
+    expect(screen.getByRole("status")).toHaveTextContent("Add a source ID to each citation field");
+    expect(screen.getByText("Human approval required")).toBeInTheDocument();
   });
 
   it("opens the meeting calendar and a meeting detail workspace", async () => {
