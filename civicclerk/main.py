@@ -31,6 +31,11 @@ from civicclerk.meeting_lifecycle import MeetingScheduleUpdateError, MeetingStor
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
 from civicclerk.notice_checklist import NoticeChecklistRepository
+from civicclerk.oidc_auth import (
+    authorize_oidc_staff_token,
+    load_oidc_staff_auth_config,
+    oidc_config_errors,
+)
 from civicclerk.packet_assembly import PacketAssemblyRepository
 from civicclerk.packet_notice import (
     NoticeStore,
@@ -67,6 +72,14 @@ STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR = "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES"
 STAFF_OPEN_MODE = "open"
 STAFF_BEARER_MODE = "bearer"
 STAFF_TRUSTED_HEADER_MODE = "trusted_header"
+STAFF_OIDC_MODE = "oidc"
+STAFF_AUTH_OIDC_PROVIDER_ENV_VAR = "CIVICCLERK_STAFF_OIDC_PROVIDER"
+STAFF_AUTH_OIDC_ISSUER_ENV_VAR = "CIVICCLERK_STAFF_OIDC_ISSUER"
+STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR = "CIVICCLERK_STAFF_OIDC_AUDIENCE"
+STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR = "CIVICCLERK_STAFF_OIDC_JWKS_URL"
+STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR = "CIVICCLERK_STAFF_OIDC_JWKS_JSON"
+STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR = "CIVICCLERK_STAFF_OIDC_ROLE_CLAIMS"
+STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR = "CIVICCLERK_STAFF_OIDC_ALGORITHMS"
 DEMO_SEED_ENV_VAR = "CIVICCLERK_DEMO_SEED"
 DEFAULT_STAFF_SSO_PROVIDER = "trusted reverse proxy"
 DEFAULT_STAFF_SSO_PRINCIPAL_HEADER = "X-Forwarded-Email"
@@ -451,8 +464,9 @@ async def staff_session(request: Request) -> dict[str, object]:
             "message": "Staff workflow access is running in local open mode.",
             "fix": (
                 f"Set {STAFF_AUTH_MODE_ENV_VAR}={STAFF_BEARER_MODE} and configure "
-                f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR}, or switch to "
-                f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_TRUSTED_HEADER_MODE} behind a trusted reverse proxy."
+                f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR}, switch to "
+                f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_TRUSTED_HEADER_MODE} behind a trusted reverse proxy, "
+                f"or use {STAFF_AUTH_MODE_ENV_VAR}={STAFF_OIDC_MODE} with municipal OIDC settings."
             ),
         }
 
@@ -481,6 +495,12 @@ async def staff_session(request: Request) -> dict[str, object]:
         response["message"] = "Bearer token accepted for staff workflow access."
         response["fix"] = (
             "Keep this token scoped to clerk workflow roles until the trusted-header SSO bridge is ready."
+        )
+        return response
+    if mode == STAFF_OIDC_MODE:
+        response["message"] = "OIDC staff identity accepted from the configured municipal provider."
+        response["fix"] = (
+            "Keep the identity provider app roles or groups mapped to CivicClerk staff roles."
         )
         return response
 
@@ -521,12 +541,15 @@ async def staff_auth_readiness() -> dict[str, object]:
             "message": "Local open mode is ready for rehearsal, but not for real staff deployment.",
             "fix": (
                 f"Set {STAFF_AUTH_MODE_ENV_VAR}={STAFF_BEARER_MODE} with "
-                f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR}, or switch to "
-                f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_TRUSTED_HEADER_MODE} behind a trusted reverse proxy."
+                f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR}, switch to "
+                f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_TRUSTED_HEADER_MODE} behind a trusted reverse proxy, "
+                f"or use {STAFF_AUTH_MODE_ENV_VAR}={STAFF_OIDC_MODE} with municipal OIDC settings."
             ),
         }
     if mode == STAFF_BEARER_MODE:
         return _get_staff_bearer_auth_readiness()
+    if mode == STAFF_OIDC_MODE:
+        return _get_staff_oidc_auth_readiness()
     return _get_staff_trusted_header_readiness()
 
 
@@ -1470,6 +1493,21 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
             allowed_roles=STAFF_ALLOWED_ROLES,
             provider_name=trusted_header_config.provider_name,
         )
+    if mode == STAFF_OIDC_MODE:
+        authorization = request.headers.get("authorization", "").strip()
+        credentials: HTTPAuthorizationCredentials | None = None
+        if authorization:
+            scheme, _, token = authorization.partition(" ")
+            credentials = HTTPAuthorizationCredentials(
+                scheme=scheme,
+                credentials=token.strip(),
+            )
+        return authorize_oidc_staff_token(
+            credentials,
+            config=_get_staff_oidc_config(),
+            allowed_roles=STAFF_ALLOWED_ROLES,
+            env_names=_staff_oidc_env_names(),
+        )
     raise HTTPException(
         status_code=500,
         detail={
@@ -1481,7 +1519,7 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
 
 def _get_staff_auth_mode() -> str:
     raw_mode = os.environ.get(STAFF_AUTH_MODE_ENV_VAR, STAFF_OPEN_MODE).strip().lower()
-    if raw_mode in {STAFF_OPEN_MODE, STAFF_BEARER_MODE, STAFF_TRUSTED_HEADER_MODE}:
+    if raw_mode in {STAFF_OPEN_MODE, STAFF_BEARER_MODE, STAFF_TRUSTED_HEADER_MODE, STAFF_OIDC_MODE}:
         return raw_mode
     raise HTTPException(
         status_code=503,
@@ -1490,7 +1528,8 @@ def _get_staff_auth_mode() -> str:
             "fix": (
                 f"Set {STAFF_AUTH_MODE_ENV_VAR} to '{STAFF_OPEN_MODE}' for local rehearsal "
                 f"or '{STAFF_BEARER_MODE}' for bearer-protected staff APIs, "
-                f"or '{STAFF_TRUSTED_HEADER_MODE}' for trusted reverse-proxy SSO headers."
+                f"or '{STAFF_TRUSTED_HEADER_MODE}' for trusted reverse-proxy SSO headers, "
+                f"or '{STAFF_OIDC_MODE}' for municipal OIDC access tokens."
             ),
         },
     )
@@ -1635,6 +1674,126 @@ def _get_staff_bearer_auth_readiness() -> dict[str, object]:
                 "source_references": [{"label": "Smoke check memo", "url": "https://city.example.gov/memo"}],
             },
             "note": "This write probe should return 201 only after the bearer session probe proves the operator token is mapped to a staff role.",
+        },
+    }
+
+
+def _get_staff_oidc_config():
+    return load_oidc_staff_auth_config(
+        provider_env_var=STAFF_AUTH_OIDC_PROVIDER_ENV_VAR,
+        issuer_env_var=STAFF_AUTH_OIDC_ISSUER_ENV_VAR,
+        audience_env_var=STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR,
+        jwks_url_env_var=STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR,
+        jwks_json_env_var=STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
+        role_claims_env_var=STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
+        algorithms_env_var=STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
+    )
+
+
+def _staff_oidc_env_names() -> dict[str, str]:
+    return {
+        "provider": STAFF_AUTH_OIDC_PROVIDER_ENV_VAR,
+        "issuer": STAFF_AUTH_OIDC_ISSUER_ENV_VAR,
+        "audience": STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR,
+        "jwks_url": STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR,
+        "jwks_json": STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
+        "role_claims": STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
+        "algorithms": STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
+    }
+
+
+def _get_staff_oidc_auth_readiness() -> dict[str, object]:
+    config = _get_staff_oidc_config()
+    env_names = _staff_oidc_env_names()
+    missing = oidc_config_errors(config)
+    checks = [
+        {
+            "name": "staff auth mode",
+            "status": "configured",
+            "value": STAFF_OIDC_MODE,
+        },
+        {
+            "name": STAFF_AUTH_OIDC_PROVIDER_ENV_VAR,
+            "status": "configured",
+            "value": config.provider,
+        },
+        {
+            "name": STAFF_AUTH_OIDC_ISSUER_ENV_VAR,
+            "status": "configured" if config.issuer else "missing",
+            "value": "configured" if config.issuer else "missing issuer",
+        },
+        {
+            "name": STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR,
+            "status": "configured" if config.audience else "missing",
+            "value": "configured" if config.audience else "missing audience",
+        },
+        {
+            "name": STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR,
+            "status": "configured" if config.jwks_url or config.jwks_json else "missing",
+            "value": "configured" if config.jwks_url or config.jwks_json else "missing JWKS",
+        },
+        {
+            "name": STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
+            "status": "configured" if config.role_claims else "missing",
+            "value": ",".join(config.role_claims) or "missing role claims",
+        },
+        {
+            "name": STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
+            "status": "configured" if config.algorithms else "missing",
+            "value": ",".join(config.algorithms) or "missing algorithms",
+        },
+    ]
+    if missing:
+        missing_names = ", ".join(env_names[name] for name in missing if name in env_names)
+        if "jwks" in missing:
+            missing_names = (
+                f"{missing_names}, {STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR} "
+                f"or {STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR}"
+            ).strip(", ")
+        return {
+            "mode": STAFF_OIDC_MODE,
+            "ready": False,
+            "deployment_ready": False,
+            "provider": config.provider,
+            "issuer": "configured" if config.issuer else None,
+            "audience": "configured" if config.audience else None,
+            "role_claims": list(config.role_claims),
+            "algorithms": list(config.algorithms),
+            "checks": checks,
+            "message": "OIDC staff auth is selected, but required provider settings are missing.",
+            "fix": f"Set {missing_names} before testing protected staff routes.",
+        }
+    return {
+        "mode": STAFF_OIDC_MODE,
+        "ready": True,
+        "deployment_ready": True,
+        "provider": config.provider,
+        "issuer": "configured",
+        "audience": "configured",
+        "jwks": "configured",
+        "role_claims": list(config.role_claims),
+        "algorithms": list(config.algorithms),
+        "checks": checks,
+        "message": "OIDC staff auth is configured for municipal identity-provider access tokens.",
+        "fix": "Use an access token with a CivicClerk staff app role or group claim before user testing.",
+        "session_probe": {
+            "method": "GET",
+            "path": "/staff/session",
+            "headers": {"Authorization": "Bearer <OIDC access token>"},
+            "note": "Run this with an access token issued for the configured CivicClerk audience.",
+        },
+        "write_probe": {
+            "method": "POST",
+            "path": "/agenda-intake",
+            "headers": {"Authorization": "Bearer <OIDC access token>"},
+            "body": {
+                "title": "OIDC protected deployment smoke check",
+                "department_name": "Clerk",
+                "submitted_by": "clerk@example.gov",
+                "summary": "Confirm OIDC-protected staff writes succeed after the session probe passes.",
+                "source_references": [{"label": "Smoke check memo", "url": "https://city.example.gov/memo"}],
+            },
+            "note": "This write probe should return 201 only after the OIDC session probe proves the staff role mapping.",
         },
     }
 

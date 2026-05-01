@@ -377,8 +377,8 @@ def render_staff_dashboard(
     <section class="hero">
       <div class="eyebrow">CivicClerk v{__version__}</div>
       <h1>CivicClerk Staff Workflow Screens</h1>
-      <p class="status">These are browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly and export, notice checklist/posting proof, outcome capture, cited minutes drafting, public archive publishing, and connector import work, and they now disclose whether the service is running in local open mode, bearer-protected staff mode, or trusted-header staff mode.</p>
-      <p>The screens show the live API paths, safe next actions, required staff states, actionable fix copy, and the first deployment-ready staff auth contract for the service slices available today. Full OIDC login is not shipped yet; this screen is the bridge contract until that lands.</p>
+      <p class="status">These are browser-visible staff workflow screens for the released API foundation. They guide agenda intake review, packet assembly and export, notice checklist/posting proof, outcome capture, cited minutes drafting, public archive publishing, and connector import work, and they now disclose whether the service is running in local open mode, bearer-protected staff mode, trusted-header staff mode, or OIDC-protected staff mode.</p>
+      <p>The screens show the live API paths, safe next actions, required staff states, actionable fix copy, and the first deployment-ready staff auth contract for the service slices available today. OIDC mode accepts municipal identity-provider access tokens when issuer, audience, JWKS, and role claims are configured.</p>
     </section>
 
     <section class="cockpit" aria-labelledby="cockpit-heading">
@@ -402,10 +402,10 @@ def render_staff_dashboard(
       <div class="auth-grid">
         <div>
           <h2 id="staff-auth-heading">Staff access and readiness check</h2>
-          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, either switch the service to bearer mode and enter a token mapped through <code>CIVICCLERK_STAFF_AUTH_TOKEN_ROLES</code>, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>. Start the first nginx bridge handoff from <code>docs/examples/trusted-header-nginx.conf</code>. If you need a one-workstation trusted-header rehearsal first, use <code>scripts/local_trusted_header_proxy.py</code> with the loopback starter allowlist <code>127.0.0.1/32</code> instead of sending identity headers straight to the app.</p>
-          <p>The readiness check uses <code>/staff/auth-readiness</code> to tell IT staff whether the current auth mode is deployment-ready before a live authenticated session is tested, and it now returns a concrete session probe plus a protected write probe when bearer or trusted-header mode is ready.</p>
-          <label>Bearer token for staff actions
-            <input id="staff-auth-token" name="staff_auth_token" placeholder="Paste bearer token when bearer mode is enabled" autocomplete="off">
+          <p>Use this panel before live staff actions. In local rehearsals, CivicClerk can run in open mode. For real staff access, switch the service to OIDC mode with issuer, audience, JWKS, and role-claim settings from the municipal identity provider; use bearer mode only for smaller protected pilots, or front the service with a trusted reverse proxy that injects <code>CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER</code> and <code>CIVICCLERK_STAFF_SSO_ROLES_HEADER</code> from a source inside <code>CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES</code>. Start the first nginx bridge handoff from <code>docs/examples/trusted-header-nginx.conf</code>. If you need a one-workstation trusted-header rehearsal first, use <code>scripts/local_trusted_header_proxy.py</code> with the loopback starter allowlist <code>127.0.0.1/32</code> instead of sending identity headers straight to the app.</p>
+          <p>The readiness check uses <code>/staff/auth-readiness</code> to tell IT staff whether the current auth mode is deployment-ready before a live authenticated session is tested, and it now returns a concrete session probe plus a protected write probe when bearer, trusted-header, or OIDC mode is ready.</p>
+          <label>Bearer or OIDC token for staff actions
+            <input id="staff-auth-token" name="staff_auth_token" placeholder="Paste bearer or OIDC access token when a protected mode is enabled" autocomplete="off">
           </label>
           <div class="live-actions">
             <button class="cta" id="staff-auth-refresh" type="button">Check staff access</button>

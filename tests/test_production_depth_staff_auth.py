@@ -1,9 +1,21 @@
 from __future__ import annotations
 
+import base64
+import json
+from datetime import UTC, datetime, timedelta
+
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from civicclerk.main import (
+    STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
+    STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR,
+    STAFF_AUTH_OIDC_ISSUER_ENV_VAR,
+    STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
+    STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR,
+    STAFF_AUTH_OIDC_PROVIDER_ENV_VAR,
+    STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
     STAFF_AUTH_MODE_ENV_VAR,
     STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR,
     STAFF_AUTH_SSO_PROVIDER_ENV_VAR,
@@ -11,6 +23,7 @@ from civicclerk.main import (
     STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
     STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
     STAFF_BEARER_MODE,
+    STAFF_OIDC_MODE,
     STAFF_TRUSTED_HEADER_MODE,
     app,
 )
@@ -29,8 +42,9 @@ async def test_staff_session_reports_open_mode_by_default() -> None:
         "message": "Staff workflow access is running in local open mode.",
         "fix": (
             "Set CIVICCLERK_STAFF_AUTH_MODE=bearer and configure "
-            "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES, or switch to "
-            "CIVICCLERK_STAFF_AUTH_MODE=trusted_header behind a trusted reverse proxy."
+            "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES, switch to "
+            "CIVICCLERK_STAFF_AUTH_MODE=trusted_header behind a trusted reverse proxy, "
+            "or use CIVICCLERK_STAFF_AUTH_MODE=oidc with municipal OIDC settings."
         ),
     }
 
@@ -60,7 +74,7 @@ async def test_staff_page_discloses_open_and_bearer_modes_without_claiming_sso()
     assert "local open mode" in lowered
     assert "bearer-protected staff mode" in lowered
     assert "trusted-header staff mode" in lowered
-    assert "full oidc login is not shipped yet" in lowered
+    assert "oidc-protected staff mode" in lowered
 
 
 @pytest.mark.asyncio
@@ -158,6 +172,112 @@ async def test_bearer_mode_readiness_requires_token_role_mapping(
     assert STAFF_AUTH_TOKEN_ROLES_ENV_VAR in response.json()["fix"]
     assert "session_probe" not in response.json()
     assert "write_probe" not in response.json()
+
+
+@pytest.mark.asyncio
+async def test_oidc_mode_readiness_requires_provider_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_OIDC_MODE)
+    _clear_oidc_env(monkeypatch)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/auth-readiness")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "oidc"
+    assert response.json()["ready"] is False
+    assert response.json()["deployment_ready"] is False
+    assert "required provider settings are missing" in response.json()["message"]
+    assert STAFF_AUTH_OIDC_ISSUER_ENV_VAR in response.json()["fix"]
+    assert STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR in response.json()["fix"]
+    assert STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR in response.json()["fix"]
+    assert "session_probe" not in response.json()
+
+
+@pytest.mark.asyncio
+async def test_oidc_mode_accepts_staff_role_token_for_session_and_write(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    token = _configure_oidc(monkeypatch, roles=["clerk_admin", "meeting_editor"])
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        session = await client.get("/staff/session", headers={"Authorization": f"Bearer {token}"})
+        create = await client.post(
+            "/agenda-intake",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "title": "OIDC auth check",
+                "department_name": "Clerk",
+                "submitted_by": "clerk@example.gov",
+                "summary": "Test OIDC protected agenda intake.",
+                "source_references": [{"label": "Memo", "url": "https://city.example.gov/memo"}],
+            },
+        )
+
+    assert session.status_code == 200
+    assert session.json()["mode"] == "oidc"
+    assert session.json()["auth_method"] == "oidc"
+    assert session.json()["provider"] == "Brookfield Entra ID"
+    assert session.json()["subject"] == "clerk@example.gov"
+    assert session.json()["roles"] == ["clerk_admin", "meeting_editor"]
+    assert create.status_code == 201
+    assert create.json()["title"] == "OIDC auth check"
+
+
+@pytest.mark.asyncio
+async def test_oidc_mode_rejects_underprivileged_identity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    token = _configure_oidc(monkeypatch, roles=["archive_reader"])
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.post(
+            "/agenda-intake",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "title": "OIDC auth check",
+                "department_name": "Clerk",
+                "submitted_by": "records@example.gov",
+                "summary": "Test OIDC protected agenda intake.",
+                "source_references": [{"label": "Memo", "url": "https://city.example.gov/memo"}],
+            },
+        )
+
+    assert response.status_code == 403
+    assert response.json()["detail"]["message"] == "OIDC identity lacks an allowed staff role."
+    assert response.json()["detail"]["principal_roles"] == ["archive_reader"]
+    assert response.json()["detail"]["required_roles"] == [
+        "city_attorney",
+        "clerk_admin",
+        "clerk_editor",
+        "meeting_editor",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_oidc_mode_readiness_reports_session_and_write_probes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _configure_oidc(monkeypatch, roles=["clerk_admin"])
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/auth-readiness")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "oidc"
+    assert response.json()["ready"] is True
+    assert response.json()["deployment_ready"] is True
+    assert response.json()["provider"] == "Brookfield Entra ID"
+    assert response.json()["issuer"] == "configured"
+    assert response.json()["audience"] == "configured"
+    assert response.json()["jwks"] == "configured"
+    assert response.json()["role_claims"] == ["roles", "groups"]
+    assert response.json()["algorithms"] == ["HS256"]
+    assert response.json()["session_probe"]["path"] == "/staff/session"
+    assert response.json()["session_probe"]["headers"] == {"Authorization": "Bearer <OIDC access token>"}
+    assert response.json()["write_probe"]["path"] == "/agenda-intake"
+    assert "OIDC-protected staff writes" in response.json()["write_probe"]["body"]["summary"]
 
 
 @pytest.mark.asyncio
@@ -439,3 +559,62 @@ async def test_invalid_staff_auth_mode_returns_actionable_503(monkeypatch: pytes
     assert response.status_code == 503
     assert response.json()["detail"]["message"] == "CivicClerk staff auth mode is invalid."
     assert STAFF_AUTH_MODE_ENV_VAR in response.json()["detail"]["fix"]
+
+
+def _clear_oidc_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in (
+        STAFF_AUTH_OIDC_PROVIDER_ENV_VAR,
+        STAFF_AUTH_OIDC_ISSUER_ENV_VAR,
+        STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR,
+        STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
+        STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
+        STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+
+def _configure_oidc(monkeypatch: pytest.MonkeyPatch, *, roles: list[str]) -> str:
+    secret = "brookfield-oidc-test-secret-with-32-bytes"
+    issuer = "https://login.example.gov/brookfield/v2.0"
+    audience = "api://civicclerk"
+    key_id = "brookfield-key-1"
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_OIDC_MODE)
+    monkeypatch.setenv(STAFF_AUTH_OIDC_PROVIDER_ENV_VAR, "Brookfield Entra ID")
+    monkeypatch.setenv(STAFF_AUTH_OIDC_ISSUER_ENV_VAR, issuer)
+    monkeypatch.setenv(STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR, audience)
+    monkeypatch.setenv(STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR, "roles,groups")
+    monkeypatch.setenv(STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR, "HS256")
+    monkeypatch.setenv(
+        STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
+        json.dumps(
+            {
+                "keys": [
+                    {
+                        "kty": "oct",
+                        "kid": key_id,
+                        "k": _base64url(secret.encode("utf-8")),
+                        "alg": "HS256",
+                    }
+                ]
+            }
+        ),
+    )
+    now = datetime.now(UTC)
+    return jwt.encode(
+        {
+            "iss": issuer,
+            "aud": audience,
+            "sub": "staff-subject",
+            "preferred_username": "clerk@example.gov",
+            "roles": roles,
+            "iat": now,
+            "exp": now + timedelta(minutes=15),
+        },
+        secret,
+        algorithm="HS256",
+        headers={"kid": key_id},
+    )
+
+
+def _base64url(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).decode("ascii").rstrip("=")
