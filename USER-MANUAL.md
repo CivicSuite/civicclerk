@@ -211,6 +211,18 @@ required docs/env examples/rehearsal helpers. It is intentionally not an
 installer; it tells IT what must be fixed before a future MSI or setup package
 can safely be built.
 
+Before live-sync design work, verify the local connector contract:
+
+```bash
+python scripts/check_connector_sync_readiness.py
+```
+
+This check normalizes the supported Granicus, Legistar, PrimeGov, and
+NovusAGENDA sample payloads without outbound network calls. It can also validate
+a proposed `--source-url` or `--odbc-connection-string` with the shared
+CivicCore host guards. It is intentionally not live sync; it tells the team what
+must be fixed before scheduled vendor polling or database sync is designed.
+
 Before IT moves beyond local rehearsal, print the deployment preflight:
 
 ```bash

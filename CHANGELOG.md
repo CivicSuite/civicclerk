@@ -5,6 +5,9 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `scripts/check_connector_sync_readiness.py` now verifies the supported
+  Granicus, Legistar, PrimeGov, and NovusAGENDA local payload contracts without
+  outbound network calls before future scheduled live-sync work.
 - `scripts/check_installer_readiness.py` now verifies release artifacts,
   checksums, and release handoff bundle contents as the first installer input
   contract without claiming CivicClerk ships an installer yet.
@@ -57,6 +60,7 @@ All notable changes to CivicClerk are documented here.
   injected headers, steps, and warnings for `scripts/local_trusted_header_proxy.py`.
 
 ### Changed
+- Release handoff bundles now include the connector sync readiness helper.
 - Release handoff bundles now include the installer-readiness helper.
 - Release handoff bundles now include the deployment env profile example and
   protected deployment smoke helper.
