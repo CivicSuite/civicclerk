@@ -58,6 +58,11 @@ All notable changes to CivicClerk are documented here.
   finalization, statutory deadline, statutory basis, human approval, posting
   proof, and immutable audit hash so clerks can see exactly which obligation is
   still missing.
+- The React dashboard now includes a Clerk Meeting Runbook that reads the
+  meeting, agenda, packet, notice, outcomes, minutes, and public posting data
+  already loaded by the staff app, shows ready/warning/blocked lifecycle gates,
+  highlights legal notice blockers, and opens the next safe workspace for the
+  selected meeting.
 - The React staff workspace now includes a resident-oriented Public Posting
   portal: public meeting list/detail/search over the public archive APIs,
   separate official agenda/packet/approved-minutes sections, missing-record

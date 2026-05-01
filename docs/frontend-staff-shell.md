@@ -3,7 +3,8 @@
 Status: Sprint 4 implementation slice with live agenda intake promotion,
 packet builder draft/finalize workflow, legally explicit notice checklist work,
 resident-oriented public posted-meeting portal, first meeting outcomes workspace, and
-first minutes draft workspace.
+first minutes draft workspace. The dashboard now includes a clerk meeting
+runbook that ties those workspaces into one end-to-end next-action path.
 
 The `frontend/` package is the start of the production React app that will
 replace the HTML reference shell at `/staff`. It is adapted from the CivicSuite
@@ -16,6 +17,11 @@ mockup's browser-global JSX bundle.
   switcher, search affordance, and partial-install disclosure.
 - CivicClerk dashboard with priority work, meeting metrics, and clear clerk
   next actions.
+- Dashboard Meeting Runbook that derives each meeting's next safe action from
+  scheduled meeting data, agenda promotion, packet finalization, notice legal
+  proof, captured outcomes, citation-gated minutes, and public posting records.
+  It shows ready/warning/blocked gates and routes clerks into the right
+  workspace instead of making them stitch the lifecycle together manually.
 - Meeting calendar for Sprint 1 navigation.
 - Meeting detail workspace with the eight-stage lifecycle ribbon.
 - Right-side audit/evidence drawer per meeting object.

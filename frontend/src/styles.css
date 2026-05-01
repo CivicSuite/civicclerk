@@ -348,6 +348,124 @@ h2 {
   text-align: left;
 }
 
+.runbook-panel {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(232, 221, 199, 0.68)),
+    radial-gradient(circle at top right, rgba(197, 170, 74, 0.26), transparent 42%);
+}
+
+.runbook-panel::before {
+  content: "";
+  position: absolute;
+  inset: 18px auto 18px 18px;
+  width: 7px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--navy), var(--gold), var(--green));
+}
+
+.runbook-hero {
+  position: relative;
+  padding-left: 18px;
+}
+
+.runbook-hero p {
+  max-width: 720px;
+}
+
+.runbook-legal-alert {
+  display: grid;
+  gap: 6px;
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(164, 54, 39, 0.28);
+  border-radius: 18px;
+  background: #fff5f3;
+  color: var(--red);
+}
+
+.runbook-legal-alert span {
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.runbook-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.runbook-steps li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  min-height: 235px;
+  padding: 14px;
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  background: rgba(255, 253, 247, 0.78);
+}
+
+.runbook-steps li.ready {
+  border-color: rgba(31, 98, 74, 0.24);
+  background: #eef7f1;
+}
+
+.runbook-steps li.warning {
+  border-color: rgba(197, 170, 74, 0.42);
+  background: #fff8df;
+}
+
+.runbook-steps li.blocked {
+  border-color: rgba(164, 54, 39, 0.22);
+  background: #fff5f3;
+}
+
+.runbook-index {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--navy);
+  color: white;
+  font-weight: 900;
+}
+
+.runbook-row {
+  display: grid;
+  gap: 8px;
+}
+
+.runbook-steps li > div {
+  min-width: 0;
+}
+
+.runbook-row strong,
+.runbook-steps p {
+  margin: 0;
+}
+
+.runbook-steps p {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+.runbook-steps button {
+  margin-top: 14px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  background: var(--navy);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .calendar-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -1185,7 +1303,9 @@ h2 {
   }
 
   .panel-heading,
-  .row-title {
+  .row-title,
+  .task-list button,
+  .meeting-list button {
     flex-wrap: wrap;
   }
 
@@ -1209,6 +1329,7 @@ h2 {
   .workspace.with-audit,
   .calendar-layout,
   .metric-grid,
+  .runbook-steps,
   .detail-grid,
   .body-form,
   .schedule-form,
@@ -1247,6 +1368,41 @@ h2 {
   .public-record-card,
   .public-document-grid article {
     min-width: 0;
+  }
+
+  .runbook-panel::before {
+    inset: 14px 14px auto;
+    width: auto;
+    height: 6px;
+  }
+
+  .runbook-hero {
+    padding-left: 0;
+    padding-top: 16px;
+  }
+
+  .runbook-hero p,
+  .runbook-steps p,
+  .runbook-row strong {
+    width: min(100%, 270px);
+    max-width: min(100%, 270px);
+  }
+
+  .runbook-steps li {
+    min-height: 0;
+  }
+
+  .task-list button,
+  .meeting-list button {
+    align-items: flex-start;
+  }
+
+  .task-list button strong,
+  .meeting-list button strong,
+  .task-list button span,
+  .meeting-list button span {
+    width: 100%;
+    max-width: min(100%, 270px);
   }
 
   h1,

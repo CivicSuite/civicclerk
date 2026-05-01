@@ -597,8 +597,22 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByText("CivicSuite")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Good morning, City Clerk." })).toBeInTheDocument();
     expect(screen.getByText("Live from CivicClerk meeting API")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Meeting runbook" })).toBeInTheDocument();
+    expect(screen.getByText("End-to-end clerk runbook")).toBeInTheDocument();
+    expect(screen.getAllByText("Notice legally proved").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Run the statutory notice checklist/)).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Meeting bodies" })).toBeInTheDocument();
     expect(screen.getByText("Partial install")).toBeInTheDocument();
+  });
+
+  it("routes clerks from the meeting runbook into the next safe workspace", async () => {
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Meeting runbook" })).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "Open next runbook action: Notice legally proved" }));
+
+    expect(await screen.findByRole("heading", { name: "Prove statutory public notice before the meeting proceeds." })).toBeInTheDocument();
+    expect(screen.getByText(/The checklist is the city record that proves public notice/)).toBeInTheDocument();
   });
 
   it("creates, updates, and deactivates meeting bodies from the staff dashboard", async () => {
