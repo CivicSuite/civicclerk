@@ -87,6 +87,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Check notice and attach proof" in html
     assert "Meeting Outcomes" in html
     assert "Motions, votes, and actions" in html
+    assert "No meeting outcomes captured yet" in html
+    assert "Create a meeting, capture a motion, record a vote, and create any follow-up action item." in html
     assert "/meetings/{id}/motions" in html
     assert "/meetings/{id}/action-items" in html
     assert "Live meeting outcomes action" in html
@@ -308,6 +310,45 @@ async def test_staff_notice_panel_handles_unavailable_notice_store(monkeypatch) 
     assert response.status_code == 200
     assert "Notice checklist store unavailable" in response.text
     assert "Check CIVICCLERK_NOTICE_CHECKLIST_DB_URL and database reachability" in response.text
+
+
+async def test_staff_meeting_outcomes_panel_uses_live_outcome_rows() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        meeting = await client.post(
+            "/meetings",
+            json={
+                "title": "Live Outcomes Meeting",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-05T19:00:00Z",
+            },
+        )
+        motion = await client.post(
+            f"/meetings/{meeting.json()['id']}/motions",
+            json={
+                "text": "Approve <script>street repairs</script>",
+                "actor": "clerk@example.gov",
+            },
+        )
+        await client.post(
+            f"/motions/{motion.json()['id']}/votes",
+            json={"voter_name": "Council Member Rivera", "vote": "aye", "actor": "clerk@example.gov"},
+        )
+        await client.post(
+            f"/meetings/{meeting.json()['id']}/action-items",
+            json={
+                "description": "Schedule contractor notice.",
+                "assigned_to": "Public Works",
+                "actor": "clerk@example.gov",
+                "source_motion_id": motion.json()["id"],
+            },
+        )
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "Approve &lt;script&gt;street repairs&lt;/script&gt;" in response.text
+    assert "Approve <script>street repairs</script>" not in response.text
+    assert "CAPTURED" in response.text
+    assert "Vote recorded; action item open." in response.text
 
 
 async def test_favicon_is_public_and_empty() -> None:

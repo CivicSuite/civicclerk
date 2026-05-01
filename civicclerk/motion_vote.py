@@ -76,6 +76,17 @@ class ActionItemRecord:
         }
 
 
+@dataclass(frozen=True)
+class MeetingOutcomeSummary:
+    meeting_id: str
+    motion_id: str
+    text: str
+    actor: str
+    status: str
+    vote_count: int
+    action_item_count: int
+
+
 class MotionVoteStore:
     """In-memory capture store until database-backed workflow persistence lands."""
 
@@ -215,9 +226,35 @@ class MotionVoteStore:
             for action_item_id in self._action_items_by_meeting.get(meeting_id, [])
         ]
 
+    def list_recent_outcomes(self, *, limit: int = 5) -> list[MeetingOutcomeSummary]:
+        """Return recent motion-centered outcome summaries for the staff dashboard."""
+
+        summaries: list[MeetingOutcomeSummary] = []
+        for motion in reversed(list(self._motions.values())):
+            action_item_count = sum(
+                1
+                for action_item_id in self._action_items_by_meeting.get(motion.meeting_id, [])
+                if self._action_items[action_item_id].source_motion_id == motion.id
+            )
+            summaries.append(
+                MeetingOutcomeSummary(
+                    meeting_id=motion.meeting_id,
+                    motion_id=motion.id,
+                    text=motion.text,
+                    actor=motion.actor,
+                    status="APPENDED" if motion.correction_of_id else "CAPTURED",
+                    vote_count=len(self._votes_by_motion.get(motion.id, [])),
+                    action_item_count=action_item_count,
+                )
+            )
+            if len(summaries) >= limit:
+                break
+        return summaries
+
 
 __all__ = [
     "ActionItemRecord",
+    "MeetingOutcomeSummary",
     "MotionRecord",
     "MotionVoteStore",
     "VoteRecord",

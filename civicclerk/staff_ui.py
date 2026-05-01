@@ -176,6 +176,7 @@ def render_staff_dashboard(
     packet_assembly_available: bool = True,
     notice_checklist_records: Sequence[object] = (),
     notice_checklist_available: bool = True,
+    meeting_outcome_records: Sequence[object] = (),
 ) -> str:
     """Render the current staff workflow screens as dependency-free HTML."""
     screen_cards_data = _screen_cards_with_live_intake(
@@ -185,6 +186,7 @@ def render_staff_dashboard(
         packet_assembly_available=packet_assembly_available,
         notice_checklist_records=notice_checklist_records,
         notice_checklist_available=notice_checklist_available,
+        meeting_outcome_records=meeting_outcome_records,
     )
     nav_buttons = "\n".join(
         f"""
@@ -930,6 +932,7 @@ def _screen_cards_with_live_intake(
     packet_assembly_available: bool,
     notice_checklist_records: Sequence[object],
     notice_checklist_available: bool,
+    meeting_outcome_records: Sequence[object],
 ) -> list[dict]:
     screen_cards = [dict(card) for card in SCREEN_CARDS]
     screen_cards[0]["rows"] = _agenda_intake_rows(
@@ -943,6 +946,9 @@ def _screen_cards_with_live_intake(
     screen_cards[2]["rows"] = _notice_checklist_rows(
         notice_checklist_records=notice_checklist_records,
         notice_checklist_available=notice_checklist_available,
+    )
+    screen_cards[3]["rows"] = _meeting_outcome_rows(
+        meeting_outcome_records=meeting_outcome_records,
     )
     return screen_cards
 
@@ -1091,6 +1097,52 @@ def _bool_field(item: object, name: str) -> bool | None:
     else:
         value = getattr(item, name, None)
     return value if isinstance(value, bool) else None
+
+
+def _meeting_outcome_rows(
+    *,
+    meeting_outcome_records: Sequence[object],
+) -> list[tuple[str, str, str, str]]:
+    if not meeting_outcome_records:
+        return [
+            (
+                "Clerk",
+                "No meeting outcomes captured yet",
+                "EMPTY",
+                "Create a meeting, capture a motion, record a vote, and create any follow-up action item.",
+            )
+        ]
+    return [
+        (
+            _field(record, "actor", "Clerk"),
+            _field(record, "text", "Untitled motion"),
+            _field(record, "status", "UNKNOWN"),
+            _next_outcome_step(
+                _int_field(record, "vote_count"),
+                _int_field(record, "action_item_count"),
+                _field(record, "status", "UNKNOWN"),
+            ),
+        )
+        for record in meeting_outcome_records
+    ]
+
+
+def _int_field(item: object, name: str) -> int:
+    if isinstance(item, Mapping):
+        value = item.get(name)
+    else:
+        value = getattr(item, name, None)
+    return value if isinstance(value, int) else 0
+
+
+def _next_outcome_step(vote_count: int, action_item_count: int, status: str) -> str:
+    if status == "APPENDED":
+        return "Correction appended; original outcome remains preserved."
+    if vote_count > 0 and action_item_count > 0:
+        return "Vote recorded; action item open."
+    if vote_count > 0:
+        return "Vote recorded; create an action item if follow-up is needed."
+    return "Record the vote for this captured motion."
 
 
 def _render_screen_card(card: dict, active: bool) -> str:

@@ -370,6 +370,7 @@ async def staff_dashboard() -> str:
         packet_assembly_available=packet_assembly_available,
         notice_checklist_records=notice_checklist_records,
         notice_checklist_available=notice_checklist_available,
+        meeting_outcome_records=motion_votes.list_recent_outcomes(),
     )
 
 
