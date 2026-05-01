@@ -5,6 +5,9 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `scripts/check_installer_readiness.py` now verifies release artifacts,
+  checksums, and release handoff bundle contents as the first installer input
+  contract without claiming CivicClerk ships an installer yet.
 - `scripts/check_protected_deployment_smoke.py` now consumes a completed
   deployment env profile, runs strict readiness, executes the readiness-provided
   protected session/write probes, and redacts bearer tokens in output.
@@ -54,6 +57,7 @@ All notable changes to CivicClerk are documented here.
   injected headers, steps, and warnings for `scripts/local_trusted_header_proxy.py`.
 
 ### Changed
+- Release handoff bundles now include the installer-readiness helper.
 - Release handoff bundles now include the deployment env profile example and
   protected deployment smoke helper.
 - `scripts/start_backup_restore_rehearsal.sh` now supports
