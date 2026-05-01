@@ -3,24 +3,30 @@
 The first CivicClerk MVP is a vertical slice, not a full Granicus-style
 replacement.
 
-Current status as of CivicClerk v0.1.11: all four MVP sprint goals below are
+Current status after CivicClerk v0.1.11: all four MVP sprint goals below are
 API-complete, tested, and represented by live-backed `/staff` cockpit panels.
 The runtime foundation, staff workflow HTML reference shell, prompt gates,
 release gates, connector import normalization, public archive filtering, the
 first public portal shell, packet export bundles, backup/restore rehearsal,
 protected staff-auth rehearsal, deployment preflight, and fresh-install
-rehearsal helpers are present. Remaining MVP work now centers on replacing the
-HTML reference shell with the integrated multi-role React app, standing up the
-Docker Compose deployment stack, actual installer packaging beyond the
-non-installer release handoff bundle, the finished public portal, and live
-sync/deployment hardening.
+rehearsal helpers are present. The first React app slice now exists under
+`frontend/`: it translates the CivicSuite mockup into a typed staff shell,
+meeting calendar, meeting detail lifecycle ribbon, audit/evidence drawer, and
+explicit loading/success/empty/error/partial QA states. Remaining MVP work now
+centers on wiring that React shell to live CivicClerk APIs, completing Sprint 1
+meeting body CRUD, continuing Sprints 2-4 in React, standing up the Docker
+Compose deployment stack, actual installer packaging beyond the non-installer
+release handoff bundle, the finished public portal, and live sync/deployment
+hardening.
 
 ## Sprint 1
 
 - Meeting body CRUD
-- Meeting calendar
-- Empty/loading/error/success frontend states
-- Browser QA evidence
+- Meeting calendar: first React reference implementation present in
+  `frontend/`
+- Empty/loading/error/success/partial frontend states: first React reference
+  implementation present in `frontend/`
+- Browser QA evidence: required before this branch can be committed or pushed
 
 ## Sprint 2
 
