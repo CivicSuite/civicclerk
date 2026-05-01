@@ -30,9 +30,13 @@ All notable changes to CivicClerk are documented here.
 - Meeting scheduling APIs now reject nonexistent or inactive meeting body ids
   with actionable 422/409 responses so raw API callers cannot bypass the React
   body picker and attach a legal meeting record to invalid ownership metadata.
+- The React staff workspace now includes the first Agenda Intake workflow:
+  department submission, live clerk review queue, readiness metrics, ready/revision
+  review actions, audit-hash visibility, and no-dead-end state copy backed by
+  `/api/agenda-intake`.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
-  meeting scheduling, meeting schedule editing, required error/empty state copy,
-  and audit drawer toggling.
+  meeting scheduling, meeting schedule editing, agenda intake submit/review,
+  required error/empty state copy, and audit drawer toggling.
 - CI and `scripts/verify-release.sh` now install, audit, build, and test the
   `frontend/` package so the React app cannot drift outside the release gate.
 - The frontend dev proxy now defaults to the documented CivicClerk FastAPI

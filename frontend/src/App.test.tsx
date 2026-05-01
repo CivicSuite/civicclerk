@@ -89,6 +89,70 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/agenda-intake" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "intake-2",
+              title: "Approve downtown zoning study",
+              department_name: "Planning",
+              submitted_by: "planning@example.gov",
+              summary: "Authorize the downtown zoning study.",
+              readiness_status: "PENDING",
+              status: "SUBMITTED",
+              source_references: [{ source_id: "planning-staff-report", title: "Planning staff report", kind: "document" }],
+              reviewer: null,
+              review_notes: null,
+              last_audit_hash: "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+              created_at: "2026-05-01T12:00:00Z",
+              updated_at: "2026-05-01T12:00:00Z",
+            }),
+          });
+        }
+        if (url === "/api/agenda-intake/intake-1/review" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "intake-1",
+              title: "Approve zoning study",
+              department_name: "Planning",
+              submitted_by: "planning@example.gov",
+              summary: "Study authorization for downtown zoning.",
+              readiness_status: "READY",
+              status: "READY_FOR_CLERK",
+              source_references: [{ source_id: "zoning-memo", title: "Planning memo", kind: "document" }],
+              reviewer: "clerk@example.gov",
+              review_notes: "Complete for packet assembly.",
+              last_audit_hash: "123456abcdef7890123456abcdef7890123456abcdef7890123456abcdef7890",
+              created_at: "2026-05-01T11:00:00Z",
+              updated_at: "2026-05-01T12:10:00Z",
+            }),
+          });
+        }
+        if (url === "/api/agenda-intake") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              items: [
+                {
+                  id: "intake-1",
+                  title: "Approve zoning study",
+                  department_name: "Planning",
+                  submitted_by: "planning@example.gov",
+                  summary: "Study authorization for downtown zoning.",
+                  readiness_status: "PENDING",
+                  status: "SUBMITTED",
+                  source_references: [{ source_id: "zoning-memo", title: "Planning memo", kind: "document" }],
+                  reviewer: null,
+                  review_notes: null,
+                  last_audit_hash: "abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+                  created_at: "2026-05-01T11:00:00Z",
+                  updated_at: "2026-05-01T11:00:00Z",
+                },
+              ],
+            }),
+          });
+        }
         return Promise.resolve({
           ok: true,
           json: async () => ({
@@ -182,6 +246,23 @@ describe("CivicClerk staff workspace", () => {
     expect(await screen.findByText("Meeting schedule updated. The audit trail records who changed the scheduling fields.")).toBeInTheDocument();
   });
 
+  it("submits and reviews agenda intake from the staff workspace", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Agenda intake/ }));
+
+    expect(screen.getByRole("heading", { name: "Department requests, clerk decisions." })).toBeInTheDocument();
+    expect(screen.getByText("Approve zoning study")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Agenda title"), { target: { value: "Approve downtown zoning study" } });
+    fireEvent.click(screen.getByRole("button", { name: "Submit to review queue" }));
+    expect(await screen.findByText("Agenda item submitted. It is now in the clerk review queue with audit provenance.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Mark ready" })[1]);
+    expect(await screen.findByText("Marked ready for clerk packet work. The audit hash changed for this review.")).toBeInTheDocument();
+  });
+
   it("opens the meeting calendar and a meeting detail workspace", async () => {
     render(<App />);
 
@@ -215,10 +296,10 @@ describe("CivicClerk staff workspace", () => {
   });
 
   it("supports direct URL entry into QA states for browser evidence", () => {
-    window.history.replaceState({}, "", "/?page=meeting-detail&state=partial&audit=1&source=demo");
+    window.history.replaceState({}, "", "/?page=agenda&state=partial&audit=1&source=demo");
     render(<App />);
 
-    expect(screen.getByRole("status")).toHaveTextContent("meeting detail is partially available");
+    expect(screen.getByRole("status")).toHaveTextContent("agenda intake is partially available");
     expect(screen.getByLabelText("Audit and evidence drawer")).toBeInTheDocument();
   });
 

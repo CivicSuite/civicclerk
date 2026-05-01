@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail";
+type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda";
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -59,6 +59,52 @@ type MeetingSchedulePayload = {
   scheduled_start: string;
   location: string;
   actor?: string;
+};
+
+type AgendaIntakeItem = {
+  id: string;
+  title: string;
+  departmentName: string;
+  submittedBy: string;
+  summary: string;
+  readinessStatus: "PENDING" | "READY" | "NEEDS_REVISION";
+  status: string;
+  sourceReferences: Array<Record<string, string>>;
+  reviewer?: string | null;
+  reviewNotes?: string | null;
+  lastAuditHash: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ApiAgendaIntakeItem = {
+  id: string;
+  title: string;
+  department_name: string;
+  submitted_by: string;
+  summary: string;
+  readiness_status: "PENDING" | "READY" | "NEEDS_REVISION";
+  status: string;
+  source_references: Array<Record<string, string>>;
+  reviewer?: string | null;
+  review_notes?: string | null;
+  last_audit_hash: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type AgendaIntakePayload = {
+  title: string;
+  department_name: string;
+  submitted_by: string;
+  summary: string;
+  source_references: Array<Record<string, string>>;
+};
+
+type AgendaReviewPayload = {
+  reviewer: string;
+  ready: boolean;
+  notes: string;
 };
 
 const lifecycle: LifecycleStage[] = [
@@ -132,6 +178,39 @@ const demoBodies: MeetingBody[] = [
   { id: "body-parks", name: "Parks Advisory Board", bodyType: "advisory_board", isActive: true },
 ];
 
+const demoAgendaItems: AgendaIntakeItem[] = [
+  {
+    id: "AI-1042",
+    title: "Approve downtown zoning study",
+    departmentName: "Planning",
+    submittedBy: "planning@example.gov",
+    summary: "Authorize the downtown zoning study scope, consultant agreement, and public engagement calendar.",
+    readinessStatus: "PENDING",
+    status: "SUBMITTED",
+    sourceReferences: [{ source_id: "zoning-memo", title: "Planning memo", kind: "document" }],
+    reviewer: null,
+    reviewNotes: null,
+    lastAuditHash: "f7b9b7c4e5f2b8c8c1e3a2d0b9a4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
+    createdAt: "2026-05-01T15:30:00Z",
+    updatedAt: "2026-05-01T15:30:00Z",
+  },
+  {
+    id: "AI-1040",
+    title: "Adopt annual fee schedule",
+    departmentName: "Finance",
+    submittedBy: "finance@example.gov",
+    summary: "Annual update to city service fees with attorney-reviewed exhibit table.",
+    readinessStatus: "READY",
+    status: "READY_FOR_CLERK",
+    sourceReferences: [{ source_id: "fee-table", title: "Fee table", kind: "spreadsheet" }],
+    reviewer: "clerk@example.gov",
+    reviewNotes: "Attorney review attached. Ready for packet assembly.",
+    lastAuditHash: "a0b1c2d3e4f506172839405162738495a6b7c8d9e0f112233445566778899001",
+    createdAt: "2026-04-30T21:10:00Z",
+    updatedAt: "2026-05-01T16:00:00Z",
+  },
+];
+
 function Icon({ label }: { label: string }) {
   return <span className="icon" aria-hidden="true">{label.slice(0, 1)}</span>;
 }
@@ -142,6 +221,7 @@ export function App() {
   const [qaState, setQaState] = useState<ViewState | null>(initial.state);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [meetingBodies, setMeetingBodies] = useState<MeetingBody[]>([]);
+  const [agendaItems, setAgendaItems] = useState<AgendaIntakeItem[]>([]);
   const [apiState, setApiState] = useState<ViewState>("loading");
   const [apiError, setApiError] = useState<string | null>(null);
   const [bodyState, setBodyState] = useState<ViewState>("loading");
@@ -151,19 +231,26 @@ export function App() {
   const viewState = qaState ?? apiState;
   const visibleMeetings = qaState === null ? meetings : demoMeetings;
   const visibleBodies = qaState === null ? meetingBodies : demoBodies;
+  const visibleAgendaItems = qaState === null ? agendaItems : demoAgendaItems;
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
 
   async function loadWorkspaceData(cancelled: () => boolean) {
     setApiState("loading");
     setBodyState("loading");
-    const [apiMeetings, apiBodies] = await Promise.all([fetchMeetings(), fetchMeetingBodies()]);
+    const [apiMeetings, apiBodies, apiAgendaItems] = await Promise.all([
+      fetchMeetings(),
+      fetchMeetingBodies(),
+      fetchAgendaIntakeItems(),
+    ]);
     if (cancelled()) return;
     const mappedBodies = apiBodies.map(mapApiMeetingBody);
     const mappedMeetings = apiMeetings.map((meeting) => mapApiMeeting(meeting, mappedBodies));
+    const mappedAgendaItems = apiAgendaItems.map(mapApiAgendaIntakeItem);
     setMeetingBodies(mappedBodies);
     setMeetings(mappedMeetings);
+    setAgendaItems(mappedAgendaItems);
     setBodyState(mappedBodies.length === 0 ? "empty" : "success");
-    setApiState(mappedMeetings.length === 0 ? "empty" : "success");
+    setApiState(mappedMeetings.length === 0 && mappedAgendaItems.length === 0 ? "empty" : "success");
     if (mappedMeetings[0]) {
       setActiveMeetingId(mappedMeetings[0].id);
     }
@@ -173,6 +260,7 @@ export function App() {
     if (initial.source === "demo") {
       setMeetings(demoMeetings);
       setMeetingBodies(demoBodies);
+      setAgendaItems(demoAgendaItems);
       setApiState("success");
       setBodyState("success");
       setActiveMeetingId(demoMeetings[0].id);
@@ -209,7 +297,7 @@ export function App() {
           <button className={page !== "dashboard" ? "active" : ""} onClick={() => setPage("meetings")}>
             <Icon label="Meetings" /> Meetings
           </button>
-          <button className="muted" aria-disabled="true">
+          <button className={page === "agenda" ? "active" : ""} onClick={() => setPage("agenda")}>
             <Icon label="Agenda" /> Agenda intake
           </button>
           <button className="muted" aria-disabled="true">
@@ -294,6 +382,22 @@ export function App() {
               }}
             />
           )}
+          {page === "agenda" && (
+            <AgendaIntakeWorkspace
+              viewState={viewState}
+              apiError={apiError}
+              items={visibleAgendaItems}
+              onSubmitItem={async (payload) => {
+                const item = await submitAgendaIntakeItem(payload);
+                setAgendaItems((current) => [mapApiAgendaIntakeItem(item), ...current]);
+                setApiState("success");
+              }}
+              onReviewItem={async (itemId, payload) => {
+                const item = await reviewAgendaIntakeItem(itemId, payload);
+                setAgendaItems((current) => current.map((entry) => entry.id === item.id ? mapApiAgendaIntakeItem(item) : entry));
+              }}
+            />
+          )}
         </section>
         {auditOpen && <AuditDrawer meeting={activeMeeting} />}
       </main>
@@ -321,6 +425,17 @@ async function fetchMeetingBodies(): Promise<ApiMeetingBody[]> {
   }
   const payload = (await response.json()) as { meeting_bodies?: ApiMeetingBody[] };
   return Array.isArray(payload.meeting_bodies) ? payload.meeting_bodies : [];
+}
+
+async function fetchAgendaIntakeItems(): Promise<ApiAgendaIntakeItem[]> {
+  const response = await fetch("/api/agenda-intake", {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Agenda intake API returned ${response.status}.`);
+  }
+  const payload = (await response.json()) as { items?: ApiAgendaIntakeItem[] };
+  return Array.isArray(payload.items) ? payload.items : [];
 }
 
 async function createMeetingBody(name: string, bodyType: string): Promise<ApiMeetingBody> {
@@ -382,6 +497,30 @@ async function updateMeeting(meetingId: string, payload: MeetingSchedulePayload)
   return response.json();
 }
 
+async function submitAgendaIntakeItem(payload: AgendaIntakePayload): Promise<ApiAgendaIntakeItem> {
+  const response = await fetch("/api/agenda-intake", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Agenda intake submit returned ${response.status}.`);
+  }
+  return response.json();
+}
+
+async function reviewAgendaIntakeItem(itemId: string, payload: AgendaReviewPayload): Promise<ApiAgendaIntakeItem> {
+  const response = await fetch(`/api/agenda-intake/${itemId}/review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Agenda intake review returned ${response.status}.`);
+  }
+  return response.json();
+}
+
 function mapApiMeeting(meeting: ApiMeeting, meetingBodies: MeetingBody[] = []): Meeting {
   const scheduled = meeting.scheduled_start ? new Date(meeting.scheduled_start) : null;
   const body = meetingBodies.find((item) => item.id === meeting.meeting_body_id);
@@ -408,6 +547,24 @@ function mapApiMeetingBody(body: ApiMeetingBody): MeetingBody {
     name: body.name,
     bodyType: body.body_type,
     isActive: body.is_active,
+  };
+}
+
+function mapApiAgendaIntakeItem(item: ApiAgendaIntakeItem): AgendaIntakeItem {
+  return {
+    id: item.id,
+    title: item.title,
+    departmentName: item.department_name,
+    submittedBy: item.submitted_by,
+    summary: item.summary,
+    readinessStatus: item.readiness_status,
+    status: item.status,
+    sourceReferences: item.source_references,
+    reviewer: item.reviewer,
+    reviewNotes: item.review_notes,
+    lastAuditHash: item.last_audit_hash,
+    createdAt: item.created_at,
+    updatedAt: item.updated_at,
   };
 }
 
@@ -455,7 +612,7 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail"];
+  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   return {
     page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : "dashboard",
@@ -777,6 +934,167 @@ function MeetingBodiesPanel({
         ))}
       </div>
     </section>
+  );
+}
+
+function AgendaIntakeWorkspace({
+  viewState,
+  apiError,
+  items,
+  onSubmitItem,
+  onReviewItem,
+}: {
+  viewState: ViewState;
+  apiError: string | null;
+  items: AgendaIntakeItem[];
+  onSubmitItem: (payload: AgendaIntakePayload) => Promise<void>;
+  onReviewItem: (itemId: string, payload: AgendaReviewPayload) => Promise<void>;
+}) {
+  const [title, setTitle] = useState("Approve downtown zoning study");
+  const [departmentName, setDepartmentName] = useState("Planning");
+  const [submittedBy, setSubmittedBy] = useState("planning@example.gov");
+  const [summary, setSummary] = useState("Authorize the downtown zoning study scope, consultant agreement, and public engagement calendar.");
+  const [sourceTitle, setSourceTitle] = useState("Planning staff report");
+  const [reviewer, setReviewer] = useState("clerk@example.gov");
+  const [reviewNotes, setReviewNotes] = useState("Complete for packet assembly.");
+  const [message, setMessage] = useState<string | null>(null);
+  const pendingCount = items.filter((item) => item.readinessStatus === "PENDING").length;
+  const readyCount = items.filter((item) => item.readinessStatus === "READY").length;
+  const revisionCount = items.filter((item) => item.readinessStatus === "NEEDS_REVISION").length;
+
+  if (viewState !== "success") {
+    return <StateMessage state={viewState} context="agenda intake" apiError={apiError} />;
+  }
+
+  async function submitItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    try {
+      await onSubmitItem({
+        title: title.trim(),
+        department_name: departmentName.trim(),
+        submitted_by: submittedBy.trim(),
+        summary: summary.trim(),
+        source_references: [
+          {
+            source_id: sourceTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "source",
+            title: sourceTitle.trim(),
+            kind: "document",
+          },
+        ],
+      });
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Agenda intake submit failed."} Check the API/auth mode, confirm every field has content, then retry.`);
+      return;
+    }
+    setMessage("Agenda item submitted. It is now in the clerk review queue with audit provenance.");
+  }
+
+  async function reviewItem(itemId: string, ready: boolean) {
+    setMessage(null);
+    try {
+      await onReviewItem(itemId, {
+        reviewer: reviewer.trim(),
+        ready,
+        notes: reviewNotes.trim(),
+      });
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Agenda intake review failed."} Reload the queue, confirm the item still exists, then retry.`);
+      return;
+    }
+    setMessage(ready ? "Marked ready for clerk packet work. The audit hash changed for this review." : "Sent back for revision with clerk notes and audit evidence.");
+  }
+
+  return (
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Agenda intake"
+        title="Department requests, clerk decisions."
+        description="Submit agenda items, review completeness, and move ready work toward packet assembly without leaving the staff app."
+      />
+      <div className="metric-grid">
+        <MetricCard label="Pending review" value={String(pendingCount)} note="Needs clerk completeness check" tone={pendingCount ? "warn" : undefined} />
+        <MetricCard label="Ready for packet" value={String(readyCount)} note="Can move into packet assembly" />
+        <MetricCard label="Needs revision" value={String(revisionCount)} note="Waiting on department fixes" tone={revisionCount ? "warn" : undefined} />
+      </div>
+      <div className="agenda-grid">
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Department submission</h2>
+              <p>Capture the request, submitter, summary, and source material in one clerk-visible record.</p>
+            </div>
+            <StatusBadge tone="Ready" label="Live API" />
+          </div>
+          <form className="intake-form" onSubmit={submitItem}>
+            <label>
+              Agenda title
+              <input value={title} onChange={(event) => setTitle(event.target.value)} required />
+            </label>
+            <label>
+              Department
+              <input value={departmentName} onChange={(event) => setDepartmentName(event.target.value)} required />
+            </label>
+            <label>
+              Submitted by
+              <input type="email" value={submittedBy} onChange={(event) => setSubmittedBy(event.target.value)} required />
+            </label>
+            <label>
+              Source title
+              <input value={sourceTitle} onChange={(event) => setSourceTitle(event.target.value)} required />
+            </label>
+            <label className="wide">
+              Summary
+              <textarea value={summary} onChange={(event) => setSummary(event.target.value)} required />
+            </label>
+            <button type="submit">Submit to review queue</button>
+          </form>
+          {message && <p className="form-message">{message}</p>}
+        </section>
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Clerk review queue</h2>
+              <p>Use notes that tell the department exactly what is ready or what must be fixed.</p>
+            </div>
+            <StatusBadge tone={pendingCount ? "Warning" : "Ready"} label={`${items.length} items`} />
+          </div>
+          <div className="review-controls">
+            <label>
+              Reviewer
+              <input value={reviewer} onChange={(event) => setReviewer(event.target.value)} required />
+            </label>
+            <label>
+              Review notes
+              <input value={reviewNotes} onChange={(event) => setReviewNotes(event.target.value)} required />
+            </label>
+          </div>
+          <div className="agenda-list">
+            {items.length === 0 && (
+              <p className="empty-inline">No agenda intake items yet. Submit a department item on the left, then review it here.</p>
+            )}
+            {items.map((item) => (
+              <article key={item.id} className="agenda-row">
+                <div>
+                  <div className="row-title">
+                    <h3>{item.title}</h3>
+                    <StatusBadge tone={statusTone(item.readinessStatus)} label={readinessLabel(item.readinessStatus)} />
+                  </div>
+                  <p>{item.departmentName} - {item.submittedBy}</p>
+                  <p>{item.summary}</p>
+                  <small>Audit hash: {item.lastAuditHash.slice(0, 12)}... Source: {item.sourceReferences[0]?.title ?? "No source title"}</small>
+                  {item.reviewNotes && <small>Last review: {item.reviewNotes}</small>}
+                </div>
+                <div className="row-actions">
+                  <button className="secondary" type="button" onClick={() => reviewItem(item.id, true)}>Mark ready</button>
+                  <button className="secondary ghost" type="button" onClick={() => reviewItem(item.id, false)}>Needs revision</button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }
 
@@ -1123,6 +1441,21 @@ function MetricCard({
       <p>{note}</p>
     </article>
   );
+}
+
+function readinessLabel(status: AgendaIntakeItem["readinessStatus"]): string {
+  const labels = {
+    PENDING: "Pending review",
+    READY: "Ready",
+    NEEDS_REVISION: "Needs revision",
+  };
+  return labels[status];
+}
+
+function statusTone(status: AgendaIntakeItem["readinessStatus"]): Meeting["noticeStatus"] {
+  if (status === "READY") return "Ready";
+  if (status === "NEEDS_REVISION") return "Blocked";
+  return "Warning";
 }
 
 function StatusBadge({ tone, label }: { tone: Meeting["noticeStatus"]; label: string }) {

@@ -27,6 +27,9 @@ mockup's browser-global JSX bundle.
   when schedule create/update references a nonexistent or inactive body.
 - Schedule-edit audit behavior: backend edits are blocked once a meeting reaches
   the in-session lock point, with an actionable replacement-meeting fix path.
+- First Sprint 2 Agenda Intake workflow: department submission, live queue,
+  clerk ready/revision review actions, readiness metrics, and audit-hash cues
+  backed by `/api/agenda-intake`.
 - Explicit QA state controls for success, loading, empty, error, and partial
   states.
 - Actionable state copy that tells staff or IT what to do next.
@@ -34,6 +37,7 @@ mockup's browser-global JSX bundle.
 ## What This Slice Does Not Yet Include
 
 - Replacement of the shipped `/staff` HTML reference shell.
+- Full Sprint 2 packet handoff after a ready agenda item.
 - Docker/nginx packaging.
 - Installer integration.
 

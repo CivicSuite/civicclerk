@@ -130,6 +130,13 @@ edits, and blocks those edits after the meeting reaches the in-session lock
 point. This slice does not replace `/staff`
 until the remaining Sprint 2-4 workflow surfaces are wired.
 
+The first React Sprint 2 surface is now also present. Staff can open Agenda
+Intake from the React navigation, submit a department agenda request with source
+material, review pending items as ready or needing revision, and see the audit
+hash cue that proves the reviewed record changed. This is the start of the
+production React intake workflow; packet handoff after a ready item is still the
+next Sprint 2 product step.
+
 ## Part 2: IT and Technical Overview
 
 ### Planned deployment model

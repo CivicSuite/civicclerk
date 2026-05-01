@@ -450,6 +450,7 @@ h2 {
 
 .body-form,
 .schedule-form,
+.intake-form,
 .body-row {
   display: grid;
   grid-template-columns: 1.2fr 1fr auto;
@@ -461,8 +462,18 @@ h2 {
   grid-template-columns: 1.2fr 1fr .8fr 1fr 1fr auto;
 }
 
+.intake-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.intake-form .wide {
+  grid-column: 1 / -1;
+}
+
 .body-form label,
-.schedule-form label {
+.schedule-form label,
+.intake-form label,
+.review-controls label {
   display: grid;
   gap: 6px;
   color: var(--ink-soft);
@@ -473,7 +484,10 @@ h2 {
 .body-form input,
 .body-row input,
 .schedule-form input,
-.schedule-form select {
+.schedule-form select,
+.intake-form input,
+.intake-form textarea,
+.review-controls input {
   width: 100%;
   border: 1px solid var(--rule);
   border-radius: 14px;
@@ -481,6 +495,88 @@ h2 {
   background: #fffaf0;
   color: var(--ink);
   font: inherit;
+}
+
+.intake-form textarea {
+  min-height: 118px;
+  resize: vertical;
+}
+
+.body-form button,
+.schedule-form button,
+.intake-form button {
+  align-self: end;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--green);
+  color: white;
+  font-weight: 800;
+}
+
+.agenda-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.86fr) minmax(0, 1.14fr);
+  gap: 18px;
+}
+
+.review-controls {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.7fr) minmax(240px, 1.3fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.agenda-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.agenda-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 247, 0.94), rgba(244, 237, 220, 0.84)),
+    radial-gradient(circle at 100% 0%, rgba(199, 163, 59, 0.18), transparent 14rem);
+}
+
+.agenda-row h3 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+}
+
+.agenda-row p {
+  margin-top: 7px;
+}
+
+.agenda-row small {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink-soft);
+}
+
+.row-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.row-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 142px;
+}
+
+.secondary.ghost {
+  background: #efe4d0;
+  color: var(--ink);
 }
 
 .body-list {
@@ -623,6 +719,10 @@ h2 {
   .detail-grid,
   .body-form,
   .schedule-form,
+  .intake-form,
+  .agenda-grid,
+  .review-controls,
+  .agenda-row,
   .body-row {
     grid-template-columns: 1fr;
   }
