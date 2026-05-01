@@ -24,6 +24,16 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert 'aria-label="CivicClerk staff workflow screens"' in html
     assert "Skip to workflow screens" in html
     assert "CivicClerk Staff Workflow Screens" in html
+    assert "Product cockpit" in html
+    assert "Today's clerk desk" in html
+    assert "This is the shift from foundation to product" in html
+    assert "Items ready for clerk review" in html
+    assert "Live workflow actions" in html
+    assert "Silent dead ends" in html
+    assert "Go-live checks" in html
+    assert "1. Intake" in html
+    assert "2. Build" in html
+    assert "3. Publish" in html
     assert "v0.1.11" in html
     assert "browser-visible staff workflow screens" in html
     assert "bearer-protected staff mode" in html

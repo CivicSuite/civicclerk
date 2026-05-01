@@ -53,9 +53,11 @@ records with lifecycle audit entries, database-backed packet assembly records
 with source/citation metadata, database-backed agenda item lifecycle records
 with durable transition audit entries, and database-backed notice
 checklist/posting-proof records.
-The `/staff` page now provides first staff workflow screens for agenda intake,
-packet assembly/export, notice checklist/posting-proof, meeting outcome, minutes
-draft, public archive, and connector import work. These screens can submit
+The `/staff` page now provides a product cockpit plus first staff workflow
+screens for agenda intake, packet assembly/export, notice
+checklist/posting-proof, meeting outcome, minutes draft, public archive, and
+connector import work. The cockpit gives clerks a day-at-a-glance desk before
+they drill into individual forms. The workflow forms can submit
 intake items, record readiness review, create/finalize packet assembly records,
 create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture
 motions/votes/action items, create citation-gated minutes drafts, publish
