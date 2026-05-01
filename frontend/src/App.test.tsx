@@ -61,6 +61,34 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/meetings" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "meeting-3",
+              title: "Library Board Regular Meeting",
+              meeting_type: "regular",
+              meeting_body_id: "body-2",
+              status: "SCHEDULED",
+              scheduled_start: "2026-05-10T18:00:00Z",
+              location: "Library Community Room",
+            }),
+          });
+        }
+        if (url === "/api/meetings/meeting-1" && init?.method === "PATCH") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "meeting-1",
+              title: "Updated Regular Meeting",
+              meeting_type: "special",
+              meeting_body_id: "body-2",
+              status: "PACKET_POSTED",
+              scheduled_start: "2026-05-08T19:00:00Z",
+              location: "Room 204",
+            }),
+          });
+        }
         return Promise.resolve({
           ok: true,
           json: async () => ({
@@ -69,15 +97,19 @@ describe("CivicClerk staff workspace", () => {
                 id: "meeting-1",
                 title: "Regular Meeting",
                 meeting_type: "city_council",
+                meeting_body_id: "body-1",
                 status: "PACKET_POSTED",
                 scheduled_start: "2026-05-05T18:00:00Z",
+                location: "Council Chambers",
               },
               {
                 id: "meeting-2",
                 title: "Special Session",
                 meeting_type: "planning_commission",
+                meeting_body_id: "body-2",
                 status: "NOTICED",
                 scheduled_start: "2026-05-07T18:00:00Z",
+                location: "Room 204",
               },
             ],
           }),
@@ -104,7 +136,7 @@ describe("CivicClerk staff workspace", () => {
   it("creates, updates, and deactivates meeting bodies from the staff dashboard", async () => {
     render(<App />);
 
-    expect(await screen.findByDisplayValue("City Council")).toBeInTheDocument();
+    expect(await screen.findByLabelText("Rename City Council")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Body name"), { target: { value: "Library Board" } });
     fireEvent.change(screen.getByLabelText("Body type"), { target: { value: "board" } });
@@ -117,6 +149,37 @@ describe("CivicClerk staff workspace", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: "Deactivate" })[0]);
     expect(await screen.findByText("Brookfield City Council was deactivated. Existing meeting history is preserved.")).toBeInTheDocument();
+  });
+
+  it("schedules a meeting from the staff dashboard", async () => {
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Schedule a meeting" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Meeting body"), { target: { value: "body-2" } });
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Library Board Regular Meeting" } });
+    fireEvent.change(screen.getByLabelText("Starts"), { target: { value: "2026-05-10T18:00" } });
+    fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Library Community Room" } });
+    fireEvent.click(screen.getByRole("button", { name: "Schedule meeting" }));
+
+    expect(await screen.findByText("Meeting scheduled. It now appears on the staff calendar and can be opened for detail work.")).toBeInTheDocument();
+  });
+
+  it("edits a meeting schedule from the detail workspace", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Meetings/ }));
+    fireEvent.click(screen.getAllByRole("button", { name: /City Council/ })[0]);
+
+    expect(screen.getByRole("heading", { name: "Edit schedule" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Updated Regular Meeting" } });
+    fireEvent.change(screen.getByLabelText("Meeting body"), { target: { value: "body-2" } });
+    fireEvent.change(screen.getByLabelText("Type"), { target: { value: "special" } });
+    fireEvent.change(screen.getByLabelText("Starts"), { target: { value: "2026-05-08T19:00" } });
+    fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Room 204" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save schedule" }));
+
+    expect(await screen.findByText("Meeting schedule updated. The audit trail records who changed the scheduling fields.")).toBeInTheDocument();
   });
 
   it("opens the meeting calendar and a meeting detail workspace", async () => {

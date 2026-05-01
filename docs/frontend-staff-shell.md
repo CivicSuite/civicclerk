@@ -1,6 +1,6 @@
 # CivicClerk React Staff Shell
 
-Status: Sprint 1 implementation slice with live meeting list wiring.
+Status: Sprint 1 implementation slice with live meeting setup and scheduling.
 
 The `frontend/` package is the start of the production React app that will
 replace the HTML reference shell at `/staff`. It is adapted from the CivicSuite
@@ -20,6 +20,11 @@ mockup's browser-global JSX bundle.
   detail selection, with a `?source=demo` fallback for deterministic QA states.
 - Live `/api/meeting-bodies` management on the dashboard so clerks can create,
   rename, and deactivate boards or commissions before scheduling meetings.
+- Live meeting scheduling on the dashboard, backed by `POST /api/meetings`.
+- Live pre-lock meeting schedule editing on detail screens, backed by
+  `PATCH /api/meetings/{id}` for title, body, type, start time, and location.
+- Schedule-edit audit behavior: backend edits are blocked once a meeting reaches
+  the in-session lock point, with an actionable replacement-meeting fix path.
 - Explicit QA state controls for success, loading, empty, error, and partial
   states.
 - Actionable state copy that tells staff or IT what to do next.

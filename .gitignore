@@ -10,3 +10,4 @@ exports/
 *.log
 *.tmp
 .tmp-edge-*/
+.tmp-browser-qa-scheduling/

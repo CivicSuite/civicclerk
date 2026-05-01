@@ -14,10 +14,13 @@ type LifecycleStage =
 
 type Meeting = {
   id: string;
+  meetingBodyId?: string;
   body: string;
   title: string;
+  meetingType: string;
   date: string;
   time: string;
+  scheduledStart?: string | null;
   location: string;
   stage: LifecycleStage;
   agendaItems: number;
@@ -31,6 +34,8 @@ type ApiMeeting = {
   meeting_type: string;
   status: string;
   scheduled_start?: string | null;
+  meeting_body_id?: string | null;
+  location?: string | null;
 };
 
 type MeetingBody = {
@@ -47,6 +52,15 @@ type ApiMeetingBody = {
   is_active: boolean;
 };
 
+type MeetingSchedulePayload = {
+  title: string;
+  meeting_type: string;
+  meeting_body_id?: string;
+  scheduled_start: string;
+  location: string;
+  actor?: string;
+};
+
 const lifecycle: LifecycleStage[] = [
   "Scheduled",
   "Notice posted",
@@ -61,10 +75,13 @@ const lifecycle: LifecycleStage[] = [
 const demoMeetings: Meeting[] = [
   {
     id: "M-2026-053",
+    meetingBodyId: "body-council",
     body: "City Council",
     title: "Regular Meeting",
+    meetingType: "regular",
     date: "May 5, 2026",
     time: "6:00 PM",
+    scheduledStart: "2026-05-05T18:00:00Z",
     location: "Council Chambers",
     stage: "Agenda published",
     agendaItems: 18,
@@ -73,10 +90,13 @@ const demoMeetings: Meeting[] = [
   },
   {
     id: "M-2026-049",
+    meetingBodyId: "body-planning",
     body: "Planning Commission",
     title: "Special Session",
+    meetingType: "special",
     date: "May 7, 2026",
     time: "4:30 PM",
+    scheduledStart: "2026-05-07T16:30:00Z",
     location: "Room 204",
     stage: "Notice posted",
     agendaItems: 7,
@@ -85,10 +105,13 @@ const demoMeetings: Meeting[] = [
   },
   {
     id: "M-2026-041",
+    meetingBodyId: "body-parks",
     body: "Parks Advisory Board",
     title: "Monthly Meeting",
+    meetingType: "regular",
     date: "May 13, 2026",
     time: "5:15 PM",
+    scheduledStart: "2026-05-13T17:15:00Z",
     location: "Civic Center Annex",
     stage: "Scheduled",
     agendaItems: 4,
@@ -130,6 +153,22 @@ export function App() {
   const visibleBodies = qaState === null ? meetingBodies : demoBodies;
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
 
+  async function loadWorkspaceData(cancelled: () => boolean) {
+    setApiState("loading");
+    setBodyState("loading");
+    const [apiMeetings, apiBodies] = await Promise.all([fetchMeetings(), fetchMeetingBodies()]);
+    if (cancelled()) return;
+    const mappedBodies = apiBodies.map(mapApiMeetingBody);
+    const mappedMeetings = apiMeetings.map((meeting) => mapApiMeeting(meeting, mappedBodies));
+    setMeetingBodies(mappedBodies);
+    setMeetings(mappedMeetings);
+    setBodyState(mappedBodies.length === 0 ? "empty" : "success");
+    setApiState(mappedMeetings.length === 0 ? "empty" : "success");
+    if (mappedMeetings[0]) {
+      setActiveMeetingId(mappedMeetings[0].id);
+    }
+  }
+
   useEffect(() => {
     if (initial.source === "demo") {
       setMeetings(demoMeetings);
@@ -140,33 +179,12 @@ export function App() {
       return;
     }
     let cancelled = false;
-    setApiState("loading");
-    fetchMeetings()
-      .then((apiMeetings) => {
-        if (cancelled) return;
-        const mapped = apiMeetings.map(mapApiMeeting);
-        setMeetings(mapped);
-        setApiState(mapped.length === 0 ? "empty" : "success");
-        if (mapped[0]) {
-          setActiveMeetingId(mapped[0].id);
-        }
-      })
-      .catch((error: Error) => {
-        if (cancelled) return;
-        setApiError(error.message);
-        setApiState("error");
-      });
-    setBodyState("loading");
-    fetchMeetingBodies()
-      .then((apiBodies) => {
-        if (cancelled) return;
-        const mapped = apiBodies.map(mapApiMeetingBody);
-        setMeetingBodies(mapped);
-        setBodyState(mapped.length === 0 ? "empty" : "success");
-      })
+    loadWorkspaceData(() => cancelled)
       .catch((error: Error) => {
         if (cancelled) return;
         setBodyError(error.message);
+        setApiError(error.message);
+        setApiState("error");
         setBodyState("error");
       });
     return () => {
@@ -243,6 +261,12 @@ export function App() {
                 const body = await deactivateMeetingBody(bodyId);
                 setMeetingBodies((current) => current.map((item) => item.id === body.id ? mapApiMeetingBody(body) : item).sort(sortBodies));
               }}
+              onCreateMeeting={async (payload) => {
+                const meeting = await createMeeting(payload);
+                const mapped = mapApiMeeting(meeting, visibleBodies);
+                setMeetings((current) => [...current, mapped].sort(sortMeetings));
+                setActiveMeetingId(mapped.id);
+              }}
               setPage={setPage}
               setActiveMeetingId={setActiveMeetingId}
             />
@@ -257,7 +281,18 @@ export function App() {
             />
           )}
           {page === "meeting-detail" && (
-            <MeetingDetail meeting={activeMeeting} viewState={viewState} apiError={apiError} />
+            <MeetingDetail
+              meeting={activeMeeting}
+              meetingBodies={visibleBodies}
+              viewState={viewState}
+              apiError={apiError}
+              onUpdateMeeting={async (meetingId, payload) => {
+                const meeting = await updateMeeting(meetingId, payload);
+                const mapped = mapApiMeeting(meeting, visibleBodies);
+                setMeetings((current) => current.map((item) => item.id === mapped.id ? mapped : item).sort(sortMeetings));
+                setActiveMeetingId(mapped.id);
+              }}
+            />
           )}
         </section>
         {auditOpen && <AuditDrawer meeting={activeMeeting} />}
@@ -323,15 +358,43 @@ async function deactivateMeetingBody(bodyId: string): Promise<ApiMeetingBody> {
   return response.json();
 }
 
-function mapApiMeeting(meeting: ApiMeeting): Meeting {
+async function createMeeting(payload: MeetingSchedulePayload): Promise<ApiMeeting> {
+  const response = await fetch("/api/meetings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Meeting schedule create returned ${response.status}.`);
+  }
+  return response.json();
+}
+
+async function updateMeeting(meetingId: string, payload: MeetingSchedulePayload): Promise<ApiMeeting> {
+  const response = await fetch(`/api/meetings/${meetingId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`Meeting schedule update returned ${response.status}.`);
+  }
+  return response.json();
+}
+
+function mapApiMeeting(meeting: ApiMeeting, meetingBodies: MeetingBody[] = []): Meeting {
   const scheduled = meeting.scheduled_start ? new Date(meeting.scheduled_start) : null;
+  const body = meetingBodies.find((item) => item.id === meeting.meeting_body_id);
   return {
     id: meeting.id,
-    body: toMeetingBody(meeting.meeting_type),
+    meetingBodyId: meeting.meeting_body_id ?? undefined,
+    body: body?.name ?? toMeetingBody(meeting.meeting_type),
     title: meeting.title,
+    meetingType: meeting.meeting_type,
     date: scheduled ? scheduled.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "Not scheduled",
     time: scheduled ? scheduled.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) : "Time TBD",
-    location: "Location TBD",
+    scheduledStart: meeting.scheduled_start ?? null,
+    location: meeting.location ?? "Location TBD",
     stage: toLifecycleStage(meeting.status),
     agendaItems: 0,
     packetPages: 0,
@@ -350,6 +413,12 @@ function mapApiMeetingBody(body: ApiMeetingBody): MeetingBody {
 
 function sortBodies(a: MeetingBody, b: MeetingBody) {
   return a.name.localeCompare(b.name);
+}
+
+function sortMeetings(a: Meeting, b: Meeting) {
+  const left = a.scheduledStart ? new Date(a.scheduledStart).getTime() : Number.MAX_SAFE_INTEGER;
+  const right = b.scheduledStart ? new Date(b.scheduledStart).getTime() : Number.MAX_SAFE_INTEGER;
+  return left - right || a.title.localeCompare(b.title);
 }
 
 function toMeetingBody(meetingType: string): string {
@@ -438,6 +507,7 @@ function Dashboard({
   onCreateBody,
   onUpdateBody,
   onDeactivateBody,
+  onCreateMeeting,
   setPage,
   setActiveMeetingId,
 }: {
@@ -450,6 +520,7 @@ function Dashboard({
   onCreateBody: (name: string, bodyType: string) => Promise<void>;
   onUpdateBody: (bodyId: string, name: string) => Promise<void>;
   onDeactivateBody: (bodyId: string) => Promise<void>;
+  onCreateMeeting: (payload: MeetingSchedulePayload) => Promise<void>;
   setPage: (page: Page) => void;
   setActiveMeetingId: (id: string) => void;
 }) {
@@ -504,7 +575,100 @@ function Dashboard({
         onUpdateBody={onUpdateBody}
         onDeactivateBody={onDeactivateBody}
       />
+      <MeetingSchedulingPanel meetingBodies={meetingBodies} onCreateMeeting={onCreateMeeting} />
     </div>
+  );
+}
+
+function MeetingSchedulingPanel({
+  meetingBodies,
+  onCreateMeeting,
+}: {
+  meetingBodies: MeetingBody[];
+  onCreateMeeting: (payload: MeetingSchedulePayload) => Promise<void>;
+}) {
+  const activeBodies = meetingBodies.filter((body) => body.isActive);
+  const [title, setTitle] = useState("Regular Meeting");
+  const [bodyId, setBodyId] = useState(activeBodies[0]?.id ?? "");
+  const [meetingType, setMeetingType] = useState("regular");
+  const [scheduledStart, setScheduledStart] = useState("2026-05-05T18:00");
+  const [location, setLocation] = useState("Council Chambers");
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!bodyId && activeBodies[0]) {
+      setBodyId(activeBodies[0].id);
+    }
+  }, [activeBodies, bodyId]);
+
+  async function submitMeeting(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    const selectedBody = activeBodies.find((body) => body.id === bodyId);
+    if (!selectedBody) {
+      setMessage("Choose an active meeting body before scheduling. Create or reactivate a body, then retry.");
+      return;
+    }
+    try {
+      await onCreateMeeting({
+        title: title.trim(),
+        meeting_type: meetingType.trim(),
+        meeting_body_id: selectedBody.id,
+        scheduled_start: new Date(scheduledStart).toISOString(),
+        location: location.trim(),
+        actor: "clerk@example.gov",
+      });
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Meeting schedule create failed."} Confirm the API is running, check staff auth, then retry.`);
+      return;
+    }
+    setMessage("Meeting scheduled. It now appears on the staff calendar and can be opened for detail work.");
+  }
+
+  return (
+    <section className="panel schedule-admin" aria-label="Meeting scheduling">
+      <div className="panel-heading">
+        <div>
+          <h2>Schedule a meeting</h2>
+          <p>Create a real calendar record tied to an active board or commission.</p>
+        </div>
+        <StatusBadge tone={activeBodies.length ? "Ready" : "Blocked"} label={activeBodies.length ? "Ready" : "Needs body"} />
+      </div>
+      <form className="schedule-form" onSubmit={submitMeeting}>
+        <label>
+          Meeting body
+          <select value={bodyId} onChange={(event) => setBodyId(event.target.value)} required>
+            <option value="" disabled>Choose a body</option>
+            {activeBodies.map((body) => (
+              <option key={body.id} value={body.id}>{body.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Title
+          <input value={title} onChange={(event) => setTitle(event.target.value)} required />
+        </label>
+        <label>
+          Type
+          <select value={meetingType} onChange={(event) => setMeetingType(event.target.value)} required>
+            <option value="regular">Regular</option>
+            <option value="special">Special</option>
+            <option value="emergency">Emergency</option>
+            <option value="closed_session">Closed session</option>
+          </select>
+        </label>
+        <label>
+          Starts
+          <input type="datetime-local" value={scheduledStart} onChange={(event) => setScheduledStart(event.target.value)} required />
+        </label>
+        <label>
+          Location
+          <input value={location} onChange={(event) => setLocation(event.target.value)} required />
+        </label>
+        <button type="submit">Schedule meeting</button>
+      </form>
+      {message && <p className="form-message">{message}</p>}
+    </section>
   );
 }
 
@@ -694,7 +858,28 @@ function dayFromMeeting(meeting: Meeting): number | null {
   return match ? Number(match[1]) : null;
 }
 
-function MeetingDetail({ meeting, viewState, apiError }: { meeting: Meeting; viewState: ViewState; apiError: string | null }) {
+function toDateTimeLocalValue(value?: string | null): string {
+  if (!value) {
+    return "2026-05-05T18:00";
+  }
+  const date = new Date(value);
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function MeetingDetail({
+  meeting,
+  meetingBodies,
+  viewState,
+  apiError,
+  onUpdateMeeting,
+}: {
+  meeting: Meeting;
+  meetingBodies: MeetingBody[];
+  viewState: ViewState;
+  apiError: string | null;
+  onUpdateMeeting: (meetingId: string, payload: MeetingSchedulePayload) => Promise<void>;
+}) {
   const activeIndex = lifecycle.indexOf(meeting.stage);
   const tabs = useMemo(
     () => [
@@ -728,6 +913,7 @@ function MeetingDetail({ meeting, viewState, apiError }: { meeting: Meeting; vie
           ))}
         </ol>
       </section>
+      <MeetingEditPanel meeting={meeting} meetingBodies={meetingBodies} onUpdateMeeting={onUpdateMeeting} />
       <section className="detail-grid">
         {tabs.map(([title, detail]) => (
           <article className="panel" key={title}>
@@ -741,6 +927,99 @@ function MeetingDetail({ meeting, viewState, apiError }: { meeting: Meeting; vie
         ))}
       </section>
     </div>
+  );
+}
+
+function MeetingEditPanel({
+  meeting,
+  meetingBodies,
+  onUpdateMeeting,
+}: {
+  meeting: Meeting;
+  meetingBodies: MeetingBody[];
+  onUpdateMeeting: (meetingId: string, payload: MeetingSchedulePayload) => Promise<void>;
+}) {
+  const [title, setTitle] = useState(meeting.title);
+  const [bodyId, setBodyId] = useState(meeting.meetingBodyId ?? meetingBodies[0]?.id ?? "");
+  const [meetingType, setMeetingType] = useState(meeting.meetingType);
+  const [scheduledStart, setScheduledStart] = useState(toDateTimeLocalValue(meeting.scheduledStart));
+  const [location, setLocation] = useState(meeting.location);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTitle(meeting.title);
+    setBodyId(meeting.meetingBodyId ?? meetingBodies[0]?.id ?? "");
+    setMeetingType(meeting.meetingType);
+    setScheduledStart(toDateTimeLocalValue(meeting.scheduledStart));
+    setLocation(meeting.location);
+  }, [meeting, meetingBodies]);
+
+  useEffect(() => {
+    setMessage(null);
+  }, [meeting.id]);
+
+  async function submitUpdate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    try {
+      await onUpdateMeeting(meeting.id, {
+        title: title.trim(),
+        meeting_type: meetingType,
+        meeting_body_id: bodyId,
+        scheduled_start: new Date(scheduledStart).toISOString(),
+        location: location.trim(),
+        actor: "clerk@example.gov",
+      });
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Meeting schedule update failed."} If the meeting is already in progress, create a replacement meeting or record the change in minutes.`);
+      return;
+    }
+    setMessage("Meeting schedule updated. The audit trail records who changed the scheduling fields.");
+  }
+
+  return (
+    <section className="panel schedule-admin" aria-label="Edit meeting schedule">
+      <div className="panel-heading">
+        <div>
+          <h2>Edit schedule</h2>
+          <p>Adjust clerk-owned scheduling fields before the legal meeting record is locked.</p>
+        </div>
+        <StatusBadge tone={meeting.stage === "Scheduled" || meeting.stage === "Notice posted" || meeting.stage === "Agenda published" ? "Ready" : "Warning"} label={meeting.stage} />
+      </div>
+      <form className="schedule-form" onSubmit={submitUpdate}>
+        <label>
+          Meeting body
+          <select value={bodyId} onChange={(event) => setBodyId(event.target.value)} required>
+            {meetingBodies.filter((body) => body.isActive || body.id === bodyId).map((body) => (
+              <option key={body.id} value={body.id}>{body.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Title
+          <input value={title} onChange={(event) => setTitle(event.target.value)} required />
+        </label>
+        <label>
+          Type
+          <select value={meetingType} onChange={(event) => setMeetingType(event.target.value)} required>
+            <option value="regular">Regular</option>
+            <option value="special">Special</option>
+            <option value="emergency">Emergency</option>
+            <option value="closed_session">Closed session</option>
+          </select>
+        </label>
+        <label>
+          Starts
+          <input type="datetime-local" value={scheduledStart} onChange={(event) => setScheduledStart(event.target.value)} required />
+        </label>
+        <label>
+          Location
+          <input value={location} onChange={(event) => setLocation(event.target.value)} required />
+        </label>
+        <button type="submit">Save schedule</button>
+      </form>
+      {message && <p className="form-message">{message}</p>}
+    </section>
   );
 }
 
