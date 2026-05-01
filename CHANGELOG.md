@@ -27,6 +27,9 @@ All notable changes to CivicClerk are documented here.
 - The React staff dashboard now includes a live Schedule Meeting panel, and
   meeting detail now includes an Edit Schedule panel for changing title, body,
   type, time, and location before the meeting reaches an in-session lock point.
+- Meeting scheduling APIs now reject nonexistent or inactive meeting body ids
+  with actionable 422/409 responses so raw API callers cannot bypass the React
+  body picker and attach a legal meeting record to invalid ownership metadata.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
   meeting scheduling, meeting schedule editing, required error/empty state copy,
   and audit drawer toggling.

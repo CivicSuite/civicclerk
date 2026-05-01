@@ -125,8 +125,9 @@ loads `/api/meeting-bodies` so staff can create, rename, and deactivate boards
 or commissions without hard-deleting meeting history. Clerks can now schedule
 meetings from active meeting bodies and edit pre-lock schedule fields from the
 meeting detail view, including title, body, type, start time, and location. The
-API writes audit entries for schedule edits and blocks those edits after the
-meeting reaches the in-session lock point. This slice does not replace `/staff`
+API rejects nonexistent or inactive body ids, writes audit entries for schedule
+edits, and blocks those edits after the meeting reaches the in-session lock
+point. This slice does not replace `/staff`
 until the remaining Sprint 2-4 workflow surfaces are wired.
 
 ## Part 2: IT and Technical Overview

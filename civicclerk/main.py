@@ -670,6 +670,7 @@ async def deactivate_meeting_body(body_id: str) -> dict[str, str | bool]:
 @app.post("/meetings", status_code=201)
 async def create_meeting(payload: MeetingCreate) -> dict[str, str]:
     """Create a scheduled meeting for lifecycle enforcement."""
+    _require_active_meeting_body(payload.meeting_body_id)
     return _get_meeting_store().create(
         title=payload.title,
         meeting_type=payload.meeting_type,
@@ -718,6 +719,11 @@ async def update_meeting_schedule(meeting_id: str, payload: MeetingUpdate) -> di
                 "fix": "Send at least one of title, meeting_type, scheduled_start, meeting_body_id, or location.",
             },
         )
+    existing_meeting = _get_meeting_store().get(meeting_id)
+    if existing_meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    if payload.meeting_body_id is not None and payload.meeting_body_id != existing_meeting.meeting_body_id:
+        _require_active_meeting_body(payload.meeting_body_id)
     try:
         meeting = _get_meeting_store().update_schedule(
             meeting_id=meeting_id,
@@ -1717,6 +1723,28 @@ def _evaluate_notice_or_404(
         statutory_basis=payload.statutory_basis,
         approved_by=payload.approved_by,
     )
+
+
+def _require_active_meeting_body(meeting_body_id: str | None) -> None:
+    if meeting_body_id is None:
+        return
+    body = _get_meeting_body_repository().get(meeting_body_id)
+    if body is None:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Meeting body does not exist.",
+                "fix": "Create the meeting body first or choose an active body returned by GET /meeting-bodies?active_only=true.",
+            },
+        )
+    if not body.is_active:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Meeting body is inactive.",
+                "fix": "Reactivate the body or choose another active body before scheduling this meeting.",
+            },
+        )
 
 
 def _parse_timezone_aware_datetime(

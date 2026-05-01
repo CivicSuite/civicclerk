@@ -23,6 +23,8 @@ mockup's browser-global JSX bundle.
 - Live meeting scheduling on the dashboard, backed by `POST /api/meetings`.
 - Live pre-lock meeting schedule editing on detail screens, backed by
   `PATCH /api/meetings/{id}` for title, body, type, start time, and location.
+- Meeting body integrity checks so raw API callers receive actionable errors
+  when schedule create/update references a nonexistent or inactive body.
 - Schedule-edit audit behavior: backend edits are blocked once a meeting reaches
   the in-session lock point, with an actionable replacement-meeting fix path.
 - Explicit QA state controls for success, loading, empty, error, and partial
