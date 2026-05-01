@@ -169,6 +169,18 @@ class NoticeChecklistRepository:
             rows = connection.execute(statement).mappings().all()
         return [_row_to_record(row) for row in rows]
 
+    def list_recent(self, *, limit: int = 5) -> list[NoticeChecklistRecord]:
+        """Return recent notice checklist records for the staff dashboard."""
+
+        statement = (
+            sa.select(notice_checklist_records)
+            .order_by(notice_checklist_records.c.updated_at.desc())
+            .limit(limit)
+        )
+        with self.engine.begin() as connection:
+            rows = connection.execute(statement).mappings().all()
+        return [_row_to_record(row) for row in rows]
+
     def attach_posting_proof(
         self,
         *,

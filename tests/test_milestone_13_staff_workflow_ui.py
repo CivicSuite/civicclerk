@@ -65,6 +65,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Create a meeting, submit at least one source and citation, then create the packet assembly record." in html
     assert "/meetings/{id}/notice-checklists" in html
     assert "Notice Checklist" in html
+    assert "No notice checklist records yet" in html
+    assert "Create a meeting, run the notice checklist, then attach posting proof when posted." in html
     assert "/notice-checklists/{id}/posting-proof" in html
     assert "Live agenda intake action" in html
     assert 'id="agenda-intake-form"' in html
@@ -262,6 +264,50 @@ async def test_staff_packet_panel_handles_unavailable_packet_store(monkeypatch) 
     assert response.status_code == 200
     assert "Packet assembly store unavailable" in response.text
     assert "Check CIVICCLERK_PACKET_ASSEMBLY_DB_URL and database reachability" in response.text
+
+
+async def test_staff_notice_panel_uses_live_notice_rows(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("CIVICCLERK_NOTICE_CHECKLIST_DB_URL", f"sqlite:///{tmp_path / 'staff-notices.db'}")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        meeting = await client.post(
+            "/meetings",
+            json={
+                "title": "Live Notice Meeting",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-05T19:00:00Z",
+            },
+        )
+        checked = await client.post(
+            f"/meetings/{meeting.json()['id']}/notice-checklists",
+            json={
+                "notice_type": "special",
+                "posted_at": "2026-05-01T19:00:00Z",
+                "minimum_notice_hours": 24,
+                "statutory_basis": "24-hour notice rule",
+                "approved_by": "clerk@example.gov",
+                "actor": "clerk@example.gov",
+            },
+        )
+        await client.post(
+            f"/notice-checklists/{checked.json()['id']}/posting-proof",
+            json={"actor": "clerk@example.gov", "posting_proof": {"location": "City Hall"}},
+        )
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "special notice" in response.text
+    assert "POSTED" in response.text
+    assert "Posting proof is attached; keep the record with the meeting packet." in response.text
+
+
+async def test_staff_notice_panel_handles_unavailable_notice_store(monkeypatch) -> None:
+    monkeypatch.setenv("CIVICCLERK_NOTICE_CHECKLIST_DB_URL", "sqlite:///Z:/missing/notice-checklist.db")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "Notice checklist store unavailable" in response.text
+    assert "Check CIVICCLERK_NOTICE_CHECKLIST_DB_URL and database reachability" in response.text
 
 
 async def test_favicon_is_public_and_empty() -> None:
