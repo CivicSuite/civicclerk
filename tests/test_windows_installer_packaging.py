@@ -32,6 +32,7 @@ def test_install_script_creates_env_from_docker_template_and_starts_stack() -> N
     assert "docker compose up -d --build" in script
     assert "http://127.0.0.1:$apiPort/health" in script
     assert "http://127.0.0.1:$webPort/" in script
+    assert "$response.StatusCode -ge 200 -and $response.StatusCode -lt 400" in script
     assert "CIVICCLERK_DEMO_SEED" in script
     assert "Open staff auth is only for a single-workstation rehearsal" in script
 

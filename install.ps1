@@ -54,7 +54,7 @@ function Wait-Http {
     for ($i = 1; $i -le $Attempts; $i++) {
         try {
             $response = Invoke-WebRequest -UseBasicParsing -Uri $Url -TimeoutSec 4
-            if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
+            if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 400) {
                 Write-Host "$Name is responding at $Url"
                 return
             }
