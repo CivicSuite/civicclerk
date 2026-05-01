@@ -74,10 +74,12 @@ mockup's browser-global JSX bundle.
   posted agenda, packet, and approved minutes into official-record sections,
   provides missing-record clerk-contact guidance, and avoids implying
   restricted-session existence, counts, or summaries.
-- Product routing: the nginx-served Docker/installer path maps `/public` and
-  `/public/...` to this React portal while API traffic remains under
-  `/api/public/...`; the React shell also selects the Public Posting workspace
-  when loaded from the `/public` pathname.
+- Product routing: the nginx-served Docker/installer path maps `/staff` and
+  `/staff/...` to the React staff dashboard, maps `/public` and `/public/...`
+  to the React public portal, keeps workflow API traffic under `/api/...`, and
+  preserves exact backend proxy routes for `/staff/auth-readiness` and
+  `/staff/session`; the React shell selects the Public Posting workspace from
+  `/public` and the staff dashboard from `/staff`.
 - First Meeting Outcomes workflow: staff can choose a meeting, capture motions
   through `POST /api/meetings/{id}/motions`, load the meeting's captured
   motions, record roll-call votes through `POST /api/motions/{id}/votes`, and

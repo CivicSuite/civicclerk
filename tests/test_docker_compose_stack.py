@@ -23,6 +23,8 @@ def test_docker_compose_stack_declares_real_runtime_services() -> None:
     assert "proxy_pass http://api:8776/;" not in nginx
     assert "location = /public" in nginx
     assert "location /public/" in nginx
+    assert "location = /staff/auth-readiness" in nginx
+    assert "location = /staff/session" in nginx
     assert "try_files /index.html =404;" in nginx
 
 

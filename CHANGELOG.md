@@ -63,6 +63,10 @@ All notable changes to CivicClerk are documented here.
   already loaded by the staff app, shows ready/warning/blocked lifecycle gates,
   highlights legal notice blockers, and opens the next safe workspace for the
   selected meeting.
+- The nginx-served product path now explicitly routes `/staff` and `/staff/...`
+  to the React staff dashboard, matching the documented installer shortcut
+  instead of relying on the generic SPA fallback, while preserving backend
+  proxy access to `/staff/auth-readiness` and `/staff/session`.
 - The React staff workspace now includes a resident-oriented Public Posting
   portal: public meeting list/detail/search over the public archive APIs,
   separate official agenda/packet/approved-minutes sections, missing-record

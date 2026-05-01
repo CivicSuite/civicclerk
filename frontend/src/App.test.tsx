@@ -780,6 +780,15 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByText(/Only public archive API records appear here/)).toBeInTheDocument();
   });
 
+  it("opens the React staff dashboard directly from the /staff product route", async () => {
+    window.history.replaceState({}, "", "/staff");
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "Good morning, City Clerk." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Meeting runbook" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Find posted meetings without needing to understand clerk workflows." })).not.toBeInTheDocument();
+  });
+
   it("captures motions, votes, and action items from the meeting outcomes workspace", async () => {
     render(<App />);
 
