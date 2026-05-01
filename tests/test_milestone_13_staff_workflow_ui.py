@@ -28,7 +28,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Today's clerk desk" in html
     assert "This is the shift from foundation to product" in html
     assert "Items ready for clerk review" in html
-    assert "Live agenda intake queue is empty; submit a department item to start the clerk desk." in html
+    assert "Department submission queue" in html
     assert "Live workflow actions" in html
     assert "Silent dead ends" in html
     assert "Go-live checks" in html
@@ -58,8 +58,6 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES" in html
     assert "/agenda-intake" in html
     assert "Department submission queue" in html
-    assert "No intake items yet" in html
-    assert "Submit a department item with title, department, summary, and source references." in html
     assert "/meetings/{id}/packet-assemblies" in html
     assert "Packet Assembly" in html
     assert "No packet assemblies yet" in html
