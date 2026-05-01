@@ -24,11 +24,17 @@ def test_docker_compose_stack_declares_real_runtime_services() -> None:
         "CIVICCLERK_STAFF_OIDC_SESSION_COOKIE_SECRET",
         "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES",
         "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES",
+        "CIVICCLERK_CONNECTOR_SYNC_ENABLED",
+        "CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR",
+        "CIVICCLERK_CONNECTOR_SYNC_LEDGER_PATH",
+        "CIVICCLERK_CONNECTOR_SYNC_INTERVAL_SECONDS",
     ):
         assert variable in compose
     assert '"psycopg2-binary>=2.9.0,<3.0.0"' in pyproject
     assert "uvicorn\", \"civicclerk.main:app\"" in (ROOT / "Dockerfile.backend").read_text(encoding="utf-8")
     assert "celery -A civicclerk.worker worker" in compose
+    assert "celery -A civicclerk.worker beat" in compose
+    assert "./connector-imports}:/data/connector-imports:ro" in compose
     nginx = (ROOT / "docker" / "nginx.conf").read_text(encoding="utf-8")
     assert "proxy_pass http://api:8776;" in nginx
     assert "proxy_pass http://api:8776/;" not in nginx

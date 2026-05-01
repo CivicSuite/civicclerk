@@ -7,6 +7,7 @@ node_modules/
 dist/
 build/
 exports/
+connector-imports/
 *.log
 *.tmp
 .tmp-edge-*/

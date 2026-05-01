@@ -67,10 +67,16 @@ services:
       CIVICCLERK_OLLAMA_BASE_URL: http://ollama:11434
       CIVICCORE_LLM_PROVIDER: ollama
       CIVICCLERK_DEMO_SEED: ${CIVICCLERK_DEMO_SEED:-1}
+      CIVICCLERK_CONNECTOR_SYNC_ENABLED: ${CIVICCLERK_CONNECTOR_SYNC_ENABLED:-false}
+      CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR: /data/connector-imports
+      CIVICCLERK_CONNECTOR_SYNC_LEDGER_PATH: ${CIVICCLERK_CONNECTOR_SYNC_LEDGER_PATH:-/data/exports/connector-import-ledger.json}
+      CIVICCLERK_CONNECTOR_SYNC_CONNECTORS: ${CIVICCLERK_CONNECTOR_SYNC_CONNECTORS:-}
+      CIVICCLERK_CONNECTOR_SYNC_INTERVAL_SECONDS: ${CIVICCLERK_CONNECTOR_SYNC_INTERVAL_SECONDS:-900}
     ports:
       - "${CIVICCLERK_API_PORT:-8776}:8776"
     volumes:
       - exports:/data/exports
+      - ${CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST:-./connector-imports}:/data/connector-imports:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -113,6 +119,9 @@ services:
       dockerfile: Dockerfile.backend
     command: celery -A civicclerk.worker beat --loglevel=info
     environment: *civicclerk_env
+    volumes:
+      - exports:/data/exports
+      - ${CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST:-./connector-imports}:/data/connector-imports:ro
     depends_on:
       redis:
         condition: service_healthy

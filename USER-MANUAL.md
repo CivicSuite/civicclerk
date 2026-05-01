@@ -212,6 +212,13 @@ If IT changes `.env` from local open mode to OIDC, bearer, or trusted-header
 staff auth, Compose forwards the corresponding staff-auth variables into the
 API, worker, and beat containers so `/staff/session`, `/staff/login`, and
 `/staff/auth-readiness` report the same protected profile the operator set.
+IT can also enable scheduled local connector export-drop ingestion in the same
+Compose profile by setting `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true`, dropping
+approved agenda-system JSON exports into `CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST`
+(default `.\connector-imports`), and reviewing the generated provenance ledger
+under `CIVICCLERK_CONNECTOR_SYNC_LEDGER_PATH`. This scheduled path still reads
+local files only; it does not contact Granicus, Legistar, PrimeGov, NovusAGENDA,
+or any vendor network.
 
 By default, Compose sets `CIVICCLERK_DEMO_SEED=1`. On API startup, CivicClerk
 creates a Brookfield rehearsal dataset with meeting bodies, meetings in multiple
@@ -342,7 +349,7 @@ required docs/env examples/rehearsal helpers. It complements the Windows
 installer source package by proving the release handoff inputs are intact before
 an installer is built or handed to IT.
 
-Before live-sync design work, verify the local connector contract:
+Before vendor-network live-sync design work, verify the local connector contract:
 
 ```bash
 python scripts/check_connector_sync_readiness.py
@@ -351,8 +358,26 @@ python scripts/check_connector_sync_readiness.py
 This check normalizes the supported Granicus, Legistar, PrimeGov, and
 NovusAGENDA sample payloads without outbound network calls. It can also validate
 a proposed `--source-url` or `--odbc-connection-string` with the shared
-CivicCore host guards. It is intentionally not live sync; it tells the team what
-must be fixed before scheduled vendor polling or database sync is designed.
+CivicCore host guards. It is intentionally not vendor-network live sync; it
+tells the team what must be fixed before scheduled vendor polling or database
+sync is designed.
+
+When IT has approved local agenda-system export files and wants the Docker
+product path to ingest them repeatedly, create the host drop folder and enable
+the Celery Beat schedule in `.env`:
+
+```powershell
+New-Item -ItemType Directory -Force .\connector-imports
+$env:CIVICCLERK_CONNECTOR_SYNC_ENABLED="true"
+```
+
+For the Compose profile, set `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true` and, if
+needed, `CIVICCLERK_CONNECTOR_SYNC_CONNECTORS=granicus,legistar` in `.env`.
+Drop approved `granicus.json`, `legistar.json`, `primegov.json`, or
+`novusagenda.json` files into `CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST`.
+Celery Beat schedules the same local-first normalization used by
+`scripts/run_connector_import_sync.py`, and the worker writes the ledger under
+`/data/exports` without making vendor network calls.
 
 Before IT moves beyond local rehearsal, print the deployment preflight:
 
@@ -561,8 +586,9 @@ notice checklist/posting-proof work, public posting, meeting outcomes, and
 minutes draft work against live API-backed data, and the dashboard now surfaces
 staff access/session status for local open mode, OIDC browser sessions, bearer
 mode, and trusted-header mode. Production municipal use still requires a signed
-installer and live-sync hardening work before IT should treat it as a shared
-deployment; the Docker/PostgreSQL
+installer and vendor-network live-sync hardening work before IT should treat it
+as a shared deployment; scheduled local connector export-drop ingestion is
+available for approved JSON files in the Docker product path. The Docker/PostgreSQL
 backup/restore path now has a rehearsal helper, but cities still need their own
 retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility

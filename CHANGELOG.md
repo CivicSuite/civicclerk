@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Scheduled local connector import sync is now available through Celery Beat:
+  `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true` makes the worker periodically
+  normalize approved local Granicus, Legistar, PrimeGov, or NovusAGENDA JSON
+  export drops from `/data/connector-imports`, write a provenance ledger under
+  `/data/exports`, and keep vendor network calls disabled.
 - `scripts/check_docker_backup_restore_rehearsal.py` plus PowerShell and Bash
   wrappers now rehearse the Docker Compose PostgreSQL backup path with
   `pg_dump`, restore into a temporary database with `pg_restore`, verify
