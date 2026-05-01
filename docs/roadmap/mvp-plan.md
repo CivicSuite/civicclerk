@@ -30,9 +30,11 @@ present with a React Meeting Outcomes workspace for immutable motion capture,
 roll-call vote capture, source-linked action items, and append-only correction
 guidance plus a React Minutes Draft workspace for citation-gated draft creation,
 prompt provenance, human approver capture, and blocked auto-posting visibility.
-Remaining MVP work now centers on standing up the Docker Compose
-deployment stack, actual installer packaging beyond the non-installer release
-handoff bundle, the finished public portal, and live sync/deployment hardening.
+The first Docker Compose deployment stack is now present with PostgreSQL 17 +
+pgvector, Redis 7.2, Ollama, FastAPI, Celery worker/beat, and nginx-served
+React. Remaining MVP work now centers on seeded demo data, actual installer
+packaging beyond the non-installer release handoff bundle, the finished public
+portal, and live sync/deployment hardening.
 
 ## Sprint 1
 

@@ -52,6 +52,12 @@ mockup's browser-global JSX bundle.
 - Notice Checklist legal-blocker states plainly explain when the statutory
   deadline has passed, why posting proof is disabled, and that the clerk must
   reschedule or document a lawful emergency/special basis before proceeding.
+- Notice Checklist is the MVP's most legally sensitive staff surface: it must
+  show the deadline calculation, statutory basis requirement, human approval
+  gate, posting-proof record, and immutable audit hash as proof that public
+  notice obligations were met before a meeting proceeds. Empty and error states
+  must name the legal problem and the clerk's next safe action instead of
+  surfacing a generic API failure.
 - First Public Posting workflow: staff can open a resident-safe public record
   view that reads `/api/public/meetings`, `/api/public/meetings/{id}`, and
   `/api/public/archive/search`, shows posted agenda, packet, and approved
@@ -80,7 +86,7 @@ mockup's browser-global JSX bundle.
 ## What This Slice Does Not Yet Include
 
 - Replacement of the shipped `/staff` HTML reference shell.
-- Docker/nginx packaging.
+- Seeded Docker demo data.
 - Installer integration.
 
 ## Local Frontend Commands
