@@ -6,6 +6,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from civicclerk.main import app
+from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -227,6 +228,43 @@ async def test_minutes_adoption_and_public_posting_are_not_automatic() -> None:
     assert detail["message"] == "AI-drafted minutes cannot be posted automatically."
     assert "adopt minutes through a human approval workflow" in detail["fix"]
     assert listing.json()["drafts"] == [draft.json()]
+
+
+def test_minutes_draft_store_lists_recent_drafts() -> None:
+    store = MinutesDraftStore()
+    source_material = SourceMaterial(
+        source_id="motion-1",
+        label="Motion text",
+        text="Council approved the sidewalk repair packet.",
+    )
+    sentence = MinutesSentence(
+        text="Council approved the sidewalk repair packet.",
+        citations=("motion-1",),
+    )
+    first = store.create_draft(
+        meeting_id="meeting-1",
+        model="ollama/gemma4",
+        prompt_version="minutes_draft@0.1.0",
+        human_approver="clerk@example.gov",
+        source_materials=[source_material],
+        sentences=[sentence],
+    )
+    second = store.create_draft(
+        meeting_id="meeting-2",
+        model="ollama/gemma4",
+        prompt_version="minutes_draft@0.1.0",
+        human_approver="deputy@example.gov",
+        source_materials=[source_material],
+        sentences=[sentence],
+    )
+
+    recent = store.list_recent(limit=1)
+
+    assert not isinstance(first, str)
+    assert not isinstance(second, str)
+    assert len(recent) == 1
+    assert recent[0].meeting_id == "meeting-2"
+    assert recent[0].id == second.id
 
 
 def test_docs_record_minutes_citation_scope_without_claiming_archive_or_ui_behavior() -> None:

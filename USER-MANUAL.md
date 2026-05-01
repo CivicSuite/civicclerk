@@ -65,7 +65,9 @@ assembly records with escaped packet titles plus actionable empty and
 unavailable-store states. The Notice Checklist panel renders recent live notice
 records with posting-proof status plus actionable empty and unavailable-store
 states. The Meeting Outcomes panel renders recent live motion-centered outcome
-rows with vote/action status plus an actionable empty state. The workflow forms can submit
+rows with vote/action status plus an actionable empty state. The Minutes Draft
+panel renders recent live citation-gated draft rows with human-review next steps
+plus an actionable empty state. The workflow forms can submit
 intake items, record readiness review, create/finalize packet assembly records,
 create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture
 motions/votes/action items, create citation-gated minutes drafts, publish

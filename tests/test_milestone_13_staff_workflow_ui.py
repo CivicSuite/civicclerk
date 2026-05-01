@@ -97,6 +97,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Capture motion, vote, and action" in html
     assert "Minutes Draft" in html
     assert "Citations + provenance" in html
+    assert "No minutes drafts created yet" in html
+    assert "Create a citation-gated draft after motions, votes, and source materials are ready." in html
     assert "/meetings/{id}/minutes/drafts" in html
     assert "Live minutes draft action" in html
     assert 'id="minutes-draft-form"' in html
@@ -349,6 +351,47 @@ async def test_staff_meeting_outcomes_panel_uses_live_outcome_rows() -> None:
     assert "Approve <script>street repairs</script>" not in response.text
     assert "CAPTURED" in response.text
     assert "Vote recorded; action item open." in response.text
+
+
+async def test_staff_minutes_panel_uses_live_minutes_rows() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        meeting = await client.post(
+            "/meetings",
+            json={
+                "title": "Live Minutes Meeting",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-05T19:00:00Z",
+            },
+        )
+        created = await client.post(
+            f"/meetings/{meeting.json()['id']}/minutes/drafts",
+            json={
+                "model": "gemma-local",
+                "prompt_version": "minutes_draft@0.1.0",
+                "human_approver": "clerk@example.gov",
+                "source_materials": [
+                    {
+                        "source_id": "motion-1",
+                        "label": "Motion text",
+                        "text": "Approve <script>sidewalk</script> repair packet.",
+                    }
+                ],
+                "sentences": [
+                    {
+                        "text": "Council approved the sidewalk repair packet.",
+                        "citations": ["motion-1"],
+                    }
+                ],
+            },
+        )
+        response = await client.get("/staff")
+
+    assert created.status_code == 201
+    assert response.status_code == 200
+    assert "clerk@example.gov" in response.text
+    assert f"Meeting {meeting.json()['id']} minutes draft" in response.text
+    assert "DRAFT" in response.text
+    assert "Human review must approve the cited draft before public posting." in response.text
 
 
 async def test_favicon_is_public_and_empty() -> None:
