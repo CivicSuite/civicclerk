@@ -14,6 +14,8 @@ All notable changes to CivicClerk are documented here.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
   meeting detail navigation, required error/empty state copy, and audit drawer
   toggling.
+- CI and `scripts/verify-release.sh` now install, audit, build, and test the
+  `frontend/` package so the React app cannot drift outside the release gate.
 - `/staff` now opens with a product cockpit that summarizes the clerk desk,
   visible workflow actions, no-dead-end state promise, and go-live checks before
   staff drill into the live API workflow forms.

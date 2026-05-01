@@ -192,8 +192,8 @@ A new user can inspect and run the foundation, open first staff workflow screens
 14. Run `CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py` before changing prompt YAML.
 15. Run `python scripts/verify-browser-qa.py` before landing frontend or browser-visible documentation changes.
 16. For the React staff workspace slice, run the frontend package from
-   `frontend/` with `npm run dev`, `npm run test`, and `npm run build` after
-   dependencies are installed.
+   `frontend/` with `npm ci`, `npm audit --audit-level=moderate`,
+   `npm run dev`, `npm run test`, and `npm run build`.
 17. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
 
 ## Architecture direction

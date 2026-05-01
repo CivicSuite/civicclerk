@@ -60,6 +60,24 @@ os.environ["NO_NETWORK"] = "1"
 runpy.run_path("scripts/run-prompt-evals.py", run_name="__main__")
 PY
 
+if [[ -f "frontend/package-lock.json" ]]; then
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "VERIFY-RELEASE: FAILED - npm is required for frontend verification"
+    exit 1
+  fi
+  echo "==> frontend dependencies"
+  npm --prefix frontend ci
+
+  echo "==> frontend audit"
+  npm --prefix frontend audit --audit-level=moderate
+
+  echo "==> frontend build"
+  npm --prefix frontend run build
+
+  echo "==> frontend tests"
+  npm --prefix frontend test
+fi
+
 echo "==> build dependencies"
 "$PYTHON" -m pip install --quiet build
 

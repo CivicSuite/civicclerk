@@ -30,9 +30,11 @@ mockup's browser-global JSX bundle.
 
 ## Local Frontend Commands
 
-Run these from `frontend/` after dependencies are installed:
+Run these from `frontend/`:
 
 ```bash
+npm ci
+npm audit --audit-level=moderate
 npm run dev
 npm run test
 npm run build
