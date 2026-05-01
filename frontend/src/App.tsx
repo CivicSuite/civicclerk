@@ -371,6 +371,22 @@ type PublicMeetingRecord = {
   approvedMinutes: string;
 };
 
+type RunbookItem = {
+  label: string;
+  status: Meeting["noticeStatus"];
+  summary: string;
+  page: Page;
+  action: string;
+};
+
+type MeetingRunbook = {
+  meeting: Meeting;
+  items: RunbookItem[];
+  nextAction: RunbookItem;
+  readyCount: number;
+  legalBlocker: string | null;
+};
+
 type ApiPublicMeetingRecord = {
   id: string;
   meeting_id: string;
@@ -1056,6 +1072,13 @@ export function App() {
               apiError={apiError}
               meetings={visibleMeetings}
               meetingBodies={visibleBodies}
+              agendaItems={visibleAgendaItems}
+              packetAssemblies={visiblePacketAssemblies}
+              noticeChecklists={visibleNoticeChecklists}
+              motions={visibleMotions}
+              votes={visibleVotes}
+              minutesDrafts={visibleMinutesDrafts}
+              publicRecords={visiblePublicRecords}
               bodyState={qaState ?? bodyState}
               bodyError={bodyError}
               onCreateBody={async (name, bodyType) => {
@@ -1873,11 +1896,142 @@ function StateToolbar({
   );
 }
 
+function buildMeetingRunbook({
+  meetings,
+  agendaItems,
+  packetAssemblies,
+  noticeChecklists,
+  motions,
+  votes,
+  minutesDrafts,
+  publicRecords,
+}: {
+  meetings: Meeting[];
+  agendaItems: AgendaIntakeItem[];
+  packetAssemblies: PacketAssemblyRecord[];
+  noticeChecklists: NoticeChecklistRecord[];
+  motions: MotionRecord[];
+  votes: VoteRecord[];
+  minutesDrafts: MinutesDraftRecord[];
+  publicRecords: PublicMeetingRecord[];
+}): MeetingRunbook | null {
+  const meeting = meetings[0];
+  if (!meeting) {
+    return null;
+  }
+  const meetingPackets = packetAssemblies.filter((record) => record.meetingId === meeting.id);
+  const finalizedPacket = meetingPackets.find((record) => record.status === "FINALIZED");
+  const draftPacket = meetingPackets.find((record) => record.status === "DRAFT");
+  const meetingNotices = noticeChecklists.filter((record) => record.meetingId === meeting.id);
+  const latestNotice = meetingNotices[0];
+  const meetingMotions = motions.filter((record) => record.meetingId === meeting.id);
+  const meetingVotes = votes.filter((vote) => meetingMotions.some((motion) => motion.id === vote.motionId));
+  const meetingDraft = minutesDrafts.find((record) => record.meetingId === meeting.id);
+  const publicRecord = publicRecords.find((record) => record.meetingId === meeting.id);
+  const promotedCount = agendaItems.filter((item) => item.promotedAgendaItemId).length;
+  const readyForClerkCount = agendaItems.filter((item) => item.readinessStatus === "READY").length;
+  const pendingCount = agendaItems.filter((item) => item.readinessStatus === "PENDING").length;
+  const legalWarning = latestNotice?.warnings[0]?.fix ?? "Reschedule the meeting or document the lawful emergency basis before proceeding.";
+
+  const items: RunbookItem[] = [
+    {
+      label: "Meeting scheduled",
+      status: meeting.scheduledStart ? "Ready" : "Blocked",
+      summary: meeting.scheduledStart
+        ? `${meeting.date} at ${meeting.time} in ${meeting.location}.`
+        : "Schedule the meeting with a body, start time, and location before legal workflow begins.",
+      page: "meetings",
+      action: "Open calendar",
+    },
+    {
+      label: "Agenda intake promoted",
+      status: promotedCount > 0 ? "Ready" : readyForClerkCount > 0 ? "Warning" : "Blocked",
+      summary: promotedCount > 0
+        ? `${promotedCount} agenda intake item${promotedCount === 1 ? "" : "s"} promoted into canonical agenda work.`
+        : readyForClerkCount > 0
+          ? `${readyForClerkCount} ready item${readyForClerkCount === 1 ? "" : "s"} still need promotion before packet assembly.`
+          : `${pendingCount || "No"} department item${pendingCount === 1 ? "" : "s"} are ready; submit or review intake before building the packet.`,
+      page: "agenda",
+      action: "Open agenda intake",
+    },
+    {
+      label: "Packet finalized",
+      status: finalizedPacket ? "Ready" : draftPacket ? "Warning" : "Blocked",
+      summary: finalizedPacket
+        ? `${finalizedPacket.title} is finalized at version ${finalizedPacket.packetVersion}.`
+        : draftPacket
+          ? `${draftPacket.title} is drafted but must be finalized before notice proof.`
+          : "Create a packet draft from promoted agenda work, then finalize it before notice posting.",
+      page: "packet",
+      action: "Open packet builder",
+    },
+    {
+      label: "Notice legally proved",
+      status: latestNotice?.status === "POSTED" && latestNotice.compliant ? "Ready" : latestNotice?.compliant ? "Warning" : "Blocked",
+      summary: latestNotice
+        ? latestNotice.compliant
+          ? latestNotice.status === "POSTED"
+            ? `Posting proof is attached with immutable audit hash ${latestNotice.lastAuditHash.slice(0, 12)}.`
+            : `Checklist passed; attach posting proof before treating notice as posted. Deadline: ${formatDateTime(latestNotice.deadlineAt)}.`
+          : `Statutory notice is blocked. Deadline: ${formatDateTime(latestNotice.deadlineAt)}. Fix: ${legalWarning}`
+        : "Run the statutory notice checklist, record basis and approval, then attach posting proof.",
+      page: "notice",
+      action: "Open notice checklist",
+    },
+    {
+      label: "Outcomes captured",
+      status: meetingMotions.length > 0 && meetingVotes.length > 0 ? "Ready" : meetingMotions.length > 0 ? "Warning" : "Blocked",
+      summary: meetingMotions.length > 0 && meetingVotes.length > 0
+        ? `${meetingMotions.length} motion${meetingMotions.length === 1 ? "" : "s"} and ${meetingVotes.length} vote${meetingVotes.length === 1 ? "" : "s"} are captured as immutable records.`
+        : meetingMotions.length > 0
+          ? "Motions exist; finish roll-call vote capture and action items before minutes drafting."
+          : "After the meeting, capture motions, roll-call votes, and action items before drafting minutes.",
+      page: "outcomes",
+      action: "Open outcomes",
+    },
+    {
+      label: "Minutes drafted with citations",
+      status: meetingDraft?.posted ? "Ready" : meetingDraft ? "Warning" : "Blocked",
+      summary: meetingDraft
+        ? meetingDraft.posted
+          ? "Approved minutes are posted to the public record."
+          : `Draft ${meetingDraft.id} has citation provenance and still needs human adoption before posting.`
+        : "Create a citation-gated minutes draft from captured motions and votes; AI text is not the official record.",
+      page: "minutes",
+      action: "Open minutes",
+    },
+    {
+      label: "Public record published",
+      status: publicRecord ? "Ready" : "Warning",
+      summary: publicRecord
+        ? `${publicRecord.title} is visible in the resident-safe public archive.`
+        : "Publish the resident-safe agenda, packet, and approved minutes without exposing restricted-session material.",
+      page: "public",
+      action: "Open public posting",
+    },
+  ];
+  const nextAction = items.find((item) => item.status !== "Ready") ?? items[items.length - 1];
+  return {
+    meeting,
+    items,
+    nextAction,
+    readyCount: items.filter((item) => item.status === "Ready").length,
+    legalBlocker: latestNotice && !latestNotice.compliant ? `Notice proof is blocked for ${meeting.body}. ${legalWarning}` : null,
+  };
+}
+
 function Dashboard({
   viewState,
   apiError,
   meetings,
   meetingBodies,
+  agendaItems,
+  packetAssemblies,
+  noticeChecklists,
+  motions,
+  votes,
+  minutesDrafts,
+  publicRecords,
   bodyState,
   bodyError,
   onCreateBody,
@@ -1891,6 +2045,13 @@ function Dashboard({
   apiError: string | null;
   meetings: Meeting[];
   meetingBodies: MeetingBody[];
+  agendaItems: AgendaIntakeItem[];
+  packetAssemblies: PacketAssemblyRecord[];
+  noticeChecklists: NoticeChecklistRecord[];
+  motions: MotionRecord[];
+  votes: VoteRecord[];
+  minutesDrafts: MinutesDraftRecord[];
+  publicRecords: PublicMeetingRecord[];
   bodyState: ViewState;
   bodyError: string | null;
   onCreateBody: (name: string, bodyType: string) => Promise<void>;
@@ -1905,6 +2066,18 @@ function Dashboard({
   }
 
   const blockedNotices = meetings.filter((meeting) => meeting.noticeStatus !== "Ready").length;
+  const agendaReviewCount = agendaItems.filter((item) => item.readinessStatus === "PENDING" || item.readinessStatus === "NEEDS_REVISION").length;
+  const readyAgendaCount = agendaItems.filter((item) => item.readinessStatus === "READY" && !item.promotedAgendaItemId).length;
+  const runbook = buildMeetingRunbook({
+    meetings,
+    agendaItems,
+    packetAssemblies,
+    noticeChecklists,
+    motions,
+    votes,
+    minutesDrafts,
+    publicRecords,
+  });
   return (
     <div className="page-stack">
       <PageHeader
@@ -1914,9 +2087,22 @@ function Dashboard({
       />
       <div className="metric-grid">
         <MetricCard label="Meetings this week" value={String(meetings.length)} note="Live from CivicClerk meeting API" />
-        <MetricCard label="Agenda items pending" value="14" note="3 need clerk review" />
+        <MetricCard
+          label="Agenda items pending"
+          value={String(agendaReviewCount)}
+          note={readyAgendaCount > 0 ? `${readyAgendaCount} ready for promotion` : "Live from agenda intake API"}
+        />
         <MetricCard label="Notice warnings" value={String(blockedNotices)} note="Resolve before public posting" tone={blockedNotices ? "warn" : undefined} />
       </div>
+      {runbook && (
+        <MeetingRunbookPanel
+          runbook={runbook}
+          onOpen={(page) => {
+            setActiveMeetingId(runbook.meeting.id);
+            setPage(page);
+          }}
+        />
+      )}
       <section className="panel">
         <div className="panel-heading">
           <div>
@@ -1953,6 +2139,63 @@ function Dashboard({
       />
       <MeetingSchedulingPanel meetingBodies={meetingBodies} onCreateMeeting={onCreateMeeting} />
     </div>
+  );
+}
+
+function MeetingRunbookPanel({
+  runbook,
+  onOpen,
+}: {
+  runbook: MeetingRunbook;
+  onOpen: (page: Page) => void;
+}) {
+  return (
+    <section className="panel runbook-panel" aria-labelledby="meeting-runbook-title">
+      <div className="panel-heading runbook-hero">
+        <div>
+          <span className="eyebrow">End-to-end clerk runbook</span>
+          <h2 id="meeting-runbook-title">Meeting runbook</h2>
+          <p>
+            {runbook.meeting.body} - {runbook.meeting.title}: {runbook.readyCount} of {runbook.items.length} gates are ready.
+            The next safe action is <strong>{runbook.nextAction.label}</strong>.
+          </p>
+        </div>
+        <button
+          className="secondary"
+          onClick={() => onOpen(runbook.nextAction.page)}
+          aria-label={`Open next runbook action: ${runbook.nextAction.label}`}
+        >
+          {runbook.nextAction.action}
+        </button>
+      </div>
+      {runbook.legalBlocker && (
+        <div className="runbook-legal-alert" role="alert" aria-label="Runbook legal blocker">
+          <strong>Legal blocker before the meeting can proceed</strong>
+          <span>{runbook.legalBlocker}</span>
+        </div>
+      )}
+      <ol className="runbook-steps" aria-label="Meeting lifecycle runbook">
+        {runbook.items.map((item, index) => (
+          <li key={item.label} className={item.status.toLowerCase()}>
+            <span className="runbook-index">{index + 1}</span>
+            <div>
+              <div className="runbook-row">
+                <strong>{item.label}</strong>
+                <StatusBadge tone={item.status} label={item.status} />
+              </div>
+              <p>{item.summary}</p>
+              <button
+                type="button"
+                onClick={() => onOpen(item.page)}
+                aria-label={`Open runbook step ${index + 1}`}
+              >
+                {item.action}
+              </button>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 

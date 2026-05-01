@@ -1,0 +1,45 @@
+{
+  "surface": "React dashboard Meeting Runbook",
+  "captured_at": "2026-05-01T18:45:00Z",
+  "base_url": "http://127.0.0.1:4175/?page=dashboard&source=demo",
+  "browser": {
+    "in_app_browser": {
+      "success_url": "http://127.0.0.1:4175/?page=dashboard&state=success&source=demo",
+      "success_dom_required_text": [
+        "Meeting runbook",
+        "End-to-end clerk runbook",
+        "Packet finalized",
+        "Notice legally proved",
+        "Open next runbook action: Packet finalized"
+      ],
+      "success_missing_text": [],
+      "next_action_navigation": {
+        "button": "Open next runbook action: Packet finalized",
+        "result": "Packet Builder workspace opened",
+        "required_text": "Assemble packet evidence before posting."
+      },
+      "states": {
+        "success": "Meeting Runbook rendered with ready, warning, and blocked lifecycle gates.",
+        "loading": "Actionable API-service wait copy rendered.",
+        "empty": "Actionable create-first-meeting copy rendered.",
+        "error": "Actionable backend/API retry copy rendered.",
+        "partial": "Actionable installed-services copy rendered."
+      },
+      "console_errors": 0
+    },
+    "screenshots": {
+      "desktop_success": "docs/screenshots/react-runbook-dashboard-desktop.png",
+      "mobile_success": "docs/screenshots/react-runbook-dashboard-mobile.png",
+      "loading": "docs/screenshots/react-runbook-state-loading.png",
+      "empty": "docs/screenshots/react-runbook-state-empty.png",
+      "error": "docs/screenshots/react-runbook-state-error.png",
+      "partial": "docs/screenshots/react-runbook-state-partial.png"
+    },
+    "accessibility": {
+      "keyboard": "Runbook next-action button is reachable by role and remains usable with keyboard/focus-visible styling.",
+      "focus": "Existing focus-visible styling remains active for buttons and QA controls.",
+      "contrast": "Runbook uses existing navy, gold, green, and red status tokens with readable text on tinted cards.",
+      "copy_review": "Every runbook warning and blocked state gives a clerk action: promote agenda, finalize packet, attach notice proof, capture outcomes, adopt minutes, or publish the public record."
+    }
+  }
+}
