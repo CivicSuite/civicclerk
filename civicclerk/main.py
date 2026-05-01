@@ -345,10 +345,15 @@ async def staff_dashboard() -> str:
     try:
         intake_items = _get_agenda_intake_repository().list_queue()
         cockpit_items = build_staff_cockpit_items(agenda_intake_items=intake_items)
+        agenda_intake_available = True
     except SQLAlchemyError:
+        intake_items = []
         cockpit_items = build_staff_cockpit_items(agenda_intake_available=False)
+        agenda_intake_available = False
     return render_staff_dashboard(
         cockpit_items=cockpit_items,
+        agenda_intake_items=intake_items,
+        agenda_intake_available=agenda_intake_available,
     )
 
 
