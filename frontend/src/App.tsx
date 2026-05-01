@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice";
+type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "public";
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -213,6 +213,24 @@ type NoticePostingProofPayload = {
   posting_proof: Record<string, string>;
 };
 
+type PublicMeetingRecord = {
+  id: string;
+  meetingId: string;
+  title: string;
+  postedAgenda: string;
+  postedPacket: string;
+  approvedMinutes: string;
+};
+
+type ApiPublicMeetingRecord = {
+  id: string;
+  meeting_id: string;
+  title: string;
+  posted_agenda: string;
+  posted_packet: string;
+  approved_minutes: string;
+};
+
 const lifecycle: LifecycleStage[] = [
   "Scheduled",
   "Notice posted",
@@ -372,6 +390,25 @@ const demoNoticeChecklists: NoticeChecklistRecord[] = [
   },
 ];
 
+const demoPublicRecords: PublicMeetingRecord[] = [
+  {
+    id: "public-demo-1",
+    meetingId: "M-2026-053",
+    title: "City Council Regular Meeting",
+    postedAgenda: "Agenda: consent calendar, downtown sidewalk repair award, and public comment.",
+    postedPacket: "Packet: staff report, fiscal note, bid tabulation, and notice proof.",
+    approvedMinutes: "Approved minutes: motion passed 5-0; packet and notice proof accepted into the public record.",
+  },
+  {
+    id: "public-demo-2",
+    meetingId: "M-2026-041",
+    title: "Parks Advisory Board Monthly Meeting",
+    postedAgenda: "Agenda: trail grant update, summer program schedule, and resident comment.",
+    postedPacket: "Packet: grant memo, program calendar, and accessibility checklist.",
+    approvedMinutes: "Approved minutes: board recommended grant application submission.",
+  },
+];
+
 function Icon({ label }: { label: string }) {
   return <span className="icon" aria-hidden="true">{label.slice(0, 1)}</span>;
 }
@@ -387,6 +424,8 @@ export function App() {
   const [loadedPacketMeetingIds, setLoadedPacketMeetingIds] = useState<string[]>([]);
   const [noticeChecklists, setNoticeChecklists] = useState<NoticeChecklistRecord[]>([]);
   const [loadedNoticeMeetingIds, setLoadedNoticeMeetingIds] = useState<string[]>([]);
+  const [publicRecords, setPublicRecords] = useState<PublicMeetingRecord[]>([]);
+  const [publicRecordDetail, setPublicRecordDetail] = useState<PublicMeetingRecord | null>(null);
   const [apiState, setApiState] = useState<ViewState>("loading");
   const [apiError, setApiError] = useState<string | null>(null);
   const [bodyState, setBodyState] = useState<ViewState>("loading");
@@ -395,6 +434,8 @@ export function App() {
   const [packetError, setPacketError] = useState<string | null>(null);
   const [noticeState, setNoticeState] = useState<ViewState>("loading");
   const [noticeError, setNoticeError] = useState<string | null>(null);
+  const [publicState, setPublicState] = useState<ViewState>("loading");
+  const [publicError, setPublicError] = useState<string | null>(null);
   const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
   const [auditOpen, setAuditOpen] = useState(initial.audit);
   const viewState = qaState ?? apiState;
@@ -403,6 +444,8 @@ export function App() {
   const visibleAgendaItems = qaState === null ? agendaItems : demoAgendaItems;
   const visiblePacketAssemblies = qaState === null ? packetAssemblies : demoPacketAssemblies;
   const visibleNoticeChecklists = qaState === null ? noticeChecklists : demoNoticeChecklists;
+  const visiblePublicRecords = qaState === null ? publicRecords : demoPublicRecords;
+  const visiblePublicDetail = qaState === null ? publicRecordDetail : demoPublicRecords[0];
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
 
   async function loadWorkspaceData(cancelled: () => boolean) {
@@ -449,6 +492,21 @@ export function App() {
         setNoticeError(error instanceof Error ? error.message : "Notice checklist API failed.");
         setNoticeState("error");
       }
+      try {
+        const apiPublicRecords = await fetchPublicMeetings();
+        if (cancelled()) return;
+        const mappedPublicRecords = apiPublicRecords.map(mapApiPublicMeetingRecord);
+        setPublicRecords(mappedPublicRecords);
+        setPublicRecordDetail(mappedPublicRecords[0] ?? null);
+        setPublicError(null);
+        setPublicState(mappedPublicRecords.length === 0 ? "empty" : "success");
+      } catch (error) {
+        if (cancelled()) return;
+        setPublicRecords([]);
+        setPublicRecordDetail(null);
+        setPublicError(error instanceof Error ? error.message : "Public meeting API failed.");
+        setPublicState("error");
+      }
     } else {
       setPacketAssemblies([]);
       setLoadedPacketMeetingIds([]);
@@ -456,6 +514,9 @@ export function App() {
       setNoticeChecklists([]);
       setLoadedNoticeMeetingIds([]);
       setNoticeState("empty");
+      setPublicRecords([]);
+      setPublicRecordDetail(null);
+      setPublicState("empty");
     }
     setBodyState(mappedBodies.length === 0 ? "empty" : "success");
     setApiState(mappedMeetings.length === 0 && mappedAgendaItems.length === 0 ? "empty" : "success");
@@ -471,12 +532,15 @@ export function App() {
       setAgendaItems(demoAgendaItems);
       setPacketAssemblies(demoPacketAssemblies);
       setLoadedPacketMeetingIds(demoMeetings.map((meeting) => meeting.id));
-        setNoticeChecklists(sortNoticeChecklistRecords(demoNoticeChecklists));
+      setNoticeChecklists(sortNoticeChecklistRecords(demoNoticeChecklists));
       setLoadedNoticeMeetingIds(demoMeetings.map((meeting) => meeting.id));
+      setPublicRecords(demoPublicRecords);
+      setPublicRecordDetail(demoPublicRecords[0]);
       setApiState("success");
       setBodyState("success");
       setPacketState("success");
       setNoticeState("success");
+      setPublicState("success");
       setActiveMeetingId(demoMeetings[0].id);
       return;
     }
@@ -488,10 +552,12 @@ export function App() {
         setApiError(error.message);
         setPacketError(error.message);
         setNoticeError(error.message);
+        setPublicError(error.message);
         setApiState("error");
         setBodyState("error");
         setPacketState("error");
         setNoticeState("error");
+        setPublicState("error");
       });
     return () => {
       cancelled = true;
@@ -585,6 +651,9 @@ export function App() {
           </button>
           <button className={page === "notice" ? "active" : ""} onClick={() => setPage("notice")}>
             <Icon label="Notice" /> Notice checklist
+          </button>
+          <button className={page === "public" ? "active" : ""} onClick={() => setPage("public")}>
+            <Icon label="Public" /> Public posting
           </button>
           <button className="muted" aria-disabled="true">
             <Icon label="Minutes" /> Minutes
@@ -736,6 +805,31 @@ export function App() {
               }}
             />
           )}
+          {page === "public" && (
+            <PublicPostedMeetingWorkspace
+              viewState={qaState ?? publicState}
+              apiError={publicError}
+              records={visiblePublicRecords}
+              selectedRecord={visiblePublicDetail}
+              onSelectRecord={async (recordId) => {
+                if (initial.source === "demo" || qaState !== null) {
+                  setPublicRecordDetail(demoPublicRecords.find((record) => record.id === recordId) ?? demoPublicRecords[0]);
+                  return;
+                }
+                const detail = mapApiPublicMeetingRecord(await fetchPublicMeetingDetail(recordId));
+                setPublicRecordDetail(detail);
+              }}
+              onSearch={async (query) => {
+                if (initial.source === "demo" || qaState !== null) {
+                  const normalized = query.toLowerCase().trim();
+                  return demoPublicRecords.filter((record) =>
+                    `${record.title} ${record.postedAgenda} ${record.postedPacket} ${record.approvedMinutes}`.toLowerCase().includes(normalized),
+                  );
+                }
+                return (await searchPublicArchive(query)).map(mapApiPublicMeetingRecord);
+              }}
+            />
+          )}
         </section>
         {auditOpen && <AuditDrawer meeting={activeMeeting} />}
       </main>
@@ -796,6 +890,38 @@ async function fetchNoticeChecklists(meetingId: string): Promise<ApiNoticeCheckl
   }
   const payload = (await response.json()) as { notice_checklists?: ApiNoticeChecklistRecord[] };
   return Array.isArray(payload.notice_checklists) ? payload.notice_checklists : [];
+}
+
+async function fetchPublicMeetings(): Promise<ApiPublicMeetingRecord[]> {
+  const response = await fetch("/api/public/meetings", {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Public meetings API returned ${response.status}.`);
+  }
+  const payload = (await response.json()) as { meetings?: ApiPublicMeetingRecord[] };
+  return Array.isArray(payload.meetings) ? payload.meetings : [];
+}
+
+async function fetchPublicMeetingDetail(recordId: string): Promise<ApiPublicMeetingRecord> {
+  const response = await fetch(`/api/public/meetings/${recordId}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Public meeting detail"));
+  }
+  return response.json();
+}
+
+async function searchPublicArchive(query: string): Promise<ApiPublicMeetingRecord[]> {
+  const response = await fetch(`/api/public/archive/search?q=${encodeURIComponent(query)}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Public archive search"));
+  }
+  const payload = (await response.json()) as { results?: ApiPublicMeetingRecord[] };
+  return Array.isArray(payload.results) ? payload.results : [];
 }
 
 async function createMeetingBody(name: string, bodyType: string): Promise<ApiMeetingBody> {
@@ -1044,6 +1170,17 @@ function mapApiNoticeChecklistRecord(record: ApiNoticeChecklistRecord): NoticeCh
   };
 }
 
+function mapApiPublicMeetingRecord(record: ApiPublicMeetingRecord): PublicMeetingRecord {
+  return {
+    id: record.id,
+    meetingId: record.meeting_id,
+    title: record.title,
+    postedAgenda: record.posted_agenda,
+    postedPacket: record.posted_packet,
+    approvedMinutes: record.approved_minutes,
+  };
+}
+
 function sortNoticeChecklistRecords(records: NoticeChecklistRecord[]): NoticeChecklistRecord[] {
   return [...records].sort((left, right) => {
     const rightTime = new Date(right.updatedAt || right.createdAt).getTime();
@@ -1096,7 +1233,7 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice"];
+  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "public"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   return {
     page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : "dashboard",
@@ -2054,6 +2191,146 @@ function NoticeChecklistWorkspace({
   );
 }
 
+function PublicPostedMeetingWorkspace({
+  viewState,
+  apiError,
+  records,
+  selectedRecord,
+  onSelectRecord,
+  onSearch,
+}: {
+  viewState: ViewState;
+  apiError: string | null;
+  records: PublicMeetingRecord[];
+  selectedRecord: PublicMeetingRecord | null;
+  onSelectRecord: (recordId: string) => Promise<void>;
+  onSearch: (query: string) => Promise<PublicMeetingRecord[]>;
+}) {
+  const [query, setQuery] = useState("sidewalk");
+  const [searchResults, setSearchResults] = useState<PublicMeetingRecord[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
+
+  if (viewState !== "success") {
+    return <StateMessage state={viewState} context="public posted meeting" apiError={apiError} />;
+  }
+
+  async function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    try {
+      const results = await onSearch(query);
+      setSearchResults(results);
+      setMessage(results.length === 0
+        ? "No public records matched. Try a broader term or ask the clerk whether the meeting has been posted."
+        : `${results.length} public record${results.length === 1 ? "" : "s"} matched. Restricted or closed-session records are not shown to anonymous visitors.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Public archive search failed."} Confirm the public API is running, then retry or ask the clerk for the posted record link.`);
+    }
+  }
+
+  return (
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Public posting"
+        title="Show residents the posted agenda, packet, and approved minutes."
+        description="This resident-safe page reads only public meeting records. Closed-session material and restricted records are not displayed or hinted to anonymous visitors."
+      />
+      <div className="metric-grid">
+        <MetricCard label="Public records" value={String(records.length)} note="Visible to residents" />
+        <MetricCard label="Selected meeting" value={selectedRecord ? "1" : "0"} note={selectedRecord ? "Ready for detail view" : "Pick a posted record"} tone={selectedRecord ? undefined : "warn"} />
+        <MetricCard label="Restricted material" value="0" note="Never shown here" />
+      </div>
+      <div className="notice-legal-callout public-callout">
+        <strong>Resident-safe view</strong>
+        <span>Only records returned by the public archive API appear here. If a meeting is missing, staff must publish a public-safe record from the clerk workflow before residents can see it.</span>
+      </div>
+      <div className="agenda-grid">
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Posted meetings</h2>
+              <p>Choose the record residents should inspect. Missing meetings are a staff publishing task, not a resident error.</p>
+            </div>
+            <StatusBadge tone={records.length ? "Ready" : "Warning"} label={records.length ? "Public" : "No records"} />
+          </div>
+          <div className="agenda-list">
+            {records.length === 0 && (
+              <p className="empty-inline">No public meeting records are posted yet. Staff should publish a public-safe archive record from the clerk workflow, then residents can refresh this page.</p>
+            )}
+            {records.map((record) => (
+              <article key={record.id} className="agenda-row">
+                <div>
+                  <div className="row-title">
+                    <h3>{record.title}</h3>
+                    <StatusBadge tone="Ready" label="Posted" />
+                  </div>
+                  <p>{record.postedAgenda}</p>
+                  <small>Meeting id: {record.meetingId}</small>
+                </div>
+                <div className="row-actions">
+                  <button className="secondary" type="button" onClick={() => onSelectRecord(record.id)}>
+                    View public record
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Resident detail</h2>
+              <p>Agenda, packet, and minutes copy are safe to show publicly.</p>
+            </div>
+            <StatusBadge tone={selectedRecord ? "Ready" : "Warning"} label={selectedRecord ? "Selected" : "Pick record"} />
+          </div>
+          {selectedRecord ? (
+            <div className="public-record-card">
+              <h3>{selectedRecord.title}</h3>
+              <dl>
+                <dt>Posted agenda</dt>
+                <dd>{selectedRecord.postedAgenda}</dd>
+                <dt>Posted packet</dt>
+                <dd>{selectedRecord.postedPacket}</dd>
+                <dt>Approved minutes</dt>
+                <dd>{selectedRecord.approvedMinutes}</dd>
+              </dl>
+              <p className="legal-warning muted-warning">Closed-session content is not displayed here. Ask the clerk for the public record link if expected material is missing.</p>
+            </div>
+          ) : (
+            <p className="empty-inline">Select a posted meeting to show resident-safe detail.</p>
+          )}
+          <form className="search-form" onSubmit={submitSearch}>
+            <label>
+              Search public archive
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search posted public records" />
+            </label>
+            <button type="submit">Search public records</button>
+          </form>
+          {message && <p className="form-message">{message}</p>}
+          {searchResults.length > 0 && (
+            <div className="agenda-list">
+              {searchResults.map((record) => (
+                <article key={record.id} className="agenda-row">
+                  <div>
+                    <h3>{record.title}</h3>
+                    <p>{record.postedPacket}</p>
+                  </div>
+                  <div className="row-actions">
+                    <button className="secondary" type="button" onClick={() => onSelectRecord(record.id)}>
+                      Open
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function MeetingCalendar({
   viewState,
   apiError,
@@ -2374,6 +2651,19 @@ function StateMessage({ state, context, apiError }: { state: ViewState; context:
     copy.body = apiError
       ? `${apiError} Do not attach posting proof from this workspace until the notice API is reachable; confirm the backend, notice store, and staff auth mode, then retry.`
       : "The notice API did not respond. Do not treat the meeting as noticed until deadline, statutory basis, approval, proof, and audit hash are visible; confirm the backend, notice store, and staff auth mode, then retry.";
+  }
+  if (context === "public posted meeting" && state === "empty") {
+    copy.body = "No public meeting records are posted yet. Staff should publish a public-safe record from the clerk workflow before residents can see agendas, packets, or approved minutes here.";
+    copy.action = "Ask clerk to publish";
+  }
+  if (context === "public posted meeting" && state === "partial") {
+    copy.body = "Public meeting records are only partially available. Residents should not assume a missing meeting is closed or nonexistent; confirm the public archive API and ask the clerk for the posted record link.";
+    copy.action = "Check public archive";
+  }
+  if (context === "public posted meeting" && state === "error") {
+    copy.body = apiError
+      ? `${apiError} Confirm the public API is running and retry; if the meeting is time-sensitive, ask the clerk for the official posted record link.`
+      : "The public archive API did not respond. Confirm the public API is running and retry; if the meeting is time-sensitive, ask the clerk for the official posted record link.";
   }
 
   return (

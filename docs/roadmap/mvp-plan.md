@@ -21,13 +21,14 @@ and pre-lock schedule editing backed by `POST /meetings` and
 submit/review, ready-item promotion into canonical agenda lifecycle records
 through `POST /agenda-intake/{id}/promote`, and the first Packet Builder
 workspace for creating and finalizing packet assembly records from promoted
-agenda items. Sprint 3 has started with a legally explicit Notice Checklist
+agenda items. Sprint 3 is now present with a legally explicit Notice Checklist
 workspace for statutory deadline review, basis/approval capture, posting-proof
-attachment, legal-blocker copy, and immutable audit-hash visibility. Remaining
-MVP work now centers on the Sprint 3 public posted-meeting page, Sprint 4
-outcome/minutes surfaces, standing up the Docker Compose deployment stack,
-actual installer packaging beyond the non-installer release handoff bundle, the
-finished public portal, and live sync/deployment hardening.
+attachment, legal-blocker copy, and immutable audit-hash visibility, plus a
+first Public Posting workspace for resident-safe public meeting list/detail/search
+over posted agenda, packet, and approved minutes records. Remaining MVP work now
+centers on Sprint 4 outcome/minutes surfaces, standing up the Docker Compose
+deployment stack, actual installer packaging beyond the non-installer release
+handoff bundle, the finished public portal, and live sync/deployment hardening.
 
 ## Sprint 1
 
@@ -56,7 +57,8 @@ finished public portal, and live sync/deployment hardening.
 
 - Notice checklist: first React statutory deadline, basis, approval, posting
   proof, legal-blocker, and audit-hash workflow present
-- Public posted-meeting page
+- Public posted-meeting page: first React resident-safe list, detail, and
+  archive search workflow present
 
 ## Sprint 4
 

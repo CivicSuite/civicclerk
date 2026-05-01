@@ -54,13 +54,17 @@ All notable changes to CivicClerk are documented here.
 - Notice Checklist error and blocked states now explain when the statutory
   deadline has passed, why posting proof cannot be attached, and what the clerk
   must do next before treating a meeting as lawfully noticed.
+- The React staff workspace now includes the first Public Posting workflow:
+  resident-safe public meeting list/detail/search over the public archive APIs,
+  posted agenda/packet/approved minutes display, and copy that avoids implying
+  closed-session existence when records are absent.
 - Already-promoted agenda intake rows now lock review actions and point staff
   forward to Packet Builder instead of allowing duplicate readiness work.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
   meeting scheduling, meeting schedule editing, agenda intake submit/review/promote,
   packet draft creation/finalization, notice compliance/proof attachment,
-  statutory-deadline blocking, required error/empty state copy, and audit drawer
-  toggling.
+  statutory-deadline blocking, public posted-meeting list/detail/search,
+  required error/empty state copy, and audit drawer toggling.
 - CI and `scripts/verify-release.sh` now install, audit, build, and test the
   `frontend/` package so the React app cannot drift outside the release gate.
 - The frontend dev proxy now defaults to the documented CivicClerk FastAPI

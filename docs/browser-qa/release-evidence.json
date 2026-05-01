@@ -1,8 +1,8 @@
 {
     "version": "0.1.11",
-    "reviewed_at": "2026-05-01T15:33:43Z",
+    "reviewed_at": "2026-05-01T15:50:48Z",
     "page": "docs/index.html",
-    "page_sha256": "381d171ffdc9fd85cebfcb791571cdf94f0eff4d43928879c6cee8259e00ccea",
+    "page_sha256": "d8dc2ac8aa79ee4487ecd34ed6dc22d3317360040d15fee12b72e5b0fc6bc68c",
     "screenshots": {
         "desktop": "docs/browser-qa-v0.1.11-release-desktop.png",
         "mobile": "docs/browser-qa-v0.1.11-release-mobile.png"
