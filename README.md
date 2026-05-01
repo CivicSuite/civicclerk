@@ -134,9 +134,10 @@ Shipped in this foundation:
   human approval, and actor, running the live compliance check, attaching
   posting proof after a passing check, and showing legal-blocker plus immutable
   audit-hash evidence from the live notice checklist APIs
-- React Public Posting workflow for resident-safe public meeting list/detail
-  and archive search over posted agenda, posted packet, and approved minutes
-  records returned by the public archive APIs
+- React Public Posting portal for resident-safe public meeting list/detail and
+  archive search over posted agenda, posted packet, and approved minutes
+  records, with official-record sections, missing-record guidance, and
+  restricted-session non-disclosure copy
 - React Meeting Outcomes workflow for selecting a meeting, loading captured
   motions/votes/action items, capturing immutable motions, recording
   roll-call votes, creating follow-up action items tied to source motions, and
@@ -192,10 +193,10 @@ Not shipped yet:
   Sprint 3 notice/public posting workspaces, and Sprint 4 outcomes/minutes
   workspaces
 - signed/enterprise installer release artifact
-- finished public portal beyond the first `/public` HTML shell
+- routing the legacy `/public` HTML shell to the React public portal
 - the integrated multi-role React clerk console beyond the first `frontend/`
   staff shell, meeting setup, agenda intake, packet builder, notice checklist,
-  public posting, meeting outcomes, and minutes draft slices
+  resident public portal, meeting outcomes, and minutes draft slices
 
 ## New user experience today
 

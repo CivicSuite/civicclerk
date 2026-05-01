@@ -54,10 +54,11 @@ All notable changes to CivicClerk are documented here.
 - Notice Checklist error and blocked states now explain when the statutory
   deadline has passed, why posting proof cannot be attached, and what the clerk
   must do next before treating a meeting as lawfully noticed.
-- The React staff workspace now includes the first Public Posting workflow:
-  resident-safe public meeting list/detail/search over the public archive APIs,
-  posted agenda/packet/approved minutes display, and copy that avoids implying
-  closed-session existence when records are absent.
+- The React staff workspace now includes a resident-oriented Public Posting
+  portal: public meeting list/detail/search over the public archive APIs,
+  separate official agenda/packet/approved-minutes sections, missing-record
+  guidance, and copy that avoids implying restricted-session existence when
+  records are absent.
 - The React staff workspace now includes the first Meeting Outcomes workflow:
   meeting selection, motion capture, roll-call vote capture, action-item
   creation tied to source motions, outcome ledger review, and append-only
