@@ -1,0 +1,31 @@
+{
+  "surface": "React Notice Checklist legal readiness proof chain",
+  "reviewed_at": "2026-05-01T18:11:00Z",
+  "url": "http://127.0.0.1:4174/?page=notice&state=success&source=demo",
+  "states_checked": [
+    "success",
+    "loading",
+    "empty",
+    "error",
+    "partial"
+  ],
+  "viewports_checked": [
+    "desktop 1440x1100",
+    "mobile 390x3000"
+  ],
+  "screenshots": [
+    "docs/screenshots/react-notice-legal-proof-chain-desktop.png",
+    "docs/screenshots/react-notice-legal-proof-chain-mobile.png",
+    "docs/screenshots/react-notice-legal-state-loading.png",
+    "docs/screenshots/react-notice-legal-state-empty.png",
+    "docs/screenshots/react-notice-legal-state-error.png",
+    "docs/screenshots/react-notice-legal-state-partial.png"
+  ],
+  "in_app_browser_checks": {
+    "success_state": "DOM showed Legal readiness proof chain, Legal gate copy, Immutable audit hash visible, and 0 console errors.",
+    "blocked_state": "After selecting Planning Commission - Special Session, DOM showed Cannot proceed, Statutory notice is blocked for this meeting, Deadline missed, and the reschedule/lawful-emergency fix path with 0 console errors."
+  },
+  "keyboard_focus_review": "The proof-chain cards are non-interactive status content; action controls remain native buttons, inputs, textareas, and selects with existing visible focus styling.",
+  "contrast_review": "Blocked notice surfaces use red text on pale red panels, passed gates use green badges, and the legal callout uses dark brown text on cream/orange panels with readable contrast.",
+  "copy_review": "The workspace now explains that notice is a statutory public-notice proof record, names each required gate, states why posting proof is disabled when the deadline is missed, and gives the clerk a safe fix path."
+}

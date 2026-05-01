@@ -52,6 +52,10 @@ mockup's browser-global JSX bundle.
 - Notice Checklist legal-blocker states plainly explain when the statutory
   deadline has passed, why posting proof is disabled, and that the clerk must
   reschedule or document a lawful emergency/special basis before proceeding.
+- Notice Checklist now renders a legal readiness proof chain covering packet
+  finalization, statutory deadline, statutory basis, human approval, posting
+  proof, and immutable audit hash so clerks can see which legal obligation is
+  satisfied, missing, or blocked before proceeding.
 - Notice Checklist is the MVP's most legally sensitive staff surface: it must
   show the deadline calculation, statutory basis requirement, human approval
   gate, posting-proof record, and immutable audit hash as proof that public

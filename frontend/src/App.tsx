@@ -2617,6 +2617,8 @@ function NoticeChecklistWorkspace({
   const noticeDeadline = activeMeeting.scheduledStart
     ? new Date(new Date(activeMeeting.scheduledStart).getTime() - Number(minimumNoticeHours || "0") * 60 * 60 * 1000)
     : null;
+  const legalGates = buildNoticeLegalGates(latestRecord, hasFinalizedPacket);
+  const blockedRecord = noticeChecklists.find((record) => !record.compliant);
 
   async function submitNoticeCheck(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -2678,6 +2680,38 @@ function NoticeChecklistWorkspace({
           The checklist is the city record that proves public notice. If deadline, statutory basis, or approval fails, do not attach posting proof; reschedule or document the lawful exception first.
         </span>
       </div>
+      {blockedRecord && (
+        <section className="notice-blocker-panel" role="alert" aria-label="Notice legal blocker">
+          <div>
+            <span className="eyebrow">Cannot proceed</span>
+            <h2>Statutory notice is blocked for this meeting.</h2>
+            <p>
+              The required deadline was {formatDateTime(blockedRecord.deadlineAt)}, but the posting record says notice was posted at {formatDateTime(blockedRecord.postedAt)}.
+            </p>
+          </div>
+          <strong>Fix before proof: {noticeWarningText(blockedRecord)}</strong>
+        </section>
+      )}
+      <section className="panel notice-proof-chain" aria-labelledby="notice-proof-chain-heading">
+        <div className="panel-heading">
+          <div>
+            <h2 id="notice-proof-chain-heading">Legal readiness proof chain</h2>
+            <p>Each gate must be visible before the clerk treats the meeting as lawfully noticed.</p>
+          </div>
+          <StatusBadge tone={legalGates.every((gate) => gate.passed) ? "Ready" : "Warning"} label={legalGates.every((gate) => gate.passed) ? "Complete proof" : "Proof incomplete"} />
+        </div>
+        <ol className="notice-gate-list">
+          {legalGates.map((gate) => (
+            <li key={gate.label} className={gate.passed ? "passed" : "blocked"}>
+              <span aria-hidden="true">{gate.passed ? "OK" : "!"}</span>
+              <div>
+                <strong>{gate.label}</strong>
+                <p>{gate.detail}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
       <div className="agenda-grid">
         <section className="panel">
           <div className="panel-heading">
@@ -2765,9 +2799,9 @@ function NoticeChecklistWorkspace({
                   <p>{record.minimumNoticeHours} hours required. Deadline: {formatDateTime(record.deadlineAt)}. Posted: {formatDateTime(record.postedAt)}.</p>
                   <small>Basis: {record.statutoryBasis || "Missing statutory basis"}</small>
                   <small>Approved by: {record.approvedBy || "No human approval recorded"}</small>
-                  {record.warnings.length > 0 && <p className="legal-warning">Legal blocker: {noticeWarningText(record)}</p>}
+                  {record.warnings.length > 0 && <p className="legal-warning">Legal blocker: {noticeWarningText(record)} You cannot attach posting proof until this is corrected.</p>}
                   {record.postingProof && <small>Proof: {record.postingProof.location ?? "location not recorded"} {record.postingProof.posted_url ?? ""}</small>}
-                  <small>Audit hash: {record.lastAuditHash.slice(0, 12)}...</small>
+                  <small>Immutable audit hash: {record.lastAuditHash.slice(0, 12)}...</small>
                 </div>
                 <div className="row-actions">
                   <button
@@ -3861,6 +3895,61 @@ function readinessLabel(status: AgendaIntakeItem["readinessStatus"]): string {
     NEEDS_REVISION: "Needs revision",
   };
   return labels[status];
+}
+
+type NoticeLegalGate = {
+  label: string;
+  detail: string;
+  passed: boolean;
+};
+
+function buildNoticeLegalGates(record: NoticeChecklistRecord | undefined, hasFinalizedPacket: boolean): NoticeLegalGate[] {
+  return [
+    {
+      label: "Packet finalized",
+      passed: hasFinalizedPacket,
+      detail: hasFinalizedPacket
+        ? "A finalized packet is available before notice proof is attached."
+        : "Finalize the packet first so the posted notice points to stable meeting materials.",
+    },
+    {
+      label: "Statutory deadline met",
+      passed: Boolean(record?.compliant),
+      detail: record
+        ? record.compliant
+          ? `Posted by ${formatDateTime(record.postedAt)} before the ${formatDateTime(record.deadlineAt)} deadline.`
+          : `Deadline missed: required by ${formatDateTime(record.deadlineAt)}, posted at ${formatDateTime(record.postedAt)}.`
+        : "Run the statutory notice check to calculate and record the legal deadline.",
+    },
+    {
+      label: "Statutory basis recorded",
+      passed: Boolean(record?.statutoryBasis?.trim()),
+      detail: record?.statutoryBasis?.trim()
+        ? record.statutoryBasis
+        : "Enter the ordinance, statute, or emergency/special-meeting basis the city is relying on.",
+    },
+    {
+      label: "Human approval recorded",
+      passed: Boolean(record?.approvedBy?.trim()),
+      detail: record?.approvedBy?.trim()
+        ? `${record.approvedBy} approved the notice checklist.`
+        : "Record the clerk or authorized approver before proceeding.",
+    },
+    {
+      label: "Posting proof attached",
+      passed: Boolean(record?.postingProof),
+      detail: record?.postingProof
+        ? `Proof captured from ${record.postingProof.location ?? "recorded location"} ${record.postingProof.posted_url ?? ""}`.trim()
+        : "Attach the public URL or physical posting location after the checklist passes.",
+    },
+    {
+      label: "Immutable audit hash visible",
+      passed: Boolean(record?.lastAuditHash),
+      detail: record?.lastAuditHash
+        ? `Audit hash ${record.lastAuditHash.slice(0, 12)}... links the deadline, approver, proof, and actor.`
+        : "Run or load a checklist record so the audit hash is visible.",
+    },
+  ];
 }
 
 function noticeWarningText(record: NoticeChecklistRecord): string {
