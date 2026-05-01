@@ -125,6 +125,10 @@ Shipped in this foundation:
   `/public`, and `/public/...`, with workflow API calls staying under
   `/api/...` and staff auth-readiness/session contracts still proxied to the
   backend
+- React Notice Checklist Official Notice Record summary that tells clerks
+  whether statutory public-notice proof allows the meeting to proceed, is
+  blocked, or is incomplete, with deadline, basis, approval, posting proof, and
+  immutable audit-hash fields visible together
 - React staff dashboard meeting-body management for creating, renaming, and
   deactivating boards and commissions without hard-deleting meeting history
 - React staff dashboard meeting scheduling for creating live calendar records
@@ -140,9 +144,9 @@ Shipped in this foundation:
 - React Notice Checklist workflow for selecting a meeting, previewing the
   statutory deadline, capturing notice type, posting time, statutory basis,
   human approval, and actor, running the live compliance check, attaching
-  posting proof after a passing check, and showing a legal readiness proof
-  chain, legal-blocker copy, and immutable audit-hash evidence from the live
-  notice checklist APIs
+  posting proof after a passing check, and showing an Official Notice Record,
+  legal readiness proof chain, legal-blocker copy, and immutable audit-hash
+  evidence from the live notice checklist APIs
 - React Public Posting portal for resident-safe public meeting list/detail and
   archive search over posted agenda, posted packet, and approved minutes
   records, with official-record sections, missing-record guidance, and

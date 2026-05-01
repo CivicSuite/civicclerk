@@ -2867,6 +2867,13 @@ function NoticeChecklistWorkspace({
     : null;
   const legalGates = buildNoticeLegalGates(latestRecord, hasFinalizedPacket);
   const blockedRecord = noticeChecklists.find((record) => !record.compliant);
+  const officialNoticeComplete = Boolean(hasFinalizedPacket && latestRecord?.compliant && latestRecord.status === "POSTED" && latestRecord.postingProof);
+  const officialNoticeTone: Meeting["noticeStatus"] = officialNoticeComplete ? "Ready" : blockedRecord ? "Blocked" : "Warning";
+  const officialNoticeDecision = officialNoticeComplete
+    ? "Meeting may proceed to posted-public-meeting steps. The deadline, statutory basis, human approval, posting proof, and immutable audit hash are all visible."
+    : blockedRecord
+      ? `Meeting cannot proceed as lawfully noticed. ${noticeWarningText(blockedRecord)}`
+      : "Not legally noticed yet. Do not proceed until the checklist passes and posting proof is attached.";
 
   async function submitNoticeCheck(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -2928,6 +2935,50 @@ function NoticeChecklistWorkspace({
           The checklist is the city record that proves public notice. If deadline, statutory basis, or approval fails, do not attach posting proof; reschedule or document the lawful exception first.
         </span>
       </div>
+      <section className={`panel notice-official-record ${officialNoticeTone.toLowerCase()}`} aria-labelledby="notice-official-record-heading">
+        <div className="panel-heading">
+          <div>
+            <h2 id="notice-official-record-heading">Official notice record</h2>
+            <p>This is the clerk-facing proof summary for whether the meeting can proceed as lawfully noticed.</p>
+          </div>
+          <StatusBadge tone={officialNoticeTone} label={officialNoticeComplete ? "Proceed allowed" : blockedRecord ? "Proceed blocked" : "Proof incomplete"} />
+        </div>
+        <p className="notice-decision">{officialNoticeDecision}</p>
+        <dl className="notice-record-grid">
+          <div>
+            <dt>Meeting</dt>
+            <dd>{activeMeeting.body} - {activeMeeting.title}</dd>
+          </div>
+          <div>
+            <dt>Packet status</dt>
+            <dd>{hasFinalizedPacket ? "Finalized packet available before notice proof." : "Missing finalized packet. Finalize the packet before public posting."}</dd>
+          </div>
+          <div>
+            <dt>Statutory deadline</dt>
+            <dd>{latestRecord ? formatDateTime(latestRecord.deadlineAt) : noticeDeadline ? formatDateTime(noticeDeadline.toISOString()) : "Run the checklist to calculate the deadline."}</dd>
+          </div>
+          <div>
+            <dt>Posting time</dt>
+            <dd>{latestRecord ? formatDateTime(latestRecord.postedAt) : "No posting time recorded yet."}</dd>
+          </div>
+          <div>
+            <dt>Statutory basis</dt>
+            <dd>{latestRecord?.statutoryBasis?.trim() || "Missing statutory basis. Enter the law, ordinance, or emergency/special basis."}</dd>
+          </div>
+          <div>
+            <dt>Human approval</dt>
+            <dd>{latestRecord?.approvedBy?.trim() || "No clerk or authorized approver recorded yet."}</dd>
+          </div>
+          <div>
+            <dt>Posting proof</dt>
+            <dd>{latestRecord?.postingProof ? `${latestRecord.postingProof.location ?? "location recorded"} ${latestRecord.postingProof.posted_url ?? ""}`.trim() : "No public URL or physical posting location attached yet."}</dd>
+          </div>
+          <div>
+            <dt>Immutable audit hash</dt>
+            <dd>{latestRecord?.lastAuditHash ? `${latestRecord.lastAuditHash.slice(0, 12)}...` : "No audit hash visible yet."}</dd>
+          </div>
+        </dl>
+      </section>
       {blockedRecord && (
         <section className="notice-blocker-panel" role="alert" aria-label="Notice legal blocker">
           <div>
