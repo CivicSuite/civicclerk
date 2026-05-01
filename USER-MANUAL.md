@@ -150,8 +150,12 @@ document the lawful emergency/special basis before proceeding. The Public
 Posting React surface is also present: staff can open a resident-safe view of
 posted public records, show the public agenda, packet, and approved minutes
 text, and search public archive records without exposing or implying restricted
-closed-session material. The next React product work moves into Sprint 4
-meeting outcome and minutes surfaces.
+closed-session material. The Meeting Outcomes React surface is now present:
+staff can select a meeting, capture immutable motions, record roll-call votes
+against a selected motion, create action items that reference the source
+motion, and see copy explaining that corrections must be append-only rather
+than silent edits. The next React product work is the Sprint 4 minutes and
+citation workspace.
 
 ## Part 2: IT and Technical Overview
 

@@ -25,8 +25,11 @@ agenda items. Sprint 3 is now present with a legally explicit Notice Checklist
 workspace for statutory deadline review, basis/approval capture, posting-proof
 attachment, legal-blocker copy, and immutable audit-hash visibility, plus a
 first Public Posting workspace for resident-safe public meeting list/detail/search
-over posted agenda, packet, and approved minutes records. Remaining MVP work now
-centers on Sprint 4 outcome/minutes surfaces, standing up the Docker Compose
+over posted agenda, packet, and approved minutes records. Sprint 4 has started
+with a React Meeting Outcomes workspace for immutable motion capture, roll-call
+vote capture, source-linked action items, and append-only correction guidance.
+Remaining MVP work now centers on the Sprint 4 minutes/citation workspace,
+standing up the Docker Compose
 deployment stack, actual installer packaging beyond the non-installer release
 handoff bundle, the finished public portal, and live sync/deployment hardening.
 
@@ -62,7 +65,7 @@ handoff bundle, the finished public portal, and live sync/deployment hardening.
 
 ## Sprint 4
 
-- Motion and vote capture
+- Motion and vote capture: first React motion/vote/action-item workspace present
 - Minutes draft workspace
 - Citation model
 
