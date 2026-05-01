@@ -71,6 +71,13 @@ All notable changes to CivicClerk are documented here.
   that tells clerks whether a meeting may proceed, is blocked, or is still
   missing proof, with deadline, statutory basis, human approval, posting proof,
   and immutable audit-hash fields visible in one place.
+
+### Changed
+- The README and user manual now describe CivicClerk as an end-to-end
+  React/Docker local product rehearsal with all four MVP workflow surfaces
+  present, and narrow the remaining deployment gaps to production OIDC, a
+  signed installer, Docker/PostgreSQL backup and restore, live sync, and
+  deployment hardening.
 - The React staff workspace now includes a resident-oriented Public Posting
   portal: public meeting list/detail/search over the public archive APIs,
   separate official agenda/packet/approved-minutes sections, missing-record
