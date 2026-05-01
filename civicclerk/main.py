@@ -27,7 +27,7 @@ from civicclerk.agenda_intake import AgendaIntakeRepository
 from civicclerk.agenda_lifecycle import AgendaItemRepository, AgendaItemStore
 from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_body import MeetingBodyRepository
-from civicclerk.meeting_lifecycle import MeetingStore
+from civicclerk.meeting_lifecycle import MeetingScheduleUpdateError, MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
 from civicclerk.motion_vote import MotionVoteStore
 from civicclerk.notice_checklist import NoticeChecklistRepository
@@ -153,6 +153,17 @@ class MeetingCreate(BaseModel):
     title: str = Field(min_length=1)
     meeting_type: str = Field(min_length=1)
     scheduled_start: str | None = None
+    meeting_body_id: str | None = Field(default=None, min_length=1)
+    location: str | None = Field(default=None, min_length=1)
+
+
+class MeetingUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1)
+    meeting_type: str | None = Field(default=None, min_length=1)
+    scheduled_start: str | None = Field(default=None, min_length=1)
+    meeting_body_id: str | None = Field(default=None, min_length=1)
+    location: str | None = Field(default=None, min_length=1)
+    actor: str = Field(default="clerk@example.gov", min_length=1)
 
 
 class MeetingBodyCreate(BaseModel):
@@ -325,6 +336,8 @@ async def root() -> dict[str, str]:
             "packet export staff screens can now create records-ready bundles with manifests "
             "and checksums through live API actions; "
             "meeting records can now persist through the configured meeting database; "
+            "meeting schedule fields now include body linkage and location, with pre-lock edits "
+            "audited before meetings move in progress; "
             f"CivicClerk is versioned as v{__version__} with the production-depth service slices included; "
             "staff workflow APIs now support a local-open rehearsal mode, a bearer-protected bridge mode, "
             "and a trusted-header reverse-proxy mode with a required trusted-proxy CIDR allowlist, "
@@ -657,6 +670,7 @@ async def deactivate_meeting_body(body_id: str) -> dict[str, str | bool]:
 @app.post("/meetings", status_code=201)
 async def create_meeting(payload: MeetingCreate) -> dict[str, str]:
     """Create a scheduled meeting for lifecycle enforcement."""
+    _require_active_meeting_body(payload.meeting_body_id)
     return _get_meeting_store().create(
         title=payload.title,
         meeting_type=payload.meeting_type,
@@ -664,6 +678,8 @@ async def create_meeting(payload: MeetingCreate) -> dict[str, str]:
             payload.scheduled_start,
             field_name="scheduled_start",
         ),
+        meeting_body_id=payload.meeting_body_id,
+        location=payload.location,
     ).public_dict()
 
 
@@ -678,6 +694,59 @@ async def list_meetings() -> dict[str, int | list[dict[str, str | None]]]:
 async def get_meeting(meeting_id: str) -> dict[str, str]:
     """Return the current meeting state."""
     meeting = _get_meeting_store().get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return meeting.public_dict()
+
+
+@app.patch("/meetings/{meeting_id}")
+async def update_meeting_schedule(meeting_id: str, payload: MeetingUpdate) -> dict[str, str]:
+    """Edit staff scheduling fields before the public meeting is locked."""
+    if not any(
+        value is not None
+        for value in (
+            payload.title,
+            payload.meeting_type,
+            payload.scheduled_start,
+            payload.meeting_body_id,
+            payload.location,
+        )
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Meeting update did not include any schedule fields.",
+                "fix": "Send at least one of title, meeting_type, scheduled_start, meeting_body_id, or location.",
+            },
+        )
+    existing_meeting = _get_meeting_store().get(meeting_id)
+    if existing_meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    if payload.meeting_body_id is not None and payload.meeting_body_id != existing_meeting.meeting_body_id:
+        _require_active_meeting_body(payload.meeting_body_id)
+    try:
+        meeting = _get_meeting_store().update_schedule(
+            meeting_id=meeting_id,
+            actor=payload.actor,
+            title=payload.title,
+            meeting_type=payload.meeting_type,
+            scheduled_start=_parse_timezone_aware_datetime(
+                payload.scheduled_start,
+                field_name="scheduled_start",
+            )
+            if payload.scheduled_start is not None
+            else None,
+            meeting_body_id=payload.meeting_body_id,
+            location=payload.location,
+        )
+    except MeetingScheduleUpdateError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": exc.message,
+                "fix": exc.fix,
+            },
+        ) from exc
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
     return meeting.public_dict()
@@ -1654,6 +1723,28 @@ def _evaluate_notice_or_404(
         statutory_basis=payload.statutory_basis,
         approved_by=payload.approved_by,
     )
+
+
+def _require_active_meeting_body(meeting_body_id: str | None) -> None:
+    if meeting_body_id is None:
+        return
+    body = _get_meeting_body_repository().get(meeting_body_id)
+    if body is None:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Meeting body does not exist.",
+                "fix": "Create the meeting body first or choose an active body returned by GET /meeting-bodies?active_only=true.",
+            },
+        )
+    if not body.is_active:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Meeting body is inactive.",
+                "fix": "Reactivate the body or choose another active body before scheduling this meeting.",
+            },
+        )
 
 
 def _parse_timezone_aware_datetime(

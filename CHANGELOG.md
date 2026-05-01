@@ -21,9 +21,18 @@ All notable changes to CivicClerk are documented here.
   deactivation so meeting history is not destroyed.
 - The React staff dashboard now includes a live Meeting Bodies panel for
   creating, renaming, and deactivating boards and commissions.
+- The FastAPI app now accepts `meeting_body_id` and `location` on meeting
+  records, exposes `PATCH /meetings/{id}` for pre-lock schedule edits, and
+  writes an audit entry for changed scheduling fields.
+- The React staff dashboard now includes a live Schedule Meeting panel, and
+  meeting detail now includes an Edit Schedule panel for changing title, body,
+  type, time, and location before the meeting reaches an in-session lock point.
+- Meeting scheduling APIs now reject nonexistent or inactive meeting body ids
+  with actionable 422/409 responses so raw API callers cannot bypass the React
+  body picker and attach a legal meeting record to invalid ownership metadata.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
-  meeting detail navigation, required error/empty state copy, and audit drawer
-  toggling.
+  meeting scheduling, meeting schedule editing, required error/empty state copy,
+  and audit drawer toggling.
 - CI and `scripts/verify-release.sh` now install, audit, build, and test the
   `frontend/` package so the React app cannot drift outside the release gate.
 - The frontend dev proxy now defaults to the documented CivicClerk FastAPI

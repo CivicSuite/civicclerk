@@ -15,8 +15,9 @@ meeting calendar, meeting detail lifecycle ribbon, audit/evidence drawer, and
 explicit loading/success/empty/error/partial QA states, and the staff dashboard,
 calendar, and detail flow now load live meeting records through `/api/meetings`.
 Meeting body CRUD now has a backend API and first React staff dashboard
-management surface. Remaining MVP work now centers on completing the rest of
-Sprint 1 scheduling/editing flow, continuing Sprints 2-4 in React, standing up the Docker
+management surface. Sprint 1 meeting setup now includes live React scheduling
+and pre-lock schedule editing backed by `POST /meetings` and
+`PATCH /meetings/{id}`. Remaining MVP work now centers on completing Sprints 2-4 in React, standing up the Docker
 Compose deployment stack, actual installer packaging beyond the non-installer
 release handoff bundle, the finished public portal, and live sync/deployment
 hardening.
@@ -25,6 +26,8 @@ hardening.
 
 - Meeting body CRUD: backend API plus first React dashboard management surface
   present
+- Meeting scheduling/editing: React dashboard scheduling plus detail-screen
+  pre-lock schedule edits present
 - Meeting calendar: first React implementation present in `frontend/` and wired
   to the live `/api/meetings` list endpoint
 - Empty/loading/error/success/partial frontend states: first React reference

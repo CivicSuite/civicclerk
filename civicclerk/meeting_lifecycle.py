@@ -49,13 +49,17 @@ meeting_records = sa.Table(
     sa.Column("id", sa.String(64), primary_key=True),
     sa.Column("title", sa.String(255), nullable=False),
     sa.Column("meeting_type", sa.String(80), nullable=False),
+    sa.Column("meeting_body_id", sa.String(64), nullable=True),
     sa.Column("scheduled_start", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("location", sa.String(255), nullable=True),
     sa.Column("status", sa.String(80), nullable=False),
     sa.Column("audit_entries", sa.JSON(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     schema="civicclerk",
 )
+
+EDITABLE_MEETING_STATUSES = {"SCHEDULED", "NOTICED", "PACKET_POSTED"}
 
 
 @dataclass(frozen=True)
@@ -72,6 +76,8 @@ class MeetingRecord:
     title: str
     meeting_type: str
     scheduled_start: datetime | None = None
+    meeting_body_id: str | None = None
+    location: str | None = None
     status: str = "SCHEDULED"
     audit_entries: list[dict[str, str]] = field(default_factory=list)
 
@@ -84,6 +90,10 @@ class MeetingRecord:
         }
         if self.scheduled_start is not None:
             payload["scheduled_start"] = self.scheduled_start.isoformat()
+        if self.meeting_body_id:
+            payload["meeting_body_id"] = self.meeting_body_id
+        if self.location:
+            payload["location"] = self.location
         return payload
 
 
@@ -109,12 +119,16 @@ class MeetingStore:
         title: str,
         meeting_type: str,
         scheduled_start: datetime | None = None,
+        meeting_body_id: str | None = None,
+        location: str | None = None,
     ) -> MeetingRecord:
         meeting = MeetingRecord(
             id=str(uuid4()),
             title=title,
             meeting_type=normalize_meeting_type(meeting_type),
             scheduled_start=_normalize_scheduled_start(scheduled_start),
+            meeting_body_id=_normalize_optional_text(meeting_body_id),
+            location=_normalize_optional_text(location),
         )
         if self.engine is not None:
             now = datetime.now(UTC)
@@ -124,7 +138,9 @@ class MeetingStore:
                         id=meeting.id,
                         title=meeting.title,
                         meeting_type=meeting.meeting_type,
+                        meeting_body_id=meeting.meeting_body_id,
                         scheduled_start=meeting.scheduled_start,
+                        location=meeting.location,
                         status=meeting.status,
                         audit_entries=meeting.audit_entries,
                         created_at=now,
@@ -132,6 +148,82 @@ class MeetingStore:
                     )
                 )
         self._meetings[meeting.id] = meeting
+        return meeting
+
+    def update_schedule(
+        self,
+        *,
+        meeting_id: str,
+        actor: str,
+        title: str | None = None,
+        meeting_type: str | None = None,
+        scheduled_start: datetime | None = None,
+        meeting_body_id: str | None = None,
+        location: str | None = None,
+    ) -> MeetingRecord | None:
+        meeting = self.get(meeting_id)
+        if meeting is None:
+            return None
+        if meeting.status not in EDITABLE_MEETING_STATUSES:
+            raise MeetingScheduleUpdateError(
+                "Meeting schedule is locked after the public meeting is in progress.",
+                (
+                    "Use lifecycle corrections, minutes notes, or a new replacement meeting rather than "
+                    f"editing schedule fields while the meeting is {meeting.status}."
+                ),
+            )
+
+        changes: dict[str, str | None] = {}
+        if title is not None and title != meeting.title:
+            changes["title"] = title
+            meeting.title = title
+        if meeting_type is not None:
+            normalized_type = normalize_meeting_type(meeting_type)
+            if normalized_type != meeting.meeting_type:
+                changes["meeting_type"] = normalized_type
+                meeting.meeting_type = normalized_type
+        normalized_start = _normalize_scheduled_start(scheduled_start)
+        if scheduled_start is not None and normalized_start != meeting.scheduled_start:
+            changes["scheduled_start"] = normalized_start.isoformat() if normalized_start else None
+            meeting.scheduled_start = normalized_start
+        normalized_body_id = _normalize_optional_text(meeting_body_id)
+        if meeting_body_id is not None and normalized_body_id != meeting.meeting_body_id:
+            changes["meeting_body_id"] = normalized_body_id
+            meeting.meeting_body_id = normalized_body_id
+        normalized_location = _normalize_optional_text(location)
+        if location is not None and normalized_location != meeting.location:
+            changes["location"] = normalized_location
+            meeting.location = normalized_location
+
+        if changes:
+            meeting.audit_entries.append(
+                {
+                    "meeting_id": meeting_id,
+                    "actor": actor,
+                    "from_status": meeting.status,
+                    "to_status": meeting.status,
+                    "outcome": "allowed",
+                    "reason": "meeting schedule updated",
+                    "changed_fields": ",".join(sorted(changes)),
+                }
+            )
+        if self.engine is not None:
+            with self.engine.begin() as connection:
+                connection.execute(
+                    meeting_records.update()
+                    .where(meeting_records.c.id == meeting_id)
+                    .values(
+                        title=meeting.title,
+                        meeting_type=meeting.meeting_type,
+                        meeting_body_id=meeting.meeting_body_id,
+                        scheduled_start=meeting.scheduled_start,
+                        location=meeting.location,
+                        audit_entries=meeting.audit_entries,
+                        updated_at=datetime.now(UTC),
+                    )
+                )
+        else:
+            self._meetings[meeting_id] = meeting
         return meeting
 
     def get(self, meeting_id: str) -> MeetingRecord | None:
@@ -312,6 +404,8 @@ def _row_to_meeting(row) -> MeetingRecord:
         title=data["title"],
         meeting_type=data["meeting_type"],
         scheduled_start=scheduled_start,
+        meeting_body_id=data.get("meeting_body_id"),
+        location=data.get("location"),
         status=data["status"],
         audit_entries=list(data["audit_entries"]),
     )
@@ -325,6 +419,22 @@ def _normalize_scheduled_start(value: datetime | None) -> datetime | None:
     return value.astimezone(UTC)
 
 
+def _normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip()
+    return normalized or None
+
+
+class MeetingScheduleUpdateError(ValueError):
+    """Raised when staff tries to edit schedule fields after the legal lock point."""
+
+    def __init__(self, message: str, fix: str) -> None:
+        super().__init__(message)
+        self.message = message
+        self.fix = fix
+
+
 __all__ = [
     "CANCELLED_STATUS",
     "KNOWN_STATUSES",
@@ -333,6 +443,7 @@ __all__ = [
     "SPECIAL_TRANSITIONS",
     "VALID_TRANSITIONS",
     "MeetingRecord",
+    "MeetingScheduleUpdateError",
     "MeetingStore",
     "TransitionResult",
     "meeting_records",
