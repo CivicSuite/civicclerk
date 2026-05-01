@@ -14,14 +14,15 @@ authors = [
 ]
 dependencies = [
   "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.16.0/civiccore-0.16.0-py3-none-any.whl",
+  "celery[redis]>=5.4.0,<6.0.0",
   "fastapi>=0.115.0,<1.0.0",
+  "psycopg2-binary>=2.9.0,<3.0.0",
   "uvicorn[standard]>=0.30.0,<1.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
   "httpx>=0.27.0,<1.0.0",
-  "psycopg2-binary>=2.9.0,<3.0.0",
   "pytest>=8.0.0,<9.0.0",
   "pytest-asyncio>=0.23.0,<1.0.0",
 ]

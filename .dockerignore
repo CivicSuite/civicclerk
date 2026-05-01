@@ -1,0 +1,13 @@
+.git
+.github
+.pytest_cache
+.ruff_cache
+.tmp-*
+__pycache__
+*.pyc
+dist
+frontend/dist
+frontend/node_modules
+node_modules
+*.log
+*.pid

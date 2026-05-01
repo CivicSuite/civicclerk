@@ -1,0 +1,121 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: ${CIVICCLERK_POSTGRES_USER:-civicclerk}
+      POSTGRES_PASSWORD: ${CIVICCLERK_POSTGRES_PASSWORD:-civicclerk}
+      POSTGRES_DB: ${CIVICCLERK_POSTGRES_DB:-civicclerk}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7.2-alpine
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollamadata:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment: &civicclerk_env
+      CIVICCLERK_STAFF_AUTH_MODE: ${CIVICCLERK_STAFF_AUTH_MODE:-open}
+      CIVICCLERK_AGENDA_INTAKE_DB_URL: postgresql+psycopg2://${CIVICCLERK_POSTGRES_USER:-civicclerk}:${CIVICCLERK_POSTGRES_PASSWORD:-civicclerk}@postgres:5432/${CIVICCLERK_POSTGRES_DB:-civicclerk}
+      CIVICCLERK_AGENDA_ITEM_DB_URL: postgresql+psycopg2://${CIVICCLERK_POSTGRES_USER:-civicclerk}:${CIVICCLERK_POSTGRES_PASSWORD:-civicclerk}@postgres:5432/${CIVICCLERK_POSTGRES_DB:-civicclerk}
+      CIVICCLERK_MEETING_BODY_DB_URL: postgresql+psycopg2://${CIVICCLERK_POSTGRES_USER:-civicclerk}:${CIVICCLERK_POSTGRES_PASSWORD:-civicclerk}@postgres:5432/${CIVICCLERK_POSTGRES_DB:-civicclerk}
+      CIVICCLERK_MEETING_DB_URL: postgresql+psycopg2://${CIVICCLERK_POSTGRES_USER:-civicclerk}:${CIVICCLERK_POSTGRES_PASSWORD:-civicclerk}@postgres:5432/${CIVICCLERK_POSTGRES_DB:-civicclerk}
+      CIVICCLERK_PACKET_ASSEMBLY_DB_URL: postgresql+psycopg2://${CIVICCLERK_POSTGRES_USER:-civicclerk}:${CIVICCLERK_POSTGRES_PASSWORD:-civicclerk}@postgres:5432/${CIVICCLERK_POSTGRES_DB:-civicclerk}
+      CIVICCLERK_NOTICE_CHECKLIST_DB_URL: postgresql+psycopg2://${CIVICCLERK_POSTGRES_USER:-civicclerk}:${CIVICCLERK_POSTGRES_PASSWORD:-civicclerk}@postgres:5432/${CIVICCLERK_POSTGRES_DB:-civicclerk}
+      CIVICCLERK_EXPORT_ROOT: /data/exports
+      CIVICCLERK_REDIS_URL: redis://redis:6379/0
+      CIVICCLERK_OLLAMA_BASE_URL: http://ollama:11434
+      CIVICCORE_LLM_PROVIDER: ollama
+    ports:
+      - "${CIVICCLERK_API_PORT:-8776}:8776"
+    volumes:
+      - exports:/data/exports
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8776/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: celery -A civicclerk.worker worker --loglevel=info
+    environment: *civicclerk_env
+    volumes:
+      - exports:/data/exports
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A civicclerk.worker inspect ping --destination celery@$$(hostname) >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: celery -A civicclerk.worker beat --loglevel=info
+    environment: *civicclerk_env
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "${CIVICCLERK_WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  redisdata:
+  ollamadata:
+  exports:

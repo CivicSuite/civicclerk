@@ -162,9 +162,10 @@ posting gate explain that AI-drafted minutes cannot bypass human adoption.
 
 ## Part 2: IT and Technical Overview
 
-### Planned deployment model
+### Deployment model
 
-CivicClerk will follow the CivicSuite deployment pattern:
+CivicClerk now has the first CivicSuite-style Docker Compose stack for local
+product rehearsal:
 
 - local Docker-based deployment
 - PostgreSQL 17 + pgvector
@@ -174,6 +175,18 @@ CivicClerk will follow the CivicSuite deployment pattern:
 - Ollama/Gemma 4 for local LLM inference through `civiccore.llm`, selected by `CIVICCORE_LLM_PROVIDER=ollama`
 - no runtime cloud dependency
 - no telemetry
+
+Copy `docs/examples/docker.env.example` to `.env`, replace the sample database
+password before shared use, then run:
+
+```powershell
+docker compose up --build
+```
+
+Open `http://127.0.0.1:8080` for the nginx-served React app. The API is exposed
+at `http://127.0.0.1:8776`, and nginx proxies React `/api/*` requests to the
+FastAPI service. The Compose profile is not the Windows installer; installer
+packaging remains future work.
 
 ### Planned dependency
 

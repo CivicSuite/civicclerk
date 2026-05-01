@@ -67,6 +67,9 @@ All notable changes to CivicClerk are documented here.
   sentence-level citation capture, model/prompt provenance, human approver
   capture, and a visible blocked public-posting gate backed by the live
   minutes draft APIs.
+- The first Docker Compose stack now provides PostgreSQL 17 + pgvector, Redis
+  7.2, Ollama, FastAPI, Celery worker, Celery Beat, and nginx-served React
+  services for local product rehearsal without claiming installer completion.
 - Already-promoted agenda intake rows now lock review actions and point staff
   forward to Packet Builder instead of allowing duplicate readiness work.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
