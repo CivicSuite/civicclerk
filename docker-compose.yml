@@ -76,7 +76,6 @@ services:
       - "${CIVICCLERK_API_PORT:-8776}:8776"
     volumes:
       - exports:/data/exports
-      - ${CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST:-./connector-imports}:/data/connector-imports:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -99,6 +98,7 @@ services:
     environment: *civicclerk_env
     volumes:
       - exports:/data/exports
+      - ${CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST:-./connector-imports}:/data/connector-imports:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -119,9 +119,6 @@ services:
       dockerfile: Dockerfile.backend
     command: celery -A civicclerk.worker beat --loglevel=info
     environment: *civicclerk_env
-    volumes:
-      - exports:/data/exports
-      - ${CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST:-./connector-imports}:/data/connector-imports:ro
     depends_on:
       redis:
         condition: service_healthy

@@ -34,7 +34,10 @@ def test_docker_compose_stack_declares_real_runtime_services() -> None:
     assert "uvicorn\", \"civicclerk.main:app\"" in (ROOT / "Dockerfile.backend").read_text(encoding="utf-8")
     assert "celery -A civicclerk.worker worker" in compose
     assert "celery -A civicclerk.worker beat" in compose
-    assert "./connector-imports}:/data/connector-imports:ro" in compose
+    worker_service = compose.split("  worker:", 1)[1].split("  beat:", 1)[0]
+    beat_service = compose.split("  beat:", 1)[1].split("  frontend:", 1)[0]
+    assert "./connector-imports}:/data/connector-imports:ro" in worker_service
+    assert "/data/connector-imports:ro" not in beat_service
     nginx = (ROOT / "docker" / "nginx.conf").read_text(encoding="utf-8")
     assert "proxy_pass http://api:8776;" in nginx
     assert "proxy_pass http://api:8776/;" not in nginx
