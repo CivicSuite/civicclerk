@@ -213,6 +213,37 @@ async def test_api_valid_meeting_transition_returns_2xx_and_writes_audit_entry()
 
 
 @pytest.mark.asyncio
+async def test_api_lists_meetings_for_staff_calendar_in_scheduled_order() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        first = await client.post(
+            "/meetings",
+            json={
+                "title": "Planning Commission",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-07T18:00:00Z",
+            },
+        )
+        second = await client.post(
+            "/meetings",
+            json={
+                "title": "City Council",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-05T18:00:00Z",
+            },
+        )
+
+        listed = await client.get("/meetings")
+
+        assert listed.status_code == 200
+        payload = listed.json()
+        ids = [meeting["id"] for meeting in payload["meetings"]]
+        assert second.json()["id"] in ids
+        assert first.json()["id"] in ids
+        assert ids.index(second.json()["id"]) < ids.index(first.json()["id"])
+        assert payload["count"] == len(payload["meetings"])
+
+
+@pytest.mark.asyncio
 async def test_api_invalid_meeting_transition_returns_4xx_and_writes_audit_entry() -> None:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         created = await client.post(

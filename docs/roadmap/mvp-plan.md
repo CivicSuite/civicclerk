@@ -12,9 +12,10 @@ protected staff-auth rehearsal, deployment preflight, and fresh-install
 rehearsal helpers are present. The first React app slice now exists under
 `frontend/`: it translates the CivicSuite mockup into a typed staff shell,
 meeting calendar, meeting detail lifecycle ribbon, audit/evidence drawer, and
-explicit loading/success/empty/error/partial QA states. Remaining MVP work now
-centers on wiring that React shell to live CivicClerk APIs, completing Sprint 1
-meeting body CRUD, continuing Sprints 2-4 in React, standing up the Docker
+explicit loading/success/empty/error/partial QA states, and the staff dashboard,
+calendar, and detail flow now load live meeting records through `/api/meetings`.
+Remaining MVP work now centers on completing Sprint 1 meeting body CRUD,
+continuing Sprints 2-4 in React, standing up the Docker
 Compose deployment stack, actual installer packaging beyond the non-installer
 release handoff bundle, the finished public portal, and live sync/deployment
 hardening.
@@ -22,8 +23,8 @@ hardening.
 ## Sprint 1
 
 - Meeting body CRUD
-- Meeting calendar: first React reference implementation present in
-  `frontend/`
+- Meeting calendar: first React implementation present in `frontend/` and wired
+  to the live `/api/meetings` list endpoint
 - Empty/loading/error/success/partial frontend states: first React reference
   implementation present in `frontend/`
 - Browser QA evidence: required before this branch can be committed or pushed

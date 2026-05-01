@@ -1,6 +1,6 @@
 # CivicClerk React Staff Shell
 
-Status: first implementation slice on `feat/react-staff-shell-sprint1`.
+Status: Sprint 1 implementation slice with live meeting list wiring.
 
 The `frontend/` package is the start of the production React app that will
 replace the HTML reference shell at `/staff`. It is adapted from the CivicSuite
@@ -16,13 +16,14 @@ mockup's browser-global JSX bundle.
 - Meeting calendar for Sprint 1 navigation.
 - Meeting detail workspace with the eight-stage lifecycle ribbon.
 - Right-side audit/evidence drawer per meeting object.
+- Live `/api/meetings` list loading for dashboard metrics, calendar cards, and
+  detail selection, with a `?source=demo` fallback for deterministic QA states.
 - Explicit QA state controls for success, loading, empty, error, and partial
   states.
 - Actionable state copy that tells staff or IT what to do next.
 
 ## What This Slice Does Not Yet Include
 
-- Live API wiring.
 - Meeting body CRUD.
 - Replacement of the shipped `/staff` HTML reference shell.
 - Docker/nginx packaging.
@@ -40,6 +41,11 @@ npm run test
 npm run build
 ```
 
+The Vite dev proxy sends `/api/*` to `http://127.0.0.1:8776` by default so it
+matches the documented Windows-first CivicClerk app command. Set
+`CIVICCLERK_API_PROXY_TARGET=http://host:port` before `npm run dev` when the
+FastAPI app is listening somewhere else.
+
 Before any commit that touches this frontend, capture browser evidence for:
 
 - success, loading, empty, error, and partial states
@@ -53,3 +59,4 @@ For direct QA capture, the app accepts these query parameters:
 - `?page=dashboard|meetings|meeting-detail`
 - `?state=success|loading|empty|error|partial`
 - `?audit=1`
+- `?source=demo` to bypass the live API and render fixed demo data

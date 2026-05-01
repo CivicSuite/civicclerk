@@ -143,6 +143,27 @@ class MeetingStore:
             return _row_to_meeting(row) if row is not None else None
         return self._meetings.get(meeting_id)
 
+    def list(self) -> list[MeetingRecord]:
+        """Return meetings in calendar-friendly order."""
+        if self.engine is not None:
+            with self.engine.begin() as connection:
+                rows = connection.execute(
+                    sa.select(meeting_records).order_by(
+                        meeting_records.c.scheduled_start.is_(None),
+                        meeting_records.c.scheduled_start,
+                        meeting_records.c.title,
+                    )
+                ).mappings().all()
+            return [_row_to_meeting(row) for row in rows]
+        return sorted(
+            self._meetings.values(),
+            key=lambda meeting: (
+                meeting.scheduled_start is None,
+                meeting.scheduled_start or datetime.max.replace(tzinfo=UTC),
+                meeting.title,
+            ),
+        )
+
     def transition(
         self,
         *,

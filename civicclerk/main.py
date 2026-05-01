@@ -592,6 +592,13 @@ async def create_meeting(payload: MeetingCreate) -> dict[str, str]:
     ).public_dict()
 
 
+@app.get("/meetings")
+async def list_meetings() -> dict[str, int | list[dict[str, str | None]]]:
+    """List meetings for staff calendar and dashboard clients."""
+    meeting_rows = [meeting.public_dict() for meeting in _get_meeting_store().list()]
+    return {"count": len(meeting_rows), "meetings": meeting_rows}
+
+
 @app.get("/meetings/{meeting_id}")
 async def get_meeting(meeting_id: str) -> dict[str, str]:
     """Return the current meeting state."""
