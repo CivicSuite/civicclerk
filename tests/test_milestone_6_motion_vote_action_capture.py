@@ -6,6 +6,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from civicclerk.main import app
+from civicclerk.motion_vote import MotionVoteStore
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -238,6 +239,42 @@ async def test_action_item_requires_source_motion_with_actionable_error() -> Non
     detail = rejected.json()["detail"]
     assert detail["message"] == "Action items must reference a captured meeting outcome."
     assert "Capture the related motion first" in detail["fix"]
+
+
+def test_motion_vote_store_lists_recent_outcome_summaries() -> None:
+    store = MotionVoteStore()
+    first = store.capture_motion(
+        meeting_id="meeting-1",
+        text="Move to approve sidewalk repairs.",
+        actor="clerk@example.gov",
+    )
+    second = store.capture_motion(
+        meeting_id="meeting-2",
+        text="Move to award the paving contract.",
+        actor="deputy@example.gov",
+    )
+    store.capture_vote(
+        motion_id=second.id,
+        voter_name="Council Member Rivera",
+        vote="aye",
+        actor="clerk@example.gov",
+    )
+    store.create_action_item(
+        meeting_id="meeting-2",
+        description="Schedule contract signing.",
+        actor="clerk@example.gov",
+        source_motion_id=second.id,
+    )
+
+    recent = store.list_recent_outcomes(limit=1)
+
+    assert len(recent) == 1
+    assert recent[0].motion_id == second.id
+    assert recent[0].meeting_id == "meeting-2"
+    assert recent[0].vote_count == 1
+    assert recent[0].action_item_count == 1
+    assert recent[0].status == "CAPTURED"
+    assert recent[0].motion_id != first.id
 
 
 def test_docs_record_motion_vote_action_scope_without_claiming_minutes_or_archive_behavior() -> None:

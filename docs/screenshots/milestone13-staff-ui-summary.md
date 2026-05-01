@@ -8,6 +8,7 @@
 - Live Agenda Intake panel checked: the panel renders `No intake items yet` with a creation fix path when the queue is empty, live reviewed queue rows when records exist, escaped submitted titles, and an actionable unavailable-store row when the database cannot be reached
 - Live Packet Assembly panel checked: the panel renders `No packet assemblies yet` with a creation fix path when no packet work exists, recent live packet assembly rows when records exist, escaped packet titles, and an actionable unavailable-store row when the database cannot be reached
 - Live Notice Checklist panel checked: the panel renders `No notice checklist records yet` with a creation fix path when no notice work exists, recent live notice rows when records exist, posting-proof status, and an actionable unavailable-store row when the database cannot be reached
+- Live Meeting Outcomes panel checked: the panel renders `No meeting outcomes captured yet` with a creation fix path when no outcomes exist, and recent live motion-centered rows with vote/action status when clerks capture meeting outcomes
 - Desktop evidence: `docs/screenshots/milestone13-staff-ui-desktop.png`
 - Mobile evidence: `docs/screenshots/milestone13-staff-ui-mobile.png`
 - Console: 0 messages expected from the shipped auth panel flow and no browser gate failures in `python scripts/verify-browser-qa.py`
