@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import urllib.parse
 from datetime import UTC, datetime, timedelta
 
 import jwt
@@ -9,13 +10,19 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from civicclerk.main import (
+    STAFF_AUTH_OIDC_AUTHORIZATION_URL_ENV_VAR,
     STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
     STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR,
+    STAFF_AUTH_OIDC_CLIENT_ID_ENV_VAR,
+    STAFF_AUTH_OIDC_CLIENT_SECRET_ENV_VAR,
     STAFF_AUTH_OIDC_ISSUER_ENV_VAR,
     STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
     STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR,
     STAFF_AUTH_OIDC_PROVIDER_ENV_VAR,
+    STAFF_AUTH_OIDC_REDIRECT_URI_ENV_VAR,
     STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
+    STAFF_AUTH_OIDC_SESSION_SECRET_ENV_VAR,
+    STAFF_AUTH_OIDC_TOKEN_URL_ENV_VAR,
     STAFF_AUTH_MODE_ENV_VAR,
     STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR,
     STAFF_AUTH_SSO_PROVIDER_ENV_VAR,
@@ -23,7 +30,10 @@ from civicclerk.main import (
     STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR,
     STAFF_AUTH_TOKEN_ROLES_ENV_VAR,
     STAFF_BEARER_MODE,
+    STAFF_OIDC_PKCE_COOKIE_NAME,
     STAFF_OIDC_MODE,
+    STAFF_OIDC_SESSION_COOKIE_NAME,
+    STAFF_OIDC_STATE_COOKIE_NAME,
     STAFF_TRUSTED_HEADER_MODE,
     app,
 )
@@ -274,10 +284,141 @@ async def test_oidc_mode_readiness_reports_session_and_write_probes(
     assert response.json()["jwks"] == "configured"
     assert response.json()["role_claims"] == ["roles", "groups"]
     assert response.json()["algorithms"] == ["HS256"]
+    assert response.json()["browser_login"]["ready"] is False
+    assert STAFF_AUTH_OIDC_AUTHORIZATION_URL_ENV_VAR in response.json()["browser_login"]["fix"]
     assert response.json()["session_probe"]["path"] == "/staff/session"
     assert response.json()["session_probe"]["headers"] == {"Authorization": "Bearer <OIDC access token>"}
     assert response.json()["write_probe"]["path"] == "/agenda-intake"
     assert "OIDC-protected staff writes" in response.json()["write_probe"]["body"]["summary"]
+
+
+@pytest.mark.asyncio
+async def test_oidc_login_requires_browser_flow_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _configure_oidc(monkeypatch, roles=["clerk_admin"])
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/login", follow_redirects=False)
+
+    assert response.status_code == 503
+    assert response.json()["detail"]["message"] == "OIDC browser sign-in is not fully configured."
+    assert STAFF_AUTH_OIDC_AUTHORIZATION_URL_ENV_VAR in response.json()["detail"]["fix"]
+    assert STAFF_AUTH_OIDC_SESSION_SECRET_ENV_VAR in response.json()["detail"]["fix"]
+
+
+@pytest.mark.asyncio
+async def test_oidc_login_redirect_sets_state_cookie(monkeypatch: pytest.MonkeyPatch) -> None:
+    _configure_oidc_browser(monkeypatch, roles=["clerk_admin"])
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://clerk.example.gov") as client:
+        response = await client.get("/staff/login", follow_redirects=False)
+
+    assert response.status_code == 302
+    assert response.headers["location"].startswith("https://login.example.gov/authorize?")
+    parsed = urllib.parse.urlparse(response.headers["location"])
+    query = urllib.parse.parse_qs(parsed.query)
+    assert query["client_id"] == ["civicclerk-client"]
+    assert query["redirect_uri"] == ["https://clerk.example.gov/staff/oidc/callback"]
+    assert query["response_type"] == ["code"]
+    assert query["scope"] == ["openid profile email"]
+    assert query["state"][0]
+    assert query["code_challenge"][0]
+    assert query["code_challenge_method"] == ["S256"]
+    assert STAFF_OIDC_STATE_COOKIE_NAME in response.cookies
+    assert STAFF_OIDC_PKCE_COOKIE_NAME in response.cookies
+
+
+@pytest.mark.asyncio
+async def test_oidc_callback_sets_browser_session_cookie(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    token = _configure_oidc_browser(monkeypatch, roles=["clerk_admin", "meeting_editor"])
+
+    from civicclerk import main as main_module
+
+    observed: dict[str, str] = {}
+
+    def fake_exchange(code: str, config, *, code_verifier: str) -> dict[str, str]:
+        observed["code"] = code
+        observed["code_verifier"] = code_verifier
+        return {"id_token": token}
+
+    monkeypatch.setattr(main_module, "_exchange_oidc_authorization_code", fake_exchange)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://clerk.example.gov") as client:
+        client.cookies.set(STAFF_OIDC_STATE_COOKIE_NAME, "state-123", domain="clerk.example.gov")
+        client.cookies.set(STAFF_OIDC_PKCE_COOKIE_NAME, "pkce-verifier-123", domain="clerk.example.gov")
+        callback = await client.get(
+            "/staff/oidc/callback?code=abc123&state=state-123",
+            follow_redirects=False,
+        )
+        session = await client.get("/staff/session")
+        create = await client.post(
+            "/agenda-intake",
+            json={
+                "title": "OIDC browser session auth check",
+                "department_name": "Clerk",
+                "submitted_by": "clerk@example.gov",
+                "summary": "Test OIDC browser-session protected agenda intake.",
+                "source_references": [{"label": "Memo", "url": "https://city.example.gov/memo"}],
+            },
+        )
+
+    assert callback.status_code == 302
+    assert callback.headers["location"] == "/staff"
+    assert observed == {"code": "abc123", "code_verifier": "pkce-verifier-123"}
+    assert STAFF_OIDC_SESSION_COOKIE_NAME in callback.cookies
+    assert session.status_code == 200
+    assert session.json()["mode"] == "oidc"
+    assert session.json()["auth_method"] == "oidc_browser_session"
+    assert session.json()["subject"] == "clerk@example.gov"
+    assert session.json()["roles"] == ["clerk_admin", "meeting_editor"]
+    assert create.status_code == 201
+    assert create.json()["title"] == "OIDC browser session auth check"
+
+
+@pytest.mark.asyncio
+async def test_oidc_callback_rejects_state_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    _configure_oidc_browser(monkeypatch, roles=["clerk_admin"])
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://clerk.example.gov") as client:
+        client.cookies.set(STAFF_OIDC_STATE_COOKIE_NAME, "expected-state", domain="clerk.example.gov")
+        response = await client.get(
+            "/staff/oidc/callback?code=abc123&state=attacker-state",
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["message"] == "OIDC sign-in state did not match."
+    assert "/staff/login" in response.json()["detail"]["fix"]
+
+
+@pytest.mark.asyncio
+async def test_oidc_callback_requires_pkce_verifier(monkeypatch: pytest.MonkeyPatch) -> None:
+    _configure_oidc_browser(monkeypatch, roles=["clerk_admin"])
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://clerk.example.gov") as client:
+        client.cookies.set(STAFF_OIDC_STATE_COOKIE_NAME, "state-123", domain="clerk.example.gov")
+        response = await client.get(
+            "/staff/oidc/callback?code=abc123&state=state-123",
+            follow_redirects=False,
+        )
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["message"] == "OIDC sign-in PKCE verifier is missing."
+    assert "/staff/login" in response.json()["detail"]["fix"]
+
+
+@pytest.mark.asyncio
+async def test_oidc_logout_clears_browser_session_cookie() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://clerk.example.gov") as client:
+        response = await client.get("/staff/logout", follow_redirects=False)
+
+    assert response.status_code == 302
+    assert response.headers["location"] == "/staff"
+    assert f"{STAFF_OIDC_SESSION_COOKIE_NAME}=" in response.headers["set-cookie"]
+    assert "Max-Age=0" in response.headers["set-cookie"]
 
 
 @pytest.mark.asyncio
@@ -567,8 +708,15 @@ def _clear_oidc_env(monkeypatch: pytest.MonkeyPatch) -> None:
         STAFF_AUTH_OIDC_ISSUER_ENV_VAR,
         STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR,
         STAFF_AUTH_OIDC_JWKS_JSON_ENV_VAR,
+        STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR,
         STAFF_AUTH_OIDC_ROLE_CLAIMS_ENV_VAR,
         STAFF_AUTH_OIDC_ALGORITHMS_ENV_VAR,
+        STAFF_AUTH_OIDC_AUTHORIZATION_URL_ENV_VAR,
+        STAFF_AUTH_OIDC_TOKEN_URL_ENV_VAR,
+        STAFF_AUTH_OIDC_CLIENT_ID_ENV_VAR,
+        STAFF_AUTH_OIDC_CLIENT_SECRET_ENV_VAR,
+        STAFF_AUTH_OIDC_REDIRECT_URI_ENV_VAR,
+        STAFF_AUTH_OIDC_SESSION_SECRET_ENV_VAR,
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -614,6 +762,23 @@ def _configure_oidc(monkeypatch: pytest.MonkeyPatch, *, roles: list[str]) -> str
         algorithm="HS256",
         headers={"kid": key_id},
     )
+
+
+def _configure_oidc_browser(monkeypatch: pytest.MonkeyPatch, *, roles: list[str]) -> str:
+    token = _configure_oidc(monkeypatch, roles=roles)
+    monkeypatch.setenv(STAFF_AUTH_OIDC_AUTHORIZATION_URL_ENV_VAR, "https://login.example.gov/authorize")
+    monkeypatch.setenv(STAFF_AUTH_OIDC_TOKEN_URL_ENV_VAR, "https://login.example.gov/token")
+    monkeypatch.setenv(STAFF_AUTH_OIDC_CLIENT_ID_ENV_VAR, "civicclerk-client")
+    monkeypatch.setenv(STAFF_AUTH_OIDC_CLIENT_SECRET_ENV_VAR, "browser-client-secret")
+    monkeypatch.setenv(
+        STAFF_AUTH_OIDC_REDIRECT_URI_ENV_VAR,
+        "https://clerk.example.gov/staff/oidc/callback",
+    )
+    monkeypatch.setenv(
+        STAFF_AUTH_OIDC_SESSION_SECRET_ENV_VAR,
+        "brookfield-session-cookie-secret-with-32-bytes",
+    )
+    return token
 
 
 def _base64url(value: bytes) -> str:
