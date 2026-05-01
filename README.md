@@ -35,6 +35,8 @@ Shipped in this foundation:
 - discussion seed posts
 - docs verification script and CI workflow
 - Python package metadata with the published `civiccore` v0.16.0 release wheel
+- first `frontend/` React/Vite staff workspace slice adapted from the CivicSuite
+  mockup into production TypeScript
 - FastAPI application import path at `civicclerk.main:app`
 - root endpoint that explains the current product state
 - `/health` endpoint for IT staff
@@ -98,6 +100,9 @@ Shipped in this foundation:
 - safe API export-path handling through `bundle_name` under `CIVICCLERK_EXPORT_ROOT`
 - browser QA gate covering loading, success, empty, error, and partial states
 - accessibility checks for keyboard navigation, focus states, contrast, and console errors
+- React staff shell QA controls covering loading, success, empty, error, and
+  partial states for the Clerk dashboard, meeting calendar, and meeting detail
+  workspace
 - CivicClerk v0.1.11 release gate and build artifacts
 - `scripts/start_fresh_install_rehearsal.ps1` to rehearse the documented
   Windows-first wheel install and first-run smoke checks from an isolated
@@ -133,14 +138,15 @@ Shipped in this foundation:
 
 Not shipped yet:
 
-- full frontend app
+- live API-backed full frontend app
 - installer
 - finished public portal beyond the first `/public` HTML shell
-- the integrated multi-role React clerk console beyond this HTML staff workflow surface
+- the integrated multi-role React clerk console beyond the first `frontend/`
+  staff shell/calendar/detail slice
 
 ## New user experience today
 
-A new user can inspect and run the foundation, open first staff workflow screens at `/staff`, open the first resident-facing public portal shell at `/public`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, create/finalize packet assembly records from the browser, persist notice checklist/posting-proof records from the browser, capture motions/votes/action items from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
+A new user can inspect and run the foundation, open first staff workflow screens at `/staff`, open the first resident-facing public portal shell at `/public`, inspect the first React staff workspace slice in `frontend/`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, create/finalize packet assembly records from the browser, persist notice checklist/posting-proof records from the browser, capture motions/votes/action items from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
 
 1. Read this README.
 2. Read `USER-MANUAL.md`.
@@ -185,7 +191,10 @@ A new user can inspect and run the foundation, open first staff workflow screens
 13. If you want the same protected demo profile from Bash on Linux, macOS, or Git Bash, run `bash scripts/start_protected_demo_rehearsal.sh --print-only` first, then rerun without `--print-only` to launch the app on `8877` and the helper proxy on `8878`.
 14. Run `CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 NO_NETWORK=1 python scripts/run-prompt-evals.py` before changing prompt YAML.
 15. Run `python scripts/verify-browser-qa.py` before landing frontend or browser-visible documentation changes.
-16. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
+16. For the React staff workspace slice, run the frontend package from
+   `frontend/` with `npm ci`, `npm audit --audit-level=moderate`,
+   `npm run dev`, `npm run test`, and `npm run build`.
+17. Follow GitHub issues and discussions as live sync, full UI, and database-backed workflows land.
 
 ## Architecture direction
 
@@ -200,7 +209,7 @@ CivicClerk follows the CivicSuite pattern:
 
 The foundation is intentionally thin. Canonical schema, Alembic scaffolding, agenda item lifecycle enforcement, agenda item lifecycle persistence, meeting lifecycle enforcement, meeting records, packet snapshot versioning, packet assembly records, notice checklist records, shared notice compliance enforcement, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public archive endpoints, prompt YAML/evaluation gates, local-first connector import normalization, browser QA gates, CivicClerk v0.1.11 release artifacts, and CivicCore v0.16.0 packet export, browser-evidence verification, connector runtime validation, and trusted-header config enforcement primitives are present. Minutes drafts require sentence-level citations, YAML prompt-version provenance, and human approval before acceptance, and they are never auto-adopted or auto-posted. Anonymous public archive endpoints do not reveal closed-session content in response bodies, counts, suggestions, or error messages. Connector imports record source provenance and do not require outbound network calls in the default local profile. Public packet exports block closed-session/restricted sources and include manifest, checksum, provenance, and audit evidence. Agenda item records now persist lifecycle status and audit entries when `CIVICCLERK_AGENDA_ITEM_DB_URL` is configured. Meeting records now persist scheduled starts, normalized meeting type, lifecycle status, and audit entries when `CIVICCLERK_MEETING_DB_URL` is configured. Packet assembly records now persist source references, citations, linked packet snapshot ids, and durable audit hashes. Notice checklist records persist compliance outcomes, warnings, posting proof, and durable audit hashes. Browser QA now checks loading, success, empty, error, and partial states plus keyboard, focus, contrast, and console evidence, and release screenshots are bound to the current docs page through shared CivicCore verification helpers. CivicClerk v0.1.11 now pairs with the published `civiccore` v0.16.0 release wheel. The first staff auth foundation is now explicit: local rehearsals can stay in `CIVICCLERK_STAFF_AUTH_MODE=open`, bearer-protected deployments can set `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`, and trusted reverse-proxy deployments can set `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus `CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER`, `CIVICCLERK_STAFF_SSO_ROLES_HEADER`, `CIVICCLERK_STAFF_SSO_PROVIDER`, and `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES` until full OIDC login lands. The `/staff/auth-readiness` endpoint now tells operators whether those bearer or trusted-proxy settings are merely present or actually deployment-ready, and it includes a loopback-only rehearsal recipe so trusted-header testing does not require inventing a custom proxy first.
 
-The staff experience at `/staff` now includes a product cockpit plus first workflow screens for agenda intake, packet assembly/export, notice checklist/posting-proof, meeting outcome, minutes draft, public archive, and connector import work. It is intentionally honest: the cockpit gives clerks a day-at-a-glance desk, reads the live agenda intake queue for ready/pending/needs-revision counts, the Agenda Intake, Packet Assembly, Notice Checklist, Meeting Outcomes, and Minutes Draft panels render live queue/record rows with escaped user-submitted titles where applicable and actionable empty/unavailable-store rows, the seven workflow screens can submit their corresponding live API actions, the auth panel now renders concrete protected-session and protected-write probes from `/staff/auth-readiness` when bearer or trusted-header mode is ready, it surfaces the loopback-only local proxy rehearsal command and env vars when trusted-header mode is being staged, and the broader multi-role React clerk console remains future work. The resident-facing `/public` shell now gives the same honesty on the public side: it loads public calendar records, public-safe detail, and anonymous archive search from the live public APIs, shows actionable loading/empty/error states, and says the finished public portal is still future work.
+The staff experience at `/staff` now includes a product cockpit plus first workflow screens for agenda intake, packet assembly/export, notice checklist/posting-proof, meeting outcome, minutes draft, public archive, and connector import work. It is intentionally honest: the cockpit gives clerks a day-at-a-glance desk, reads the live agenda intake queue for ready/pending/needs-revision counts, the Agenda Intake, Packet Assembly, Notice Checklist, Meeting Outcomes, and Minutes Draft panels render live queue/record rows with escaped user-submitted titles where applicable and actionable empty/unavailable-store rows, the seven workflow screens can submit their corresponding live API actions, the auth panel now renders concrete protected-session and protected-write probes from `/staff/auth-readiness` when bearer or trusted-header mode is ready, it surfaces the loopback-only local proxy rehearsal command and env vars when trusted-header mode is being staged, and the broader multi-role React clerk console is now beginning under `frontend/`. The first React slice uses the CivicSuite mockup direction for a real staff shell, meeting calendar, lifecycle ribbon, audit/evidence drawer, and no-dead-end QA states; it still needs live API integration before it replaces the HTML reference shell. The resident-facing `/public` shell now gives the same honesty on the public side: it loads public calendar records, public-safe detail, and anonymous archive search from the live public APIs, shows actionable loading/empty/error states, and says the finished public portal is still future work.
 
 For the first real trusted-header deployment handoff, `docs/examples/trusted-header-nginx.conf` now ships a reference nginx bridge that strips client-supplied identity headers, sets proxy-owned staff headers, and points operators back to `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES` plus the `/staff/auth-readiness` contract before live staff traffic is trusted.
 

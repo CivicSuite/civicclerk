@@ -5,6 +5,17 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `frontend/` now contains the first CivicClerk React/Vite staff workspace
+  slice, adapted from the CivicSuite mockup into production TypeScript rather
+  than copied as a browser-global prototype.
+- The React staff workspace includes a CivicSuite shell, Clerk meeting calendar,
+  meeting detail lifecycle ribbon, audit/evidence drawer, and explicit
+  loading, success, empty, error, and partial QA states with actionable copy.
+- Frontend unit tests now cover shell rendering, meeting calendar navigation,
+  meeting detail navigation, required error/empty state copy, and audit drawer
+  toggling.
+- CI and `scripts/verify-release.sh` now install, audit, build, and test the
+  `frontend/` package so the React app cannot drift outside the release gate.
 - `/staff` now opens with a product cockpit that summarizes the clerk desk,
   visible workflow actions, no-dead-end state promise, and go-live checks before
   staff drill into the live API workflow forms.

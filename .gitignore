@@ -9,3 +9,4 @@ build/
 exports/
 *.log
 *.tmp
+.tmp-edge-*/
