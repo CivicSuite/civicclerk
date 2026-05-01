@@ -37,11 +37,12 @@ React. Compose now seeds a Brookfield demo dataset by default so staff can open
 the React app against live API-backed data immediately. Unsigned Windows
 installer source packaging is now present for the same Docker stack, including
 install/repair and daily-start launchers. Remaining MVP work now centers on a
-signed/enterprise installer release artifact, production OIDC, Docker/PostgreSQL
-backup and restore rehearsal for the Compose product path, scheduled live sync,
-and deployment hardening. The connector path now has a local import-sync runner
-that produces normalized ledgers from exported agenda-system JSON without
-claiming scheduled vendor live sync.
+signed/enterprise installer release artifact, production OIDC, scheduled live
+sync, and deployment hardening. The Docker/PostgreSQL backup and restore
+rehearsal for the Compose product path is now present; real deployments still
+need an approved retention schedule and off-host storage target. The connector
+path now has a local import-sync runner that produces normalized ledgers from
+exported agenda-system JSON without claiming scheduled vendor live sync.
 
 ## Sprint 1
 
