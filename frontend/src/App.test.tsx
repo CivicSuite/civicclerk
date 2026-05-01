@@ -1,23 +1,53 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 
 describe("CivicClerk staff workspace", () => {
-  afterEach(() => {
-    window.history.replaceState({}, "", "/");
+  beforeEach(() => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          meetings: [
+            {
+              id: "meeting-1",
+              title: "Regular Meeting",
+              meeting_type: "city_council",
+              status: "PACKET_POSTED",
+              scheduled_start: "2026-05-05T18:00:00Z",
+            },
+            {
+              id: "meeting-2",
+              title: "Special Session",
+              meeting_type: "planning_commission",
+              status: "NOTICED",
+              scheduled_start: "2026-05-07T18:00:00Z",
+            },
+          ],
+        }),
+      }),
+    );
   });
 
-  it("renders the CivicSuite staff shell and dashboard", () => {
+  afterEach(() => {
+    window.history.replaceState({}, "", "/");
+    vi.unstubAllGlobals();
+  });
+
+  it("renders the CivicSuite staff shell and dashboard from the live meeting API", async () => {
     render(<App />);
 
     expect(screen.getByText("CivicSuite")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Good morning, City Clerk." })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Good morning, City Clerk." })).toBeInTheDocument();
+    expect(screen.getByText("Live from CivicClerk meeting API")).toBeInTheDocument();
     expect(screen.getByText("Partial install")).toBeInTheDocument();
   });
 
   it("opens the meeting calendar and a meeting detail workspace", async () => {
     render(<App />);
 
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
     fireEvent.click(screen.getByRole("button", { name: /Meetings/ }));
     expect(screen.getByRole("heading", { name: "May 2026 clerk calendar" })).toBeInTheDocument();
 
@@ -27,6 +57,7 @@ describe("CivicClerk staff workspace", () => {
   });
 
   it("shows actionable error and empty states for frontend QA", async () => {
+    window.history.replaceState({}, "", "/?state=success&source=demo");
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: "error" }));
@@ -38,6 +69,7 @@ describe("CivicClerk staff workspace", () => {
   });
 
   it("toggles the audit evidence drawer", async () => {
+    window.history.replaceState({}, "", "/?source=demo");
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: "Show audit" }));
@@ -45,10 +77,25 @@ describe("CivicClerk staff workspace", () => {
   });
 
   it("supports direct URL entry into QA states for browser evidence", () => {
-    window.history.replaceState({}, "", "/?page=meeting-detail&state=partial&audit=1");
+    window.history.replaceState({}, "", "/?page=meeting-detail&state=partial&audit=1&source=demo");
     render(<App />);
 
     expect(screen.getByRole("status")).toHaveTextContent("meeting detail is partially available");
     expect(screen.getByLabelText("Audit and evidence drawer")).toBeInTheDocument();
+  });
+
+  it("shows an actionable API error when live meeting loading fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+      }),
+    );
+
+    render(<App />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Meeting API returned 503");
+    expect(screen.getByRole("button", { name: "Retry after checking API" })).toBeInTheDocument();
   });
 });

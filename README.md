@@ -37,6 +37,7 @@ Shipped in this foundation:
 - Python package metadata with the published `civiccore` v0.16.0 release wheel
 - first `frontend/` React/Vite staff workspace slice adapted from the CivicSuite
   mockup into production TypeScript
+- live `GET /meetings` endpoint for staff calendar/list views
 - FastAPI application import path at `civicclerk.main:app`
 - root endpoint that explains the current product state
 - `/health` endpoint for IT staff
@@ -57,6 +58,7 @@ Shipped in this foundation:
 - database-backed meeting records with lifecycle audit entries, scheduled
   starts, normalized meeting type, and Alembic migration
   `civicclerk_0005_meetings`
+- `/meetings` list endpoint for live React staff calendar loading
 - emergency/special meeting notice preconditions requiring a statutory basis
 - closed/executive session in-progress preconditions requiring a statutory basis
 - cancellation support from scheduled or noticed meetings, with terminal-state audit entries
@@ -103,6 +105,9 @@ Shipped in this foundation:
 - React staff shell QA controls covering loading, success, empty, error, and
   partial states for the Clerk dashboard, meeting calendar, and meeting detail
   workspace
+- React staff shell live meeting-list wiring for dashboard metrics, calendar
+  cards, and meeting detail selection, with `?source=demo` retained for
+  deterministic QA state capture
 - CivicClerk v0.1.11 release gate and build artifacts
 - `scripts/start_fresh_install_rehearsal.ps1` to rehearse the documented
   Windows-first wheel install and first-run smoke checks from an isolated
@@ -138,7 +143,7 @@ Shipped in this foundation:
 
 Not shipped yet:
 
-- live API-backed full frontend app
+- complete live API-backed full frontend app
 - installer
 - finished public portal beyond the first `/public` HTML shell
 - the integrated multi-role React clerk console beyond the first `frontend/`
@@ -146,7 +151,7 @@ Not shipped yet:
 
 ## New user experience today
 
-A new user can inspect and run the foundation, open first staff workflow screens at `/staff`, open the first resident-facing public portal shell at `/public`, inspect the first React staff workspace slice in `frontend/`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, create/finalize packet assembly records from the browser, persist notice checklist/posting-proof records from the browser, capture motions/votes/action items from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
+A new user can inspect and run the foundation, open first staff workflow screens at `/staff`, open the first resident-facing public portal shell at `/public`, inspect the first React staff workspace slice in `frontend/`, load live meetings into the React dashboard/calendar/detail flow through `/api/meetings`, submit agenda intake items into a database-backed queue from the browser, record clerk readiness review from the browser, create/finalize packet assembly records from the browser, persist notice checklist/posting-proof records from the browser, capture motions/votes/action items from the browser, create citation-gated minutes drafts from the browser, publish public-safe archive records from the browser, normalize local connector exports from the browser, persist agenda item lifecycle records through `CIVICCLERK_AGENDA_ITEM_DB_URL`, persist meeting records and lifecycle audit entries through `CIVICCLERK_MEETING_DB_URL`, create draft agenda items and meetings through the API, and generate a records-ready packet export bundle with manifest, checksums, provenance, and audit evidence. They cannot use CivicClerk for end-to-end meeting work yet. The correct next experience is:
 
 1. Read this README.
 2. Read `USER-MANUAL.md`.

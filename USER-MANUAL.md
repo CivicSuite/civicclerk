@@ -118,8 +118,11 @@ finished public portal remain future work. The first React staff workspace slice
 now exists under `frontend/`. It translates the CivicSuite mockup into the real
 CivicClerk frontend direction: staff shell, meeting calendar, meeting detail
 lifecycle ribbon, audit/evidence drawer, and loading/success/empty/error/partial
-states with actionable copy. This slice is not yet live API-backed and does not
-replace `/staff` until the remaining Sprint 1 work is wired.
+states with actionable copy. It now loads the live `/api/meetings` list for
+dashboard metrics, meeting calendar cards, and meeting detail selection, with
+`?source=demo` retained for deterministic QA evidence. This slice does not
+replace `/staff` until the remaining Sprint 1 work, including meeting body CRUD,
+is wired.
 
 ## Part 2: IT and Technical Overview
 

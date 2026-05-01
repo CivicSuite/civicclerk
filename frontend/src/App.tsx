@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
 type Page = "dashboard" | "meetings" | "meeting-detail";
@@ -25,6 +25,14 @@ type Meeting = {
   noticeStatus: "Ready" | "Warning" | "Blocked";
 };
 
+type ApiMeeting = {
+  id: string;
+  title: string;
+  meeting_type: string;
+  status: string;
+  scheduled_start?: string | null;
+};
+
 const lifecycle: LifecycleStage[] = [
   "Scheduled",
   "Notice posted",
@@ -36,7 +44,7 @@ const lifecycle: LifecycleStage[] = [
   "Closed and archived",
 ];
 
-const meetings: Meeting[] = [
+const demoMeetings: Meeting[] = [
   {
     id: "M-2026-053",
     body: "City Council",
@@ -88,10 +96,44 @@ function Icon({ label }: { label: string }) {
 export function App() {
   const initial = getInitialView();
   const [page, setPage] = useState<Page>(initial.page);
-  const [viewState, setViewState] = useState<ViewState>(initial.state);
-  const [activeMeetingId, setActiveMeetingId] = useState(meetings[0].id);
+  const [qaState, setQaState] = useState<ViewState | null>(initial.state);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [apiState, setApiState] = useState<ViewState>("loading");
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
   const [auditOpen, setAuditOpen] = useState(initial.audit);
-  const activeMeeting = meetings.find((meeting) => meeting.id === activeMeetingId) ?? meetings[0];
+  const viewState = qaState ?? apiState;
+  const visibleMeetings = qaState === null ? meetings : demoMeetings;
+  const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
+
+  useEffect(() => {
+    if (initial.source === "demo") {
+      setMeetings(demoMeetings);
+      setApiState("success");
+      setActiveMeetingId(demoMeetings[0].id);
+      return;
+    }
+    let cancelled = false;
+    setApiState("loading");
+    fetchMeetings()
+      .then((apiMeetings) => {
+        if (cancelled) return;
+        const mapped = apiMeetings.map(mapApiMeeting);
+        setMeetings(mapped);
+        setApiState(mapped.length === 0 ? "empty" : "success");
+        if (mapped[0]) {
+          setActiveMeetingId(mapped[0].id);
+        }
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setApiError(error.message);
+        setApiState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [initial.source]);
 
   return (
     <div className="app-shell">
@@ -140,10 +182,12 @@ export function App() {
 
       <main className={auditOpen ? "workspace with-audit" : "workspace"}>
         <section>
-          <StateToolbar viewState={viewState} setViewState={setViewState} />
+          <StateToolbar viewState={viewState} setViewState={setQaState} qaState={qaState} />
           {page === "dashboard" && (
             <Dashboard
               viewState={viewState}
+              apiError={apiError}
+              meetings={visibleMeetings}
               setPage={setPage}
               setActiveMeetingId={setActiveMeetingId}
             />
@@ -151,12 +195,14 @@ export function App() {
           {page === "meetings" && (
             <MeetingCalendar
               viewState={viewState}
+              apiError={apiError}
+              meetings={visibleMeetings}
               setPage={setPage}
               setActiveMeetingId={setActiveMeetingId}
             />
           )}
           {page === "meeting-detail" && (
-            <MeetingDetail meeting={activeMeeting} viewState={viewState} />
+            <MeetingDetail meeting={activeMeeting} viewState={viewState} apiError={apiError} />
           )}
         </section>
         {auditOpen && <AuditDrawer meeting={activeMeeting} />}
@@ -165,9 +211,63 @@ export function App() {
   );
 }
 
-function getInitialView(): { page: Page; state: ViewState; audit: boolean } {
+async function fetchMeetings(): Promise<ApiMeeting[]> {
+  const response = await fetch("/api/meetings", {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Meeting API returned ${response.status}.`);
+  }
+  const payload = (await response.json()) as { meetings?: ApiMeeting[] };
+  return Array.isArray(payload.meetings) ? payload.meetings : [];
+}
+
+function mapApiMeeting(meeting: ApiMeeting): Meeting {
+  const scheduled = meeting.scheduled_start ? new Date(meeting.scheduled_start) : null;
+  return {
+    id: meeting.id,
+    body: toMeetingBody(meeting.meeting_type),
+    title: meeting.title,
+    date: scheduled ? scheduled.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "Not scheduled",
+    time: scheduled ? scheduled.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) : "Time TBD",
+    location: "Location TBD",
+    stage: toLifecycleStage(meeting.status),
+    agendaItems: 0,
+    packetPages: 0,
+    noticeStatus: meeting.status === "SCHEDULED" ? "Blocked" : "Ready",
+  };
+}
+
+function toMeetingBody(meetingType: string): string {
+  const normalized = meetingType.replace(/_/g, " ");
+  return normalized
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function toLifecycleStage(status: string): LifecycleStage {
+  const map: Record<string, LifecycleStage> = {
+    SCHEDULED: "Scheduled",
+    NOTICED: "Notice posted",
+    PACKET_POSTED: "Agenda published",
+    IN_PROGRESS: "In session",
+    RECESSED: "In session",
+    ADJOURNED: "Adjourned",
+    TRANSCRIPT_READY: "Adjourned",
+    MINUTES_DRAFTED: "Minutes drafted",
+    MINUTES_POSTED: "Minutes drafted",
+    MINUTES_ADOPTED: "Minutes approved",
+    MINUTES_SIGNED: "Minutes approved",
+    ARCHIVED: "Closed and archived",
+  };
+  return map[status] ?? "Scheduled";
+}
+
+function getInitialView(): { page: Page; state: ViewState | null; audit: boolean; source: "api" | "demo" } {
   if (typeof window === "undefined") {
-    return { page: "dashboard", state: "success", audit: false };
+    return { page: "dashboard", state: null, audit: false, source: "api" };
   }
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
@@ -176,22 +276,31 @@ function getInitialView(): { page: Page; state: ViewState; audit: boolean } {
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   return {
     page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : "dashboard",
-    state: states.includes(requestedState as ViewState) ? (requestedState as ViewState) : "success",
+    state: states.includes(requestedState as ViewState) ? (requestedState as ViewState) : null,
     audit: params.get("audit") === "1",
+    source: params.get("source") === "demo" ? "demo" : "api",
   };
 }
 
 function StateToolbar({
   viewState,
   setViewState,
+  qaState,
 }: {
   viewState: ViewState;
-  setViewState: (state: ViewState) => void;
+  setViewState: (state: ViewState | null) => void;
+  qaState: ViewState | null;
 }) {
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   return (
     <div className="state-toolbar" aria-label="QA state controls">
       <span>QA states</span>
+      <button
+        className={qaState === null ? "selected" : ""}
+        onClick={() => setViewState(null)}
+      >
+        live
+      </button>
       {states.map((state) => (
         <button
           key={state}
@@ -207,17 +316,22 @@ function StateToolbar({
 
 function Dashboard({
   viewState,
+  apiError,
+  meetings,
   setPage,
   setActiveMeetingId,
 }: {
   viewState: ViewState;
+  apiError: string | null;
+  meetings: Meeting[];
   setPage: (page: Page) => void;
   setActiveMeetingId: (id: string) => void;
 }) {
   if (viewState !== "success") {
-    return <StateMessage state={viewState} context="dashboard" />;
+    return <StateMessage state={viewState} context="dashboard" apiError={apiError} />;
   }
 
+  const blockedNotices = meetings.filter((meeting) => meeting.noticeStatus !== "Ready").length;
   return (
     <div className="page-stack">
       <PageHeader
@@ -226,9 +340,9 @@ function Dashboard({
         description="Today's meeting work is grouped by urgency, public posting risk, and packet readiness."
       />
       <div className="metric-grid">
-        <MetricCard label="Meetings this week" value="3" note="2 ready for public posting" />
+        <MetricCard label="Meetings this week" value={String(meetings.length)} note="Live from CivicClerk meeting API" />
         <MetricCard label="Agenda items pending" value="14" note="3 need clerk review" />
-        <MetricCard label="Notice warnings" value="1" note="Fix before 4:00 PM today" tone="warn" />
+        <MetricCard label="Notice warnings" value={String(blockedNotices)} note="Resolve before public posting" tone={blockedNotices ? "warn" : undefined} />
       </div>
       <section className="panel">
         <div className="panel-heading">
@@ -243,7 +357,10 @@ function Dashboard({
             <button
               key={task}
               onClick={() => {
-                setActiveMeetingId(meetings[Math.min(index, meetings.length - 1)].id);
+                const target = meetings[Math.min(index, meetings.length - 1)];
+                if (target) {
+                  setActiveMeetingId(target.id);
+                }
                 setPage("meeting-detail");
               }}
             >
@@ -259,15 +376,19 @@ function Dashboard({
 
 function MeetingCalendar({
   viewState,
+  apiError,
+  meetings,
   setPage,
   setActiveMeetingId,
 }: {
   viewState: ViewState;
+  apiError: string | null;
+  meetings: Meeting[];
   setPage: (page: Page) => void;
   setActiveMeetingId: (id: string) => void;
 }) {
   if (viewState !== "success") {
-    return <StateMessage state={viewState} context="meeting calendar" />;
+    return <StateMessage state={viewState} context="meeting calendar" apiError={apiError} />;
   }
 
   return (
@@ -281,7 +402,7 @@ function MeetingCalendar({
         <section className="calendar-board" aria-label="May 2026 calendar">
           {Array.from({ length: 35 }, (_, index) => {
             const day = index - 4;
-            const dayMeetings = meetings.filter((meeting) => meeting.date.includes(String(day)));
+            const dayMeetings = meetings.filter((meeting) => dayFromMeeting(meeting) === day);
             return (
               <div key={index} className={day > 0 && day <= 31 ? "day" : "day outside"}>
                 <span>{day > 0 && day <= 31 ? day : ""}</span>
@@ -326,7 +447,12 @@ function MeetingCalendar({
   );
 }
 
-function MeetingDetail({ meeting, viewState }: { meeting: Meeting; viewState: ViewState }) {
+function dayFromMeeting(meeting: Meeting): number | null {
+  const match = meeting.date.match(/\b(\d{1,2})\b/);
+  return match ? Number(match[1]) : null;
+}
+
+function MeetingDetail({ meeting, viewState, apiError }: { meeting: Meeting; viewState: ViewState; apiError: string | null }) {
   const activeIndex = lifecycle.indexOf(meeting.stage);
   const tabs = useMemo(
     () => [
@@ -339,7 +465,7 @@ function MeetingDetail({ meeting, viewState }: { meeting: Meeting; viewState: Vi
   );
 
   if (viewState !== "success") {
-    return <StateMessage state={viewState} context="meeting detail" />;
+    return <StateMessage state={viewState} context="meeting detail" apiError={apiError} />;
   }
 
   return (
@@ -399,7 +525,7 @@ function AuditDrawer({ meeting }: { meeting: Meeting }) {
   );
 }
 
-function StateMessage({ state, context }: { state: ViewState; context: string }) {
+function StateMessage({ state, context, apiError }: { state: ViewState; context: string; apiError: string | null }) {
   const copy = {
     loading: {
       title: `Loading ${context}`,
@@ -413,7 +539,9 @@ function StateMessage({ state, context }: { state: ViewState; context: string })
     },
     error: {
       title: `Could not load ${context}`,
-      body: "The staff API did not respond. Confirm the backend is running, verify staff auth mode, then retry.",
+      body: apiError
+        ? `${apiError} Confirm the backend is running, verify staff auth mode, then retry.`
+        : "The staff API did not respond. Confirm the backend is running, verify staff auth mode, then retry.",
       action: "Retry after checking API",
     },
     partial: {

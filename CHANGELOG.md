@@ -11,11 +11,18 @@ All notable changes to CivicClerk are documented here.
 - The React staff workspace includes a CivicSuite shell, Clerk meeting calendar,
   meeting detail lifecycle ribbon, audit/evidence drawer, and explicit
   loading, success, empty, error, and partial QA states with actionable copy.
+- The React staff workspace now reads the live `/api/meetings` list for
+  dashboard metrics, calendar cards, and meeting detail selection, while
+  retaining `?source=demo` for deterministic browser QA captures.
+- The FastAPI app now exposes `GET /meetings` so the React staff calendar can
+  load scheduled meetings in calendar order without depending on fixture data.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
   meeting detail navigation, required error/empty state copy, and audit drawer
   toggling.
 - CI and `scripts/verify-release.sh` now install, audit, build, and test the
   `frontend/` package so the React app cannot drift outside the release gate.
+- The frontend dev proxy now defaults to the documented CivicClerk FastAPI
+  port `8776` and can be redirected with `CIVICCLERK_API_PROXY_TARGET`.
 - `/staff` now opens with a product cockpit that summarizes the clerk desk,
   visible workflow actions, no-dead-end state promise, and go-live checks before
   staff drill into the live API workflow forms.
