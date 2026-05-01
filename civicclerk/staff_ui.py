@@ -172,11 +172,15 @@ def render_staff_dashboard(
     cockpit_items: Sequence[tuple[str, str, str]] | None = None,
     agenda_intake_items: Sequence[object] = (),
     agenda_intake_available: bool = True,
+    packet_assembly_records: Sequence[object] = (),
+    packet_assembly_available: bool = True,
 ) -> str:
     """Render the current staff workflow screens as dependency-free HTML."""
     screen_cards_data = _screen_cards_with_live_intake(
         agenda_intake_items=agenda_intake_items,
         agenda_intake_available=agenda_intake_available,
+        packet_assembly_records=packet_assembly_records,
+        packet_assembly_available=packet_assembly_available,
     )
     nav_buttons = "\n".join(
         f"""
@@ -918,11 +922,17 @@ def _screen_cards_with_live_intake(
     *,
     agenda_intake_items: Sequence[object],
     agenda_intake_available: bool,
+    packet_assembly_records: Sequence[object],
+    packet_assembly_available: bool,
 ) -> list[dict]:
     screen_cards = [dict(card) for card in SCREEN_CARDS]
     screen_cards[0]["rows"] = _agenda_intake_rows(
         agenda_intake_items=agenda_intake_items,
         agenda_intake_available=agenda_intake_available,
+    )
+    screen_cards[1]["rows"] = _packet_assembly_rows(
+        packet_assembly_records=packet_assembly_records,
+        packet_assembly_available=packet_assembly_available,
     )
     return screen_cards
 
@@ -977,6 +987,48 @@ def _next_intake_step(readiness_status: str | None) -> str:
     if readiness_status == "PENDING":
         return "Record clerk readiness review."
     return "Open the intake item and confirm readiness status."
+
+
+def _packet_assembly_rows(
+    *,
+    packet_assembly_records: Sequence[object],
+    packet_assembly_available: bool,
+) -> list[tuple[str, str, str, str]]:
+    if not packet_assembly_available:
+        return [
+            (
+                "IT",
+                "Packet assembly store unavailable",
+                "ERROR",
+                "Check CIVICCLERK_PACKET_ASSEMBLY_DB_URL and database reachability, then reload the staff desk.",
+            )
+        ]
+    if not packet_assembly_records:
+        return [
+            (
+                "Clerk",
+                "No packet assemblies yet",
+                "EMPTY",
+                "Create a meeting, submit at least one source and citation, then create the packet assembly record.",
+            )
+        ]
+    return [
+        (
+            f"Meeting {_field(record, 'meeting_id', 'unknown')}",
+            _field(record, "title", "Untitled packet assembly"),
+            _field(record, "status", "UNKNOWN"),
+            _next_packet_step(_field(record, "status", "UNKNOWN")),
+        )
+        for record in packet_assembly_records
+    ]
+
+
+def _next_packet_step(status: str) -> str:
+    if status == "FINALIZED":
+        return "Create the records-ready packet export bundle."
+    if status == "DRAFT":
+        return "Review sources and citations, then finalize the packet."
+    return "Open the packet assembly and confirm its status."
 
 
 def _render_screen_card(card: dict, active: bool) -> str:

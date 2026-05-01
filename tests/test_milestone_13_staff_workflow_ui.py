@@ -61,6 +61,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "Submit a department item with title, department, summary, and source references." in html
     assert "/meetings/{id}/packet-assemblies" in html
     assert "Packet Assembly" in html
+    assert "No packet assemblies yet" in html
+    assert "Create a meeting, submit at least one source and citation, then create the packet assembly record." in html
     assert "/meetings/{id}/notice-checklists" in html
     assert "Notice Checklist" in html
     assert "/notice-checklists/{id}/posting-proof" in html
@@ -216,6 +218,50 @@ async def test_staff_product_cockpit_handles_unavailable_intake_store(monkeypatc
     assert "check CIVICCLERK_AGENDA_INTAKE_DB_URL" in response.text
     assert "reload the staff desk" in response.text
     assert "Check CIVICCLERK_AGENDA_INTAKE_DB_URL and database reachability" in response.text
+
+
+async def test_staff_packet_panel_uses_live_packet_assembly_rows(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("CIVICCLERK_PACKET_ASSEMBLY_DB_URL", f"sqlite:///{tmp_path / 'staff-packets.db'}")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        meeting = await client.post(
+            "/meetings",
+            json={
+                "title": "Live Packet Meeting",
+                "meeting_type": "regular",
+                "scheduled_start": "2026-05-05T19:00:00Z",
+            },
+        )
+        created = await client.post(
+            f"/meetings/{meeting.json()['id']}/packet-assemblies",
+            json={
+                "title": "Packet <script>draft</script>",
+                "agenda_item_ids": ["item-1"],
+                "actor": "clerk@example.gov",
+                "source_references": [{"source_id": "staff-report", "title": "Staff report"}],
+                "citations": [{"source_id": "staff-report", "locator": "p. 4", "claim": "Budget"}],
+            },
+        )
+        await client.post(
+            f"/packet-assemblies/{created.json()['id']}/finalize",
+            json={"actor": "clerk@example.gov"},
+        )
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "Packet &lt;script&gt;draft&lt;/script&gt;" in response.text
+    assert "Packet <script>draft</script>" not in response.text
+    assert "FINALIZED" in response.text
+    assert "Create the records-ready packet export bundle." in response.text
+
+
+async def test_staff_packet_panel_handles_unavailable_packet_store(monkeypatch) -> None:
+    monkeypatch.setenv("CIVICCLERK_PACKET_ASSEMBLY_DB_URL", "sqlite:///Z:/missing/packet-assembly.db")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "Packet assembly store unavailable" in response.text
+    assert "Check CIVICCLERK_PACKET_ASSEMBLY_DB_URL and database reachability" in response.text
 
 
 async def test_favicon_is_public_and_empty() -> None:

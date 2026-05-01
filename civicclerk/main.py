@@ -350,10 +350,18 @@ async def staff_dashboard() -> str:
         intake_items = []
         cockpit_items = build_staff_cockpit_items(agenda_intake_available=False)
         agenda_intake_available = False
+    try:
+        packet_assembly_records = _get_packet_assembly_repository().list_recent()
+        packet_assembly_available = True
+    except SQLAlchemyError:
+        packet_assembly_records = []
+        packet_assembly_available = False
     return render_staff_dashboard(
         cockpit_items=cockpit_items,
         agenda_intake_items=intake_items,
         agenda_intake_available=agenda_intake_available,
+        packet_assembly_records=packet_assembly_records,
+        packet_assembly_available=packet_assembly_available,
     )
 
 

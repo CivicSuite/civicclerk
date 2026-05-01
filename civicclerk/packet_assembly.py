@@ -163,6 +163,18 @@ class PacketAssemblyRepository:
             rows = connection.execute(statement).mappings().all()
         return [_row_to_record(row) for row in rows]
 
+    def list_recent(self, *, limit: int = 5) -> list[PacketAssemblyRecord]:
+        """Return recent packet assembly records for the staff dashboard."""
+
+        statement = (
+            sa.select(packet_assembly_records)
+            .order_by(packet_assembly_records.c.updated_at.desc())
+            .limit(limit)
+        )
+        with self.engine.begin() as connection:
+            rows = connection.execute(statement).mappings().all()
+        return [_row_to_record(row) for row in rows]
+
     def finalize(self, *, record_id: str, actor: str) -> PacketAssemblyRecord | None:
         existing = self.get(record_id)
         if existing is None:

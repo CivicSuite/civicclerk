@@ -60,6 +60,8 @@ connector import work. The cockpit gives clerks a day-at-a-glance desk before
 they drill into individual forms, and it reads the live agenda intake queue for
 ready, pending, and needs-revision counts. The Agenda Intake panel also renders
 live queue rows with escaped submitted titles plus actionable empty and
+unavailable-store states. The Packet Assembly panel renders recent live packet
+assembly records with escaped packet titles plus actionable empty and
 unavailable-store states. The workflow forms can submit
 intake items, record readiness review, create/finalize packet assembly records,
 create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture
