@@ -61,6 +61,17 @@ type MeetingSchedulePayload = {
   actor?: string;
 };
 
+type StaffSession = {
+  mode: string;
+  authenticated: boolean;
+  roles: string[];
+  auth_method?: string;
+  subject?: string;
+  provider?: string;
+  message: string;
+  fix: string;
+};
+
 type AgendaIntakeItem = {
   id: string;
   title: string;
@@ -690,6 +701,9 @@ export function App() {
   const [minutesError, setMinutesError] = useState<string | null>(null);
   const [publicState, setPublicState] = useState<ViewState>("loading");
   const [publicError, setPublicError] = useState<string | null>(null);
+  const [staffSession, setStaffSession] = useState<StaffSession | null>(null);
+  const [staffSessionState, setStaffSessionState] = useState<ViewState>("loading");
+  const [staffSessionError, setStaffSessionError] = useState<string | null>(null);
   const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
   const [auditOpen, setAuditOpen] = useState(initial.audit);
   const viewState = qaState ?? apiState;
@@ -874,6 +888,39 @@ export function App() {
       cancelled = true;
     };
   }, [initial.source]);
+
+  useEffect(() => {
+    if (initial.source === "demo" || qaState !== null || page === "public") {
+      setStaffSession({
+        mode: "open",
+        authenticated: true,
+        roles: ["open_access"],
+        message: "Staff workflow access is running in local open mode.",
+        fix: "Switch to OIDC before shared deployment.",
+      });
+      setStaffSessionState("success");
+      setStaffSessionError(null);
+      return;
+    }
+    let cancelled = false;
+    setStaffSessionState("loading");
+    fetchStaffSession()
+      .then((session) => {
+        if (cancelled) return;
+        setStaffSession(session);
+        setStaffSessionState("success");
+        setStaffSessionError(null);
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setStaffSession(null);
+        setStaffSessionState("error");
+        setStaffSessionError(error.message);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [initial.source, page, qaState]);
 
   useEffect(() => {
     if (initial.source === "demo" || qaState !== null || meetings.length === 0 || !activeMeetingId) {
@@ -1079,6 +1126,9 @@ export function App() {
               votes={visibleVotes}
               minutesDrafts={visibleMinutesDrafts}
               publicRecords={visiblePublicRecords}
+              staffSession={staffSession}
+              staffSessionState={qaState ?? staffSessionState}
+              staffSessionError={staffSessionError}
               bodyState={qaState ?? bodyState}
               bodyError={bodyError}
               onCreateBody={async (name, bodyType) => {
@@ -1314,6 +1364,16 @@ async function fetchAgendaIntakeItems(): Promise<ApiAgendaIntakeItem[]> {
   }
   const payload = (await response.json()) as { items?: ApiAgendaIntakeItem[] };
   return Array.isArray(payload.items) ? payload.items : [];
+}
+
+async function fetchStaffSession(): Promise<StaffSession> {
+  const response = await fetch("/staff/session", {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Staff session"));
+  }
+  return response.json();
 }
 
 async function fetchPacketAssemblies(meetingId: string): Promise<ApiPacketAssemblyRecord[]> {
@@ -2037,6 +2097,9 @@ function Dashboard({
   votes,
   minutesDrafts,
   publicRecords,
+  staffSession,
+  staffSessionState,
+  staffSessionError,
   bodyState,
   bodyError,
   onCreateBody,
@@ -2057,6 +2120,9 @@ function Dashboard({
   votes: VoteRecord[];
   minutesDrafts: MinutesDraftRecord[];
   publicRecords: PublicMeetingRecord[];
+  staffSession: StaffSession | null;
+  staffSessionState: ViewState;
+  staffSessionError: string | null;
   bodyState: ViewState;
   bodyError: string | null;
   onCreateBody: (name: string, bodyType: string) => Promise<void>;
@@ -2090,6 +2156,7 @@ function Dashboard({
         title="Good morning, City Clerk."
         description="Today's meeting work is grouped by urgency, public posting risk, and packet readiness."
       />
+      <StaffAccessPanel session={staffSession} state={staffSessionState} error={staffSessionError} />
       <div className="metric-grid">
         <MetricCard label="Meetings this week" value={String(meetings.length)} note="Live from CivicClerk meeting API" />
         <MetricCard
@@ -2144,6 +2211,89 @@ function Dashboard({
       />
       <MeetingSchedulingPanel meetingBodies={meetingBodies} onCreateMeeting={onCreateMeeting} />
     </div>
+  );
+}
+
+function StaffAccessPanel({
+  session,
+  state,
+  error,
+}: {
+  session: StaffSession | null;
+  state: ViewState;
+  error: string | null;
+}) {
+  if (state === "loading") {
+    return (
+      <section className="staff-access-card" role="status" aria-live="polite">
+        <div>
+          <span className="eyebrow">Staff access</span>
+          <h2>Checking staff access</h2>
+          <p>CivicClerk is confirming whether this browser has a live staff session before sensitive clerk actions appear.</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <section className="staff-access-card error" role="alert" aria-labelledby="staff-access-title">
+        <div>
+          <span className="eyebrow">Staff access</span>
+          <h2 id="staff-access-title">Staff sign-in needed</h2>
+          <p>
+            {error ?? "CivicClerk could not verify the current staff session."} Use municipal SSO to sign in, or ask IT to open
+            <code>/staff/auth-readiness</code> and fix the listed OIDC browser-login settings.
+          </p>
+        </div>
+        <div className="access-actions">
+          <a className="secondary" href="/staff/login">Sign in with municipal SSO</a>
+          <a className="secondary ghost" href="/staff/auth-readiness">IT auth readiness</a>
+        </div>
+      </section>
+    );
+  }
+
+  const mode = session?.mode ?? "unknown";
+  const authMethod = session?.auth_method ?? (mode === "open" ? "local open access" : mode);
+  const isOpenMode = mode === "open";
+  const isBrowserSession = session?.auth_method === "oidc_browser_session";
+  const cardTone = isOpenMode ? " warning" : "";
+  const heading = isOpenMode
+    ? "Local rehearsal access is open"
+    : isBrowserSession
+      ? "Signed in with municipal SSO"
+      : "Staff access verified";
+  const message = session?.message ?? "CivicClerk verified this browser for staff workflow access.";
+  const fix = session?.fix ?? "Continue with clerk workflow actions.";
+
+  return (
+    <section className={`staff-access-card${cardTone}`} role="status" aria-live="polite" aria-labelledby="staff-access-title">
+      <div>
+        <span className="eyebrow">Staff access</span>
+        <h2 id="staff-access-title">{heading}</h2>
+        <p>{message} {fix}</p>
+        <div className="session-facts" aria-label="Current staff session details">
+          <span>Mode: <strong>{mode}</strong></span>
+          <span>Method: <strong>{authMethod.replace(/_/g, " ")}</strong></span>
+          {session?.provider && <span>Provider: <strong>{session.provider}</strong></span>}
+          {session?.subject && <span>Signed in as: <strong>{session.subject}</strong></span>}
+        </div>
+        <div className="role-list" aria-label="Current staff roles">
+          {(session?.roles?.length ? session.roles : ["role_not_reported"]).map((role) => (
+            <span key={role}>{role.replace(/_/g, " ")}</span>
+          ))}
+        </div>
+      </div>
+      <div className="access-actions">
+        {isBrowserSession ? (
+          <a className="secondary" href="/staff/logout">Sign out</a>
+        ) : (
+          <a className="secondary" href="/staff/login">Sign in with municipal SSO</a>
+        )}
+        <a className="secondary ghost" href="/staff/auth-readiness">IT auth readiness</a>
+      </div>
+    </section>
   );
 }
 

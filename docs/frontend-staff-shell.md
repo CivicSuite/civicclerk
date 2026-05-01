@@ -4,7 +4,9 @@ Status: Sprint 4 implementation slice with live agenda intake promotion,
 packet builder draft/finalize workflow, legally explicit notice checklist work,
 resident-oriented public posted-meeting portal, first meeting outcomes workspace, and
 first minutes draft workspace. The dashboard now includes a clerk meeting
-runbook that ties those workspaces into one end-to-end next-action path.
+runbook that ties those workspaces into one end-to-end next-action path, plus
+staff access status that makes OIDC browser-session readiness visible to clerks
+and IT before sensitive meeting work begins.
 
 The `frontend/` package is the start of the production React app that will
 replace the HTML reference shell at `/staff`. It is adapted from the CivicSuite
@@ -17,6 +19,10 @@ mockup's browser-global JSX bundle.
   switcher, search affordance, and partial-install disclosure.
 - CivicClerk dashboard with priority work, meeting metrics, and clear clerk
   next actions.
+- Staff access panel on the dashboard that reads `/staff/session`, shows local
+  open mode, OIDC browser-session mode, bearer mode, or trusted-header mode,
+  displays the signed-in subject/provider/roles when available, and gives clerks
+  direct `/staff/login`, `/staff/logout`, and `/staff/auth-readiness` paths.
 - Dashboard Meeting Runbook that derives each meeting's next safe action from
   scheduled meeting data, agenda promotion, packet finalization, notice legal
   proof, captured outcomes, citation-gated minutes, and public posting records.
@@ -104,10 +110,12 @@ mockup's browser-global JSX bundle.
 - Explicit QA state controls for success, loading, empty, error, and partial
   states.
 - Actionable state copy that tells staff or IT what to do next.
+- Staff sign-in error states now tell the clerk to sign in with municipal SSO
+  and tell IT to inspect `/staff/auth-readiness` for missing OIDC browser-login
+  settings instead of surfacing a generic session failure.
 
 ## What This Slice Does Not Yet Include
 
-- Replacement of the shipped `/staff` HTML reference shell.
 - Signed/enterprise installer release artifact. The unsigned Windows
   install/repair wrapper now starts the Docker-backed React staff app for local
   product rehearsal.

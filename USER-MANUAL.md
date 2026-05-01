@@ -109,6 +109,12 @@ check. OIDC mode uses `CIVICCLERK_STAFF_AUTH_MODE=oidc` plus
 provider with authorization-code + PKCE parameters, `/staff/oidc/callback`
 validates the returned token, and CivicClerk stores a signed HttpOnly staff
 session cookie rather than the raw OIDC token.
+The React dashboard now makes that session state visible in a Staff Access
+panel. A clerk sees whether the browser is in local open mode, signed in with
+municipal SSO, using bearer access, or behind a trusted-header bridge. When a
+session is missing or expired, the panel gives the clerk a direct sign-in path
+and tells IT to inspect `/staff/auth-readiness` for the exact missing OIDC
+browser-login settings.
 Bearer mode uses
 `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`.
 Trusted-header mode uses `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus
@@ -548,9 +554,11 @@ packet exports reject closed-session and restricted source files. The React
 staff workspace now covers meeting body setup, scheduling, calendar viewing,
 detail viewing, pre-lock schedule editing, agenda intake, packet building,
 notice checklist/posting-proof work, public posting, meeting outcomes, and
-minutes draft work against live API-backed data. Production municipal use still
-requires React sign-in polish, signed installer, and live-sync hardening work
-before IT should treat it as a shared deployment; the Docker/PostgreSQL
+minutes draft work against live API-backed data, and the dashboard now surfaces
+staff access/session status for local open mode, OIDC browser sessions, bearer
+mode, and trusted-header mode. Production municipal use still requires a signed
+installer and live-sync hardening work before IT should treat it as a shared
+deployment; the Docker/PostgreSQL
 backup/restore path now has a rehearsal helper, but cities still need their own
 retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility
