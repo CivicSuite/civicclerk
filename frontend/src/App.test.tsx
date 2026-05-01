@@ -211,6 +211,56 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/public/meetings") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              total_count: 1,
+              meetings: [
+                {
+                  id: "public-1",
+                  meeting_id: "meeting-1",
+                  title: "City Council Regular Meeting",
+                  posted_agenda: "Agenda: approve sidewalk repairs.",
+                  posted_packet: "Packet: staff report and fiscal note.",
+                  approved_minutes: "Approved minutes: motion passed 5-0.",
+                },
+              ],
+            }),
+          });
+        }
+        if (url === "/api/public/meetings/public-1") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "public-1",
+              meeting_id: "meeting-1",
+              title: "City Council Regular Meeting",
+              posted_agenda: "Agenda: approve sidewalk repairs.",
+              posted_packet: "Packet: staff report and fiscal note.",
+              approved_minutes: "Approved minutes: motion passed 5-0.",
+            }),
+          });
+        }
+        if (url === "/api/public/archive/search?q=sidewalk") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              total_count: 1,
+              results: [
+                {
+                  id: "public-1",
+                  meeting_id: "meeting-1",
+                  title: "City Council Regular Meeting",
+                  posted_agenda: "Agenda: approve sidewalk repairs.",
+                  posted_packet: "Packet: staff report and fiscal note.",
+                  approved_minutes: "Approved minutes: motion passed 5-0.",
+                },
+              ],
+              suggestions: [],
+            }),
+          });
+        }
         if (url === "/api/agenda-intake" && init?.method === "POST") {
           return Promise.resolve({
             ok: true,
@@ -500,6 +550,23 @@ describe("CivicClerk staff workspace", () => {
     expect(await screen.findByText(/statutory deadline was/)).toBeInTheDocument();
     expect(screen.getAllByText(/Reschedule the meeting or document the lawful emergency basis/)).toHaveLength(2);
     expect(screen.getByRole("button", { name: "Attach posting proof" })).toBeDisabled();
+  });
+
+  it("shows resident-safe public posted meeting records and archive search", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Public posting/ }));
+
+    expect(screen.getByRole("heading", { name: "Show residents the posted agenda, packet, and approved minutes." })).toBeInTheDocument();
+    expect(screen.getByText(/Closed-session material and restricted records are not displayed/)).toBeInTheDocument();
+    expect(screen.getAllByText("Agenda: approve sidewalk repairs.")).toHaveLength(2);
+    expect(screen.getByText("Packet: staff report and fiscal note.")).toBeInTheDocument();
+    expect(screen.getByText(/Closed-session content is not displayed here/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Search public records" }));
+    expect(await screen.findByText(/1 public record matched/)).toBeInTheDocument();
+    expect(screen.getAllByText("Packet: staff report and fiscal note.")).toHaveLength(2);
   });
 
   it("opens the meeting calendar and a meeting detail workspace", async () => {

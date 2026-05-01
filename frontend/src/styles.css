@@ -531,6 +531,44 @@ h2 {
   font-weight: 800;
 }
 
+.public-callout {
+  border-color: rgba(33, 85, 72, 0.28);
+  background: #eef8f1;
+  color: #1f4f43;
+}
+
+.public-record-card,
+.search-form {
+  display: grid;
+  gap: 14px;
+}
+
+.public-record-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.public-record-card dt {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.public-record-card dd {
+  margin: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.muted-warning {
+  background: #eef2f5;
+  color: #394855;
+}
+
 .body-form label,
 .schedule-form label,
 .intake-form label,

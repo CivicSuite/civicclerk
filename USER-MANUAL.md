@@ -146,8 +146,12 @@ deadline, record the posting time, notice type, statutory basis, human approver,
 and actor, run the live compliance check, and attach posting proof only after
 the checklist passes. If the statutory deadline has passed, the workspace says
 that plainly, disables proof attachment, and tells the clerk to reschedule or
-document the lawful emergency/special basis before proceeding. The next React
-product work continues Sprint 3 with the public posted-meeting surface.
+document the lawful emergency/special basis before proceeding. The Public
+Posting React surface is also present: staff can open a resident-safe view of
+posted public records, show the public agenda, packet, and approved minutes
+text, and search public archive records without exposing or implying restricted
+closed-session material. The next React product work moves into Sprint 4
+meeting outcome and minutes surfaces.
 
 ## Part 2: IT and Technical Overview
 
@@ -448,8 +452,9 @@ packet exports reject closed-session and restricted source files. Full UI
 screens beyond the HTML staff workflow remain planned work, but the first React
 surfaces now cover meeting body setup, scheduling, calendar viewing, detail
 viewing, pre-lock schedule editing, agenda intake, packet building, and notice
-checklist/posting-proof work. Browser QA gates now verify the required state
-fixtures and accessibility evidence before browser-visible changes merge.
+checklist/posting-proof work, plus the first public posted-meeting view.
+Browser QA gates now verify the required state fixtures and accessibility
+evidence before browser-visible changes merge.
 
 - `meeting_bodies`
 - `meetings`
