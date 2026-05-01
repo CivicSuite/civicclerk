@@ -211,6 +211,111 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/meetings/meeting-1/motions" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "motion-1",
+              meeting_id: "meeting-1",
+              agenda_item_id: null,
+              text: "Move to adopt the annual fee schedule as presented.",
+              actor: "clerk@example.gov",
+              correction_of_id: null,
+              correction_reason: null,
+              captured: true,
+            }),
+          });
+        }
+        if (url === "/api/meetings/meeting-1/motions") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              motions: [
+                {
+                  id: "motion-existing",
+                  meeting_id: "meeting-1",
+                  agenda_item_id: "agenda-99",
+                  text: "Move to approve sidewalk repairs.",
+                  actor: "clerk@example.gov",
+                  correction_of_id: null,
+                  correction_reason: null,
+                  captured: true,
+                },
+              ],
+            }),
+          });
+        }
+        if (url === "/api/motions/motion-existing/votes" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "vote-2",
+              motion_id: "motion-existing",
+              voter_name: "Council Member Rivera",
+              vote: "aye",
+              actor: "clerk@example.gov",
+              correction_of_id: null,
+              correction_reason: null,
+              captured: true,
+            }),
+          });
+        }
+        if (url === "/api/motions/motion-1/votes" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "vote-1",
+              motion_id: "motion-1",
+              voter_name: "Council Member Rivera",
+              vote: "aye",
+              actor: "clerk@example.gov",
+              correction_of_id: null,
+              correction_reason: null,
+              captured: true,
+            }),
+          });
+        }
+        if (url === "/api/motions/motion-existing/votes") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              votes: [
+                {
+                  id: "vote-existing",
+                  motion_id: "motion-existing",
+                  voter_name: "Council Member Patel",
+                  vote: "aye",
+                  actor: "clerk@example.gov",
+                  correction_of_id: null,
+                  correction_reason: null,
+                  captured: true,
+                },
+              ],
+            }),
+          });
+        }
+        if (url === "/api/meetings/meeting-1/action-items" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "action-1",
+              meeting_id: "meeting-1",
+              description: "Staff to prepare the signed resolution and publish the adopted action.",
+              actor: "clerk@example.gov",
+              assigned_to: "Clerk's Office",
+              source_motion_id: "motion-1",
+              status: "OPEN",
+            }),
+          });
+        }
+        if (url === "/api/meetings/meeting-1/action-items") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              action_items: [],
+            }),
+          });
+        }
         if (url === "/api/public/meetings") {
           return Promise.resolve({
             ok: true,
@@ -567,6 +672,28 @@ describe("CivicClerk staff workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Search public records" }));
     expect(await screen.findByText(/1 public record matched/)).toBeInTheDocument();
     expect(screen.getAllByText("Packet: staff report and fiscal note.")).toHaveLength(2);
+  });
+
+  it("captures motions, votes, and action items from the meeting outcomes workspace", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Outcomes/ }));
+
+    expect(screen.getByRole("heading", { name: "Capture motions, roll-call votes, and follow-up actions." })).toBeInTheDocument();
+    expect(screen.getByText(/Motions and votes are immutable/)).toBeInTheDocument();
+    expect(await screen.findAllByText("Move to approve sidewalk repairs.")).toHaveLength(2);
+    expect(screen.getByText("Council Member Patel: aye")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Capture motion" }));
+    expect(await screen.findByText(/Motion motion-1 captured as an immutable meeting outcome/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Record vote" }));
+    expect(await screen.findByText(/Vote vote-1 captured for Council Member Rivera/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Create action item" }));
+    expect(await screen.findByText(/Action item action-1 opened for Clerk's Office/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Staff to prepare the signed resolution/)).toHaveLength(2);
   });
 
   it("opens the meeting calendar and a meeting detail workspace", async () => {

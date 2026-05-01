@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "public";
+type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "outcomes" | "public";
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -213,6 +213,89 @@ type NoticePostingProofPayload = {
   posting_proof: Record<string, string>;
 };
 
+type MotionRecord = {
+  id: string;
+  meetingId: string;
+  agendaItemId?: string | null;
+  text: string;
+  actor: string;
+  correctionOfId?: string | null;
+  correctionReason?: string | null;
+  captured: boolean;
+};
+
+type ApiMotionRecord = {
+  id: string;
+  meeting_id: string;
+  agenda_item_id?: string | null;
+  text: string;
+  actor: string;
+  correction_of_id?: string | null;
+  correction_reason?: string | null;
+  captured: boolean;
+};
+
+type VoteRecord = {
+  id: string;
+  motionId: string;
+  voterName: string;
+  vote: string;
+  actor: string;
+  correctionOfId?: string | null;
+  correctionReason?: string | null;
+  captured: boolean;
+};
+
+type ApiVoteRecord = {
+  id: string;
+  motion_id: string;
+  voter_name: string;
+  vote: string;
+  actor: string;
+  correction_of_id?: string | null;
+  correction_reason?: string | null;
+  captured: boolean;
+};
+
+type ActionItemRecord = {
+  id: string;
+  meetingId: string;
+  description: string;
+  actor: string;
+  assignedTo?: string | null;
+  sourceMotionId?: string | null;
+  status: string;
+};
+
+type ApiActionItemRecord = {
+  id: string;
+  meeting_id: string;
+  description: string;
+  actor: string;
+  assigned_to?: string | null;
+  source_motion_id?: string | null;
+  status: string;
+};
+
+type MotionPayload = {
+  text: string;
+  actor: string;
+  agenda_item_id?: string;
+};
+
+type VotePayload = {
+  voter_name: string;
+  vote: string;
+  actor: string;
+};
+
+type ActionItemPayload = {
+  description: string;
+  actor: string;
+  assigned_to?: string;
+  source_motion_id: string;
+};
+
 type PublicMeetingRecord = {
   id: string;
   meetingId: string;
@@ -390,6 +473,47 @@ const demoNoticeChecklists: NoticeChecklistRecord[] = [
   },
 ];
 
+const demoMotions: MotionRecord[] = [
+  {
+    id: "motion-demo-1",
+    meetingId: "M-2026-053",
+    agendaItemId: "agenda-fee-schedule",
+    text: "Move to adopt the annual fee schedule as presented in the packet.",
+    actor: "clerk@example.gov",
+    correctionOfId: null,
+    correctionReason: null,
+    captured: true,
+  },
+  {
+    id: "motion-demo-2",
+    meetingId: "M-2026-053",
+    agendaItemId: null,
+    text: "Move to direct Public Works to inspect sidewalk repair segments and report back.",
+    actor: "clerk@example.gov",
+    correctionOfId: null,
+    correctionReason: null,
+    captured: true,
+  },
+];
+
+const demoVotes: VoteRecord[] = [
+  { id: "vote-demo-1", motionId: "motion-demo-1", voterName: "Council Member Rivera", vote: "aye", actor: "clerk@example.gov", captured: true },
+  { id: "vote-demo-2", motionId: "motion-demo-1", voterName: "Council Member Patel", vote: "aye", actor: "clerk@example.gov", captured: true },
+  { id: "vote-demo-3", motionId: "motion-demo-1", voterName: "Council Member Owens", vote: "abstain", actor: "clerk@example.gov", captured: true },
+];
+
+const demoActionItems: ActionItemRecord[] = [
+  {
+    id: "action-demo-1",
+    meetingId: "M-2026-053",
+    description: "Public Works to inspect sidewalk repair segments and return with a completion schedule.",
+    actor: "clerk@example.gov",
+    assignedTo: "Public Works",
+    sourceMotionId: "motion-demo-2",
+    status: "OPEN",
+  },
+];
+
 const demoPublicRecords: PublicMeetingRecord[] = [
   {
     id: "public-demo-1",
@@ -424,6 +548,10 @@ export function App() {
   const [loadedPacketMeetingIds, setLoadedPacketMeetingIds] = useState<string[]>([]);
   const [noticeChecklists, setNoticeChecklists] = useState<NoticeChecklistRecord[]>([]);
   const [loadedNoticeMeetingIds, setLoadedNoticeMeetingIds] = useState<string[]>([]);
+  const [motions, setMotions] = useState<MotionRecord[]>([]);
+  const [votes, setVotes] = useState<VoteRecord[]>([]);
+  const [actionItems, setActionItems] = useState<ActionItemRecord[]>([]);
+  const [loadedOutcomeMeetingIds, setLoadedOutcomeMeetingIds] = useState<string[]>([]);
   const [publicRecords, setPublicRecords] = useState<PublicMeetingRecord[]>([]);
   const [publicRecordDetail, setPublicRecordDetail] = useState<PublicMeetingRecord | null>(null);
   const [apiState, setApiState] = useState<ViewState>("loading");
@@ -434,6 +562,8 @@ export function App() {
   const [packetError, setPacketError] = useState<string | null>(null);
   const [noticeState, setNoticeState] = useState<ViewState>("loading");
   const [noticeError, setNoticeError] = useState<string | null>(null);
+  const [outcomeState, setOutcomeState] = useState<ViewState>("loading");
+  const [outcomeError, setOutcomeError] = useState<string | null>(null);
   const [publicState, setPublicState] = useState<ViewState>("loading");
   const [publicError, setPublicError] = useState<string | null>(null);
   const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
@@ -444,6 +574,9 @@ export function App() {
   const visibleAgendaItems = qaState === null ? agendaItems : demoAgendaItems;
   const visiblePacketAssemblies = qaState === null ? packetAssemblies : demoPacketAssemblies;
   const visibleNoticeChecklists = qaState === null ? noticeChecklists : demoNoticeChecklists;
+  const visibleMotions = qaState === null ? motions : demoMotions;
+  const visibleVotes = qaState === null ? votes : demoVotes;
+  const visibleActionItems = qaState === null ? actionItems : demoActionItems;
   const visiblePublicRecords = qaState === null ? publicRecords : demoPublicRecords;
   const visiblePublicDetail = qaState === null ? publicRecordDetail : demoPublicRecords[0];
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
@@ -493,6 +626,24 @@ export function App() {
         setNoticeState("error");
       }
       try {
+        const outcomeBundle = await fetchMeetingOutcomes(mappedMeetings[0].id);
+        if (cancelled()) return;
+        setMotions(outcomeBundle.motions.map(mapApiMotionRecord));
+        setVotes(outcomeBundle.votes.map(mapApiVoteRecord));
+        setActionItems(outcomeBundle.actionItems.map(mapApiActionItemRecord));
+        setLoadedOutcomeMeetingIds([mappedMeetings[0].id]);
+        setOutcomeError(null);
+        setOutcomeState(outcomeBundle.motions.length === 0 && outcomeBundle.actionItems.length === 0 ? "empty" : "success");
+      } catch (error) {
+        if (cancelled()) return;
+        setMotions([]);
+        setVotes([]);
+        setActionItems([]);
+        setLoadedOutcomeMeetingIds([]);
+        setOutcomeError(error instanceof Error ? error.message : "Meeting outcomes API failed.");
+        setOutcomeState("error");
+      }
+      try {
         const apiPublicRecords = await fetchPublicMeetings();
         if (cancelled()) return;
         const mappedPublicRecords = apiPublicRecords.map(mapApiPublicMeetingRecord);
@@ -514,6 +665,11 @@ export function App() {
       setNoticeChecklists([]);
       setLoadedNoticeMeetingIds([]);
       setNoticeState("empty");
+      setMotions([]);
+      setVotes([]);
+      setActionItems([]);
+      setLoadedOutcomeMeetingIds([]);
+      setOutcomeState("empty");
       setPublicRecords([]);
       setPublicRecordDetail(null);
       setPublicState("empty");
@@ -534,12 +690,17 @@ export function App() {
       setLoadedPacketMeetingIds(demoMeetings.map((meeting) => meeting.id));
       setNoticeChecklists(sortNoticeChecklistRecords(demoNoticeChecklists));
       setLoadedNoticeMeetingIds(demoMeetings.map((meeting) => meeting.id));
+      setMotions(demoMotions);
+      setVotes(demoVotes);
+      setActionItems(demoActionItems);
+      setLoadedOutcomeMeetingIds(demoMeetings.map((meeting) => meeting.id));
       setPublicRecords(demoPublicRecords);
       setPublicRecordDetail(demoPublicRecords[0]);
       setApiState("success");
       setBodyState("success");
       setPacketState("success");
       setNoticeState("success");
+      setOutcomeState("success");
       setPublicState("success");
       setActiveMeetingId(demoMeetings[0].id);
       return;
@@ -552,11 +713,13 @@ export function App() {
         setApiError(error.message);
         setPacketError(error.message);
         setNoticeError(error.message);
+        setOutcomeError(error.message);
         setPublicError(error.message);
         setApiState("error");
         setBodyState("error");
         setPacketState("error");
         setNoticeState("error");
+        setOutcomeState("error");
         setPublicState("error");
       });
     return () => {
@@ -626,6 +789,47 @@ export function App() {
     };
   }, [activeMeetingId, initial.source, loadedNoticeMeetingIds, meetings, qaState]);
 
+  useEffect(() => {
+    if (initial.source === "demo" || qaState !== null || meetings.length === 0 || !activeMeetingId) {
+      return;
+    }
+    if (!meetings.some((meeting) => meeting.id === activeMeetingId) || loadedOutcomeMeetingIds.includes(activeMeetingId)) {
+      return;
+    }
+    let cancelled = false;
+    setOutcomeState("loading");
+    setOutcomeError(null);
+    fetchMeetingOutcomes(activeMeetingId)
+      .then((outcomeBundle) => {
+        if (cancelled) return;
+        const mappedMotions = outcomeBundle.motions.map(mapApiMotionRecord);
+        const mappedVotes = outcomeBundle.votes.map(mapApiVoteRecord);
+        const mappedActionItems = outcomeBundle.actionItems.map(mapApiActionItemRecord);
+        setMotions((current) => [
+          ...mappedMotions,
+          ...current.filter((record) => record.meetingId !== activeMeetingId),
+        ]);
+        setVotes((current) => [
+          ...mappedVotes,
+          ...current.filter((record) => !mappedMotions.some((motion) => motion.id === record.motionId)),
+        ]);
+        setActionItems((current) => [
+          ...mappedActionItems,
+          ...current.filter((record) => record.meetingId !== activeMeetingId),
+        ]);
+        setLoadedOutcomeMeetingIds((current) => current.includes(activeMeetingId) ? current : [...current, activeMeetingId]);
+        setOutcomeState(mappedMotions.length === 0 && mappedActionItems.length === 0 ? "empty" : "success");
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setOutcomeError(error.message);
+        setOutcomeState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMeetingId, initial.source, loadedOutcomeMeetingIds, meetings, qaState]);
+
   return (
     <div className="app-shell">
       <aside className="rail" aria-label="CivicClerk navigation">
@@ -651,6 +855,9 @@ export function App() {
           </button>
           <button className={page === "notice" ? "active" : ""} onClick={() => setPage("notice")}>
             <Icon label="Notice" /> Notice checklist
+          </button>
+          <button className={page === "outcomes" ? "active" : ""} onClick={() => setPage("outcomes")}>
+            <Icon label="Outcomes" /> Outcomes
           </button>
           <button className={page === "public" ? "active" : ""} onClick={() => setPage("public")}>
             <Icon label="Public" /> Public posting
@@ -805,6 +1012,38 @@ export function App() {
               }}
             />
           )}
+          {page === "outcomes" && (
+            <MeetingOutcomesWorkspace
+              viewState={qaState ?? outcomeState}
+              apiError={outcomeError}
+              meetings={visibleMeetings}
+              activeMeeting={activeMeeting}
+              motions={visibleMotions.filter((record) => record.meetingId === activeMeeting.id)}
+              votes={visibleVotes}
+              actionItems={visibleActionItems.filter((record) => record.meetingId === activeMeeting.id)}
+              setActiveMeetingId={setActiveMeetingId}
+              onCaptureMotion={async (meetingId, payload) => {
+                const record = await captureMotion(meetingId, payload);
+                const mapped = mapApiMotionRecord(record);
+                setMotions((current) => [mapped, ...current.filter((item) => item.id !== mapped.id)]);
+                setLoadedOutcomeMeetingIds((current) => current.includes(meetingId) ? current : [...current, meetingId]);
+                setOutcomeState("success");
+                return mapped;
+              }}
+              onCaptureVote={async (motionId, payload) => {
+                const record = await captureVote(motionId, payload);
+                const mapped = mapApiVoteRecord(record);
+                setVotes((current) => [...current.filter((item) => item.id !== mapped.id), mapped]);
+                return mapped;
+              }}
+              onCreateActionItem={async (meetingId, payload) => {
+                const record = await createActionItem(meetingId, payload);
+                const mapped = mapApiActionItemRecord(record);
+                setActionItems((current) => [mapped, ...current.filter((item) => item.id !== mapped.id)]);
+                return mapped;
+              }}
+            />
+          )}
           {page === "public" && (
             <PublicPostedMeetingWorkspace
               viewState={qaState ?? publicState}
@@ -890,6 +1129,41 @@ async function fetchNoticeChecklists(meetingId: string): Promise<ApiNoticeCheckl
   }
   const payload = (await response.json()) as { notice_checklists?: ApiNoticeChecklistRecord[] };
   return Array.isArray(payload.notice_checklists) ? payload.notice_checklists : [];
+}
+
+async function fetchMeetingOutcomes(meetingId: string): Promise<{ motions: ApiMotionRecord[]; votes: ApiVoteRecord[]; actionItems: ApiActionItemRecord[] }> {
+  const motionResponse = await fetch(`/api/meetings/${meetingId}/motions`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!motionResponse.ok) {
+    throw new Error(`Meeting outcomes API returned ${motionResponse.status}.`);
+  }
+  const motionPayload = (await motionResponse.json()) as { motions?: ApiMotionRecord[] };
+  const motions = Array.isArray(motionPayload.motions) ? motionPayload.motions : [];
+  const [voteGroups, actionResponse] = await Promise.all([
+    Promise.all(motions.map((motion) => fetchVotes(motion.id))),
+    fetch(`/api/meetings/${meetingId}/action-items`, { headers: { Accept: "application/json" } }),
+  ]);
+  if (!actionResponse.ok) {
+    throw new Error(`Action item API returned ${actionResponse.status}.`);
+  }
+  const actionPayload = (await actionResponse.json()) as { action_items?: ApiActionItemRecord[] };
+  return {
+    motions,
+    votes: voteGroups.flat(),
+    actionItems: Array.isArray(actionPayload.action_items) ? actionPayload.action_items : [],
+  };
+}
+
+async function fetchVotes(motionId: string): Promise<ApiVoteRecord[]> {
+  const response = await fetch(`/api/motions/${motionId}/votes`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Vote API returned ${response.status}.`);
+  }
+  const payload = (await response.json()) as { votes?: ApiVoteRecord[] };
+  return Array.isArray(payload.votes) ? payload.votes : [];
 }
 
 async function fetchPublicMeetings(): Promise<ApiPublicMeetingRecord[]> {
@@ -1067,6 +1341,42 @@ async function attachNoticePostingProof(recordId: string, payload: NoticePosting
   return response.json();
 }
 
+async function captureMotion(meetingId: string, payload: MotionPayload): Promise<ApiMotionRecord> {
+  const response = await fetch(`/api/meetings/${meetingId}/motions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Motion capture"));
+  }
+  return response.json();
+}
+
+async function captureVote(motionId: string, payload: VotePayload): Promise<ApiVoteRecord> {
+  const response = await fetch(`/api/motions/${motionId}/votes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Vote capture"));
+  }
+  return response.json();
+}
+
+async function createActionItem(meetingId: string, payload: ActionItemPayload): Promise<ApiActionItemRecord> {
+  const response = await fetch(`/api/meetings/${meetingId}/action-items`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Action item create"));
+  }
+  return response.json();
+}
+
 async function formatApiError(response: Response, context: string): Promise<string> {
   try {
     const payload = await response.json();
@@ -1170,6 +1480,44 @@ function mapApiNoticeChecklistRecord(record: ApiNoticeChecklistRecord): NoticeCh
   };
 }
 
+function mapApiMotionRecord(record: ApiMotionRecord): MotionRecord {
+  return {
+    id: record.id,
+    meetingId: record.meeting_id,
+    agendaItemId: record.agenda_item_id,
+    text: record.text,
+    actor: record.actor,
+    correctionOfId: record.correction_of_id,
+    correctionReason: record.correction_reason,
+    captured: record.captured,
+  };
+}
+
+function mapApiVoteRecord(record: ApiVoteRecord): VoteRecord {
+  return {
+    id: record.id,
+    motionId: record.motion_id,
+    voterName: record.voter_name,
+    vote: record.vote,
+    actor: record.actor,
+    correctionOfId: record.correction_of_id,
+    correctionReason: record.correction_reason,
+    captured: record.captured,
+  };
+}
+
+function mapApiActionItemRecord(record: ApiActionItemRecord): ActionItemRecord {
+  return {
+    id: record.id,
+    meetingId: record.meeting_id,
+    description: record.description,
+    actor: record.actor,
+    assignedTo: record.assigned_to,
+    sourceMotionId: record.source_motion_id,
+    status: record.status,
+  };
+}
+
 function mapApiPublicMeetingRecord(record: ApiPublicMeetingRecord): PublicMeetingRecord {
   return {
     id: record.id,
@@ -1233,7 +1581,7 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "public"];
+  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "public"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   return {
     page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : "dashboard",
@@ -2191,6 +2539,239 @@ function NoticeChecklistWorkspace({
   );
 }
 
+function MeetingOutcomesWorkspace({
+  viewState,
+  apiError,
+  meetings,
+  activeMeeting,
+  motions,
+  votes,
+  actionItems,
+  setActiveMeetingId,
+  onCaptureMotion,
+  onCaptureVote,
+  onCreateActionItem,
+}: {
+  viewState: ViewState;
+  apiError: string | null;
+  meetings: Meeting[];
+  activeMeeting: Meeting;
+  motions: MotionRecord[];
+  votes: VoteRecord[];
+  actionItems: ActionItemRecord[];
+  setActiveMeetingId: (id: string) => void;
+  onCaptureMotion: (meetingId: string, payload: MotionPayload) => Promise<MotionRecord>;
+  onCaptureVote: (motionId: string, payload: VotePayload) => Promise<VoteRecord>;
+  onCreateActionItem: (meetingId: string, payload: ActionItemPayload) => Promise<ActionItemRecord>;
+}) {
+  const [motionText, setMotionText] = useState("Move to adopt the annual fee schedule as presented.");
+  const [actor, setActor] = useState("clerk@example.gov");
+  const [selectedMotionId, setSelectedMotionId] = useState(motions[0]?.id ?? "");
+  const [voterName, setVoterName] = useState("Council Member Rivera");
+  const [vote, setVote] = useState("aye");
+  const [actionDescription, setActionDescription] = useState("Staff to prepare the signed resolution and publish the adopted action.");
+  const [assignedTo, setAssignedTo] = useState("Clerk's Office");
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedMotionId((current) => current && motions.some((motion) => motion.id === current) ? current : motions[0]?.id ?? "");
+    setMessage(null);
+  }, [activeMeeting, motions]);
+
+  if (viewState !== "success") {
+    return <StateMessage state={viewState} context="meeting outcomes" apiError={apiError} />;
+  }
+
+  const selectedMotion = motions.find((motion) => motion.id === selectedMotionId) ?? motions[0];
+  const meetingVotes = votes.filter((record) => motions.some((motion) => motion.id === record.motionId));
+  const correctionCount = motions.filter((motion) => motion.correctionOfId).length + meetingVotes.filter((record) => record.correctionOfId).length;
+
+  async function submitMotion(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    try {
+      const record = await onCaptureMotion(activeMeeting.id, {
+        text: motionText.trim(),
+        actor: actor.trim(),
+      });
+      setSelectedMotionId(record.id);
+      setMessage(`Motion ${record.id} captured as an immutable meeting outcome. To fix wording later, append a correction record instead of editing this entry.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Motion capture failed."} Confirm the meeting exists, the clerk actor is present, and the motion text is ready for the official record, then retry.`);
+    }
+  }
+
+  async function submitVote(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    if (!selectedMotion) {
+      setMessage("Vote capture is blocked because no motion exists yet. Capture the motion first, then record votes against that motion.");
+      return;
+    }
+    try {
+      const record = await onCaptureVote(selectedMotion.id, {
+        voter_name: voterName.trim(),
+        vote: vote.trim(),
+        actor: actor.trim(),
+      });
+      setMessage(`Vote ${record.id} captured for ${record.voterName}. The vote is immutable; use a correction record if the roll call is clarified.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Vote capture failed."} Confirm the selected motion still exists, choose aye/nay/abstain/absent, then retry.`);
+    }
+  }
+
+  async function submitActionItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    if (!selectedMotion) {
+      setMessage("Action item creation is blocked because action items must reference a captured meeting outcome. Capture the motion first, then create the follow-up.");
+      return;
+    }
+    try {
+      const record = await onCreateActionItem(activeMeeting.id, {
+        description: actionDescription.trim(),
+        actor: actor.trim(),
+        assigned_to: assignedTo.trim(),
+        source_motion_id: selectedMotion.id,
+      });
+      setMessage(`Action item ${record.id} opened for ${record.assignedTo ?? "unassigned staff"} and linked to motion ${selectedMotion.id}.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Action item create failed."} Capture the related motion first and verify the action source belongs to this meeting.`);
+    }
+  }
+
+  return (
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Meeting outcomes"
+        title="Capture motions, roll-call votes, and follow-up actions."
+        description="Build the official meeting record while the clerk can still see what is captured, what is missing, and why corrections must be append-only."
+      />
+      <div className="metric-grid">
+        <MetricCard label="Motions" value={String(motions.length)} note={motions.length ? "Captured in official sequence" : "Capture first motion"} tone={motions.length ? undefined : "warn"} />
+        <MetricCard label="Votes" value={String(meetingVotes.length)} note={meetingVotes.length ? voteSummary(meetingVotes) : "Roll call not started"} tone={meetingVotes.length ? undefined : "warn"} />
+        <MetricCard label="Action items" value={String(actionItems.length)} note={actionItems.length ? "Linked to outcomes" : "No follow-ups yet"} />
+      </div>
+      <div className="outcome-ledger-callout">
+        <strong>Official record behavior</strong>
+        <span>Motions and votes are immutable. If the clerk needs to fix wording or a roll call, append a correction record that references the original; do not silently rewrite the meeting record.</span>
+      </div>
+      <div className="agenda-grid">
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Live capture</h2>
+              <p>Record the motion first, then attach votes and action items to that outcome.</p>
+            </div>
+            <StatusBadge tone={motions.length ? "Ready" : "Warning"} label={motions.length ? "Outcome selected" : "Motion first"} />
+          </div>
+          <form className="intake-form" onSubmit={submitMotion}>
+            <label>
+              Meeting
+              <select value={activeMeeting.id} onChange={(event) => setActiveMeetingId(event.target.value)} required>
+                {meetings.map((meeting) => (
+                  <option key={meeting.id} value={meeting.id}>{meeting.body} - {meeting.title}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Clerk actor
+              <input value={actor} onChange={(event) => setActor(event.target.value)} required />
+            </label>
+            <label className="wide">
+              Motion text
+              <textarea value={motionText} onChange={(event) => setMotionText(event.target.value)} required />
+            </label>
+            <button type="submit">Capture motion</button>
+          </form>
+          <form className="intake-form stacked-form" onSubmit={submitVote}>
+            <label>
+              Motion for vote
+              <select value={selectedMotion?.id ?? ""} onChange={(event) => setSelectedMotionId(event.target.value)} required>
+                {motions.length === 0 && <option value="">Capture a motion first</option>}
+                {motions.map((motion) => (
+                  <option key={motion.id} value={motion.id}>{motion.text.slice(0, 72)}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Voter name
+              <input value={voterName} onChange={(event) => setVoterName(event.target.value)} required />
+            </label>
+            <label>
+              Vote
+              <select value={vote} onChange={(event) => setVote(event.target.value)} required>
+                <option value="aye">aye</option>
+                <option value="nay">nay</option>
+                <option value="abstain">abstain</option>
+                <option value="absent">absent</option>
+              </select>
+            </label>
+            <button type="submit">Record vote</button>
+          </form>
+          <form className="intake-form stacked-form" onSubmit={submitActionItem}>
+            <label className="wide">
+              Action item
+              <textarea value={actionDescription} onChange={(event) => setActionDescription(event.target.value)} required />
+            </label>
+            <label>
+              Assigned to
+              <input value={assignedTo} onChange={(event) => setAssignedTo(event.target.value)} />
+            </label>
+            <button type="submit">Create action item</button>
+          </form>
+          {message && <p className="form-message">{message}</p>}
+        </section>
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Outcome ledger</h2>
+              <p>Review captured motions, vote totals, correction lineage, and open follow-ups.</p>
+            </div>
+            <StatusBadge tone={correctionCount ? "Warning" : "Ready"} label={correctionCount ? `${correctionCount} corrections` : "Append-only"} />
+          </div>
+          <div className="agenda-list">
+            {motions.length === 0 && (
+              <p className="empty-inline">No meeting outcomes captured yet. Capture a motion before recording votes, action items, or minutes draft source material.</p>
+            )}
+            {motions.map((motion) => {
+              const motionVotes = votes.filter((record) => record.motionId === motion.id);
+              const linkedActions = actionItems.filter((record) => record.sourceMotionId === motion.id);
+              return (
+                <article key={motion.id} className="agenda-row outcome-row">
+                  <div>
+                    <div className="row-title">
+                      <h3>{motion.text}</h3>
+                      <StatusBadge tone={motion.correctionOfId ? "Warning" : "Ready"} label={motion.correctionOfId ? "Correction" : "Captured"} />
+                    </div>
+                    <p>{motionVotes.length} votes recorded. {linkedActions.length} action items linked.</p>
+                    <small>Actor: {motion.actor}. Motion ID: {motion.id}.</small>
+                    {motion.correctionOfId && <p className="legal-warning">Correction of {motion.correctionOfId}: {motion.correctionReason}</p>}
+                    <div className="vote-strip" aria-label={`Votes for ${motion.text}`}>
+                      {motionVotes.length === 0 && <span className="vote-pill missing">No votes recorded</span>}
+                      {motionVotes.map((record) => (
+                        <span key={record.id} className={`vote-pill ${record.vote.toLowerCase()}`}>{record.voterName}: {record.vote}</span>
+                      ))}
+                    </div>
+                    {linkedActions.map((item) => (
+                      <small key={item.id}>Action: {item.description} ({item.status}) - {item.assignedTo ?? "unassigned"}</small>
+                    ))}
+                  </div>
+                  <div className="row-actions">
+                    <button className="secondary" type="button" onClick={() => setSelectedMotionId(motion.id)}>
+                      Select outcome
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function PublicPostedMeetingWorkspace({
   viewState,
   apiError,
@@ -2652,6 +3233,19 @@ function StateMessage({ state, context, apiError }: { state: ViewState; context:
       ? `${apiError} Do not attach posting proof from this workspace until the notice API is reachable; confirm the backend, notice store, and staff auth mode, then retry.`
       : "The notice API did not respond. Do not treat the meeting as noticed until deadline, statutory basis, approval, proof, and audit hash are visible; confirm the backend, notice store, and staff auth mode, then retry.";
   }
+  if (context === "meeting outcomes" && state === "empty") {
+    copy.body = "No motions, votes, or action items are captured for this meeting yet. Capture the first motion, then record roll-call votes and any follow-up action item tied to that motion.";
+    copy.action = "Capture motion";
+  }
+  if (context === "meeting outcomes" && state === "partial") {
+    copy.body = "Meeting outcome data is only partially available. Do not draft minutes from this workspace until motions, votes, action items, and correction lineage are visible; check the outcomes API and reload.";
+    copy.action = "Check outcomes API";
+  }
+  if (context === "meeting outcomes" && state === "error") {
+    copy.body = apiError
+      ? `${apiError} Confirm the motion/vote/action-item APIs are reachable, then retry before relying on this meeting record.`
+      : "The outcomes API did not respond. Confirm the motion/vote/action-item APIs are reachable, then retry before relying on this meeting record.";
+  }
   if (context === "public posted meeting" && state === "empty") {
     copy.body = "No public meeting records are posted yet. Staff should publish a public-safe record from the clerk workflow before residents can see agendas, packets, or approved minutes here.";
     copy.action = "Ask clerk to publish";
@@ -2733,6 +3327,17 @@ function noticeWarningText(record: NoticeChecklistRecord): string {
       return `${code}${warning.fix ?? warning.message ?? "Review the notice record and correct the statutory blocker."}`;
     })
     .join(" ");
+}
+
+function voteSummary(votes: VoteRecord[]): string {
+  const counts = votes.reduce<Record<string, number>>((current, record) => {
+    current[record.vote] = (current[record.vote] ?? 0) + 1;
+    return current;
+  }, {});
+  return ["aye", "nay", "abstain", "absent"]
+    .filter((key) => counts[key])
+    .map((key) => `${counts[key]} ${key}`)
+    .join(", ");
 }
 
 function formatDateTime(value: string): string {
