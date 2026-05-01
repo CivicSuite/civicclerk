@@ -185,8 +185,8 @@ docker compose up --build
 
 Open `http://127.0.0.1:8080` for the nginx-served React app. The API is exposed
 at `http://127.0.0.1:8776`, and nginx proxies React `/api/*` requests to the
-FastAPI service. The Compose profile is not the Windows installer; installer
-packaging remains future work.
+FastAPI service. The Windows installer package now wraps this same Compose
+profile; Docker Desktop is still required.
 
 By default, Compose sets `CIVICCLERK_DEMO_SEED=1`. On API startup, CivicClerk
 creates a Brookfield rehearsal dataset with meeting bodies, meetings in multiple
@@ -194,6 +194,35 @@ lifecycle states, one promoted agenda intake item, a finalized packet, a posted
 notice checklist with statutory basis and posting proof, captured motion/vote
 outcomes, citation-gated minutes, and a public archive record. Set
 `CIVICCLERK_DEMO_SEED=0` in `.env` when IT wants an empty local database instead.
+
+### Windows installer package
+
+For a Windows IT install or repair of the Docker product stack, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+The script checks Docker Desktop, creates `.env` from
+`docs/examples/docker.env.example` if it does not already exist, generates a
+local PostgreSQL password, starts `docker compose up -d --build`, waits for
+`/health` and the React staff app, and opens `http://127.0.0.1:8080/`. The
+default `.env` keeps `CIVICCLERK_DEMO_SEED=1`, so the first app launch shows
+Brookfield demo data instead of an empty shell.
+
+To build the unsigned setup executable on a workstation with Inno Setup 6:
+
+```bash
+bash installer/windows/build-installer.sh
+```
+
+The resulting setup package installs Start and Install or Repair shortcuts.
+It is unsigned by design in this early release line, so Windows SmartScreen may
+warn about an unknown publisher. Uninstall stops the Compose stack and removes
+installed source files, but Docker volumes are preserved so meeting data is not
+destroyed accidentally. `CIVICCLERK_STAFF_AUTH_MODE=open` is only for a
+single-workstation rehearsal; switch to bearer or trusted-header mode before
+shared deployment.
 
 ### Planned dependency
 
@@ -277,16 +306,16 @@ or `--print-only` to create
 `dist/civicclerk-0.1.11-release-handoff.zip`. If that zip already exists, the
 helpers stop instead of overwriting it.
 
-After the handoff zip exists, verify the future installer input contract:
+After the handoff zip exists, verify the installer input contract:
 
 ```bash
 python scripts/check_installer_readiness.py
 ```
 
 This check verifies release artifacts, `SHA256SUMS.txt`, zip validity, and the
-required docs/env examples/rehearsal helpers. It is intentionally not an
-installer; it tells IT what must be fixed before a future MSI or setup package
-can safely be built.
+required docs/env examples/rehearsal helpers. It complements the Windows
+installer source package by proving the release handoff inputs are intact before
+an installer is built or handed to IT.
 
 Before live-sync design work, verify the local connector contract:
 

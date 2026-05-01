@@ -74,6 +74,14 @@ All notable changes to CivicClerk are documented here.
   Brookfield rehearsal dataset with meeting bodies, lifecycle-diverse meetings,
   promoted agenda intake, finalized packet assembly, posted notice proof,
   captured outcomes, citation-gated minutes, and a public archive record.
+- CivicClerk now includes unsigned Windows installer source packaging under
+  `installer/windows/`, with Inno Setup build wiring, Docker Desktop
+  prerequisite checks, Install or Repair and Start launchers, and SmartScreen
+  guidance.
+- `install.ps1` now prepares `.env` from `docs/examples/docker.env.example`,
+  generates a local PostgreSQL password, starts the Docker Compose stack,
+  waits for API/frontend health, and opens the seeded React staff app for
+  single-workstation rehearsal.
 - Already-promoted agenda intake rows now lock review actions and point staff
   forward to Packet Builder instead of allowing duplicate readiness work.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,

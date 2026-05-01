@@ -33,9 +33,11 @@ prompt provenance, human approver capture, and blocked auto-posting visibility.
 The first Docker Compose deployment stack is now present with PostgreSQL 17 +
 pgvector, Redis 7.2, Ollama, FastAPI, Celery worker/beat, and nginx-served
 React. Compose now seeds a Brookfield demo dataset by default so staff can open
-the React app against live API-backed data immediately. Remaining MVP work now
-centers on actual installer packaging beyond the non-installer release handoff
-bundle, the finished public portal, and live sync/deployment hardening.
+the React app against live API-backed data immediately. Unsigned Windows
+installer source packaging is now present for the same Docker stack, including
+install/repair and daily-start launchers. Remaining MVP work now centers on a
+signed/enterprise installer release artifact, the finished public portal, and
+live sync/deployment hardening.
 
 ## Sprint 1
 
