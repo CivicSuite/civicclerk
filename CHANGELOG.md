@@ -13,6 +13,10 @@ All notable changes to CivicClerk are documented here.
 - Frontend tests now add focused coverage for the legally sensitive Notice
   Checklist proof obligations, append-only/source-linked Meeting Outcomes
   evidence, and citation-blocked Minutes Draft creation path.
+- Staff auth now supports `CIVICCLERK_STAFF_AUTH_MODE=oidc` for municipal
+  identity-provider access tokens, including issuer/audience/JWKS validation,
+  role-claim enforcement, `/staff/session` identity reporting, and
+  `/staff/auth-readiness` session/write probes.
 - `frontend/` now contains the first CivicClerk React/Vite staff workspace
   slice, adapted from the CivicSuite mockup into production TypeScript rather
   than copied as a browser-global prototype.
@@ -83,9 +87,9 @@ All notable changes to CivicClerk are documented here.
 ### Changed
 - The README and user manual now describe CivicClerk as an end-to-end
   React/Docker local product rehearsal with all four MVP workflow surfaces
-  present, and narrow the remaining deployment gaps to production OIDC, a
-  signed installer, live sync, city-approved backup retention/off-host storage,
-  and deployment hardening.
+  present, OIDC staff-token validation available, and the remaining deployment
+  gaps narrowed to browser redirect sign-in UX, a signed installer, live sync,
+  city-approved backup retention/off-host storage, and deployment hardening.
 - The React staff workspace now includes a resident-oriented Public Posting
   portal: public meeting list/detail/search over the public archive APIs,
   separate official agenda/packet/approved-minutes sections, missing-record
@@ -274,9 +278,10 @@ All notable changes to CivicClerk are documented here.
   effect.
 
 ### Changed
-- The `/staff` workflow shell now discloses local open, bearer-protected, and
-  trusted-header staff modes, and it explains that full OIDC login is still
-  future work rather than pretending the proxy bridge is a first-party IdP flow.
+- The `/staff` workflow shell disclosed local open, bearer-protected, and
+  trusted-header staff modes, and at that point explained that first-party OIDC
+  login was still future work rather than pretending the proxy bridge was an
+  IdP flow.
 - CivicClerk now targets the published `civiccore` v0.14.0 release wheel.
 
 ## [0.1.7] - 2026-04-29

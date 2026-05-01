@@ -8,7 +8,7 @@ API-complete, tested, and represented by live-backed `/staff` cockpit panels.
 The runtime foundation, staff workflow HTML reference shell, prompt gates,
 release gates, connector import normalization, public archive filtering, the
 React public portal, packet export bundles, backup/restore rehearsal,
-protected staff-auth rehearsal, deployment preflight, and fresh-install
+OIDC staff-token validation, protected staff-auth rehearsal, deployment preflight, and fresh-install
 rehearsal helpers are present. The first React app slice now exists under
 `frontend/`: it translates the CivicSuite mockup into a typed staff shell,
 meeting calendar, meeting detail lifecycle ribbon, audit/evidence drawer, and
@@ -37,8 +37,8 @@ React. Compose now seeds a Brookfield demo dataset by default so staff can open
 the React app against live API-backed data immediately. Unsigned Windows
 installer source packaging is now present for the same Docker stack, including
 install/repair and daily-start launchers. Remaining MVP work now centers on a
-signed/enterprise installer release artifact, production OIDC, scheduled live
-sync, and deployment hardening. The Docker/PostgreSQL backup and restore
+signed/enterprise installer release artifact, browser redirect sign-in/session UX,
+scheduled live sync, and deployment hardening. The Docker/PostgreSQL backup and restore
 rehearsal for the Compose product path is now present; real deployments still
 need an approved retention schedule and off-host storage target. The connector
 path now has a local import-sync runner that produces normalized ledgers from

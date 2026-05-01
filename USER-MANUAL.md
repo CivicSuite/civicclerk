@@ -91,17 +91,23 @@ posting-proof records, captures meeting outcome records, creates
 citation-gated minutes draft records, publishes public archive records, and
 normalizes local connector exports, and creates records-ready packet export
 bundles. The staff shell now checks `/staff/session` so IT staff and clerks can
-see whether the service is in local open mode, bearer-protected staff mode, or
-trusted-header staff mode. `/staff/auth-readiness` now reports whether the
-configured bearer-token or trusted-proxy bridge is deployment-ready before a
-live session check. Bearer mode uses
+see whether the service is in local open mode, OIDC-protected staff mode,
+bearer-protected staff mode, or trusted-header staff mode.
+`/staff/auth-readiness` now reports whether the configured OIDC,
+bearer-token, or trusted-proxy bridge is deployment-ready before a live session
+check. OIDC mode uses `CIVICCLERK_STAFF_AUTH_MODE=oidc` plus
+`CIVICCLERK_STAFF_OIDC_PROVIDER`, `CIVICCLERK_STAFF_OIDC_ISSUER`,
+`CIVICCLERK_STAFF_OIDC_AUDIENCE`, `CIVICCLERK_STAFF_OIDC_JWKS_URL`,
+`CIVICCLERK_STAFF_OIDC_ROLE_CLAIMS`, and
+`CIVICCLERK_STAFF_OIDC_ALGORITHMS`. Bearer mode uses
 `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`.
 Trusted-header mode uses `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus
 `CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER`,
 `CIVICCLERK_STAFF_SSO_ROLES_HEADER`,
 `CIVICCLERK_STAFF_SSO_PROVIDER`, and
-`CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES`; full OIDC login is still future work.
-When bearer or trusted-header mode is ready, the readiness response now
+`CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES`; browser redirect sign-in/session UX is
+still future work. When OIDC, bearer, or trusted-header mode is ready, the
+readiness response now
 includes a concrete session probe and a protected write probe so IT staff can
 test the real deployment path instead of inferring the next request from env
 vars alone.
@@ -221,8 +227,8 @@ It is unsigned by design in this early release line, so Windows SmartScreen may
 warn about an unknown publisher. Uninstall stops the Compose stack and removes
 installed source files, but Docker volumes are preserved so meeting data is not
 destroyed accidentally. `CIVICCLERK_STAFF_AUTH_MODE=open` is only for a
-single-workstation rehearsal; switch to bearer or trusted-header mode before
-shared deployment.
+single-workstation rehearsal; switch to OIDC, bearer, or trusted-header mode
+before shared deployment.
 
 ### Planned dependency
 
@@ -414,7 +420,7 @@ or overwrite the source CivicClerk database.
 
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
-workflows, move to `bearer` or `trusted_header` before user testing and use
+workflows, move to `oidc`, `bearer`, or `trusted_header` before user testing and use
 `/staff/auth-readiness` to confirm the service reports a deployment-ready
 contract instead of a local-only rehearsal mode. In protected modes, use the
 returned `session_probe` first and the returned `write_probe` second so the
@@ -531,8 +537,8 @@ staff workspace now covers meeting body setup, scheduling, calendar viewing,
 detail viewing, pre-lock schedule editing, agenda intake, packet building,
 notice checklist/posting-proof work, public posting, meeting outcomes, and
 minutes draft work against live API-backed data. Production municipal use still
-requires the remaining OIDC, signed installer, and live-sync hardening work
-before IT should treat it as a shared deployment; the Docker/PostgreSQL
+requires browser redirect sign-in UX, signed installer, and live-sync hardening
+work before IT should treat it as a shared deployment; the Docker/PostgreSQL
 backup/restore path now has a rehearsal helper, but cities still need their own
 retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility

@@ -39,7 +39,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "browser-visible staff workflow screens" in html
     assert "bearer-protected staff mode" in html
     assert "trusted-header staff mode" in html
-    assert "Full OIDC login is not shipped yet" in html
+    assert "OIDC-protected staff mode" in html
+    assert "OIDC mode accepts municipal identity-provider access tokens" in html
     assert 'id="staff-auth-token"' in html
     assert 'id="staff-auth-status"' in html
     assert "/staff/auth-readiness" in html
