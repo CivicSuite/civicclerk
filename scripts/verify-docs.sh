@@ -31,6 +31,7 @@ required=(
   scripts/run-prompt-evals.py
   scripts/verify-release.sh
   scripts/verify-browser-qa.py
+  scripts/check_installer_readiness.py
   scripts/check_backup_restore_rehearsal.py
   scripts/check_protected_deployment_smoke.py
   scripts/start_backup_restore_rehearsal.ps1

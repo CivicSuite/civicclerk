@@ -26,6 +26,7 @@ $BundleFiles = @(
     "docs/index.html",
     "docs/examples/deployment.env.example",
     "docs/examples/trusted-header-nginx.conf",
+    "scripts/check_installer_readiness.py",
     "scripts/start_fresh_install_rehearsal.ps1",
     "scripts/start_fresh_install_rehearsal.sh",
     "scripts/check_backup_restore_rehearsal.py",

@@ -194,10 +194,22 @@ bash scripts/build_release_handoff_bundle.sh --print-only
 
 The bundle helper previews the files that will be packaged, including the built
 wheel, source distribution, checksums, current docs, trusted-header reference,
-and install rehearsal helpers. After `bash scripts/verify-release.sh` has built
-`dist/`, rerun without `-PrintOnly` or `--print-only` to create
+installer-readiness helper, and install rehearsal helpers. After
+`bash scripts/verify-release.sh` has built `dist/`, rerun without `-PrintOnly`
+or `--print-only` to create
 `dist/civicclerk-0.1.11-release-handoff.zip`. If that zip already exists, the
 helpers stop instead of overwriting it.
+
+After the handoff zip exists, verify the future installer input contract:
+
+```bash
+python scripts/check_installer_readiness.py
+```
+
+This check verifies release artifacts, `SHA256SUMS.txt`, zip validity, and the
+required docs/env examples/rehearsal helpers. It is intentionally not an
+installer; it tells IT what must be fixed before a future MSI or setup package
+can safely be built.
 
 Before IT moves beyond local rehearsal, print the deployment preflight:
 
