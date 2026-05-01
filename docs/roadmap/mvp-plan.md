@@ -3,13 +3,17 @@
 The first CivicClerk MVP is a vertical slice, not a full Granicus-style
 replacement.
 
-Current status as of CivicClerk v0.1.11: the runtime foundation, staff workflow
-HTML shell, prompt gates, release gates, connector import normalization, public
-archive filtering, the first public portal shell, packet export bundles,
-protected staff-auth rehearsal, and fresh-install rehearsal helpers are present.
-Remaining MVP work still centers on the integrated multi-role frontend app,
-actual installer packaging beyond the non-installer release handoff bundle, the
-finished public portal, and live sync/deployment hardening.
+Current status as of CivicClerk v0.1.11: all four MVP sprint goals below are
+API-complete, tested, and represented by live-backed `/staff` cockpit panels.
+The runtime foundation, staff workflow HTML reference shell, prompt gates,
+release gates, connector import normalization, public archive filtering, the
+first public portal shell, packet export bundles, backup/restore rehearsal,
+protected staff-auth rehearsal, deployment preflight, and fresh-install
+rehearsal helpers are present. Remaining MVP work now centers on replacing the
+HTML reference shell with the integrated multi-role React app, standing up the
+Docker Compose deployment stack, actual installer packaging beyond the
+non-installer release handoff bundle, the finished public portal, and live
+sync/deployment hardening.
 
 ## Sprint 1
 
