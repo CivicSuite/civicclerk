@@ -242,16 +242,24 @@ local PostgreSQL password, starts `docker compose up -d --build`, waits for
 default `.env` keeps `CIVICCLERK_DEMO_SEED=1`, so the first app launch shows
 Brookfield demo data instead of an empty shell.
 
-To build the unsigned setup executable on a workstation with Inno Setup 6:
+To build the setup executable on a workstation with Inno Setup 6:
 
 ```bash
 bash installer/windows/build-installer.sh
 ```
 
 The resulting setup package installs Start and Install or Repair shortcuts.
-It is unsigned by design in this early release line, so Windows SmartScreen may
-warn about an unknown publisher. Uninstall stops the Compose stack and removes
-installed source files, but Docker volumes are preserved so meeting data is not
+It is unsigned unless the secured release-signing workstation sets
+`CIVICCLERK_SIGN_INSTALLER=true` plus Microsoft SignTool, a code-signing
+certificate identity, and an RFC 3161 timestamp URL. Without that signing
+profile, Windows SmartScreen may warn about an unknown publisher. To verify the
+enterprise signing inputs without printing secrets, run:
+
+```bash
+python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-0.1.11-Setup.exe
+```
+
+Uninstall stops the Compose stack and removes installed source files, but Docker volumes are preserved so meeting data is not
 destroyed accidentally. `CIVICCLERK_STAFF_AUTH_MODE=open` is only for a
 single-workstation rehearsal; switch to OIDC, bearer, or trusted-header mode
 before shared deployment.
@@ -332,7 +340,7 @@ bash scripts/build_release_handoff_bundle.sh --print-only
 
 The bundle helper previews the files that will be packaged, including the built
 wheel, source distribution, checksums, current docs, trusted-header reference,
-installer-readiness helper, and install rehearsal helpers. After
+installer-readiness helper, enterprise signing-readiness helper, and install rehearsal helpers. After
 `bash scripts/verify-release.sh` has built `dist/`, rerun without `-PrintOnly`
 or `--print-only` to create
 `dist/civicclerk-0.1.11-release-handoff.zip`. If that zip already exists, the

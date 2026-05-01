@@ -77,6 +77,44 @@ if [[ ! -f "$artifact" ]]; then
 fi
 
 echo "Built $artifact"
+
+sign_requested="${CIVICCLERK_SIGN_INSTALLER:-false}"
+normalized_sign_requested="$(printf '%s' "$sign_requested" | tr '[:upper:]' '[:lower:]')"
+case "$normalized_sign_requested" in
+  1|true|yes|on)
+    SIGNTOOL_PATH="${CIVICCLERK_SIGNTOOL_PATH:-${SIGNTOOL:-signtool}}"
+    if ! command -v "$SIGNTOOL_PATH" >/dev/null 2>&1 && [[ ! -x "$SIGNTOOL_PATH" ]]; then
+      echo "Installer signing was requested, but SignTool was not found. Set CIVICCLERK_SIGNTOOL_PATH=/path/to/signtool.exe." >&2
+      exit 1
+    fi
+    timestamp_url="${CIVICCLERK_SIGNING_TIMESTAMP_URL:-}"
+    if [[ -z "$timestamp_url" ]]; then
+      echo "Installer signing requires CIVICCLERK_SIGNING_TIMESTAMP_URL=<enterprise RFC 3161 timestamp URL>." >&2
+      exit 1
+    fi
+    sign_args=(sign /fd sha256 /td sha256 /tr "$timestamp_url")
+    if [[ -n "${CIVICCLERK_SIGNING_CERT_SHA1:-}" ]]; then
+      sign_args+=(/sha1 "$CIVICCLERK_SIGNING_CERT_SHA1")
+    elif [[ -n "${CIVICCLERK_SIGNING_PFX:-}" ]]; then
+      sign_args+=(/f "$CIVICCLERK_SIGNING_PFX")
+      password_env_name="${CIVICCLERK_SIGNING_PFX_PASSWORD_ENV:-}"
+      if [[ -z "$password_env_name" || -z "${!password_env_name:-}" ]]; then
+        echo "PFX signing requires CIVICCLERK_SIGNING_PFX_PASSWORD_ENV to name a populated password env var." >&2
+        exit 1
+      fi
+      sign_args+=(/p "${!password_env_name}")
+    else
+      echo "Installer signing requires CIVICCLERK_SIGNING_CERT_SHA1 or CIVICCLERK_SIGNING_PFX." >&2
+      exit 1
+    fi
+    "$SIGNTOOL_PATH" "${sign_args[@]}" "$artifact"
+    echo "Signed $artifact"
+    ;;
+  *)
+    echo "Installer signing skipped. Set CIVICCLERK_SIGN_INSTALLER=true after configuring SignTool, a certificate identity, and timestamp URL."
+    ;;
+esac
+
 if command -v sha256sum >/dev/null 2>&1; then
   sha256sum "$artifact"
 fi
