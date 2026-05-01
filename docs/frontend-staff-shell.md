@@ -55,6 +55,11 @@ mockup's browser-global JSX bundle.
   `POST /api/meetings/{id}/notice-checklists` compliance check, and attach
   posting proof through `POST /api/notice-checklists/{id}/posting-proof` only
   after the checklist passes.
+- Notice Checklist now includes an Official Notice Record summary that makes
+  the clerk-facing legal decision explicit: proceed allowed, proceed blocked,
+  or proof incomplete, with finalized-packet status, statutory deadline,
+  posting time, statutory basis, human approval, posting proof, and immutable
+  audit hash visible together.
 - Notice Checklist legal-blocker states plainly explain when the statutory
   deadline has passed, why posting proof is disabled, and that the clerk must
   reschedule or document a lawful emergency/special basis before proceeding.

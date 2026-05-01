@@ -22,9 +22,9 @@ submit/review, ready-item promotion into canonical agenda lifecycle records
 through `POST /agenda-intake/{id}/promote`, and the first Packet Builder
 workspace for creating and finalizing packet assembly records from promoted
 agenda items. Sprint 3 is now present with a legally explicit Notice Checklist
-workspace for statutory deadline review, basis/approval capture, posting-proof
-attachment, legal-blocker copy, and immutable audit-hash visibility, plus a
-resident-oriented Public Posting portal for public meeting list/detail/search
+workspace for statutory deadline review, basis/approval capture, an Official
+Notice Record proof summary, posting-proof attachment, legal-blocker copy, and
+immutable audit-hash visibility, plus a resident-oriented Public Posting portal for public meeting list/detail/search
 over posted agenda, packet, and approved minutes records with restricted-record
 non-disclosure guidance. Sprint 4 is now
 present with a React Meeting Outcomes workspace for immutable motion capture,
@@ -67,8 +67,8 @@ vendor live sync.
 
 ## Sprint 3
 
-- Notice checklist: first React statutory deadline, basis, approval, posting
-  proof, legal-blocker, and audit-hash workflow present
+- Notice checklist: first React statutory deadline, Official Notice Record,
+  basis, approval, posting proof, legal-blocker, and audit-hash workflow present
 - Public posted-meeting page: resident-oriented React list, detail, archive
   search, official-record sections, and restricted-record non-disclosure
   guidance present

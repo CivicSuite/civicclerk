@@ -720,6 +720,8 @@ describe("CivicClerk staff workspace", () => {
 
     expect(screen.getByRole("heading", { name: "Prove statutory public notice before the meeting proceeds." })).toBeInTheDocument();
     expect(screen.getByText(/The checklist is the city record that proves public notice/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Official notice record" })).toBeInTheDocument();
+    expect(screen.getByText(/Not legally noticed yet/)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Legal readiness proof chain" })).toBeInTheDocument();
     expect(screen.getAllByText("Packet finalized").length).toBeGreaterThan(0);
     expect(screen.getByText("Statutory deadline met")).toBeInTheDocument();
@@ -733,6 +735,8 @@ describe("CivicClerk staff workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Attach posting proof" }));
     expect(await screen.findByText(/Posting proof attached for notice-1/)).toBeInTheDocument();
     expect(screen.getByText(/immutable audit hash proof123456/)).toBeInTheDocument();
+    expect(screen.getByText(/Meeting may proceed to posted-public-meeting steps/)).toBeInTheDocument();
+    expect(screen.getByText("Proceed allowed")).toBeInTheDocument();
   });
 
   it("plainly blocks posting proof when the statutory notice deadline has passed", async () => {
@@ -745,6 +749,8 @@ describe("CivicClerk staff workspace", () => {
 
     expect(await screen.findByText(/statutory deadline was/)).toBeInTheDocument();
     expect(screen.getByRole("alert", { name: "Notice legal blocker" })).toHaveTextContent("Statutory notice is blocked");
+    expect(screen.getByText(/Meeting cannot proceed as lawfully noticed/)).toBeInTheDocument();
+    expect(screen.getByText("Proceed blocked")).toBeInTheDocument();
     expect(screen.getByText(/Deadline missed: required by/)).toBeInTheDocument();
     expect(screen.getByText(/You cannot attach posting proof until this is corrected/)).toBeInTheDocument();
     expect(screen.getAllByText(/Reschedule the meeting or document the lawful emergency basis/).length).toBeGreaterThanOrEqual(2);

@@ -1,0 +1,59 @@
+{
+  "surface": "React Notice Checklist official notice record",
+  "captured_at": "2026-05-01T19:10:00Z",
+  "url": "http://127.0.0.1:4177/?page=notice&source=demo",
+  "browser": {
+    "chrome_cdp": {
+      "url": "http://127.0.0.1:4177/?page=notice&source=demo",
+      "success": {
+        "officialRecord": true,
+        "proofIncomplete": true,
+        "incompleteCopy": true,
+        "proofChain": true,
+        "deadline": true,
+        "basis": true,
+        "approval": true,
+        "proof": true,
+        "auditHash": true
+      },
+      "mobile": {
+        "officialRecord": true,
+        "proofIncomplete": true,
+        "recordFields": true
+      },
+      "states": {
+        "loading": {
+          "visible": true,
+          "actionable": true
+        },
+        "empty": {
+          "visible": true,
+          "actionable": true
+        },
+        "error": {
+          "visible": true,
+          "actionable": true
+        },
+        "partial": {
+          "visible": true,
+          "actionable": true
+        }
+      },
+      "consoleErrors": []
+    },
+    "screenshots": {
+      "desktop_success": "docs/screenshots/react-notice-official-record-desktop.png",
+      "mobile_success": "docs/screenshots/react-notice-official-record-mobile.png",
+      "loading": "docs/screenshots/react-notice-official-record-state-loading.png",
+      "empty": "docs/screenshots/react-notice-official-record-state-empty.png",
+      "error": "docs/screenshots/react-notice-official-record-state-error.png",
+      "partial": "docs/screenshots/react-notice-official-record-state-partial.png"
+    },
+    "accessibility": {
+      "keyboard": "Controls remain semantic buttons/inputs with visible labels; passing and statutory-blocked mutation paths are covered by App.test.tsx.",
+      "focus": "Existing focus-visible styling remains active for buttons, links, inputs, and workspace navigation.",
+      "contrast": "Official notice record uses existing green/gold/red status tokens on tinted panels with readable text contrast.",
+      "copy_review": "Success, loading, empty, error, and partial copy all state what the clerk must do before treating the meeting as lawfully noticed. Passing and statutory-blocked mutation paths are covered by App.test.tsx."
+    }
+  }
+}

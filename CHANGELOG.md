@@ -67,6 +67,10 @@ All notable changes to CivicClerk are documented here.
   to the React staff dashboard, matching the documented installer shortcut
   instead of relying on the generic SPA fallback, while preserving backend
   proxy access to `/staff/auth-readiness` and `/staff/session`.
+- The React Notice Checklist now includes an Official Notice Record summary
+  that tells clerks whether a meeting may proceed, is blocked, or is still
+  missing proof, with deadline, statutory basis, human approval, posting proof,
+  and immutable audit-hash fields visible in one place.
 - The React staff workspace now includes a resident-oriented Public Posting
   portal: public meeting list/detail/search over the public archive APIs,
   separate official agenda/packet/approved-minutes sections, missing-record
