@@ -133,9 +133,12 @@ until the remaining Sprint 2-4 workflow surfaces are wired.
 The first React Sprint 2 surface is now also present. Staff can open Agenda
 Intake from the React navigation, submit a department agenda request with source
 material, review pending items as ready or needing revision, and see the audit
-hash cue that proves the reviewed record changed. This is the start of the
-production React intake workflow; packet handoff after a ready item is still the
-next Sprint 2 product step.
+hash cue that proves the reviewed record changed. Ready records now include a
+Promote to agenda action that creates a canonical agenda item, advances it to
+`CLERK_ACCEPTED`, stores the promoted agenda item id and promotion audit hash on
+the intake record, and tells staff that the next step is adding the item to the
+target meeting packet assembly. The remaining Sprint 2 product step is the full
+packet builder workspace for assigning and finalizing those promoted items.
 
 ## Part 2: IT and Technical Overview
 
@@ -425,7 +428,7 @@ Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
 records-ready packet export bundles using CivicCore v0.16.0 provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed agenda item lifecycle records with
-durable transition audit entries; database-backed meeting records with lifecycle
+durable transition audit entries and ready-intake promotion linkage; database-backed meeting records with lifecycle
 audit entries, meeting body ids, locations, and pre-lock schedule edit audit entries; database-backed packet assembly records with source references,
 citations, and packet snapshot linkage; database-backed notice checklist
 records with posting-proof metadata; live staff form actions for minutes

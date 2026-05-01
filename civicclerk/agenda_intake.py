@@ -35,6 +35,9 @@ agenda_intake_queue = sa.Table(
     sa.Column("readiness_status", sa.String(80), nullable=False),
     sa.Column("reviewer", sa.String(255), nullable=True),
     sa.Column("review_notes", sa.Text(), nullable=True),
+    sa.Column("promoted_agenda_item_id", sa.String(64), nullable=True),
+    sa.Column("promoted_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("promotion_audit_hash", sa.String(128), nullable=True),
     sa.Column("source_references", sa.JSON(), nullable=False),
     sa.Column("last_audit_hash", sa.String(128), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -57,6 +60,9 @@ class AgendaIntakeItem:
     source_references: list[dict]
     reviewer: str | None
     review_notes: str | None
+    promoted_agenda_item_id: str | None
+    promoted_at: datetime | None
+    promotion_audit_hash: str | None
     last_audit_hash: str
     created_at: datetime
     updated_at: datetime
@@ -73,6 +79,9 @@ class AgendaIntakeItem:
             "source_references": self.source_references,
             "reviewer": self.reviewer,
             "review_notes": self.review_notes,
+            "promoted_agenda_item_id": self.promoted_agenda_item_id,
+            "promoted_at": self.promoted_at.isoformat() if self.promoted_at else None,
+            "promotion_audit_hash": self.promotion_audit_hash,
             "last_audit_hash": self.last_audit_hash,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
@@ -120,6 +129,9 @@ class AgendaIntakeRepository:
             "readiness_status": AgendaReadinessStatus.PENDING.value,
             "reviewer": None,
             "review_notes": None,
+            "promoted_agenda_item_id": None,
+            "promoted_at": None,
+            "promotion_audit_hash": None,
             "source_references": source_references,
             "last_audit_hash": "",
             "created_at": now,
@@ -199,6 +211,46 @@ class AgendaIntakeRepository:
             )
         return self.get(item_id)
 
+    def promote_to_agenda_item(
+        self,
+        *,
+        item_id: str,
+        reviewer: str,
+        agenda_item_id: str,
+        notes: str,
+    ) -> AgendaIntakeItem | None:
+        """Record that a ready intake item became a canonical agenda item."""
+
+        existing = self.get(item_id)
+        if existing is None:
+            return None
+        now = datetime.now(UTC)
+        event = self.audit_chain.record_event(
+            actor=AuditActor(actor_id=reviewer, actor_type="clerk"),
+            action="agenda_intake.promoted_to_agenda_item",
+            subject=AuditSubject(subject_id=item_id, subject_type="agenda_intake_item"),
+            source_module="civicclerk",
+            metadata={
+                "agenda_item_id": agenda_item_id,
+                "notes": notes,
+                "source_count": len(existing.source_references),
+            },
+        )
+        with self.engine.begin() as connection:
+            connection.execute(
+                agenda_intake_queue.update()
+                .where(agenda_intake_queue.c.id == item_id)
+                .values(
+                    status="PROMOTED_TO_AGENDA",
+                    promoted_agenda_item_id=agenda_item_id,
+                    promoted_at=now,
+                    promotion_audit_hash=event.current_hash or "",
+                    last_audit_hash=event.current_hash or "",
+                    updated_at=now,
+                )
+            )
+        return self.get(item_id)
+
 
 def _row_to_item(row) -> AgendaIntakeItem:
     data = dict(row)
@@ -213,6 +265,9 @@ def _row_to_item(row) -> AgendaIntakeItem:
         source_references=list(data["source_references"]),
         reviewer=data["reviewer"],
         review_notes=data["review_notes"],
+        promoted_agenda_item_id=data.get("promoted_agenda_item_id"),
+        promoted_at=data.get("promoted_at"),
+        promotion_audit_hash=data.get("promotion_audit_hash"),
         last_audit_hash=data["last_audit_hash"],
         created_at=data["created_at"],
         updated_at=data["updated_at"],

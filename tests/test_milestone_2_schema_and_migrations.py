@@ -259,7 +259,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civicclerk_revision == "civicclerk_0007_meeting_schedule"
+        assert civicclerk_revision == "civicclerk_0008_intake_promotion"
         assert civicclerk_tables == set(CANONICAL_TABLES) | {
             "agenda_item_lifecycle_records",
             "agenda_intake_queue",

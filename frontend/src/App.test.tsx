@@ -129,6 +129,39 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/agenda-intake/intake-1/promote" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              message: "Agenda intake item promoted into the agenda lifecycle.",
+              next_step: "Add the agenda item to the target meeting packet assembly.",
+              intake_item: {
+                id: "intake-1",
+                title: "Approve zoning study",
+                department_name: "Planning",
+                submitted_by: "planning@example.gov",
+                summary: "Study authorization for downtown zoning.",
+                readiness_status: "READY",
+                status: "PROMOTED_TO_AGENDA",
+                source_references: [{ source_id: "zoning-memo", title: "Planning memo", kind: "document" }],
+                reviewer: "clerk@example.gov",
+                review_notes: "Complete for packet assembly.",
+                promoted_agenda_item_id: "agenda-77",
+                promoted_at: "2026-05-01T12:15:00Z",
+                promotion_audit_hash: "fedcba1234567890fedcba1234567890fedcba1234567890fedcba1234567890",
+                last_audit_hash: "fedcba1234567890fedcba1234567890fedcba1234567890fedcba1234567890",
+                created_at: "2026-05-01T11:00:00Z",
+                updated_at: "2026-05-01T12:15:00Z",
+              },
+              agenda_item: {
+                id: "agenda-77",
+                title: "Approve zoning study",
+                department_name: "Planning",
+                status: "CLERK_ACCEPTED",
+              },
+            }),
+          });
+        }
         if (url === "/api/agenda-intake") {
           return Promise.resolve({
             ok: true,
@@ -145,6 +178,9 @@ describe("CivicClerk staff workspace", () => {
                   source_references: [{ source_id: "zoning-memo", title: "Planning memo", kind: "document" }],
                   reviewer: null,
                   review_notes: null,
+                  promoted_agenda_item_id: null,
+                  promoted_at: null,
+                  promotion_audit_hash: null,
                   last_audit_hash: "abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
                   created_at: "2026-05-01T11:00:00Z",
                   updated_at: "2026-05-01T11:00:00Z",
@@ -261,6 +297,21 @@ describe("CivicClerk staff workspace", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: "Mark ready" })[1]);
     expect(await screen.findByText("Marked ready for clerk packet work. The audit hash changed for this review.")).toBeInTheDocument();
+  });
+
+  it("promotes a ready agenda intake item into agenda lifecycle work", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Agenda intake/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Mark ready" }));
+    expect(await screen.findByText("Marked ready for clerk packet work. The audit hash changed for this review.")).toBeInTheDocument();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Promote to agenda" }));
+
+    expect(await screen.findByText(/Agenda item agenda-77 is now CLERK_ACCEPTED/)).toBeInTheDocument();
+    expect(screen.getByText(/Next step: Add the agenda item to the target meeting packet assembly/)).toBeInTheDocument();
+    expect(screen.getByText(/Agenda lifecycle: agenda-77 promoted/)).toBeInTheDocument();
   });
 
   it("opens the meeting calendar and a meeting detail workspace", async () => {

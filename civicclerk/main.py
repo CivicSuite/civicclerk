@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
 
 from civicclerk import __version__
-from civicclerk.agenda_intake import AgendaIntakeRepository
+from civicclerk.agenda_intake import AgendaIntakeRepository, AgendaReadinessStatus
 from civicclerk.agenda_lifecycle import AgendaItemRepository, AgendaItemStore
 from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_body import MeetingBodyRepository
@@ -147,6 +147,11 @@ class AgendaIntakeReviewRequest(BaseModel):
     reviewer: str = Field(min_length=1)
     ready: bool
     notes: str = Field(min_length=1)
+
+
+class AgendaIntakePromoteRequest(BaseModel):
+    reviewer: str = Field(min_length=1)
+    notes: str = Field(default="Promoted to agenda lifecycle.", min_length=1)
 
 
 class MeetingCreate(BaseModel):
@@ -605,6 +610,83 @@ async def review_agenda_intake_item(
             },
         )
     return item.public_dict()
+
+
+@app.post("/agenda-intake/{item_id}/promote", status_code=201)
+async def promote_agenda_intake_item(
+    item_id: str,
+    payload: AgendaIntakePromoteRequest,
+    response: Response,
+) -> dict:
+    """Promote a clerk-ready intake item into the canonical agenda lifecycle."""
+
+    intake_repo = _get_agenda_intake_repository()
+    intake_item = intake_repo.get(item_id)
+    if intake_item is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Agenda intake item not found.",
+                "fix": "Submit the agenda item into intake, then complete clerk review before promotion.",
+            },
+        )
+    if intake_item.readiness_status != AgendaReadinessStatus.READY.value:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Agenda intake item is not ready for agenda promotion.",
+                "current_readiness_status": intake_item.readiness_status,
+                "fix": "Mark the item ready in the clerk review queue, then promote it to agenda work.",
+            },
+        )
+    if intake_item.promoted_agenda_item_id:
+        agenda_item = _get_agenda_items().get(intake_item.promoted_agenda_item_id)
+        response.status_code = 200
+        return {
+            "intake_item": intake_item.public_dict(),
+            "agenda_item": agenda_item.public_dict() if agenda_item else None,
+            "next_step": "Open agenda lifecycle work or add the agenda item to a packet assembly.",
+            "message": "Agenda intake item was already promoted.",
+        }
+
+    agenda_item = _get_agenda_items().create(
+        title=intake_item.title,
+        department_name=intake_item.department_name,
+    )
+    for status in ("SUBMITTED", "DEPT_APPROVED", "LEGAL_REVIEWED", "CLERK_ACCEPTED"):
+        result = _get_agenda_items().transition(
+            item_id=agenda_item.id,
+            to_status=status,
+            actor=payload.reviewer,
+        )
+        if result is None or not result.allowed:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message": "Agenda item promotion could not complete its lifecycle transitions.",
+                    "fix": "Retry promotion after confirming the agenda lifecycle service is available.",
+                },
+            )
+    promoted = intake_repo.promote_to_agenda_item(
+        item_id=item_id,
+        reviewer=payload.reviewer,
+        agenda_item_id=agenda_item.id,
+        notes=payload.notes,
+    )
+    if promoted is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Agenda intake item disappeared during promotion.",
+                "fix": "Reload the intake queue and retry promotion from the current record.",
+            },
+        )
+    return {
+        "intake_item": promoted.public_dict(),
+        "agenda_item": (_get_agenda_items().get(agenda_item.id) or agenda_item).public_dict(),
+        "next_step": "Add the agenda item to the target meeting packet assembly.",
+        "message": "Agenda intake item promoted into the agenda lifecycle.",
+    }
 
 
 @app.post("/meeting-bodies", status_code=201)
