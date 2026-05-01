@@ -10,6 +10,9 @@ All notable changes to CivicClerk are documented here.
   staff drill into the live API workflow forms.
 - The `/staff` product cockpit now reads the live agenda intake queue and
   reports ready, pending, and needs-revision counts when intake records exist.
+- The `/staff` Agenda Intake panel now renders live intake queue rows instead
+  of sample data, including escaped user-submitted titles and actionable empty
+  or unavailable-store rows.
 - `scripts/check_connector_sync_readiness.py` now verifies the supported
   Granicus, Legistar, PrimeGov, and NovusAGENDA local payload contracts without
   outbound network calls before future scheduled live-sync work.

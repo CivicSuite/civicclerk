@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from html import escape
 
 from civicclerk import __version__
 
@@ -169,8 +170,14 @@ def build_staff_cockpit_items(
 def render_staff_dashboard(
     *,
     cockpit_items: Sequence[tuple[str, str, str]] | None = None,
+    agenda_intake_items: Sequence[object] = (),
+    agenda_intake_available: bool = True,
 ) -> str:
     """Render the current staff workflow screens as dependency-free HTML."""
+    screen_cards_data = _screen_cards_with_live_intake(
+        agenda_intake_items=agenda_intake_items,
+        agenda_intake_available=agenda_intake_available,
+    )
     nav_buttons = "\n".join(
         f"""
         <button class="screen-tab" data-target="{card["id"]}" aria-controls="screen-{card["id"]}">
@@ -178,9 +185,9 @@ def render_staff_dashboard(
           {card["title"]}
         </button>
         """
-        for card in SCREEN_CARDS
+        for card in screen_cards_data
     )
-    screen_cards = "\n".join(_render_screen_card(card, index == 0) for index, card in enumerate(SCREEN_CARDS))
+    screen_cards = "\n".join(_render_screen_card(card, index == 0) for index, card in enumerate(screen_cards_data))
     state_cards = "\n".join(
         f"""
         <article class="state-card" data-state="{state}">
@@ -907,14 +914,79 @@ def _readiness_status(item: object) -> str | None:
     return str(value) if value is not None else None
 
 
+def _screen_cards_with_live_intake(
+    *,
+    agenda_intake_items: Sequence[object],
+    agenda_intake_available: bool,
+) -> list[dict]:
+    screen_cards = [dict(card) for card in SCREEN_CARDS]
+    screen_cards[0]["rows"] = _agenda_intake_rows(
+        agenda_intake_items=agenda_intake_items,
+        agenda_intake_available=agenda_intake_available,
+    )
+    return screen_cards
+
+
+def _agenda_intake_rows(
+    *,
+    agenda_intake_items: Sequence[object],
+    agenda_intake_available: bool,
+) -> list[tuple[str, str, str, str]]:
+    if not agenda_intake_available:
+        return [
+            (
+                "IT",
+                "Agenda intake queue unavailable",
+                "ERROR",
+                "Check CIVICCLERK_AGENDA_INTAKE_DB_URL and database reachability, then reload the staff desk.",
+            )
+        ]
+    if not agenda_intake_items:
+        return [
+            (
+                "Clerk",
+                "No intake items yet",
+                "EMPTY",
+                "Submit a department item with title, department, summary, and source references.",
+            )
+        ]
+    return [
+        (
+            _field(item, "department_name", "Unknown department"),
+            _field(item, "title", "Untitled agenda item"),
+            _readiness_status(item) or "UNKNOWN",
+            _next_intake_step(_readiness_status(item)),
+        )
+        for item in agenda_intake_items
+    ]
+
+
+def _field(item: object, name: str, fallback: str) -> str:
+    if isinstance(item, Mapping):
+        value = item.get(name)
+    else:
+        value = getattr(item, name, None)
+    return str(value) if value else fallback
+
+
+def _next_intake_step(readiness_status: str | None) -> str:
+    if readiness_status == "READY":
+        return "Move toward packet assembly."
+    if readiness_status == "NEEDS_REVISION":
+        return "Request missing information before packet assembly."
+    if readiness_status == "PENDING":
+        return "Record clerk readiness review."
+    return "Open the intake item and confirm readiness status."
+
+
 def _render_screen_card(card: dict, active: bool) -> str:
     rows = "\n".join(
         f"""
         <tr>
-          <td>{owner}</td>
-          <td>{item}</td>
-          <td><span class="badge" data-tone="{status.lower().replace(" ", "-")}">{status}</span></td>
-          <td>{next_step}</td>
+          <td>{escape(str(owner))}</td>
+          <td>{escape(str(item))}</td>
+          <td><span class="badge" data-tone="{escape(str(status).lower().replace(" ", "-"))}">{escape(str(status))}</span></td>
+          <td>{escape(str(next_step))}</td>
         </tr>
         """
         for owner, item, status, next_step in card["rows"]

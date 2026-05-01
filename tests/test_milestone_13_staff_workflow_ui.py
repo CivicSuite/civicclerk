@@ -57,6 +57,8 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES" in html
     assert "/agenda-intake" in html
     assert "Department submission queue" in html
+    assert "No intake items yet" in html
+    assert "Submit a department item with title, department, summary, and source references." in html
     assert "/meetings/{id}/packet-assemblies" in html
     assert "Packet Assembly" in html
     assert "/meetings/{id}/notice-checklists" in html
@@ -169,7 +171,7 @@ async def test_staff_product_cockpit_uses_live_agenda_intake_counts(monkeypatch,
         ready_item = await client.post(
             "/agenda-intake",
             json={
-                "title": "Approve paving contract",
+                "title": "Approve <script>paving</script> contract",
                 "department_name": "Public Works",
                 "submitted_by": "pw@example.gov",
                 "summary": "Contract award for arterial paving.",
@@ -199,6 +201,9 @@ async def test_staff_product_cockpit_uses_live_agenda_intake_counts(monkeypatch,
     assert response.status_code == 200
     assert "Live agenda intake queue reports 1 ready, 0 pending, and 1 needing revision." in response.text
     assert "Items ready for clerk review" in response.text
+    assert "Approve &lt;script&gt;paving&lt;/script&gt; contract" in response.text
+    assert "Approve <script>paving</script> contract" not in response.text
+    assert "Request missing information before packet assembly." in response.text
 
 
 async def test_staff_product_cockpit_handles_unavailable_intake_store(monkeypatch) -> None:
@@ -210,6 +215,7 @@ async def test_staff_product_cockpit_handles_unavailable_intake_store(monkeypatc
     assert "Agenda intake queue is unavailable" in response.text
     assert "check CIVICCLERK_AGENDA_INTAKE_DB_URL" in response.text
     assert "reload the staff desk" in response.text
+    assert "Check CIVICCLERK_AGENDA_INTAKE_DB_URL and database reachability" in response.text
 
 
 async def test_favicon_is_public_and_empty() -> None:
