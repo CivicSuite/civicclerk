@@ -167,6 +167,9 @@ Shipped in this foundation:
 - Docker Compose deployment stack with PostgreSQL 17 + pgvector, Redis 7.2,
   Ollama, FastAPI, Celery worker, Celery Beat, and nginx-served React frontend
   wired to the `/api` proxy path
+- Docker Compose staff-auth env propagation for OIDC browser-login,
+  bearer-token, and trusted-header pilot profiles, so `.env` values reach the
+  API, worker, and beat containers consistently
 - unsigned Windows installer source package with Inno Setup build script,
   Docker Desktop prerequisite check, Install or Repair shortcut, daily Start
   shortcut, `.env` creation from `docs/examples/docker.env.example`, generated

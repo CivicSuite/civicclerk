@@ -28,6 +28,10 @@ All notable changes to CivicClerk are documented here.
   roles, and OIDC browser-session method, and gives clerks/IT direct
   `/staff/login`, `/staff/logout`, and `/staff/auth-readiness` paths with
   actionable sign-in failure copy.
+- Docker Compose now forwards the OIDC browser-login, bearer-token, and
+  trusted-header staff auth environment variables from `.env` into the API,
+  worker, and beat services so protected pilot profiles behave like the
+  documented `/staff/auth-readiness` contract.
 - `frontend/` now contains the first CivicClerk React/Vite staff workspace
   slice, adapted from the CivicSuite mockup into production TypeScript rather
   than copied as a browser-global prototype.

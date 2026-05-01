@@ -208,6 +208,10 @@ Open `http://127.0.0.1:8080` for the nginx-served React app. The API is exposed
 at `http://127.0.0.1:8776`, and nginx proxies React `/api/*` requests to the
 FastAPI service. The Windows installer package now wraps this same Compose
 profile; Docker Desktop is still required.
+If IT changes `.env` from local open mode to OIDC, bearer, or trusted-header
+staff auth, Compose forwards the corresponding staff-auth variables into the
+API, worker, and beat containers so `/staff/session`, `/staff/login`, and
+`/staff/auth-readiness` report the same protected profile the operator set.
 
 By default, Compose sets `CIVICCLERK_DEMO_SEED=1`. On API startup, CivicClerk
 creates a Brookfield rehearsal dataset with meeting bodies, meetings in multiple
