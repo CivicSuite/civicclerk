@@ -67,6 +67,7 @@ STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR = "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES"
 STAFF_OPEN_MODE = "open"
 STAFF_BEARER_MODE = "bearer"
 STAFF_TRUSTED_HEADER_MODE = "trusted_header"
+DEMO_SEED_ENV_VAR = "CIVICCLERK_DEMO_SEED"
 DEFAULT_STAFF_SSO_PROVIDER = "trusted reverse proxy"
 DEFAULT_STAFF_SSO_PRINCIPAL_HEADER = "X-Forwarded-Email"
 DEFAULT_STAFF_SSO_ROLES_HEADER = "X-Forwarded-Roles"
@@ -97,6 +98,29 @@ _meeting_body_repository: MeetingBodyRepository | None = None
 _meeting_body_db_url: str | None = None
 _meeting_store: MeetingStore | None = None
 _meeting_db_url: str | None = None
+
+
+async def seed_demo_data_when_requested() -> None:
+    """Seed local demo data inside the API process when Compose asks for it."""
+
+    if not _env_flag_enabled(DEMO_SEED_ENV_VAR):
+        return
+    from civicclerk.demo_seed import seed_demo_data
+
+    seed_demo_data(
+        meeting_bodies=_get_meeting_body_repository(),
+        meetings=_get_meeting_store(),
+        agenda_intake=_get_agenda_intake_repository(),
+        agenda_items=_get_agenda_items(),
+        packet_assemblies=_get_packet_assembly_repository(),
+        notice_checklists=_get_notice_checklist_repository(),
+        motion_votes=motion_votes,
+        minutes_drafts=minutes_drafts,
+        public_archive=public_archive,
+    )
+
+
+app.router.on_startup.append(seed_demo_data_when_requested)
 
 
 @app.middleware("http")
@@ -1470,6 +1494,10 @@ def _get_staff_auth_mode() -> str:
             ),
         },
     )
+
+
+def _env_flag_enabled(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _get_staff_trusted_header_config():

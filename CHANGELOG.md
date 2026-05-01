@@ -70,6 +70,10 @@ All notable changes to CivicClerk are documented here.
 - The first Docker Compose stack now provides PostgreSQL 17 + pgvector, Redis
   7.2, Ollama, FastAPI, Celery worker, Celery Beat, and nginx-served React
   services for local product rehearsal without claiming installer completion.
+- Docker Compose now enables `CIVICCLERK_DEMO_SEED=1` by default, seeding a
+  Brookfield rehearsal dataset with meeting bodies, lifecycle-diverse meetings,
+  promoted agenda intake, finalized packet assembly, posted notice proof,
+  captured outcomes, citation-gated minutes, and a public archive record.
 - Already-promoted agenda intake rows now lock review actions and point staff
   forward to Packet Builder instead of allowing duplicate readiness work.
 - Frontend unit tests now cover shell rendering, meeting calendar navigation,
