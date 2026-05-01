@@ -1,7 +1,8 @@
 # CivicClerk React Staff Shell
 
-Status: Sprint 2 implementation slice with live agenda intake promotion and
-packet builder draft/finalize workflow.
+Status: Sprint 3 implementation slice with live agenda intake promotion,
+packet builder draft/finalize workflow, and legally explicit notice checklist
+work.
 
 The `frontend/` package is the start of the production React app that will
 replace the HTML reference shell at `/staff`. It is adapted from the CivicSuite
@@ -41,6 +42,15 @@ mockup's browser-global JSX bundle.
   finalize a draft through `POST /api/packet-assemblies/{id}/finalize`.
 - Packet queues are loaded per selected meeting so staff do not accidentally
   finalize a packet from the wrong meeting context.
+- First Notice Checklist workflow: staff can choose a meeting, see the computed
+  statutory notice deadline, record notice type/minimum hours/posting time,
+  enter the statutory basis and human approver, run the live
+  `POST /api/meetings/{id}/notice-checklists` compliance check, and attach
+  posting proof through `POST /api/notice-checklists/{id}/posting-proof` only
+  after the checklist passes.
+- Notice Checklist legal-blocker states plainly explain when the statutory
+  deadline has passed, why posting proof is disabled, and that the clerk must
+  reschedule or document a lawful emergency/special basis before proceeding.
 - Explicit QA state controls for success, loading, empty, error, and partial
   states.
 - Actionable state copy that tells staff or IT what to do next.
@@ -48,7 +58,7 @@ mockup's browser-global JSX bundle.
 ## What This Slice Does Not Yet Include
 
 - Replacement of the shipped `/staff` HTML reference shell.
-- Notice checklist and public posted-meeting React workspaces.
+- Public posted-meeting React workspace.
 - Motion/vote capture and minutes draft React workspaces.
 - Docker/nginx packaging.
 - Installer integration.
@@ -80,7 +90,7 @@ Before any commit that touches this frontend, capture browser evidence for:
 
 For direct QA capture, the app accepts these query parameters:
 
-- `?page=dashboard|meetings|meeting-detail|agenda|packet`
+- `?page=dashboard|meetings|meeting-detail|agenda|packet|notice`
 - `?state=success|loading|empty|error|partial`
 - `?audit=1`
 - `?source=demo` to bypass the live API and render fixed demo data
