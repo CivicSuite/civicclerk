@@ -10,6 +10,9 @@ All notable changes to CivicClerk are documented here.
   `pg_dump`, restore into a temporary database with `pg_restore`, verify
   restored application tables, write `civicclerk-docker-backup-manifest.json`, and
   avoid overwriting the source database.
+- Frontend tests now add focused coverage for the legally sensitive Notice
+  Checklist proof obligations, append-only/source-linked Meeting Outcomes
+  evidence, and citation-blocked Minutes Draft creation path.
 - `frontend/` now contains the first CivicClerk React/Vite staff workspace
   slice, adapted from the CivicSuite mockup into production TypeScript rather
   than copied as a browser-global prototype.

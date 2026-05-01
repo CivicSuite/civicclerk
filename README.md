@@ -208,8 +208,6 @@ Not shipped yet:
 - signed/enterprise installer release artifact
 - production OIDC login to replace the local open-mode, bearer-token, or
   trusted-header bridge deployment profiles
-- Docker/PostgreSQL-native backup and restore rehearsal for the Compose product
-  path
 - scheduled live connector sync and deployment hardening beyond local exported
   JSON import ledgers
 
