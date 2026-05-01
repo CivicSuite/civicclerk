@@ -153,6 +153,64 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/meetings/meeting-1/notice-checklists" && init?.method === "POST") {
+          const body = JSON.parse(String(init.body ?? "{}")) as { minimum_notice_hours?: number };
+          const blocked = Number(body.minimum_notice_hours) > 100;
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: blocked ? "notice-blocked" : "notice-1",
+              meeting_id: "meeting-1",
+              notice_type: blocked ? "special" : "regular",
+              status: "CHECKED",
+              compliant: !blocked,
+              http_status: blocked ? 422 : 200,
+              warnings: blocked ? [{ code: "notice_deadline_missed", fix: "Reschedule the meeting or document the lawful emergency basis before proceeding." }] : [],
+              deadline_at: "2026-05-02T18:00:00Z",
+              posted_at: blocked ? "2026-05-05T18:00:00Z" : "2026-05-01T18:00:00Z",
+              minimum_notice_hours: body.minimum_notice_hours ?? 72,
+              statutory_basis: "Local open meeting law requires posted notice.",
+              approved_by: "clerk@example.gov",
+              posting_proof: null,
+              last_audit_hash: blocked
+                ? "bad123bad123bad123bad123bad123bad123bad123bad123bad123bad123abcd"
+                : "notice1234567890notice1234567890notice1234567890notice123456abcd",
+              created_at: "2026-05-01T12:30:00Z",
+              updated_at: "2026-05-01T12:30:00Z",
+            }),
+          });
+        }
+        if (url === "/api/meetings/meeting-1/notice-checklists") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              notice_checklists: [],
+            }),
+          });
+        }
+        if (url === "/api/notice-checklists/notice-1/posting-proof" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "notice-1",
+              meeting_id: "meeting-1",
+              notice_type: "regular",
+              status: "POSTED",
+              compliant: true,
+              http_status: 200,
+              warnings: [],
+              deadline_at: "2026-05-02T18:00:00Z",
+              posted_at: "2026-05-01T18:00:00Z",
+              minimum_notice_hours: 72,
+              statutory_basis: "Local open meeting law requires posted notice.",
+              approved_by: "clerk@example.gov",
+              posting_proof: { posted_url: "https://city.example.gov/agendas/meeting-notice", location: "City Hall notice board" },
+              last_audit_hash: "proof1234567890proof1234567890proof1234567890proof123456abcd",
+              created_at: "2026-05-01T12:30:00Z",
+              updated_at: "2026-05-01T12:35:00Z",
+            }),
+          });
+        }
         if (url === "/api/agenda-intake" && init?.method === "POST") {
           return Promise.resolve({
             ok: true,
@@ -412,6 +470,38 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByText("Ready for notice checklist")).toBeInTheDocument();
   });
 
+  it("runs notice compliance and attaches posting proof only after a passing check", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Notice checklist/ }));
+
+    expect(screen.getByRole("heading", { name: "Prove statutory public notice before the meeting proceeds." })).toBeInTheDocument();
+    expect(screen.getByText(/The checklist is the city record that proves public notice/)).toBeInTheDocument();
+    expect(screen.getByText(/Computed deadline/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Run notice checklist" }));
+    expect(await screen.findByText(/Notice checklist notice-1 passed/)).toBeInTheDocument();
+    expect(screen.getByText(/Attach posting proof before treating notice as posted/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Attach posting proof" }));
+    expect(await screen.findByText(/Posting proof attached for notice-1/)).toBeInTheDocument();
+    expect(screen.getByText(/immutable audit hash proof123456/)).toBeInTheDocument();
+  });
+
+  it("plainly blocks posting proof when the statutory notice deadline has passed", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Notice checklist/ }));
+    fireEvent.change(screen.getByLabelText("Minimum notice hours"), { target: { value: "200" } });
+    fireEvent.click(screen.getByRole("button", { name: "Run notice checklist" }));
+
+    expect(await screen.findByText(/statutory deadline was/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Reschedule the meeting or document the lawful emergency basis/)).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Attach posting proof" })).toBeDisabled();
+  });
+
   it("opens the meeting calendar and a meeting detail workspace", async () => {
     render(<App />);
 
@@ -503,6 +593,12 @@ describe("CivicClerk staff workspace", () => {
         }
         if (url === "/api/meetings/meeting-1/packet-assemblies") {
           return Promise.resolve({ ok: false, status: 503 });
+        }
+        if (url === "/api/meetings/meeting-1/notice-checklists") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ notice_checklists: [] }),
+          });
         }
         return Promise.resolve({ ok: true, json: async () => ({}) });
       }),

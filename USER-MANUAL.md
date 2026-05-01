@@ -140,8 +140,14 @@ the intake record, and tells staff that the next step is adding the item to the
 target meeting packet assembly. Staff can now open Packet Builder from the
 React navigation, choose a meeting, select promoted agenda items, create a
 packet assembly draft, see the packet queue for that meeting, and finalize the
-draft with a visible audit-hash cue. The next React product work moves into
-Sprint 3 notice checklist and public posted-meeting surfaces.
+draft with a visible audit-hash cue. Staff can also open Notice Checklist from
+the React navigation, select the meeting, see the computed statutory notice
+deadline, record the posting time, notice type, statutory basis, human approver,
+and actor, run the live compliance check, and attach posting proof only after
+the checklist passes. If the statutory deadline has passed, the workspace says
+that plainly, disables proof attachment, and tells the clerk to reschedule or
+document the lawful emergency/special basis before proceeding. The next React
+product work continues Sprint 3 with the public posted-meeting surface.
 
 ## Part 2: IT and Technical Overview
 
@@ -440,9 +446,10 @@ live staff form actions for local connector import normalization and packet
 export bundle creation. Public
 packet exports reject closed-session and restricted source files. Full UI
 screens beyond the HTML staff workflow remain planned work, but the first React
-Sprint 1 surface now covers meeting body setup, scheduling, calendar viewing,
-detail viewing, and pre-lock schedule editing. Browser QA gates now verify the required
-state fixtures and accessibility evidence before browser-visible changes merge.
+surfaces now cover meeting body setup, scheduling, calendar viewing, detail
+viewing, pre-lock schedule editing, agenda intake, packet building, and notice
+checklist/posting-proof work. Browser QA gates now verify the required state
+fixtures and accessibility evidence before browser-visible changes merge.
 
 - `meeting_bodies`
 - `meetings`

@@ -495,6 +495,42 @@ h2 {
   width: auto;
 }
 
+.notice-legal-callout,
+.compliance-preview {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(129, 72, 48, 0.24);
+  border-radius: 18px;
+  background: #fff7ed;
+  color: #55301f;
+}
+
+.notice-legal-callout strong,
+.compliance-preview strong {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.compliance-preview small {
+  color: var(--ink-soft);
+}
+
+.blocked-row {
+  border-color: rgba(164, 54, 39, 0.4);
+  background: #fff5f3;
+}
+
+.legal-warning {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #ffe3de;
+  color: #7f2417;
+  font-weight: 800;
+}
+
 .body-form label,
 .schedule-form label,
 .intake-form label,

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet";
+type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice";
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -161,6 +161,58 @@ type PacketAssemblyPayload = {
   citations: Array<Record<string, string>>;
 };
 
+type NoticeChecklistRecord = {
+  id: string;
+  meetingId: string;
+  noticeType: string;
+  status: "CHECKED" | "POSTED";
+  compliant: boolean;
+  httpStatus: number;
+  warnings: Array<Record<string, string>>;
+  deadlineAt: string;
+  postedAt: string;
+  minimumNoticeHours: number;
+  statutoryBasis?: string | null;
+  approvedBy?: string | null;
+  postingProof?: Record<string, string> | null;
+  lastAuditHash: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ApiNoticeChecklistRecord = {
+  id: string;
+  meeting_id: string;
+  notice_type: string;
+  status: "CHECKED" | "POSTED";
+  compliant: boolean;
+  http_status: number;
+  warnings: Array<Record<string, string>>;
+  deadline_at: string;
+  posted_at: string;
+  minimum_notice_hours: number;
+  statutory_basis?: string | null;
+  approved_by?: string | null;
+  posting_proof?: Record<string, string> | null;
+  last_audit_hash: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type NoticeChecklistPayload = {
+  notice_type: string;
+  posted_at: string;
+  minimum_notice_hours: number;
+  statutory_basis: string;
+  approved_by: string;
+  actor: string;
+};
+
+type NoticePostingProofPayload = {
+  actor: string;
+  posting_proof: Record<string, string>;
+};
+
 const lifecycle: LifecycleStage[] = [
   "Scheduled",
   "Notice posted",
@@ -281,6 +333,45 @@ const demoPacketAssemblies: PacketAssemblyRecord[] = [
   },
 ];
 
+const demoNoticeChecklists: NoticeChecklistRecord[] = [
+  {
+    id: "notice-demo-1",
+    meetingId: "M-2026-053",
+    noticeType: "regular",
+    status: "CHECKED",
+    compliant: true,
+    httpStatus: 200,
+    warnings: [],
+    deadlineAt: "2026-05-02T18:00:00Z",
+    postedAt: "2026-05-01T18:00:00Z",
+    minimumNoticeHours: 72,
+    statutoryBasis: "Local open meeting law requires 72 hours posted notice.",
+    approvedBy: "clerk@example.gov",
+    postingProof: null,
+    lastAuditHash: "c123456789abcdef0123456789abcdef0123456789abcdef0123456789abcde",
+    createdAt: "2026-05-01T12:30:00Z",
+    updatedAt: "2026-05-01T12:30:00Z",
+  },
+  {
+    id: "notice-demo-2",
+    meetingId: "M-2026-049",
+    noticeType: "special",
+    status: "CHECKED",
+    compliant: false,
+    httpStatus: 422,
+    warnings: [{ code: "notice_deadline_missed", fix: "Reschedule the meeting or document the lawful emergency basis before proceeding." }],
+    deadlineAt: "2026-05-06T16:30:00Z",
+    postedAt: "2026-05-07T09:00:00Z",
+    minimumNoticeHours: 24,
+    statutoryBasis: "",
+    approvedBy: "",
+    postingProof: null,
+    lastAuditHash: "d123456789abcdef0123456789abcdef0123456789abcdef0123456789abcde",
+    createdAt: "2026-05-07T09:05:00Z",
+    updatedAt: "2026-05-07T09:05:00Z",
+  },
+];
+
 function Icon({ label }: { label: string }) {
   return <span className="icon" aria-hidden="true">{label.slice(0, 1)}</span>;
 }
@@ -294,12 +385,16 @@ export function App() {
   const [agendaItems, setAgendaItems] = useState<AgendaIntakeItem[]>([]);
   const [packetAssemblies, setPacketAssemblies] = useState<PacketAssemblyRecord[]>([]);
   const [loadedPacketMeetingIds, setLoadedPacketMeetingIds] = useState<string[]>([]);
+  const [noticeChecklists, setNoticeChecklists] = useState<NoticeChecklistRecord[]>([]);
+  const [loadedNoticeMeetingIds, setLoadedNoticeMeetingIds] = useState<string[]>([]);
   const [apiState, setApiState] = useState<ViewState>("loading");
   const [apiError, setApiError] = useState<string | null>(null);
   const [bodyState, setBodyState] = useState<ViewState>("loading");
   const [bodyError, setBodyError] = useState<string | null>(null);
   const [packetState, setPacketState] = useState<ViewState>("loading");
   const [packetError, setPacketError] = useState<string | null>(null);
+  const [noticeState, setNoticeState] = useState<ViewState>("loading");
+  const [noticeError, setNoticeError] = useState<string | null>(null);
   const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
   const [auditOpen, setAuditOpen] = useState(initial.audit);
   const viewState = qaState ?? apiState;
@@ -307,6 +402,7 @@ export function App() {
   const visibleBodies = qaState === null ? meetingBodies : demoBodies;
   const visibleAgendaItems = qaState === null ? agendaItems : demoAgendaItems;
   const visiblePacketAssemblies = qaState === null ? packetAssemblies : demoPacketAssemblies;
+  const visibleNoticeChecklists = qaState === null ? noticeChecklists : demoNoticeChecklists;
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
 
   async function loadWorkspaceData(cancelled: () => boolean) {
@@ -339,10 +435,27 @@ export function App() {
         setPacketError(error instanceof Error ? error.message : "Packet assembly API failed.");
         setPacketState("error");
       }
+      try {
+        const apiNotices = await fetchNoticeChecklists(mappedMeetings[0].id);
+        if (cancelled()) return;
+        setNoticeChecklists(sortNoticeChecklistRecords(apiNotices.map(mapApiNoticeChecklistRecord)));
+        setLoadedNoticeMeetingIds([mappedMeetings[0].id]);
+        setNoticeError(null);
+        setNoticeState("success");
+      } catch (error) {
+        if (cancelled()) return;
+        setNoticeChecklists([]);
+        setLoadedNoticeMeetingIds([]);
+        setNoticeError(error instanceof Error ? error.message : "Notice checklist API failed.");
+        setNoticeState("error");
+      }
     } else {
       setPacketAssemblies([]);
       setLoadedPacketMeetingIds([]);
       setPacketState("empty");
+      setNoticeChecklists([]);
+      setLoadedNoticeMeetingIds([]);
+      setNoticeState("empty");
     }
     setBodyState(mappedBodies.length === 0 ? "empty" : "success");
     setApiState(mappedMeetings.length === 0 && mappedAgendaItems.length === 0 ? "empty" : "success");
@@ -358,9 +471,12 @@ export function App() {
       setAgendaItems(demoAgendaItems);
       setPacketAssemblies(demoPacketAssemblies);
       setLoadedPacketMeetingIds(demoMeetings.map((meeting) => meeting.id));
+        setNoticeChecklists(sortNoticeChecklistRecords(demoNoticeChecklists));
+      setLoadedNoticeMeetingIds(demoMeetings.map((meeting) => meeting.id));
       setApiState("success");
       setBodyState("success");
       setPacketState("success");
+      setNoticeState("success");
       setActiveMeetingId(demoMeetings[0].id);
       return;
     }
@@ -371,9 +487,11 @@ export function App() {
         setBodyError(error.message);
         setApiError(error.message);
         setPacketError(error.message);
+        setNoticeError(error.message);
         setApiState("error");
         setBodyState("error");
         setPacketState("error");
+        setNoticeState("error");
       });
     return () => {
       cancelled = true;
@@ -411,6 +529,37 @@ export function App() {
     };
   }, [activeMeetingId, initial.source, loadedPacketMeetingIds, meetings, qaState]);
 
+  useEffect(() => {
+    if (initial.source === "demo" || qaState !== null || meetings.length === 0 || !activeMeetingId) {
+      return;
+    }
+    if (!meetings.some((meeting) => meeting.id === activeMeetingId) || loadedNoticeMeetingIds.includes(activeMeetingId)) {
+      return;
+    }
+    let cancelled = false;
+    setNoticeState("loading");
+    setNoticeError(null);
+    fetchNoticeChecklists(activeMeetingId)
+      .then((apiNotices) => {
+        if (cancelled) return;
+        const mappedNotices = sortNoticeChecklistRecords(apiNotices.map(mapApiNoticeChecklistRecord));
+        setNoticeChecklists((current) => sortNoticeChecklistRecords([
+          ...mappedNotices,
+          ...current.filter((record) => record.meetingId !== activeMeetingId),
+        ]));
+        setLoadedNoticeMeetingIds((current) => current.includes(activeMeetingId) ? current : [...current, activeMeetingId]);
+        setNoticeState("success");
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setNoticeError(error.message);
+        setNoticeState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMeetingId, initial.source, loadedNoticeMeetingIds, meetings, qaState]);
+
   return (
     <div className="app-shell">
       <aside className="rail" aria-label="CivicClerk navigation">
@@ -433,6 +582,9 @@ export function App() {
           </button>
           <button className={page === "packet" ? "active" : ""} onClick={() => setPage("packet")}>
             <Icon label="Packet" /> Packet builder
+          </button>
+          <button className={page === "notice" ? "active" : ""} onClick={() => setPage("notice")}>
+            <Icon label="Notice" /> Notice checklist
           </button>
           <button className="muted" aria-disabled="true">
             <Icon label="Minutes" /> Minutes
@@ -559,6 +711,31 @@ export function App() {
               }}
             />
           )}
+          {page === "notice" && (
+            <NoticeChecklistWorkspace
+              viewState={qaState ?? noticeState}
+              apiError={noticeError}
+              meetings={visibleMeetings}
+              activeMeeting={activeMeeting}
+              noticeChecklists={visibleNoticeChecklists.filter((record) => record.meetingId === activeMeeting.id)}
+              finalizedPackets={visiblePacketAssemblies.filter((record) => record.meetingId === activeMeeting.id && record.status === "FINALIZED")}
+              setActiveMeetingId={setActiveMeetingId}
+              onCreateNotice={async (meetingId, payload) => {
+                const record = await createNoticeChecklist(meetingId, payload);
+                const mapped = mapApiNoticeChecklistRecord(record);
+                setNoticeChecklists((current) => sortNoticeChecklistRecords([mapped, ...current.filter((item) => item.id !== mapped.id)]));
+                setLoadedNoticeMeetingIds((current) => current.includes(meetingId) ? current : [...current, meetingId]);
+                setNoticeState("success");
+                return mapped;
+              }}
+              onAttachProof={async (recordId, payload) => {
+                const record = await attachNoticePostingProof(recordId, payload);
+                const mapped = mapApiNoticeChecklistRecord(record);
+                setNoticeChecklists((current) => sortNoticeChecklistRecords(current.map((item) => item.id === mapped.id ? mapped : item)));
+                return mapped;
+              }}
+            />
+          )}
         </section>
         {auditOpen && <AuditDrawer meeting={activeMeeting} />}
       </main>
@@ -608,6 +785,17 @@ async function fetchPacketAssemblies(meetingId: string): Promise<ApiPacketAssemb
   }
   const payload = (await response.json()) as { packet_assemblies?: ApiPacketAssemblyRecord[] };
   return Array.isArray(payload.packet_assemblies) ? payload.packet_assemblies : [];
+}
+
+async function fetchNoticeChecklists(meetingId: string): Promise<ApiNoticeChecklistRecord[]> {
+  const response = await fetch(`/api/meetings/${meetingId}/notice-checklists`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Notice checklist API returned ${response.status}.`);
+  }
+  const payload = (await response.json()) as { notice_checklists?: ApiNoticeChecklistRecord[] };
+  return Array.isArray(payload.notice_checklists) ? payload.notice_checklists : [];
 }
 
 async function createMeetingBody(name: string, bodyType: string): Promise<ApiMeetingBody> {
@@ -729,6 +917,48 @@ async function finalizePacketAssembly(recordId: string, actor: string): Promise<
   return response.json();
 }
 
+async function createNoticeChecklist(meetingId: string, payload: NoticeChecklistPayload): Promise<ApiNoticeChecklistRecord> {
+  const response = await fetch(`/api/meetings/${meetingId}/notice-checklists`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Notice checklist create"));
+  }
+  return response.json();
+}
+
+async function attachNoticePostingProof(recordId: string, payload: NoticePostingProofPayload): Promise<ApiNoticeChecklistRecord> {
+  const response = await fetch(`/api/notice-checklists/${recordId}/posting-proof`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Posting proof"));
+  }
+  return response.json();
+}
+
+async function formatApiError(response: Response, context: string): Promise<string> {
+  try {
+    const payload = await response.json();
+    const detail = payload.detail;
+    if (typeof detail === "string") {
+      return `${context} returned ${response.status}: ${detail}`;
+    }
+    if (detail && typeof detail === "object") {
+      const message = typeof detail.message === "string" ? detail.message : `${context} returned ${response.status}.`;
+      const fix = typeof detail.fix === "string" ? ` ${detail.fix}` : "";
+      return `${message}${fix}`;
+    }
+  } catch {
+    // Fall through to the generic status message when the backend body is not JSON.
+  }
+  return `${context} returned ${response.status}.`;
+}
+
 function mapApiMeeting(meeting: ApiMeeting, meetingBodies: MeetingBody[] = []): Meeting {
   const scheduled = meeting.scheduled_start ? new Date(meeting.scheduled_start) : null;
   const body = meetingBodies.find((item) => item.id === meeting.meeting_body_id);
@@ -793,6 +1023,35 @@ function mapApiPacketAssemblyRecord(record: ApiPacketAssemblyRecord): PacketAsse
   };
 }
 
+function mapApiNoticeChecklistRecord(record: ApiNoticeChecklistRecord): NoticeChecklistRecord {
+  return {
+    id: record.id,
+    meetingId: record.meeting_id,
+    noticeType: record.notice_type,
+    status: record.status,
+    compliant: record.compliant,
+    httpStatus: record.http_status,
+    warnings: record.warnings,
+    deadlineAt: record.deadline_at,
+    postedAt: record.posted_at,
+    minimumNoticeHours: record.minimum_notice_hours,
+    statutoryBasis: record.statutory_basis,
+    approvedBy: record.approved_by,
+    postingProof: record.posting_proof,
+    lastAuditHash: record.last_audit_hash,
+    createdAt: record.created_at,
+    updatedAt: record.updated_at,
+  };
+}
+
+function sortNoticeChecklistRecords(records: NoticeChecklistRecord[]): NoticeChecklistRecord[] {
+  return [...records].sort((left, right) => {
+    const rightTime = new Date(right.updatedAt || right.createdAt).getTime();
+    const leftTime = new Date(left.updatedAt || left.createdAt).getTime();
+    return (Number.isNaN(rightTime) ? 0 : rightTime) - (Number.isNaN(leftTime) ? 0 : leftTime);
+  });
+}
+
 function sortBodies(a: MeetingBody, b: MeetingBody) {
   return a.name.localeCompare(b.name);
 }
@@ -837,7 +1096,7 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet"];
+  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   return {
     page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : "dashboard",
@@ -1574,6 +1833,227 @@ function PacketBuilderWorkspace({
   );
 }
 
+function NoticeChecklistWorkspace({
+  viewState,
+  apiError,
+  meetings,
+  activeMeeting,
+  noticeChecklists,
+  finalizedPackets,
+  setActiveMeetingId,
+  onCreateNotice,
+  onAttachProof,
+}: {
+  viewState: ViewState;
+  apiError: string | null;
+  meetings: Meeting[];
+  activeMeeting: Meeting;
+  noticeChecklists: NoticeChecklistRecord[];
+  finalizedPackets: PacketAssemblyRecord[];
+  setActiveMeetingId: (id: string) => void;
+  onCreateNotice: (meetingId: string, payload: NoticeChecklistPayload) => Promise<NoticeChecklistRecord>;
+  onAttachProof: (recordId: string, payload: NoticePostingProofPayload) => Promise<NoticeChecklistRecord>;
+}) {
+  const [noticeType, setNoticeType] = useState(activeMeeting.meetingType === "special" ? "special" : "regular");
+  const [postedAt, setPostedAt] = useState(suggestedNoticePostedAt(activeMeeting.scheduledStart, activeMeeting.meetingType === "special" ? 24 : 72));
+  const [minimumNoticeHours, setMinimumNoticeHours] = useState(activeMeeting.meetingType === "special" ? "24" : "72");
+  const [statutoryBasis, setStatutoryBasis] = useState("Local open meeting law requires posted public notice before the meeting.");
+  const [approvedBy, setApprovedBy] = useState("clerk@example.gov");
+  const [actor, setActor] = useState("clerk@example.gov");
+  const [proofUrl, setProofUrl] = useState("https://city.example.gov/agendas/meeting-notice");
+  const [proofLocation, setProofLocation] = useState("City Hall notice board");
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNoticeType(activeMeeting.meetingType === "special" ? "special" : "regular");
+    setMinimumNoticeHours(activeMeeting.meetingType === "special" ? "24" : "72");
+    setPostedAt(suggestedNoticePostedAt(activeMeeting.scheduledStart, activeMeeting.meetingType === "special" ? 24 : 72));
+    setMessage(null);
+  }, [activeMeeting]);
+
+  if (viewState !== "success") {
+    return <StateMessage state={viewState} context="notice checklist" apiError={apiError} />;
+  }
+
+  const latestRecord = noticeChecklists[0];
+  const compliantCount = noticeChecklists.filter((record) => record.compliant).length;
+  const postedCount = noticeChecklists.filter((record) => record.status === "POSTED").length;
+  const hasFinalizedPacket = finalizedPackets.length > 0;
+  const noticeDeadline = activeMeeting.scheduledStart
+    ? new Date(new Date(activeMeeting.scheduledStart).getTime() - Number(minimumNoticeHours || "0") * 60 * 60 * 1000)
+    : null;
+
+  async function submitNoticeCheck(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    try {
+      const record = await onCreateNotice(activeMeeting.id, {
+        notice_type: noticeType.trim(),
+        posted_at: new Date(postedAt).toISOString(),
+        minimum_notice_hours: Number(minimumNoticeHours),
+        statutory_basis: statutoryBasis.trim(),
+        approved_by: approvedBy.trim(),
+        actor: actor.trim(),
+      });
+      if (record.compliant) {
+        setMessage(`Notice checklist ${record.id} passed. Deadline: ${formatDateTime(record.deadlineAt)}. Audit hash ${record.lastAuditHash.slice(0, 12)}. Attach posting proof before treating notice as posted.`);
+      } else {
+        setMessage(`Notice checklist ${record.id} is blocked. The statutory deadline was ${formatDateTime(record.deadlineAt)}, but posting was recorded at ${formatDateTime(record.postedAt)}. Fix: ${noticeWarningText(record)}`);
+      }
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Notice checklist failed."} If the statutory deadline has passed, reschedule the meeting or document a lawful emergency/special-meeting basis before posting proof.`);
+    }
+  }
+
+  async function attachProof(record: NoticeChecklistRecord) {
+    setMessage(null);
+    if (!record.compliant) {
+      setMessage(`Posting proof is blocked because this notice did not meet the statutory checklist. Deadline: ${formatDateTime(record.deadlineAt)}. Fix: ${noticeWarningText(record)}`);
+      return;
+    }
+    try {
+      const posted = await onAttachProof(record.id, {
+        actor: actor.trim(),
+        posting_proof: {
+          posted_url: proofUrl.trim(),
+          location: proofLocation.trim(),
+        },
+      });
+      setMessage(`Posting proof attached for ${posted.id}. Status is ${posted.status}; immutable audit hash ${posted.lastAuditHash.slice(0, 12)} proves who attached proof and where it was posted.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Posting proof failed."} Confirm the checklist exists, passed compliance, and proof URL/location are available, then retry.`);
+    }
+  }
+
+  return (
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Notice checklist"
+        title="Prove statutory public notice before the meeting proceeds."
+        description="Check the deadline, statutory basis, human approval, posting time, proof location, and audit hash before the city treats a meeting as lawfully noticed."
+      />
+      <div className="metric-grid">
+        <MetricCard label="Finalized packets" value={String(finalizedPackets.length)} note={hasFinalizedPacket ? "Ready for notice review" : "Finalize packet before posting"} tone={hasFinalizedPacket ? undefined : "warn"} />
+        <MetricCard label="Passing checks" value={String(compliantCount)} note="Deadline, basis, and approval met" />
+        <MetricCard label="Posted proof" value={String(postedCount)} note="Immutable proof attached" tone={postedCount ? undefined : "warn"} />
+      </div>
+      <div className="notice-legal-callout">
+        <strong>Legal gate</strong>
+        <span>
+          The checklist is the city record that proves public notice. If deadline, statutory basis, or approval fails, do not attach posting proof; reschedule or document the lawful exception first.
+        </span>
+      </div>
+      <div className="agenda-grid">
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Run statutory check</h2>
+              <p>Record exactly when notice was posted and why this meeting can legally proceed.</p>
+            </div>
+            <StatusBadge tone={hasFinalizedPacket ? "Ready" : "Warning"} label={hasFinalizedPacket ? "Packet finalized" : "Packet first"} />
+          </div>
+          <form className="intake-form" onSubmit={submitNoticeCheck}>
+            <label>
+              Meeting
+              <select value={activeMeeting.id} onChange={(event) => setActiveMeetingId(event.target.value)} required>
+                {meetings.map((meeting) => (
+                  <option key={meeting.id} value={meeting.id}>{meeting.body} - {meeting.title}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Notice type
+              <select value={noticeType} onChange={(event) => setNoticeType(event.target.value)} required>
+                <option value="regular">regular</option>
+                <option value="special">special</option>
+                <option value="emergency">emergency</option>
+              </select>
+            </label>
+            <label>
+              Minimum notice hours
+              <input value={minimumNoticeHours} onChange={(event) => setMinimumNoticeHours(event.target.value)} inputMode="numeric" required />
+            </label>
+            <label>
+              Posted at
+              <input type="datetime-local" value={postedAt} onChange={(event) => setPostedAt(event.target.value)} required />
+            </label>
+            <label>
+              Approved by
+              <input value={approvedBy} onChange={(event) => setApprovedBy(event.target.value)} required />
+            </label>
+            <label>
+              Actor
+              <input value={actor} onChange={(event) => setActor(event.target.value)} required />
+            </label>
+            <label className="wide">
+              Statutory basis
+              <textarea value={statutoryBasis} onChange={(event) => setStatutoryBasis(event.target.value)} required />
+            </label>
+            <div className="wide compliance-preview">
+              <strong>Computed deadline</strong>
+              <span>{noticeDeadline ? formatDateTime(noticeDeadline.toISOString()) : "Select a scheduled meeting and required notice hours."}</span>
+              <small>Notice must be posted at or before this deadline unless a lawful emergency/special basis applies.</small>
+            </div>
+            <button type="submit">Run notice checklist</button>
+          </form>
+          {message && <p className="form-message">{message}</p>}
+        </section>
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Compliance record and proof</h2>
+              <p>Attach proof only after a passing checklist. Failed checks explain the legal blocker.</p>
+            </div>
+            <StatusBadge tone={latestRecord?.compliant ? "Ready" : "Blocked"} label={latestRecord?.compliant ? "May post proof" : "No passing check"} />
+          </div>
+          <div className="review-controls">
+            <label>
+              Posting URL
+              <input value={proofUrl} onChange={(event) => setProofUrl(event.target.value)} />
+            </label>
+            <label>
+              Posting location
+              <input value={proofLocation} onChange={(event) => setProofLocation(event.target.value)} />
+            </label>
+          </div>
+          <div className="agenda-list">
+            {noticeChecklists.length === 0 && (
+              <p className="empty-inline">No notice checklist exists for this meeting. Finalize the packet, run the statutory check, then attach proof from the public posting location.</p>
+            )}
+            {noticeChecklists.map((record) => (
+              <article key={record.id} className={record.compliant ? "agenda-row" : "agenda-row blocked-row"}>
+                <div>
+                  <div className="row-title">
+                    <h3>{record.noticeType} notice</h3>
+                    <StatusBadge tone={record.status === "POSTED" ? "Ready" : record.compliant ? "Warning" : "Blocked"} label={record.status === "POSTED" ? "Proof posted" : record.compliant ? "Passed check" : "Blocked"} />
+                  </div>
+                  <p>{record.minimumNoticeHours} hours required. Deadline: {formatDateTime(record.deadlineAt)}. Posted: {formatDateTime(record.postedAt)}.</p>
+                  <small>Basis: {record.statutoryBasis || "Missing statutory basis"}</small>
+                  <small>Approved by: {record.approvedBy || "No human approval recorded"}</small>
+                  {record.warnings.length > 0 && <p className="legal-warning">Legal blocker: {noticeWarningText(record)}</p>}
+                  {record.postingProof && <small>Proof: {record.postingProof.location ?? "location not recorded"} {record.postingProof.posted_url ?? ""}</small>}
+                  <small>Audit hash: {record.lastAuditHash.slice(0, 12)}...</small>
+                </div>
+                <div className="row-actions">
+                  <button
+                    className="secondary"
+                    type="button"
+                    disabled={!record.compliant || record.status === "POSTED"}
+                    title={!record.compliant ? "Fix the statutory notice blocker before attaching proof." : record.status === "POSTED" ? "Posting proof is already attached." : undefined}
+                    onClick={() => attachProof(record)}
+                  >
+                    {record.status === "POSTED" ? "Proof attached" : "Attach posting proof"}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function MeetingCalendar({
   viewState,
   apiError,
@@ -1659,6 +2139,18 @@ function toDateTimeLocalValue(value?: string | null): string {
   const date = new Date(value);
   const pad = (part: number) => String(part).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function suggestedNoticePostedAt(scheduledStart: string | null | undefined, minimumHours: number): string {
+  if (!scheduledStart) {
+    return "";
+  }
+  const scheduled = new Date(scheduledStart);
+  if (Number.isNaN(scheduled.getTime())) {
+    return "";
+  }
+  const suggested = new Date(scheduled.getTime() - (minimumHours + 24) * 60 * 60 * 1000);
+  return toDateTimeLocalValue(suggested.toISOString());
 }
 
 function MeetingDetail({
@@ -1870,6 +2362,19 @@ function StateMessage({ state, context, apiError }: { state: ViewState; context:
       action: "",
     },
   }[state];
+  if (context === "notice checklist" && state === "empty") {
+    copy.body = "Finalize the packet, run the statutory notice check, then attach posting proof from the public posting location before treating the meeting as lawfully noticed.";
+    copy.action = "Run statutory check";
+  }
+  if (context === "notice checklist" && state === "partial") {
+    copy.body = "Notice checklist data is only partially available. Do not treat the meeting as noticed until deadline, statutory basis, human approval, posting proof, and audit hash are all visible; check the notice store configuration, then reload.";
+    copy.action = "Check notice store";
+  }
+  if (context === "notice checklist" && state === "error") {
+    copy.body = apiError
+      ? `${apiError} Do not attach posting proof from this workspace until the notice API is reachable; confirm the backend, notice store, and staff auth mode, then retry.`
+      : "The notice API did not respond. Do not treat the meeting as noticed until deadline, statutory basis, approval, proof, and audit hash are visible; confirm the backend, notice store, and staff auth mode, then retry.";
+  }
 
   return (
     <section className={`state-card ${state}`} role={state === "error" ? "alert" : "status"}>
@@ -1926,6 +2431,26 @@ function readinessLabel(status: AgendaIntakeItem["readinessStatus"]): string {
     NEEDS_REVISION: "Needs revision",
   };
   return labels[status];
+}
+
+function noticeWarningText(record: NoticeChecklistRecord): string {
+  if (record.warnings.length === 0) {
+    return "No backend warning text was returned. Confirm the deadline, statutory basis, and approval before proceeding.";
+  }
+  return record.warnings
+    .map((warning) => {
+      const code = warning.code ? `${warning.code}: ` : "";
+      return `${code}${warning.fix ?? warning.message ?? "Review the notice record and correct the statutory blocker."}`;
+    })
+    .join(" ");
+}
+
+function formatDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
 function statusTone(status: AgendaIntakeItem["readinessStatus"]): Meeting["noticeStatus"] {
