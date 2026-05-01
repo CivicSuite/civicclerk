@@ -177,6 +177,7 @@ def render_staff_dashboard(
     notice_checklist_records: Sequence[object] = (),
     notice_checklist_available: bool = True,
     meeting_outcome_records: Sequence[object] = (),
+    minutes_draft_records: Sequence[object] = (),
 ) -> str:
     """Render the current staff workflow screens as dependency-free HTML."""
     screen_cards_data = _screen_cards_with_live_intake(
@@ -187,6 +188,7 @@ def render_staff_dashboard(
         notice_checklist_records=notice_checklist_records,
         notice_checklist_available=notice_checklist_available,
         meeting_outcome_records=meeting_outcome_records,
+        minutes_draft_records=minutes_draft_records,
     )
     nav_buttons = "\n".join(
         f"""
@@ -933,6 +935,7 @@ def _screen_cards_with_live_intake(
     notice_checklist_records: Sequence[object],
     notice_checklist_available: bool,
     meeting_outcome_records: Sequence[object],
+    minutes_draft_records: Sequence[object],
 ) -> list[dict]:
     screen_cards = [dict(card) for card in SCREEN_CARDS]
     screen_cards[0]["rows"] = _agenda_intake_rows(
@@ -949,6 +952,9 @@ def _screen_cards_with_live_intake(
     )
     screen_cards[3]["rows"] = _meeting_outcome_rows(
         meeting_outcome_records=meeting_outcome_records,
+    )
+    screen_cards[4]["rows"] = _minutes_draft_rows(
+        minutes_draft_records=minutes_draft_records,
     )
     return screen_cards
 
@@ -1143,6 +1149,51 @@ def _next_outcome_step(vote_count: int, action_item_count: int, status: str) -> 
     if vote_count > 0:
         return "Vote recorded; create an action item if follow-up is needed."
     return "Record the vote for this captured motion."
+
+
+def _minutes_draft_rows(
+    *,
+    minutes_draft_records: Sequence[object],
+) -> list[tuple[str, str, str, str]]:
+    if not minutes_draft_records:
+        return [
+            (
+                "Clerk",
+                "No minutes drafts created yet",
+                "EMPTY",
+                "Create a citation-gated draft after motions, votes, and source materials are ready.",
+            )
+        ]
+    return [
+        (
+            _minutes_approver(record),
+            f"Meeting {_field(record, 'meeting_id', 'unknown')} minutes draft",
+            _field(record, "status", "UNKNOWN"),
+            _next_minutes_step(_field(record, "status", "UNKNOWN"), _bool_field(record, "adopted"), _bool_field(record, "posted")),
+        )
+        for record in minutes_draft_records
+    ]
+
+
+def _minutes_approver(record: object) -> str:
+    provenance = getattr(record, "provenance", None)
+    if isinstance(record, Mapping):
+        provenance = record.get("provenance")
+    if isinstance(provenance, Mapping):
+        approver = provenance.get("human_approver")
+    else:
+        approver = getattr(provenance, "human_approver", None)
+    return str(approver) if approver else "Clerk"
+
+
+def _next_minutes_step(status: str, adopted: bool | None, posted: bool | None) -> str:
+    if posted:
+        return "Posted status found; verify this came from the human approval workflow."
+    if adopted:
+        return "Adopted draft is ready for the public posting workflow."
+    if status == "DRAFT":
+        return "Human review must approve the cited draft before public posting."
+    return "Open the minutes draft and confirm citation and approval status."
 
 
 def _render_screen_card(card: dict, active: bool) -> str:

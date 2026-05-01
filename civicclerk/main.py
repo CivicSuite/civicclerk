@@ -371,6 +371,7 @@ async def staff_dashboard() -> str:
         notice_checklist_records=notice_checklist_records,
         notice_checklist_available=notice_checklist_available,
         meeting_outcome_records=motion_votes.list_recent_outcomes(),
+        minutes_draft_records=minutes_drafts.list_recent(),
     )
 
 

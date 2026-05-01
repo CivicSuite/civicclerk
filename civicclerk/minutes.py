@@ -120,6 +120,11 @@ class MinutesDraftStore:
             for draft_id in self._drafts_by_meeting.get(meeting_id, [])
         ]
 
+    def list_recent(self, *, limit: int = 5) -> list[MinutesDraft]:
+        """Return recent citation-gated drafts for the staff dashboard."""
+
+        return list(reversed(list(self._drafts.values())))[:limit]
+
 
 def validate_minutes_draft(
     *,

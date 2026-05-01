@@ -22,6 +22,9 @@ All notable changes to CivicClerk are documented here.
 - The `/staff` Meeting Outcomes panel now renders recent live motion-centered
   outcome rows instead of sample data, including vote/action status and
   actionable empty rows.
+- The `/staff` Minutes Draft panel now renders recent live citation-gated draft
+  rows instead of sample data, including human-review next steps and actionable
+  empty rows.
 - `scripts/check_connector_sync_readiness.py` now verifies the supported
   Granicus, Legistar, PrimeGov, and NovusAGENDA local payload contracts without
   outbound network calls before future scheduled live-sync work.
