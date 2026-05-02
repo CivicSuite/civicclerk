@@ -10,6 +10,7 @@ from pathlib import Path
 from civicclerk import __version__
 from civicclerk.mock_city_environment import (
     MOCK_CITY_NAME,
+    run_mock_city_backup_retention_suite,
     run_mock_city_contract_suite,
     run_mock_city_idp_contract_suite,
 )
@@ -143,6 +144,7 @@ def _installer_checks(*, version: str, dist_root: Path, bundle_path: Path) -> li
 def _mock_city_checks() -> list[Check]:
     contract_checks = run_mock_city_contract_suite(base_url="https://mock-city.example.gov")
     idp_checks = run_mock_city_idp_contract_suite()
+    retention_checks = run_mock_city_backup_retention_suite()
     checks: list[Check] = []
     if all(check.ok for check in contract_checks):
         checks.append(
@@ -183,6 +185,27 @@ def _mock_city_checks() -> list[Check]:
                 name="mock city municipal IdP contract suite",
                 message="mock city IdP contracts failed for: " + ", ".join(failed),
                 fix="Fix the reusable IdP contract suite before using it as the baseline for protected module tests.",
+                owner="developer",
+            )
+        )
+    if all(check.ok for check in retention_checks):
+        checks.append(
+            Check(
+                status="PASS",
+                name="mock city backup retention contract suite",
+                message=f"{MOCK_CITY_NAME} covers reusable no-network backup retention/off-host proof for future modules.",
+                fix="Reuse this suite for module backup-readiness assertions before attaching real city retention proof.",
+                owner="developer",
+            )
+        )
+    else:
+        failed = [check.city for check in retention_checks if not check.ok]
+        checks.append(
+            Check(
+                status="FAIL",
+                name="mock city backup retention contract suite",
+                message="mock city backup retention contracts failed for: " + ", ".join(failed),
+                fix="Fix the reusable backup retention suite before using it as the baseline for module readiness.",
                 owner="developer",
             )
         )
@@ -285,7 +308,8 @@ def _print_plan(version: str, dist_root: Path, bundle_path: Path) -> None:
     print("  1. Release artifacts and handoff bundle are present and checksum-valid.")
     print("  2. Mock city vendor contracts pass without contacting vendor networks.")
     print("  3. Mock city municipal IdP contracts pass without contacting an IdP.")
-    print("  4. Operator docs warn about unsigned Windows first-install prompts.")
+    print("  4. Mock city backup retention/off-host contracts pass without contacting storage providers.")
+    print("  5. Operator docs warn about unsigned Windows first-install prompts.")
     print("External proof slots:")
     print("  - code-signing certificate and signed-artifact proof")
     print("  - municipal IdP protected-deployment proof")

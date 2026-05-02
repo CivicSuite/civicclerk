@@ -91,6 +91,40 @@ class MockCityIdpContract:
 
 
 @dataclass(frozen=True)
+class MockCityBackupRetentionContract:
+    city: str
+    interface_status: str
+    backup_scope: tuple[str, ...]
+    restore_proof_required: bool
+    manifest_required_fields: tuple[str, ...]
+    retention_years: int
+    restore_test_interval_days: int
+    off_host_storage: str
+    encryption_at_rest_required: bool
+    immutable_retention_required: bool
+    legal_hold_supported: bool
+    approval_artifact: str
+    notes: str
+
+    def public_dict(self) -> dict[str, Any]:
+        return {
+            "city": self.city,
+            "interface_status": self.interface_status,
+            "backup_scope": list(self.backup_scope),
+            "restore_proof_required": self.restore_proof_required,
+            "manifest_required_fields": list(self.manifest_required_fields),
+            "retention_years": self.retention_years,
+            "restore_test_interval_days": self.restore_test_interval_days,
+            "off_host_storage": self.off_host_storage,
+            "encryption_at_rest_required": self.encryption_at_rest_required,
+            "immutable_retention_required": self.immutable_retention_required,
+            "legal_hold_supported": self.legal_hold_supported,
+            "approval_artifact": self.approval_artifact,
+            "notes": self.notes,
+        }
+
+
+@dataclass(frozen=True)
 class MockCityContractCheck:
     connector: str
     ok: bool
@@ -129,6 +163,24 @@ class MockCityIdpCheck:
             "auth_method": self.auth_method,
             "subject": self.subject,
             "roles": list(self.roles),
+        }
+
+
+@dataclass(frozen=True)
+class MockCityBackupRetentionCheck:
+    city: str
+    ok: bool
+    message: str
+    fix: str
+    checked_fields: tuple[str, ...] = ()
+
+    def public_dict(self) -> dict[str, Any]:
+        return {
+            "city": self.city,
+            "ok": self.ok,
+            "message": self.message,
+            "fix": self.fix,
+            "checked_fields": list(self.checked_fields),
         }
 
 
@@ -251,6 +303,43 @@ def mock_city_idp_contract() -> MockCityIdpContract:
     )
 
 
+def mock_city_backup_retention_contract() -> MockCityBackupRetentionContract:
+    """Return the reusable no-network backup retention/off-host evidence contract."""
+
+    return MockCityBackupRetentionContract(
+        city=MOCK_CITY_NAME,
+        interface_status="mock-policy-contract",
+        backup_scope=(
+            "postgresql_application_tables",
+            "packet_export_bundles",
+            "connector_import_ledgers",
+            "vendor_sync_reports",
+            "release_handoff_artifacts",
+        ),
+        restore_proof_required=True,
+        manifest_required_fields=(
+            "service",
+            "created_at",
+            "source",
+            "dump.sha256",
+            "dump.size",
+            "verification",
+            "restored_application_tables",
+        ),
+        retention_years=7,
+        restore_test_interval_days=30,
+        off_host_storage="mock://brookfield-secure-vault/civicclerk",
+        encryption_at_rest_required=True,
+        immutable_retention_required=True,
+        legal_hold_supported=True,
+        approval_artifact="mock-brookfield-backup-retention-policy-2026-05",
+        notes=(
+            "Models the policy evidence CivicSuite modules must provide before replacing "
+            "mock proof with a city-approved retention schedule and off-host storage runbook."
+        ),
+    )
+
+
 def run_mock_city_contract_suite(*, base_url: str = "https://mock-city.example.gov") -> list[MockCityContractCheck]:
     """Validate mock city payloads and delta URLs without contacting vendors."""
 
@@ -310,6 +399,83 @@ def run_mock_city_contract_suite(*, base_url: str = "https://mock-city.example.g
             )
         )
     return checks
+
+
+def run_mock_city_backup_retention_suite() -> list[MockCityBackupRetentionCheck]:
+    """Validate the mock backup-retention contract without contacting storage providers."""
+
+    contract = mock_city_backup_retention_contract()
+    checks: list[MockCityBackupRetentionCheck] = []
+    missing_fields = [
+        field
+        for field in contract.manifest_required_fields
+        if not field or field.strip() != field
+    ]
+    missing_scope = [scope for scope in contract.backup_scope if not scope or scope.strip() != scope]
+    if missing_fields or missing_scope:
+        checks.append(
+            MockCityBackupRetentionCheck(
+                city=contract.city,
+                ok=False,
+                message="Mock backup retention contract has blank or malformed manifest/scope fields.",
+                fix="Use stable manifest field names and backup scope labels before reusing the contract.",
+            )
+        )
+    if contract.retention_years < 7:
+        checks.append(
+            MockCityBackupRetentionCheck(
+                city=contract.city,
+                ok=False,
+                message="Mock backup retention contract is shorter than the Brookfield seven-year record baseline.",
+                fix="Set retention_years to at least 7 or document the jurisdiction-specific exception.",
+            )
+        )
+    if contract.restore_test_interval_days > 30:
+        checks.append(
+            MockCityBackupRetentionCheck(
+                city=contract.city,
+                ok=False,
+                message="Mock backup retention contract allows restore tests less often than monthly.",
+                fix="Set restore_test_interval_days to 30 or less for reusable module readiness proof.",
+            )
+        )
+    if not contract.off_host_storage.startswith("mock://"):
+        checks.append(
+            MockCityBackupRetentionCheck(
+                city=contract.city,
+                ok=False,
+                message="Mock backup retention contract must use a non-network mock:// off-host destination.",
+                fix="Use a mock:// destination until a real city storage proof artifact is attached.",
+            )
+        )
+    if not (
+        contract.restore_proof_required
+        and contract.encryption_at_rest_required
+        and contract.immutable_retention_required
+        and contract.legal_hold_supported
+    ):
+        checks.append(
+            MockCityBackupRetentionCheck(
+                city=contract.city,
+                ok=False,
+                message="Mock backup retention contract is missing restore, encryption, immutability, or legal-hold proof.",
+                fix="Require restore proof, encrypted storage, immutable retention, and legal-hold support.",
+            )
+        )
+    if checks:
+        return checks
+    return [
+        MockCityBackupRetentionCheck(
+            city=contract.city,
+            ok=True,
+            message=(
+                f"{contract.city} mock backup-retention contract covers restore proof, "
+                "seven-year retention, monthly restore tests, encrypted immutable off-host storage, and legal hold."
+            ),
+            fix="Reuse this contract in module backup-readiness tests; replace only the real city proof artifact.",
+            checked_fields=contract.manifest_required_fields,
+        )
+    ]
 
 
 def run_mock_city_idp_contract_suite() -> list[MockCityIdpCheck]:

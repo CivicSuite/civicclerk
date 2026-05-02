@@ -7,8 +7,10 @@ from pathlib import Path
 
 from civicclerk.mock_city_environment import (
     MOCK_CITY_NAME,
+    mock_city_backup_retention_contract,
     mock_city_idp_contract,
     mock_city_vendor_contracts,
+    run_mock_city_backup_retention_suite,
     run_mock_city_contract_suite,
     run_mock_city_idp_contract_suite,
 )
@@ -59,12 +61,35 @@ def test_mock_city_idp_contract_validates_staff_oidc_without_network() -> None:
     assert checks[0].roles == ("clerk_admin", "meeting_editor")
 
 
+def test_mock_city_backup_retention_contract_validates_off_host_policy_without_network() -> None:
+    contract = mock_city_backup_retention_contract()
+    checks = run_mock_city_backup_retention_suite()
+
+    assert contract.city == MOCK_CITY_NAME
+    assert contract.interface_status == "mock-policy-contract"
+    assert contract.retention_years >= 7
+    assert contract.restore_test_interval_days <= 30
+    assert contract.off_host_storage.startswith("mock://")
+    assert contract.restore_proof_required is True
+    assert contract.encryption_at_rest_required is True
+    assert contract.immutable_retention_required is True
+    assert contract.legal_hold_supported is True
+    assert "dump.sha256" in contract.manifest_required_fields
+    assert len(checks) == 1
+    assert checks[0].ok is True
+    assert "seven-year retention" in checks[0].message
+
+
 def test_mock_city_contracts_are_public_and_secret_free() -> None:
     serialized = json.dumps(
         {
             "vendor_contracts": [contract.public_dict() for contract in mock_city_vendor_contracts()],
             "idp_contract": mock_city_idp_contract().public_dict(),
             "idp_checks": [check.public_dict() for check in run_mock_city_idp_contract_suite()],
+            "backup_retention_contract": mock_city_backup_retention_contract().public_dict(),
+            "backup_retention_checks": [
+                check.public_dict() for check in run_mock_city_backup_retention_suite()
+            ],
         }
     ).lower()
 
@@ -107,6 +132,10 @@ def test_mock_city_environment_cli_writes_reusable_report(tmp_path: Path) -> Non
     assert report["idp_contract"]["redirect_uri"].endswith("/staff/oidc/callback")
     assert report["idp_checks"][0]["ok"] is True
     assert report["idp_checks"][0]["roles"] == ["clerk_admin", "meeting_editor"]
+    assert report["backup_retention_contract"]["retention_years"] == 7
+    assert report["backup_retention_contract"]["off_host_storage"].startswith("mock://")
+    assert report["backup_retention_checks"][0]["ok"] is True
+    assert "dump.sha256" in report["backup_retention_checks"][0]["checked_fields"]
     serialized = json.dumps(report).lower()
     assert "mock-client-secret" not in serialized
     assert "mock-session-secret" not in serialized
