@@ -37,8 +37,9 @@ def _print_plan(args: argparse.Namespace) -> None:
     print("  1. Load the approved source from the vendor sync ledger.")
     print("  2. Refuse to run if the source circuit is open.")
     print("  3. Re-validate the source URL before any HTTP request.")
-    print("  4. Read credentials from --auth-secret-env, never from the source URL.")
-    print("  5. Fetch JSON, normalize it through the existing connector contract, and record the run outcome.")
+    print("  4. Add the last successful source cursor to the vendor-specific delta URL when one exists.")
+    print("  5. Read credentials from --auth-secret-env, never from the source URL.")
+    print("  6. Fetch JSON, normalize it through the existing connector contract, record the run outcome, and advance the cursor only after a fully successful run.")
 
 
 def main() -> int:
@@ -63,6 +64,10 @@ def main() -> int:
     print(f"records_failed={report.records_failed}")
     print(f"run_status={report.run_status or 'not_run'}")
     print(f"source_health_status={report.source_health_status or 'unknown'}")
+    print(f"delta_request_url={report.delta_request_url or 'not_planned'}")
+    print(f"cursor_param={report.cursor_param or 'none'}")
+    print(f"cursor_value={report.cursor_value or 'none'}")
+    print(f"cursor_advanced_at={report.cursor_advanced_at or 'not_advanced'}")
     print(f"message={report.message}")
     print(f"fix={report.fix}")
     if args.output:

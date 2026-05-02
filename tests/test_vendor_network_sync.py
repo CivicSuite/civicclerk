@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 
 from civicclerk.vendor_network_sync import NETWORK_ENABLED_ENV_VAR, run_vendor_network_sync
+from civicclerk.vendor_live_sync import VendorSyncRunResult
 from civicclerk.vendor_sync_persistence import VendorSyncRepository
 
 
@@ -75,9 +77,67 @@ def test_vendor_network_sync_fetches_normalizes_and_records_success(tmp_path: Pa
     assert report.records_failed == 0
     assert report.run_status == "success"
     assert report.source_health_status == "healthy"
+    assert report.delta_request_url == "https://vendor.example.gov/api/meetings"
+    assert report.cursor_param == "LastModifiedDate"
+    assert report.cursor_value is None
+    assert report.cursor_advanced_at is not None
     assert report.attempts[0].external_meeting_id == "leg-200"
     assert observed_headers == {"Authorization": "Bearer secret-token"}
     assert repository.list_runs(source_id)[0].status == "success"
+    assert repository.get_source(source_id).last_success_cursor_at is not None
+
+
+def test_vendor_network_sync_advances_cursor_to_request_start_not_finish(tmp_path: Path) -> None:
+    repository = VendorSyncRepository(db_url=_db_url(tmp_path / "vendor-sync.db"))
+    source_id = _source(repository)
+    request_started_at: datetime | None = None
+
+    def fake_fetch(source, headers, timeout_seconds):
+        nonlocal request_started_at
+        request_started_at = datetime.now(UTC)
+        return [LEGISTAR_PAYLOAD]
+
+    run_vendor_network_sync(
+        repository=repository,
+        source_id=source_id,
+        enable_network=True,
+        auth_secret="secret-token",
+        fetch_json=fake_fetch,
+    )
+
+    assert request_started_at is not None
+    cursor = repository.get_source(source_id).last_success_cursor_at
+    assert cursor is not None
+    assert cursor <= request_started_at
+
+
+def test_vendor_network_sync_uses_persisted_cursor_for_delta_request(tmp_path: Path) -> None:
+    repository = VendorSyncRepository(db_url=_db_url(tmp_path / "vendor-sync.db"))
+    source_id = _source(repository)
+    repository.record_run(
+        source_id=source_id,
+        result=VendorSyncRunResult(records_discovered=1, records_succeeded=1, records_failed=0),
+        advance_success_cursor=True,
+    )
+    requested_urls: list[str] = []
+
+    def fake_fetch(source, headers, timeout_seconds):
+        requested_urls.append(source.source_url)
+        return [LEGISTAR_PAYLOAD]
+
+    report = run_vendor_network_sync(
+        repository=repository,
+        source_id=source_id,
+        enable_network=True,
+        auth_secret="secret-token",
+        fetch_json=fake_fetch,
+    )
+
+    assert report.records_failed == 0
+    assert "LastModifiedDate=" in requested_urls[0]
+    assert requested_urls[0] == report.delta_request_url
+    assert report.cursor_value is not None
+    assert report.cursor_advanced_at is not None
 
 
 def test_vendor_network_sync_missing_secret_is_recorded_without_claiming_network_call(tmp_path: Path) -> None:
@@ -147,6 +207,7 @@ def test_vendor_network_sync_cli_print_only_is_safe() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Network calls: disabled in print-only mode" in result.stdout
     assert "Re-validate the source URL" in result.stdout
+    assert "last successful source cursor" in result.stdout
     assert "never from the source URL" in result.stdout
 
 
@@ -166,4 +227,5 @@ def test_vendor_network_sync_writes_report_without_secrets(tmp_path: Path) -> No
 
     report = json.loads(output.read_text(encoding="utf-8"))
     assert report["records_succeeded"] == 1
+    assert report["cursor_advanced_at"] is not None
     assert "secret-token" not in output.read_text(encoding="utf-8")

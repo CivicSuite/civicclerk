@@ -72,9 +72,10 @@ Beat, disabled by default, guarded by both a schedule gate and live-network
 gate, and limited to configured approved source IDs with per-source reports.
 Remaining live-sync work is connector-specific delta semantics, deployment
 proof against real municipal vendor APIs, and operational runbook hardening.
-The first delta-planning contract is now being added: each supported connector
-gets an explicit "changed since" query parameter plan before the scheduled
-worker persists and advances cursors.
+The first delta-planning and cursor persistence contract is now present: each
+supported connector gets an explicit "changed since" query parameter, sources
+persist `last_success_cursor_at`, one-time and scheduled pulls plan from that
+cursor, and the cursor advances only after a fully successful normalized run.
 The reusable City of Brookfield mock-city environment suite is now being added
 as shared product infrastructure for the remaining CivicSuite modules:
 `scripts/run_mock_city_environment_suite.py` verifies Legistar, Granicus,

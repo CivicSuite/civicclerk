@@ -10,7 +10,8 @@ from __future__ import annotations
 import json
 import os
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.error import URLError
@@ -18,6 +19,7 @@ from urllib.request import Request, urlopen
 
 from civicclerk.connectors import ConnectorImportError, import_meeting_payload, validate_url_host
 from civicclerk.vendor_live_sync import VendorSyncRunResult
+from civicclerk.vendor_delta import plan_vendor_delta_request
 from civicclerk.vendor_sync_persistence import VendorSyncRepository, VendorSyncSourceRecord
 
 NETWORK_ENABLED_ENV_VAR = "CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED"
@@ -44,6 +46,10 @@ class VendorNetworkSyncReport:
     records_failed: int
     run_status: str | None
     source_health_status: str | None
+    delta_request_url: str | None
+    cursor_param: str | None
+    cursor_value: str | None
+    cursor_advanced_at: str | None
     message: str
     fix: str
     attempts: list[VendorNetworkSyncAttempt]
@@ -58,6 +64,10 @@ class VendorNetworkSyncReport:
             "records_failed": self.records_failed,
             "run_status": self.run_status,
             "source_health_status": self.source_health_status,
+            "delta_request_url": self.delta_request_url,
+            "cursor_param": self.cursor_param,
+            "cursor_value": self.cursor_value,
+            "cursor_advanced_at": self.cursor_advanced_at,
             "message": self.message,
             "fix": self.fix,
             "attempts": [attempt.__dict__ for attempt in self.attempts],
@@ -113,9 +123,16 @@ def run_vendor_network_sync(
 
     try:
         validate_url_host(source.source_url)
+        delta_plan = plan_vendor_delta_request(
+            connector=source.connector,
+            source_url=source.source_url,
+            changed_since=source.last_success_cursor_at,
+        )
+        request_source = replace(source, source_url=delta_plan.request_url)
         secret = _resolve_auth_secret(source=source, auth_secret=auth_secret, auth_secret_env=auth_secret_env)
         headers = _auth_headers(source=source, secret=secret)
-        raw_payloads = _coerce_payloads((fetch_json or _fetch_json)(source, headers, timeout_seconds))
+        cursor_advance_at = datetime.now(UTC)
+        raw_payloads = _coerce_payloads((fetch_json or _fetch_json)(request_source, headers, timeout_seconds))
     except VendorNetworkSyncError as exc:
         return _finalize_report(
             output_path=output_path,
@@ -151,6 +168,8 @@ def run_vendor_network_sync(
             records_failed=records_failed,
             error_summary=error_summary,
         ),
+        advance_success_cursor=records_failed == 0,
+        cursor_at=cursor_advance_at,
     )
     if recorded is None:
         return _finalize_report(
@@ -178,6 +197,10 @@ def run_vendor_network_sync(
         records_failed=records_failed,
         run_status=run.status,
         source_health_status=updated_source.public_dict()["health_status"],
+        delta_request_url=delta_plan.request_url,
+        cursor_param=delta_plan.cursor_param,
+        cursor_value=delta_plan.cursor_value,
+        cursor_advanced_at=updated_source.public_dict()["last_success_cursor_at"],
         message=message,
         fix=fix,
         attempts=attempts,
@@ -308,6 +331,10 @@ def _record_failed_run(
         records_failed=1,
         run_status=recorded[1].status if recorded else "failed",
         source_health_status=updated_source.public_dict()["health_status"],
+        delta_request_url=None,
+        cursor_param=None,
+        cursor_value=None,
+        cursor_advanced_at=updated_source.public_dict()["last_success_cursor_at"],
         message=message,
         fix=fix,
         attempts=[
@@ -338,6 +365,10 @@ def _blocked_report(
         records_failed=0,
         run_status=None,
         source_health_status=source_health_status,
+        delta_request_url=None,
+        cursor_param=None,
+        cursor_value=None,
+        cursor_advanced_at=None,
         message=message,
         fix=fix,
         attempts=[],
