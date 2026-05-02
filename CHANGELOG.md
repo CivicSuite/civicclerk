@@ -4,7 +4,12 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
-No unreleased changes.
+### Added
+- `civicclerk.vendor_network_sync` and `scripts/run_vendor_live_sync.py` add the
+  first explicitly enabled vendor-network pull runner: approved source lookup,
+  circuit-open refusal, URL revalidation, credential loading from deployment
+  secret env vars, JSON normalization through the existing connector contract,
+  secret-free reporting, and run outcome persistence in the vendor sync ledger.
 
 ## [0.1.14] - 2026-05-02
 
