@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from datetime import UTC, datetime
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -29,7 +30,9 @@ def test_vendor_sync_source_persists_across_repository_instances(tmp_path: Path)
     assert reloaded is not None
     assert reloaded.connector == "legistar"
     assert reloaded.source_name == "Legistar production"
+    assert reloaded.last_success_cursor_at is None
     assert reloaded.public_dict()["health_status"] == "healthy"
+    assert reloaded.public_dict()["last_success_cursor_at"] is None
 
 
 def test_vendor_sync_source_validation_error_is_actionable(tmp_path: Path) -> None:
@@ -110,6 +113,35 @@ def test_vendor_sync_success_resets_active_failures(tmp_path: Path) -> None:
     assert updated.consecutive_failure_count == 0
     assert updated.active_failure_count == 0
     assert updated.public_dict()["health_status"] == "healthy"
+
+
+def test_vendor_sync_success_cursor_advances_only_when_requested(tmp_path: Path) -> None:
+    repository = VendorSyncRepository(db_url=_db_url(tmp_path / "vendor-sync.db"))
+    source = repository.create_source(
+        connector="legistar",
+        source_name="Legistar production",
+        source_url="https://vendor.example.gov/api/meetings",
+        auth_method="bearer_token",
+    )
+    cursor = datetime(2026, 5, 2, 15, 30, tzinfo=UTC)
+
+    unchanged = repository.record_run(
+        source_id=source.id,
+        result=VendorSyncRunResult(records_discovered=1, records_succeeded=1, records_failed=0),
+    )
+    assert unchanged is not None
+    assert unchanged[0].last_success_cursor_at is None
+
+    advanced = repository.record_run(
+        source_id=source.id,
+        result=VendorSyncRunResult(records_discovered=1, records_succeeded=1, records_failed=0),
+        advance_success_cursor=True,
+        cursor_at=cursor,
+    )
+
+    assert advanced is not None
+    assert advanced[0].last_success_cursor_at == cursor
+    assert advanced[0].public_dict()["last_success_cursor_at"] == "2026-05-02T15:30:00+00:00"
 
 
 @pytest.mark.asyncio

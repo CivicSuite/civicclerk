@@ -270,7 +270,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civicclerk_revision == "civicclerk_0009_vendor_sync"
+        assert civicclerk_revision == "civicclerk_0010_vendor_cursor"
         assert civicclerk_tables == set(CANONICAL_TABLES) | {
             "agenda_item_lifecycle_records",
             "agenda_intake_queue",
@@ -387,6 +387,17 @@ def test_vendor_sync_persistence_migration_declares_source_run_and_failure_table
     assert '"vendor_sync_failures"' in text
     assert '"consecutive_failure_count"' in text
     assert '"sync_paused_reason"' in text
+    assert 'schema="civicclerk"' in text
+
+
+def test_vendor_sync_cursor_migration_declares_success_cursor_column() -> None:
+    text = (ROOT / "civicclerk" / "migrations" / "versions" / "civicclerk_0010_vendor_sync_cursor.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'revision = "civicclerk_0010_vendor_cursor"' in text
+    assert 'down_revision = "civicclerk_0009_vendor_sync"' in text
+    assert '"last_success_cursor_at"' in text
     assert 'schema="civicclerk"' in text
 
 

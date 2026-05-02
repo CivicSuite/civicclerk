@@ -23,6 +23,10 @@ All notable changes to CivicClerk are documented here.
 - `civicclerk.vendor_delta` adds connector-specific delta request planning for
   Legistar, Granicus, PrimeGov, and NovusAGENDA so scheduled pulls have a
   tested "changed since" URL contract before cursor persistence is wired in.
+- Vendor-network sync sources now persist `last_success_cursor_at`, plan
+  one-shot and scheduled pulls from that cursor, and advance it only after a
+  fully successful normalized pull so failed or partial vendor runs do not skip
+  records.
 
 ### Changed
 - Windows installer packaging and docs now explicitly warn that unsigned setup

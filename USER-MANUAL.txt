@@ -442,7 +442,11 @@ The runner refuses circuit-open sources, revalidates the source URL before the
 HTTP request, reads credentials from the named env var instead of the URL,
 normalizes returned JSON through the existing connector contract, writes an
 optional report without secrets, and records success or failure in the same
-circuit-breaker ledger.
+circuit-breaker ledger. The report includes `delta_request_url`,
+`cursor_param`, `cursor_value`, and `cursor_advanced_at`. CivicClerk advances
+the persisted `last_success_cursor_at` only after every discovered payload
+normalizes successfully; failed and partial runs leave the cursor unchanged so
+the next pull can retry without skipping records.
 
 For scheduled vendor-network pulls in Docker, keep both live-sync gates disabled
 until IT has approved source records and credentials:

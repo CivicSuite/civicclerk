@@ -37,6 +37,7 @@ vendor_sync_sources = sa.Table(
     sa.Column("sync_paused_reason", sa.String(255), nullable=True),
     sa.Column("last_sync_status", sa.String(80), nullable=True),
     sa.Column("last_error_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("last_success_cursor_at", sa.DateTime(timezone=True), nullable=True),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     schema="civicclerk",
@@ -90,6 +91,7 @@ class VendorSyncSourceRecord:
     sync_paused_reason: str | None
     last_sync_status: str | None
     last_error_at: datetime | None
+    last_success_cursor_at: datetime | None
     created_at: datetime
     updated_at: datetime
 
@@ -122,6 +124,9 @@ class VendorSyncSourceRecord:
             "sync_paused_reason": self.sync_paused_reason,
             "last_sync_status": self.last_sync_status,
             "last_error_at": self.last_error_at.isoformat() if self.last_error_at else None,
+            "last_success_cursor_at": self.last_success_cursor_at.isoformat()
+            if self.last_success_cursor_at
+            else None,
             "message": status["message"],
             "fix": status["fix"],
             "created_at": self.created_at.isoformat(),
@@ -182,6 +187,25 @@ class VendorSyncRepository:
             with self.engine.begin() as connection:
                 connection.execute(sa.text("CREATE SCHEMA IF NOT EXISTS civicclerk"))
         metadata.create_all(self.engine)
+        self._ensure_cursor_columns()
+
+    def _ensure_cursor_columns(self) -> None:
+        schema = None if self.engine.dialect.name == "sqlite" else "civicclerk"
+        table_name = "vendor_sync_sources"
+        with self.engine.begin() as connection:
+            inspector = sa.inspect(connection)
+            column_names = {column["name"] for column in inspector.get_columns(table_name, schema=schema)}
+            if "last_success_cursor_at" in column_names:
+                return
+            if self.engine.dialect.name == "postgresql":
+                connection.execute(
+                    sa.text(
+                        "ALTER TABLE civicclerk.vendor_sync_sources "
+                        "ADD COLUMN IF NOT EXISTS last_success_cursor_at TIMESTAMP WITH TIME ZONE"
+                    )
+                )
+            else:
+                connection.execute(sa.text("ALTER TABLE vendor_sync_sources ADD COLUMN last_success_cursor_at DATETIME"))
 
     def create_source(
         self,
@@ -216,6 +240,7 @@ class VendorSyncRepository:
             "sync_paused_reason": None,
             "last_sync_status": None,
             "last_error_at": None,
+            "last_success_cursor_at": None,
             "created_at": now,
             "updated_at": now,
         }
@@ -242,6 +267,8 @@ class VendorSyncRepository:
         *,
         source_id: str,
         result: VendorSyncRunResult,
+        advance_success_cursor: bool = False,
+        cursor_at: datetime | None = None,
     ) -> tuple[VendorSyncSourceRecord, VendorSyncRunRecord] | None:
         source = self.get_source(source_id)
         if source is None:
@@ -255,6 +282,9 @@ class VendorSyncRepository:
             active_failure_count = 0
         run_id = str(uuid4())
         status = updated_state.last_sync_status or "success"
+        last_success_cursor_at = source.last_success_cursor_at
+        if advance_success_cursor and result.records_failed == 0 and result.records_succeeded > 0:
+            last_success_cursor_at = cursor_at or now
         with self.engine.begin() as connection:
             connection.execute(
                 vendor_sync_run_log.insert().values(
@@ -294,6 +324,7 @@ class VendorSyncRepository:
                     sync_paused_reason=updated_state.sync_paused_reason,
                     last_sync_status=status,
                     last_error_at=updated_state.last_error_at,
+                    last_success_cursor_at=last_success_cursor_at,
                     updated_at=now,
                 )
             )
@@ -323,6 +354,9 @@ class VendorSyncRepository:
 
 def _row_to_source(row) -> VendorSyncSourceRecord:
     data = dict(row)
+    cursor = data.get("last_success_cursor_at")
+    if isinstance(cursor, datetime) and cursor.tzinfo is None:
+        data["last_success_cursor_at"] = cursor.replace(tzinfo=UTC)
     return VendorSyncSourceRecord(**data)
 
 
