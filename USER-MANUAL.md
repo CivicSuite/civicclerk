@@ -536,6 +536,19 @@ allowlists a different proxy test address. If the sample
 `docs/examples/deployment.env.example` is used without replacing placeholders,
 the helper stops before running probes and points back to the readiness failures.
 
+After `bash scripts/verify-release.sh` and the release handoff bundle have been
+built, run the pilot-readiness rollup:
+
+```bash
+python scripts/check_pilot_readiness.py
+```
+
+The report is intentionally honest: it can mark developer-owned readiness as
+ready while keeping code-signing certificate proof, municipal IdP proof, real
+vendor API proof, and city backup-retention/off-host storage approval as
+external proof slots. Use `--require-external-proof` only when those city or
+certificate artifacts have been attached to the handoff packet.
+
 Before IT trusts restore operations, rehearse the local backup/restore path:
 
 ```powershell
