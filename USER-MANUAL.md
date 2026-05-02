@@ -441,6 +441,10 @@ per-source secret env vars using `CIVICCLERK_VENDOR_NETWORK_SYNC_AUTH_SECRET_ENV
 Celery Beat then calls the same guarded runner, writes per-source reports under
 `CIVICCLERK_VENDOR_NETWORK_SYNC_REPORT_DIR`, and records outcomes in the same
 circuit-breaker ledger visible from the Vendor Sync workspace.
+The delta-planning layer now defines the connector-specific "changed since"
+query parameter for Granicus, Legistar, PrimeGov, and NovusAGENDA; cursor
+persistence and advancement remain the next live-sync hardening step before a
+city should rely on unattended vendor polling.
 
 When IT has approved local agenda-system export files and wants the Docker
 product path to ingest them repeatedly, create the host drop folder and enable
