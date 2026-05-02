@@ -72,6 +72,9 @@ Beat, disabled by default, guarded by both a schedule gate and live-network
 gate, and limited to configured approved source IDs with per-source reports.
 Remaining live-sync work is connector-specific delta semantics, deployment
 proof against real municipal vendor APIs, and operational runbook hardening.
+The first delta-planning contract is now being added: each supported connector
+gets an explicit "changed since" query parameter plan before the scheduled
+worker persists and advances cursors.
 
 ## Sprint 1
 

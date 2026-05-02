@@ -15,6 +15,9 @@ All notable changes to CivicClerk are documented here.
   requires both the schedule gate and live-network gate, runs only configured
   approved source IDs, writes per-source reports, and reuses the same
   circuit-breaker ledger as the one-shot runner.
+- `civicclerk.vendor_delta` adds connector-specific delta request planning for
+  Legistar, Granicus, PrimeGov, and NovusAGENDA so scheduled pulls have a
+  tested "changed since" URL contract before cursor persistence is wired in.
 
 ## [0.1.14] - 2026-05-02
 

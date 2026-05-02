@@ -226,6 +226,9 @@ Shipped in this foundation:
   and `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED`, so approved source IDs can be
   pulled repeatedly only after IT has configured credentials and accepted live
   vendor traffic
+- connector-specific delta request planning for supported vendor live-sync
+  sources, so the scheduled path has a tested "changed since" URL contract
+  before cursor persistence is promoted into the worker
 - `/vendor-live-sync/sources` and `/vendor-live-sync/sources/{id}/run-log` to
   save proposed vendor sources and record run outcomes with durable operator
   health state; these endpoints are no-network ledgers and do not start vendor
