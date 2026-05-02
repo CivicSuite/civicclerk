@@ -1661,11 +1661,12 @@ async def list_vendor_live_sync_sources() -> dict[str, object]:
 @app.post("/vendor-live-sync/sources/{source_id}/cursor-reset")
 async def reset_vendor_live_sync_cursor(source_id: str, payload: VendorSyncCursorReset) -> dict[str, object]:
     """Clear or move a vendor delta cursor without contacting the vendor network."""
-    source = _get_vendor_sync_repository().reset_success_cursor(
+    reset = _get_vendor_sync_repository().reset_success_cursor(
         source_id=source_id,
         cursor_at=payload.cursor_at,
+        reset_reason=payload.reason,
     )
-    if source is None:
+    if reset is None:
         raise HTTPException(
             status_code=404,
             detail={
@@ -1673,6 +1674,7 @@ async def reset_vendor_live_sync_cursor(source_id: str, payload: VendorSyncCurso
                 "fix": "Create the source with POST /vendor-live-sync/sources before resetting its cursor.",
             },
         )
+    source, reset_event = reset
     if payload.cursor_at is None:
         message = "Vendor sync cursor cleared. The next enabled pull will run a full source reconciliation."
         fix = "Run connector readiness first, confirm credentials are current, then start the controlled pull window."
@@ -1682,6 +1684,7 @@ async def reset_vendor_live_sync_cursor(source_id: str, payload: VendorSyncCurso
     return {
         "network_calls": False,
         "source": source.public_dict(),
+        "reset_event": reset_event.public_dict(),
         "message": message,
         "fix": fix,
         "reason_recorded": payload.reason.strip(),

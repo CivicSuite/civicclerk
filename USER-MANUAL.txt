@@ -436,7 +436,9 @@ These endpoints validate and record source/run/failure state only. They return
 contact Granicus, Legistar, PrimeGov, NovusAGENDA, or any other vendor network.
 The cursor reset path clears or moves `last_success_cursor_at` locally so the
 next controlled pull can perform a full reconciliation or replay from an
-operator-selected point; the reset itself never calls the vendor.
+operator-selected point. CivicClerk saves the operator reason as a
+cursor_reset run-log event and returns that eset_event in the API response;
+the reset itself never calls the vendor.
 
 For a deliberately enabled one-time vendor pull, keep the same ledger source,
 store the credential in a deployment secret environment variable, and run:

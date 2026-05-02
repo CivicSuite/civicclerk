@@ -267,22 +267,42 @@ class VendorSyncRepository:
         *,
         source_id: str,
         cursor_at: datetime | None = None,
-    ) -> VendorSyncSourceRecord | None:
+        reset_reason: str,
+    ) -> tuple[VendorSyncSourceRecord, VendorSyncRunRecord] | None:
         """Move or clear the delta cursor so operators can force safe reconciliation."""
 
         source = self.get_source(source_id)
         if source is None:
             return None
         now = datetime.now(UTC)
+        run_id = str(uuid4())
         if cursor_at is not None and cursor_at.tzinfo is None:
             cursor_at = cursor_at.replace(tzinfo=UTC)
         with self.engine.begin() as connection:
+            connection.execute(
+                vendor_sync_run_log.insert().values(
+                    id=run_id,
+                    source_id=source_id,
+                    started_at=now,
+                    finished_at=now,
+                    status="cursor_reset",
+                    records_discovered=0,
+                    records_succeeded=0,
+                    records_failed=0,
+                    retries_attempted=0,
+                    error_summary=reset_reason.strip(),
+                )
+            )
             connection.execute(
                 vendor_sync_sources.update()
                 .where(vendor_sync_sources.c.id == source_id)
                 .values(last_success_cursor_at=cursor_at, updated_at=now)
             )
-        return self.get_source(source_id)
+        updated_source = self.get_source(source_id)
+        reset_event = self.get_run(run_id)
+        if updated_source is None or reset_event is None:
+            return None
+        return updated_source, reset_event
 
     def record_run(
         self,
