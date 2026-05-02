@@ -1,19 +1,32 @@
-"""Vendor-network live sync readiness and health-state primitives."""
+"""Vendor-network live sync readiness and CivicCore-backed health primitives."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
-from datetime import UTC, datetime
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Literal
 from urllib.parse import parse_qs, urlparse
 
+from civiccore.connectors import (
+    SyncCircuitPolicy,
+    SyncCircuitState,
+    SyncHealthStatus,
+    SyncRunResult,
+    apply_sync_run_result,
+    build_sync_operator_status,
+    compute_sync_health_status,
+)
+
 from civicclerk.connectors import SUPPORTED_CONNECTORS, validate_url_host
 
-HealthStatus = Literal["healthy", "degraded", "circuit_open"]
 AuthMethod = Literal["api_key", "bearer_token", "oauth_client_credentials", "none"]
 
 CIRCUIT_OPEN_THRESHOLD = 5
 GRACE_PERIOD_CIRCUIT_OPEN_THRESHOLD = 2
+_CIVICCLERK_CIRCUIT_POLICY = SyncCircuitPolicy(
+    full_failure_threshold=CIRCUIT_OPEN_THRESHOLD,
+    grace_period_failure_threshold=GRACE_PERIOD_CIRCUIT_OPEN_THRESHOLD,
+)
 SUPPORTED_LIVE_SYNC_AUTH_METHODS: set[str] = {
     "api_key",
     "bearer_token",
@@ -46,42 +59,8 @@ class VendorLiveSyncConfig:
     auth_method: AuthMethod
 
 
-@dataclass(frozen=True)
-class VendorSyncState:
-    connector: str
-    source_name: str = "vendor source"
-    consecutive_failure_count: int = 0
-    active_failure_count: int = 0
-    sync_paused: bool = False
-    sync_paused_at: datetime | None = None
-    sync_paused_reason: str | None = None
-    last_sync_status: str | None = None
-    last_error_at: datetime | None = None
-
-    @property
-    def health_status(self) -> HealthStatus:
-        return compute_health_status(self)
-
-
-@dataclass(frozen=True)
-class VendorSyncRunResult:
-    records_discovered: int
-    records_succeeded: int
-    records_failed: int
-    retries_attempted: int = 0
-    error_summary: str | None = None
-
-    @property
-    def attempted_count(self) -> int:
-        return self.records_discovered + self.retries_attempted
-
-    @property
-    def any_success(self) -> bool:
-        return self.records_succeeded > 0
-
-    @property
-    def any_failure(self) -> bool:
-        return self.records_failed > 0
+VendorSyncState = SyncCircuitState
+VendorSyncRunResult = SyncRunResult
 
 
 def validate_live_sync_config(config: VendorLiveSyncConfig) -> list[LiveSyncCheck]:
@@ -164,85 +143,22 @@ def apply_vendor_sync_result(
     *,
     now: datetime | None = None,
 ) -> VendorSyncState:
-    """Apply one run result using the CivicRecords AI circuit-breaker pattern."""
+    """Apply one run result using the shared CivicCore circuit-breaker pattern."""
 
-    now = now or datetime.now(UTC)
-    if result.attempted_count == 0 and not result.any_failure:
-        return replace(state, last_sync_status="success")
-
-    if result.any_success:
-        return replace(
-            state,
-            consecutive_failure_count=0,
-            sync_paused=False,
-            sync_paused_at=None,
-            sync_paused_reason=None if state.sync_paused_reason == "grace_period" else state.sync_paused_reason,
-            last_sync_status="partial" if result.any_failure else "success",
-        )
-
-    if result.any_failure:
-        failure_count = state.consecutive_failure_count + 1
-        threshold = (
-            GRACE_PERIOD_CIRCUIT_OPEN_THRESHOLD
-            if state.sync_paused_reason == "grace_period"
-            else CIRCUIT_OPEN_THRESHOLD
-        )
-        if failure_count >= threshold:
-            return replace(
-                state,
-                consecutive_failure_count=failure_count,
-                sync_paused=True,
-                sync_paused_at=now,
-                sync_paused_reason=f"Circuit open after {failure_count} consecutive full-run failures.",
-                last_sync_status="failed",
-                last_error_at=now,
-            )
-        return replace(
-            state,
-            consecutive_failure_count=failure_count,
-            last_sync_status="failed",
-            last_error_at=now,
-        )
-
-    return replace(state, last_sync_status="success")
+    return apply_sync_run_result(
+        state,
+        result,
+        now=now,
+        policy=_CIVICCLERK_CIRCUIT_POLICY,
+    )
 
 
-def compute_health_status(state: VendorSyncState) -> HealthStatus:
-    if state.sync_paused:
-        return "circuit_open"
-    if state.consecutive_failure_count > 0 or state.active_failure_count > 0:
-        return "degraded"
-    return "healthy"
+def compute_health_status(state: VendorSyncState) -> SyncHealthStatus:
+    return compute_sync_health_status(state)
 
 
 def operator_status(state: VendorSyncState) -> dict[str, str | int | bool | None]:
-    health = compute_health_status(state)
-    if health == "circuit_open":
-        message = f"{state.source_name} live sync is paused because the circuit breaker is open."
-        fix = (
-            "Review the latest run errors, correct the vendor credentials or endpoint, "
-            "run a one-time readiness check, then unpause the source."
-        )
-    elif health == "degraded":
-        message = f"{state.source_name} live sync is degraded."
-        fix = (
-            "Review active failures and confirm the next scheduled sync can reach the vendor endpoint; "
-            "the circuit opens after five consecutive full-run failures."
-        )
-    else:
-        message = f"{state.source_name} live sync is healthy."
-        fix = "No action needed. Continue monitoring scheduled run logs."
-    return {
-        "connector": state.connector,
-        "source_name": state.source_name,
-        "health_status": health,
-        "consecutive_failure_count": state.consecutive_failure_count,
-        "active_failure_count": state.active_failure_count,
-        "sync_paused": state.sync_paused,
-        "sync_paused_reason": state.sync_paused_reason,
-        "message": message,
-        "fix": fix,
-    }
+    return build_sync_operator_status(state, policy=_CIVICCLERK_CIRCUIT_POLICY).public_dict()
 
 
 def _credential_location_check(source_url: str) -> LiveSyncCheck:
