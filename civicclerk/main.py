@@ -57,6 +57,8 @@ from civicclerk.packet_notice import (
 from civicclerk.public_archive import PublicArchiveStore, can_view_closed_sessions
 from civicclerk.public_ui import render_public_portal
 from civicclerk.staff_ui import build_staff_cockpit_items, render_staff_dashboard
+from civicclerk.vendor_live_sync import VendorSyncRunResult
+from civicclerk.vendor_sync_persistence import VendorSyncConfigError, VendorSyncRepository
 from civiccore import __version__ as CIVICCORE_VERSION
 
 app = FastAPI(
@@ -132,6 +134,8 @@ _meeting_body_repository: MeetingBodyRepository | None = None
 _meeting_body_db_url: str | None = None
 _meeting_store: MeetingStore | None = None
 _meeting_db_url: str | None = None
+_vendor_sync_repository: VendorSyncRepository | None = None
+_vendor_sync_db_url: str | None = None
 
 
 async def seed_demo_data_when_requested() -> None:
@@ -358,6 +362,21 @@ class PublicMeetingRecordCreate(BaseModel):
     closed_session_notes: str | None = Field(default=None, min_length=1)
 
 
+class VendorSyncSourceCreate(BaseModel):
+    connector: str = Field(min_length=1)
+    source_name: str = Field(min_length=1)
+    source_url: str = Field(min_length=1)
+    auth_method: str = Field(min_length=1)
+
+
+class VendorSyncRunRecordCreate(BaseModel):
+    records_discovered: int = Field(ge=0)
+    records_succeeded: int = Field(ge=0)
+    records_failed: int = Field(ge=0)
+    retries_attempted: int = Field(default=0, ge=0)
+    error_summary: str | None = Field(default=None, min_length=1)
+
+
 @app.get("/")
 async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
@@ -408,7 +427,9 @@ async def root() -> dict[str, str]:
             "state and supporting the browser OIDC login/session foundation; "
             "the integrated React clerk console and public portal are now present for local "
             "Docker product rehearsal, while production municipal rollout still depends on "
-            "enterprise code signing and city-approved deployment hardening."
+            "enterprise code signing and city-approved deployment hardening; "
+            "vendor live-sync sources and run outcomes can now be persisted for operator "
+            "health review without contacting vendor networks."
         ),
         "next_step": "Release alignment, signing readiness, and production deployment hardening",
     }
@@ -1599,6 +1620,92 @@ async def import_connector_meeting(connector_name: str, payload: dict) -> dict:
         raise HTTPException(status_code=status_code, detail=error.public_dict()) from error
 
 
+@app.post("/vendor-live-sync/sources", status_code=201)
+async def create_vendor_live_sync_source(payload: VendorSyncSourceCreate) -> dict:
+    """Create a durable vendor live-sync source record without contacting the vendor."""
+    try:
+        source = _get_vendor_sync_repository().create_source(
+            connector=payload.connector,
+            source_name=payload.source_name,
+            source_url=payload.source_url,
+            auth_method=payload.auth_method,
+        )
+    except VendorSyncConfigError as error:
+        raise HTTPException(status_code=422, detail=error.public_dict()) from error
+    public = source.public_dict()
+    public["network_calls"] = False
+    public["scope"] = (
+        "This endpoint validates and saves vendor live-sync configuration only; "
+        "it does not pull records from the vendor network."
+    )
+    return public
+
+
+@app.get("/vendor-live-sync/sources")
+async def list_vendor_live_sync_sources() -> dict[str, object]:
+    """List persisted vendor live-sync source health without contacting vendors."""
+    sources = [source.public_dict() for source in _get_vendor_sync_repository().list_sources()]
+    return {
+        "network_calls": False,
+        "sources": sources,
+        "message": "Vendor live-sync source health is loaded from CivicClerk persistence.",
+        "fix": "If a source is degraded or circuit_open, review its run log before enabling scheduled pulls.",
+    }
+
+
+@app.post("/vendor-live-sync/sources/{source_id}/run-log", status_code=201)
+async def record_vendor_live_sync_run(source_id: str, payload: VendorSyncRunRecordCreate) -> dict:
+    """Record one vendor sync run outcome without starting a vendor pull."""
+    recorded = _get_vendor_sync_repository().record_run(
+        source_id=source_id,
+        result=VendorSyncRunResult(
+            records_discovered=payload.records_discovered,
+            records_succeeded=payload.records_succeeded,
+            records_failed=payload.records_failed,
+            retries_attempted=payload.retries_attempted,
+            error_summary=payload.error_summary,
+        ),
+    )
+    if recorded is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Vendor live-sync source not found.",
+                "fix": "Create the source with POST /vendor-live-sync/sources before recording a run outcome.",
+            },
+        )
+    source, run = recorded
+    source_public = source.public_dict()
+    return {
+        "network_calls": False,
+        "source": source_public,
+        "run": run.public_dict(),
+        "message": "Vendor sync run outcome was recorded; no vendor network call was attempted.",
+        "fix": source_public["fix"],
+    }
+
+
+@app.get("/vendor-live-sync/sources/{source_id}/run-log")
+async def list_vendor_live_sync_runs(source_id: str) -> dict[str, object]:
+    """Return persisted run history for one vendor source without contacting vendors."""
+    source = _get_vendor_sync_repository().get_source(source_id)
+    if source is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Vendor live-sync source not found.",
+                "fix": "Create the source with POST /vendor-live-sync/sources before viewing run history.",
+            },
+        )
+    runs = [run.public_dict() for run in _get_vendor_sync_repository().list_runs(source_id)]
+    return {
+        "network_calls": False,
+        "source": source.public_dict(),
+        "runs": runs,
+        "message": "Run history is loaded from CivicClerk persistence; no vendor network call was attempted.",
+    }
+
+
 @app.get("/public/meetings")
 async def public_meetings() -> dict[str, int | list[dict]]:
     """Return public meeting calendar records only."""
@@ -2430,3 +2537,12 @@ def _get_meeting_store() -> MeetingStore:
         _meeting_db_url = db_url
         _meeting_store = MeetingStore(db_url=db_url)
     return _meeting_store
+
+
+def _get_vendor_sync_repository() -> VendorSyncRepository:
+    global _vendor_sync_db_url, _vendor_sync_repository
+    db_url = os.environ.get("CIVICCLERK_VENDOR_SYNC_DB_URL")
+    if _vendor_sync_repository is None or db_url != _vendor_sync_db_url:
+        _vendor_sync_db_url = db_url
+        _vendor_sync_repository = VendorSyncRepository(db_url=db_url)
+    return _vendor_sync_repository
