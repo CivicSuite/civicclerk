@@ -5,6 +5,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = "0.1.16"
 DEPLOYMENT_ENV_VARS = (
     "CIVICCLERK_STAFF_AUTH_MODE",
     "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES",
@@ -30,8 +31,8 @@ def _write_completed_profile(tmp_path: Path) -> Path:
     dist_root = tmp_path / "dist"
     dist_root.mkdir()
     for name in [
-        "civicclerk-0.1.15-py3-none-any.whl",
-        "civicclerk-0.1.15.tar.gz",
+        f"civicclerk-{VERSION}-py3-none-any.whl",
+        f"civicclerk-{VERSION}.tar.gz",
         "SHA256SUMS.txt",
     ]:
         (dist_root / name).write_text("test artifact\n", encoding="utf-8")
@@ -60,8 +61,8 @@ def _write_completed_trusted_header_profile(tmp_path: Path) -> Path:
     dist_root = tmp_path / "dist"
     dist_root.mkdir()
     for name in [
-        "civicclerk-0.1.15-py3-none-any.whl",
-        "civicclerk-0.1.15.tar.gz",
+        f"civicclerk-{VERSION}-py3-none-any.whl",
+        f"civicclerk-{VERSION}.tar.gz",
         "SHA256SUMS.txt",
     ]:
         (dist_root / name).write_text("test artifact\n", encoding="utf-8")

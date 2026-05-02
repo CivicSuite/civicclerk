@@ -94,11 +94,13 @@ from __future__ import annotations
 
 from hashlib import sha256
 from pathlib import Path
+import tomllib
 
 dist = Path("dist")
+version = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
 artifacts = [
-    dist / "civicclerk-0.1.15-py3-none-any.whl",
-    dist / "civicclerk-0.1.15.tar.gz",
+    dist / f"civicclerk-{version}-py3-none-any.whl",
+    dist / f"civicclerk-{version}.tar.gz",
 ]
 missing = [str(path) for path in artifacts if not path.exists()]
 if missing:

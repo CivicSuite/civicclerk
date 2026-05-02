@@ -4,6 +4,8 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.16] - 2026-05-02
+
 ### Added
 - `scripts/run_mock_city_environment_suite.py` now includes a reusable
   Brookfield Entra ID-style municipal OIDC contract with issuer, audience,

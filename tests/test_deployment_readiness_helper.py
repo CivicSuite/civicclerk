@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = "0.1.16"
 DEPLOYMENT_ENV_VARS = (
     "CIVICCLERK_STAFF_AUTH_MODE",
     "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES",
@@ -66,8 +67,8 @@ def test_deployment_readiness_helper_passes_configured_bearer_environment(tmp_pa
     dist_root = tmp_path / "dist"
     dist_root.mkdir()
     for name in [
-        "civicclerk-0.1.15-py3-none-any.whl",
-        "civicclerk-0.1.15.tar.gz",
+        f"civicclerk-{VERSION}-py3-none-any.whl",
+        f"civicclerk-{VERSION}.tar.gz",
         "SHA256SUMS.txt",
     ]:
         (dist_root / name).write_text("test artifact\n", encoding="utf-8")
@@ -108,8 +109,8 @@ def test_deployment_readiness_helper_loads_env_file_without_printing_secrets(tmp
     dist_root = tmp_path / "dist"
     dist_root.mkdir()
     for name in [
-        "civicclerk-0.1.15-py3-none-any.whl",
-        "civicclerk-0.1.15.tar.gz",
+        f"civicclerk-{VERSION}-py3-none-any.whl",
+        f"civicclerk-{VERSION}.tar.gz",
         "SHA256SUMS.txt",
     ]:
         (dist_root / name).write_text("test artifact\n", encoding="utf-8")
