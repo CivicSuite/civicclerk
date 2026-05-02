@@ -5,6 +5,12 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Vendor live-sync operator state now persists: `civicclerk.vendor_sync_persistence`
+  adds durable source, run-log, and failure records plus
+  `/vendor-live-sync/sources` and `/vendor-live-sync/sources/{id}/run-log`
+  endpoints that validate proposed sources and record run outcomes without
+  contacting vendor networks. `CIVICCLERK_VENDOR_SYNC_DB_URL` controls the
+  ledger store.
 - Vendor live-sync readiness now has a bounded operational foundation:
   `civicclerk.vendor_live_sync` validates proposed source URLs through
   CivicCore guards, rejects credentials in URLs, computes

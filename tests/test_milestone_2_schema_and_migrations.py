@@ -97,6 +97,16 @@ def agenda_item_lifecycle_records_migration_path() -> Path:
     )
 
 
+def vendor_sync_persistence_migration_path() -> Path:
+    return (
+        ROOT
+        / "civicclerk"
+        / "migrations"
+        / "versions"
+        / "civicclerk_0009_vendor_sync_persistence.py"
+    )
+
+
 def test_canonical_table_models_exist_and_no_tables_are_missing_or_extra() -> None:
     models = model_module()
     metadata = models.Base.metadata
@@ -164,6 +174,7 @@ def test_alembic_scaffold_exists_for_civicclerk_schema_chain() -> None:
         notice_checklist_migration_path(),
         meeting_records_migration_path(),
         agenda_item_lifecycle_records_migration_path(),
+        vendor_sync_persistence_migration_path(),
     ]
 
     for path in expected:
@@ -259,13 +270,16 @@ def test_alembic_command_upgrades_real_pgvector_database(
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civicclerk_revision == "civicclerk_0008_intake_promotion"
+        assert civicclerk_revision == "civicclerk_0009_vendor_sync"
         assert civicclerk_tables == set(CANONICAL_TABLES) | {
             "agenda_item_lifecycle_records",
             "agenda_intake_queue",
             "meeting_records",
             "notice_checklist_records",
             "packet_assembly_records",
+            "vendor_sync_failures",
+            "vendor_sync_run_log",
+            "vendor_sync_sources",
         }
     finally:
         subprocess.run(["docker", "rm", "-f", name], check=False, capture_output=True, text=True)
@@ -359,6 +373,20 @@ def test_agenda_item_lifecycle_records_migration_declares_persistent_records_tab
     assert '"department_name"' in text
     assert '"audit_entries"' in text
     assert "postgresql.JSONB()" in text
+    assert 'schema="civicclerk"' in text
+
+
+def test_vendor_sync_persistence_migration_declares_source_run_and_failure_tables() -> None:
+    text = vendor_sync_persistence_migration_path().read_text(encoding="utf-8")
+
+    assert 'revision = "civicclerk_0009_vendor_sync"' in text
+    assert 'down_revision = "civicclerk_0008_intake_promotion"' in text
+    assert "idempotent_create_table" in text
+    assert '"vendor_sync_sources"' in text
+    assert '"vendor_sync_run_log"' in text
+    assert '"vendor_sync_failures"' in text
+    assert '"consecutive_failure_count"' in text
+    assert '"sync_paused_reason"' in text
     assert 'schema="civicclerk"' in text
 
 

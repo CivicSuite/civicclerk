@@ -56,12 +56,12 @@ path now has a local import-sync runner that produces normalized ledgers from
 exported agenda-system JSON, plus an optional Docker/Celery Beat schedule for
 approved local export-drop ingestion. The first vendor live-sync operational
 foundation is also present: proposed source URLs are validated through
-CivicCore guards, credentials in URLs are rejected, source health is computed
-as `healthy`, `degraded`, or `circuit_open`, and the circuit opens after five
-consecutive full-run failures or two post-unpause grace-period failures.
-Remaining live-sync work is actual vendor adapters, scheduled pulls, durable
-run/failure persistence, and staff UI surfacing; the foundation does not yet
-claim vendor-network data movement.
+CivicCore guards, credentials in URLs are rejected, source/run/failure state
+persists in the vendor sync ledger, source health is computed as `healthy`,
+`degraded`, or `circuit_open`, and the circuit opens after five consecutive
+full-run failures or two post-unpause grace-period failures. Remaining
+live-sync work is actual vendor adapters, scheduled pulls, and staff UI
+surfacing; the foundation does not yet claim vendor-network data movement.
 
 ## Sprint 1
 

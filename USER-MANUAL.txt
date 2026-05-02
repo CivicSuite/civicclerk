@@ -46,28 +46,29 @@ action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.13 release
+NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
+ledgering, accessibility/browser QA gates, CivicClerk v0.1.13 release
 artifacts, CivicCore v0.17.0-backed packet export bundles, a database-backed
-agenda intake queue with clerk readiness review, database-backed agenda item
-lifecycle records with durable transition audit entries, database-backed meeting
+agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
-with source/citation metadata, and database-backed notice
+with source/citation metadata, database-backed agenda item lifecycle records
+with durable transition audit entries, and database-backed notice
 checklist/posting-proof records.
 The `/staff` page now provides a product cockpit plus first staff workflow
-screens for agenda intake, packet assembly/export, notice checklist/posting-proof,
-meeting outcome, minutes draft, public archive, and connector import work. The
-cockpit gives clerks a day-at-a-glance desk before they drill into individual
-forms, and it reads the live agenda intake queue for ready, pending, and
-needs-revision counts. The Agenda Intake panel also renders live queue rows with
-escaped submitted titles plus actionable empty and unavailable-store states. The
-Packet Assembly panel renders recent live packet assembly records with escaped
-packet titles plus actionable empty and unavailable-store states. The Notice
-Checklist panel renders recent live notice records with posting-proof status
-plus actionable empty and unavailable-store states. The Meeting Outcomes panel
-renders recent live motion-centered outcome rows with vote/action status plus an
-actionable empty state. The Minutes Draft panel renders recent live
-citation-gated draft rows with human-review next steps plus an actionable empty
-state. The workflow forms can submit
+screens for agenda intake, packet assembly/export, notice
+checklist/posting-proof, meeting outcome, minutes draft, public archive, and
+connector import work. The cockpit gives clerks a day-at-a-glance desk before
+they drill into individual forms, and it reads the live agenda intake queue for
+ready, pending, and needs-revision counts. The Agenda Intake panel also renders
+live queue rows with escaped submitted titles plus actionable empty and
+unavailable-store states. The Packet Assembly panel renders recent live packet
+assembly records with escaped packet titles plus actionable empty and
+unavailable-store states. The Notice Checklist panel renders recent live notice
+records with posting-proof status plus actionable empty and unavailable-store
+states. The Meeting Outcomes panel renders recent live motion-centered outcome
+rows with vote/action status plus an actionable empty state. The Minutes Draft
+panel renders recent live citation-gated draft rows with human-review next steps
+plus an actionable empty state. The workflow forms can submit
 intake items, record readiness review, create/finalize packet assembly records,
 create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture
 motions/votes/action items, create citation-gated minutes drafts, publish
@@ -89,38 +90,105 @@ current `/staff` page submits and reviews agenda intake records directly,
 creates/finalizes packet assembly records, persists notice checklist
 posting-proof records, captures meeting outcome records, creates
 citation-gated minutes draft records, publishes public archive records, and
-normalizes local connector exports, and creates records-ready packet export
+normalizes local connector exports, records vendor live-sync source/run health
+without contacting vendor networks, and creates records-ready packet export
 bundles. The staff shell now checks `/staff/session` so IT staff and clerks can
-see whether the service is in local open mode, bearer-protected staff mode, or
-trusted-header staff mode. `/staff/auth-readiness` now reports whether the
-configured bearer-token or trusted-proxy bridge is deployment-ready before a
-live session check. Bearer mode uses
+see whether the service is in local open mode, OIDC-protected staff mode,
+OIDC browser-session mode, bearer-protected staff mode, or trusted-header staff
+mode.
+`/staff/auth-readiness` now reports whether the configured OIDC,
+bearer-token, or trusted-proxy bridge is deployment-ready before a live session
+check. OIDC mode uses `CIVICCLERK_STAFF_AUTH_MODE=oidc` plus
+`CIVICCLERK_STAFF_OIDC_PROVIDER`, `CIVICCLERK_STAFF_OIDC_ISSUER`,
+`CIVICCLERK_STAFF_OIDC_AUDIENCE`, `CIVICCLERK_STAFF_OIDC_JWKS_URL`,
+`CIVICCLERK_STAFF_OIDC_ROLE_CLAIMS`, and
+`CIVICCLERK_STAFF_OIDC_ALGORITHMS` for token validation. Browser sign-in adds
+`CIVICCLERK_STAFF_OIDC_AUTHORIZATION_URL`,
+`CIVICCLERK_STAFF_OIDC_TOKEN_URL`, `CIVICCLERK_STAFF_OIDC_CLIENT_ID`,
+`CIVICCLERK_STAFF_OIDC_CLIENT_SECRET`,
+`CIVICCLERK_STAFF_OIDC_REDIRECT_URI`, and
+`CIVICCLERK_STAFF_OIDC_SESSION_COOKIE_SECRET`; `/staff/login` redirects to the
+provider with authorization-code + PKCE parameters, `/staff/oidc/callback`
+validates the returned token, and CivicClerk stores a signed HttpOnly staff
+session cookie rather than the raw OIDC token.
+The React dashboard now makes that session state visible in a Staff Access
+panel. A clerk sees whether the browser is in local open mode, signed in with
+municipal SSO, using bearer access, or behind a trusted-header bridge. When a
+session is missing or expired, the panel gives the clerk a direct sign-in path
+and tells IT to inspect `/staff/auth-readiness` for the exact missing OIDC
+browser-login settings.
+Bearer mode uses
 `CIVICCLERK_STAFF_AUTH_MODE=bearer` plus `CIVICCLERK_STAFF_AUTH_TOKEN_ROLES`.
 Trusted-header mode uses `CIVICCLERK_STAFF_AUTH_MODE=trusted_header` plus
 `CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER`,
 `CIVICCLERK_STAFF_SSO_ROLES_HEADER`,
 `CIVICCLERK_STAFF_SSO_PROVIDER`, and
-`CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES`; full OIDC login is still future work.
-When bearer or trusted-header mode is ready, the readiness response now
+`CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES`. When OIDC, bearer, or trusted-header mode is ready, the
+readiness response now
 includes a concrete session probe and a protected write probe so IT staff can
 test the real deployment path instead of inferring the next request from env
-vars alone. When trusted-header mode is still being staged on one workstation,
-the readiness response also includes a `local_proxy_rehearsal` block that
-points to `scripts/local_trusted_header_proxy.py`, pre-fills `127.0.0.1/32` as
-the safe starter allowlist, and tells operators to browse the helper URL
-instead of calling the upstream app directly. The resident-facing `/public`
-portal now loads public calendar records, public-safe detail, and anonymous
-archive search from the live public APIs. It also explains empty public-record
-states and keeps closed-session material out of anonymous resident views. The
-React staff route is now the primary clerk workspace for local product
-rehearsal, while the older HTML staff cockpit remains a lightweight reference
-shell rather than the target product surface.
+vars alone.
+When trusted-header mode is still being staged on one workstation, the
+readiness response also includes a `local_proxy_rehearsal` block that points to
+`scripts/local_trusted_header_proxy.py`, pre-fills `127.0.0.1/32` as the safe
+starter allowlist, and tells operators to browse the helper URL instead of
+calling the upstream app directly.
+The resident-facing `/public` portal now loads public calendar records,
+public-safe detail, and anonymous archive search from the live public APIs. It
+also explains empty public-record states and keeps closed-session material out
+of anonymous resident views. The React staff workspace now exists under
+`frontend/`. It translates the CivicSuite mockup into the real CivicClerk
+frontend direction: staff shell, meeting calendar, meeting detail
+lifecycle ribbon, audit/evidence drawer, and loading/success/empty/error/partial
+states with actionable copy. It now loads the live `/api/meetings` list for
+dashboard metrics, meeting calendar cards, and meeting detail selection, with
+`?source=demo` retained for deterministic QA evidence. The dashboard also
+loads `/api/meeting-bodies` so staff can create, rename, and deactivate boards
+or commissions without hard-deleting meeting history. Clerks can now schedule
+meetings from active meeting bodies and edit pre-lock schedule fields from the
+meeting detail view, including title, body, type, start time, and location. The
+API rejects nonexistent or inactive body ids, writes audit entries for schedule
+edits, and blocks those edits after the meeting reaches the in-session lock
+point. This React staff route is now the primary clerk workspace for local
+product rehearsal; the older HTML staff cockpit remains useful as a lightweight
+reference shell, not as the target product surface.
+
+The first React Sprint 2 surface is now also present. Staff can open Agenda
+Intake from the React navigation, submit a department agenda request with source
+material, review pending items as ready or needing revision, and see the audit
+hash cue that proves the reviewed record changed. Ready records now include a
+Promote to agenda action that creates a canonical agenda item, advances it to
+`CLERK_ACCEPTED`, stores the promoted agenda item id and promotion audit hash on
+the intake record, and tells staff that the next step is adding the item to the
+target meeting packet assembly. Staff can now open Packet Builder from the
+React navigation, choose a meeting, select promoted agenda items, create a
+packet assembly draft, see the packet queue for that meeting, and finalize the
+draft with a visible audit-hash cue. Staff can also open Notice Checklist from
+the React navigation, select the meeting, see the computed statutory notice
+deadline, record the posting time, notice type, statutory basis, human approver,
+and actor, run the live compliance check, and attach posting proof only after
+the checklist passes. If the statutory deadline has passed, the workspace says
+that plainly, disables proof attachment, and tells the clerk to reschedule or
+document the lawful emergency/special basis before proceeding. The Public
+Posting React surface is also present: staff can open a resident-safe view of
+posted public records, show the public agenda, packet, and approved minutes
+text, and search public archive records without exposing or implying restricted
+closed-session material. The Meeting Outcomes React surface is now present:
+staff can select a meeting, capture immutable motions, record roll-call votes
+against a selected motion, create action items that reference the source
+motion, and see copy explaining that corrections must be append-only rather
+than silent edits. The Minutes Draft React surface is now present: staff can
+select a meeting, review existing citation-gated drafts, enter source material,
+draft sentences, sentence-level citations, model, prompt version, and human
+approver, create a cited draft through the live minutes API, and see the public
+posting gate explain that AI-drafted minutes cannot bypass human adoption.
 
 ## Part 2: IT and Technical Overview
 
-### Planned deployment model
+### Deployment model
 
-CivicClerk will follow the CivicSuite deployment pattern:
+CivicClerk now has the first CivicSuite-style Docker Compose stack for local
+product rehearsal:
 
 - local Docker-based deployment
 - PostgreSQL 17 + pgvector
@@ -131,12 +199,80 @@ CivicClerk will follow the CivicSuite deployment pattern:
 - no runtime cloud dependency
 - no telemetry
 
+Copy `docs/examples/docker.env.example` to `.env`, replace the sample database
+password before shared use, then run:
+
+```powershell
+docker compose up --build
+```
+
+Open `http://127.0.0.1:8080` for the nginx-served React app. The API is exposed
+at `http://127.0.0.1:8776`, and nginx proxies React `/api/*` requests to the
+FastAPI service. The Windows installer package now wraps this same Compose
+profile; Docker Desktop is still required.
+If IT changes `.env` from local open mode to OIDC, bearer, or trusted-header
+staff auth, Compose forwards the corresponding staff-auth variables into the
+API, worker, and beat containers so `/staff/session`, `/staff/login`, and
+`/staff/auth-readiness` report the same protected profile the operator set.
+IT can also enable scheduled local connector export-drop ingestion in the same
+Compose profile by setting `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true`, dropping
+approved agenda-system JSON exports into `CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST`
+(default `.\connector-imports`), and reviewing the generated provenance ledger
+under `CIVICCLERK_CONNECTOR_SYNC_LEDGER_PATH`. This scheduled path still reads
+local files only; it does not contact Granicus, Legistar, PrimeGov, NovusAGENDA,
+or any vendor network.
+
+By default, Compose sets `CIVICCLERK_DEMO_SEED=1`. On API startup, CivicClerk
+creates a Brookfield rehearsal dataset with meeting bodies, meetings in multiple
+lifecycle states, one promoted agenda intake item, a finalized packet, a posted
+notice checklist with statutory basis and posting proof, captured motion/vote
+outcomes, citation-gated minutes, and a public archive record. Set
+`CIVICCLERK_DEMO_SEED=0` in `.env` when IT wants an empty local database instead.
+
+### Windows installer package
+
+For a Windows IT install or repair of the Docker product stack, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+The script checks Docker Desktop, creates `.env` from
+`docs/examples/docker.env.example` if it does not already exist, generates a
+local PostgreSQL password, starts `docker compose up -d --build`, waits for
+`/health` and the React staff app, and opens `http://127.0.0.1:8080/`. The
+default `.env` keeps `CIVICCLERK_DEMO_SEED=1`, so the first app launch shows
+Brookfield demo data instead of an empty shell.
+
+To build the setup executable on a workstation with Inno Setup 6:
+
+```bash
+bash installer/windows/build-installer.sh
+```
+
+The resulting setup package installs Start and Install or Repair shortcuts.
+It is unsigned unless the secured release-signing workstation sets
+`CIVICCLERK_SIGN_INSTALLER=true` plus Microsoft SignTool, a code-signing
+certificate identity, and an RFC 3161 timestamp URL. Without that signing
+profile, Windows SmartScreen may warn about an unknown publisher. To verify the
+enterprise signing inputs without printing secrets, run:
+
+```bash
+python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-0.1.13-Setup.exe
+```
+
+Uninstall stops the Compose stack and removes installed source files, but Docker volumes are preserved so meeting data is not
+destroyed accidentally. `CIVICCLERK_STAFF_AUTH_MODE=open` is only for a
+single-workstation rehearsal; switch to OIDC, bearer, or trusted-header mode
+before shared deployment.
+
 ### Planned dependency
 
 The runtime foundation now pins to the published `civiccore` v0.17.0 release wheel. Agenda intake uses
 `CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; agenda item lifecycle records use
-`CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records use
-`CIVICCLERK_MEETING_DB_URL` when set; packet assembly records use
+`CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records, schedule fields, and
+schedule-edit audit entries use `CIVICCLERK_MEETING_DB_URL` when set; meeting body records use
+`CIVICCLERK_MEETING_BODY_DB_URL` when set; packet assembly records use
 `CIVICCLERK_PACKET_ASSEMBLY_DB_URL` when set; notice checklist records use
 `CIVICCLERK_NOTICE_CHECKLIST_DB_URL` when set. If unset, each repository uses
 an in-memory SQLite database suitable for local smoke checks.
@@ -159,7 +295,7 @@ python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776
 Then verify these first-run checks:
 
 - `GET /health` returns `{"status":"ok","service":"civicclerk","version":"0.1.13","civiccore":"0.17.0"}`
-- `GET /staff/auth-readiness` returns `mode: "open"` and explains how to move to bearer or trusted-header deployment
+- `GET /staff/auth-readiness` returns `mode: "open"` and explains how to move to OIDC, bearer, or trusted-header deployment
 - `GET /staff` renders the first workflow shell without console errors
 
 To rehearse that Windows-first path without hand-copying each command, run:
@@ -206,24 +342,24 @@ bash scripts/build_release_handoff_bundle.sh --print-only
 
 The bundle helper previews the files that will be packaged, including the built
 wheel, source distribution, checksums, current docs, trusted-header reference,
-installer-readiness helper, and install rehearsal helpers. After
+installer-readiness helper, enterprise signing-readiness helper, and install rehearsal helpers. After
 `bash scripts/verify-release.sh` has built `dist/`, rerun without `-PrintOnly`
 or `--print-only` to create
 `dist/civicclerk-0.1.13-release-handoff.zip`. If that zip already exists, the
 helpers stop instead of overwriting it.
 
-After the handoff zip exists, verify the future installer input contract:
+After the handoff zip exists, verify the installer input contract:
 
 ```bash
 python scripts/check_installer_readiness.py
 ```
 
 This check verifies release artifacts, `SHA256SUMS.txt`, zip validity, and the
-required docs/env examples/rehearsal helpers. It is intentionally not an
-installer; it tells IT what must be fixed before a future MSI or setup package
-can safely be built.
+required docs/env examples/rehearsal helpers. It complements the Windows
+installer source package by proving the release handoff inputs are intact before
+an installer is built or handed to IT.
 
-Before live-sync design work, verify the local connector contract:
+Before vendor-network live-sync design work, verify the local connector contract:
 
 ```bash
 python scripts/check_connector_sync_readiness.py
@@ -232,8 +368,9 @@ python scripts/check_connector_sync_readiness.py
 This check normalizes the supported Granicus, Legistar, PrimeGov, and
 NovusAGENDA sample payloads without outbound network calls. It can also validate
 a proposed `--source-url` or `--odbc-connection-string` with the shared
-CivicCore host guards. It is intentionally not live sync; it tells the team what
-must be fixed before scheduled vendor polling or database sync is designed.
+CivicCore host guards. It is intentionally not vendor-network live sync; it
+tells the team what must be fixed before scheduled vendor polling or database
+sync is designed.
 
 Then preview the first vendor live-sync operating contract without contacting a
 vendor:
@@ -247,6 +384,40 @@ and auth method. It also shows the operator-facing health status and
 circuit-breaker behavior that future vendor adapters must use: `healthy`,
 `degraded`, or `circuit_open`, with the circuit opening after five consecutive
 full-run failures or two post-unpause grace-period failures.
+
+To persist the vendor source and its operator-visible health before any live
+adapter is enabled, set `CIVICCLERK_VENDOR_SYNC_DB_URL` and use the no-network
+ledger endpoints:
+
+```bash
+curl -X POST http://127.0.0.1:8776/vendor-live-sync/sources \
+  -H "content-type: application/json" \
+  -d '{"connector":"legistar","source_name":"Legistar production","source_url":"https://vendor.example.gov/api/meetings","auth_method":"bearer_token"}'
+curl -X POST http://127.0.0.1:8776/vendor-live-sync/sources/{id}/run-log \
+  -H "content-type: application/json" \
+  -d '{"records_discovered":1,"records_succeeded":0,"records_failed":1,"error_summary":"Vendor API unavailable."}'
+```
+
+These endpoints validate and record source/run/failure state only. They return
+`network_calls: false`, health status, and actionable fix text; they do not
+contact Granicus, Legistar, PrimeGov, NovusAGENDA, or any other vendor network.
+
+When IT has approved local agenda-system export files and wants the Docker
+product path to ingest them repeatedly, create the host drop folder and enable
+the Celery Beat schedule in `.env`:
+
+```powershell
+New-Item -ItemType Directory -Force .\connector-imports
+$env:CIVICCLERK_CONNECTOR_SYNC_ENABLED="true"
+```
+
+For the Compose profile, set `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true` and, if
+needed, `CIVICCLERK_CONNECTOR_SYNC_CONNECTORS=granicus,legistar` in `.env`.
+Drop approved `granicus.json`, `legistar.json`, `primegov.json`, or
+`novusagenda.json` files into `CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST`.
+Celery Beat schedules the same local-first normalization used by
+`scripts/run_connector_import_sync.py`, and the worker writes the ledger under
+`/data/exports` without making vendor network calls.
 
 Before IT moves beyond local rehearsal, print the deployment preflight:
 
@@ -309,16 +480,41 @@ then reopens the restored records through CivicClerk repositories. If a check
 fails, keep the run directory, inspect the named file or record, fix the backup
 source or environment variable, and rerun with a new run id.
 
+For the Docker Compose product path, rehearse PostgreSQL backup and restore
+instead of the SQLite wheel stores:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start_docker_backup_restore_rehearsal.ps1 -PrintOnly
+```
+
+or from Linux, macOS, or Git Bash:
+
+```bash
+bash scripts/start_docker_backup_restore_rehearsal.sh --print-only
+```
+
+After `docker compose up -d` is running, rerun the same command without the
+print-only flag. The helper creates `.docker-backup-restore-rehearsal`, runs
+`pg_dump` from the `postgres` container into
+`backup/civicclerk-postgres.dump`, creates a temporary restore database, runs
+`pg_restore`, verifies restored application tables, writes
+`backup/civicclerk-docker-backup-manifest.json`, and drops the temporary restore
+database unless `--keep-restore-database` is supplied. It does not drop, clean,
+or overwrite the source CivicClerk database.
+
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
-workflows, move to `bearer` or `trusted_header` before user testing and use
+workflows, move to `oidc`, `bearer`, or `trusted_header` before user testing and use
 `/staff/auth-readiness` to confirm the service reports a deployment-ready
 contract instead of a local-only rehearsal mode. In protected modes, use the
 returned `session_probe` first and the returned `write_probe` second so the
-deployment check covers both identity acceptance and a live staff write. If
-trusted-header testing is happening on one loopback workstation before a real
-reverse proxy is available, use the returned `local_proxy_rehearsal` contract,
-set `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32`, run
+deployment check covers both identity acceptance and a live staff write.
+In OIDC mode, complete the browser-login fields, open `/staff/login`, finish
+the municipal provider sign-in, and confirm `/staff/session` reports
+`auth_method: "oidc_browser_session"` before clerks use the browser app.
+If trusted-header testing is happening on one loopback workstation before a
+real reverse proxy is available, use the returned `local_proxy_rehearsal`
+contract, set `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32`, run
 `python scripts/local_trusted_header_proxy.py`, and send the browser through
 that helper so CivicClerk only trusts loopback proxy traffic during rehearsal.
 If the deployment is moving to a real reverse proxy, use the returned
@@ -416,16 +612,29 @@ Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
 records-ready packet export bundles using CivicCore v0.17.0 provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed agenda item lifecycle records with
-durable transition audit entries; database-backed meeting records with lifecycle
-audit entries; database-backed packet assembly records with source references,
+durable transition audit entries and ready-intake promotion linkage; database-backed meeting records with lifecycle
+audit entries, meeting body ids, locations, and pre-lock schedule edit audit entries; database-backed packet assembly records with source references,
 citations, and packet snapshot linkage; database-backed notice checklist
 records with posting-proof metadata; live staff form actions for minutes
 draft creation; live staff form actions for public archive publishing; and
 live staff form actions for local connector import normalization and packet
 export bundle creation. Public
-packet exports reject closed-session and restricted source files. Full UI
-screens beyond the HTML staff workflow remain planned work, but browser QA gates now verify the required
-state fixtures and accessibility evidence before browser-visible changes merge.
+packet exports reject closed-session and restricted source files. The React
+staff workspace now covers meeting body setup, scheduling, calendar viewing,
+detail viewing, pre-lock schedule editing, agenda intake, packet building,
+notice checklist/posting-proof work, public posting, meeting outcomes, and
+minutes draft work against live API-backed data, and the dashboard now surfaces
+staff access/session status for local open mode, OIDC browser sessions, bearer
+mode, and trusted-header mode. Production municipal use still requires a signed
+installer and actual vendor-network adapters/scheduled pulls before IT should
+treat it as a shared deployment; scheduled local connector export-drop
+ingestion is available for approved JSON files in the Docker product path, and
+the vendor live-sync readiness/persistence/circuit-breaker contract is present
+for the next adapter and staff-UI slices. The Docker/PostgreSQL
+backup/restore path now has a rehearsal helper, but cities still need their own
+retention schedule, off-host storage target, and restore-runbook approval.
+Browser QA gates now verify the required state fixtures and accessibility
+evidence before browser-visible changes merge.
 
 - `meeting_bodies`
 - `meetings`

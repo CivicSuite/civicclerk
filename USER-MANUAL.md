@@ -46,7 +46,8 @@ action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
 endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
-NovusAGENDA, accessibility/browser QA gates, CivicClerk v0.1.13 release
+NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
+ledgering, accessibility/browser QA gates, CivicClerk v0.1.13 release
 artifacts, CivicCore v0.17.0-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
@@ -89,7 +90,8 @@ current `/staff` page submits and reviews agenda intake records directly,
 creates/finalizes packet assembly records, persists notice checklist
 posting-proof records, captures meeting outcome records, creates
 citation-gated minutes draft records, publishes public archive records, and
-normalizes local connector exports, and creates records-ready packet export
+normalizes local connector exports, records vendor live-sync source/run health
+without contacting vendor networks, and creates records-ready packet export
 bundles. The staff shell now checks `/staff/session` so IT staff and clerks can
 see whether the service is in local open mode, OIDC-protected staff mode,
 OIDC browser-session mode, bearer-protected staff mode, or trusted-header staff
@@ -383,6 +385,23 @@ circuit-breaker behavior that future vendor adapters must use: `healthy`,
 `degraded`, or `circuit_open`, with the circuit opening after five consecutive
 full-run failures or two post-unpause grace-period failures.
 
+To persist the vendor source and its operator-visible health before any live
+adapter is enabled, set `CIVICCLERK_VENDOR_SYNC_DB_URL` and use the no-network
+ledger endpoints:
+
+```bash
+curl -X POST http://127.0.0.1:8776/vendor-live-sync/sources \
+  -H "content-type: application/json" \
+  -d '{"connector":"legistar","source_name":"Legistar production","source_url":"https://vendor.example.gov/api/meetings","auth_method":"bearer_token"}'
+curl -X POST http://127.0.0.1:8776/vendor-live-sync/sources/{id}/run-log \
+  -H "content-type: application/json" \
+  -d '{"records_discovered":1,"records_succeeded":0,"records_failed":1,"error_summary":"Vendor API unavailable."}'
+```
+
+These endpoints validate and record source/run/failure state only. They return
+`network_calls: false`, health status, and actionable fix text; they do not
+contact Granicus, Legistar, PrimeGov, NovusAGENDA, or any other vendor network.
+
 When IT has approved local agenda-system export files and wants the Docker
 product path to ingest them repeatedly, create the host drop folder and enable
 the Celery Beat schedule in `.env`:
@@ -610,8 +629,8 @@ mode, and trusted-header mode. Production municipal use still requires a signed
 installer and actual vendor-network adapters/scheduled pulls before IT should
 treat it as a shared deployment; scheduled local connector export-drop
 ingestion is available for approved JSON files in the Docker product path, and
-the vendor live-sync readiness/circuit-breaker contract is present for the next
-runtime slice. The Docker/PostgreSQL
+the vendor live-sync readiness/persistence/circuit-breaker contract is present
+for the next adapter and staff-UI slices. The Docker/PostgreSQL
 backup/restore path now has a rehearsal helper, but cities still need their own
 retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility
