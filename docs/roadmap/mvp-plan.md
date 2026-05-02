@@ -48,8 +48,10 @@ installer source packaging is now present for the same Docker stack, including
 install/repair and daily-start launchers, and the enterprise signing-readiness
 contract now verifies SignTool, certificate identity, timestamp URL, and setup
 artifact inputs without printing secrets. Remaining MVP work now centers on
-actual signed installer publication, municipal IdP deployment proof,
-vendor-network live sync, and deployment hardening. The Docker/PostgreSQL backup and restore
+municipal IdP deployment proof, real vendor API deployment proof,
+city-approved retention/off-host backup proof, and deployment hardening. Signed
+installer publication is certificate-gated and not expected during the
+developer process. The Docker/PostgreSQL backup and restore
 rehearsal for the Compose product path is now present; real deployments still
 need an approved retention schedule and off-host storage target. The connector
 path now has a local import-sync runner that produces normalized ledgers from
