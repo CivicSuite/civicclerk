@@ -543,6 +543,7 @@ describe("CivicClerk staff workspace", () => {
               sync_paused_reason: null,
               last_sync_status: null,
               last_error_at: null,
+              last_success_cursor_at: null,
               message: "Source is healthy. No failures are active.",
               fix: "Keep monitoring scheduled runs.",
               updated_at: "2026-05-02T16:00:00Z",
@@ -566,11 +567,38 @@ describe("CivicClerk staff workspace", () => {
                 sync_paused_reason: null,
                 last_sync_status: "failed",
                 last_error_at: "2026-05-02T16:05:00Z",
+                last_success_cursor_at: "2026-05-02T15:00:00Z",
                 message: "Vendor sync is degraded after one failed pull.",
                 fix: "Check vendor credentials, run connector readiness, then retry after vendor service is available.",
                 updated_at: "2026-05-02T16:05:00Z",
               },
               run: { id: "run-1" },
+            }),
+          });
+        }
+        if (url === "/api/vendor-live-sync/sources/vendor-source-1/cursor-reset" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              network_calls: false,
+              source: {
+                id: "vendor-source-1",
+                connector: "granicus",
+                source_name: "Granicus board packet feed",
+                source_url: "https://granicus.example.gov/api/boards/packets",
+                auth_method: "api_key",
+                health_status: "healthy",
+                consecutive_failure_count: 0,
+                active_failure_count: 0,
+                sync_paused: false,
+                sync_paused_reason: null,
+                last_sync_status: "success",
+                last_error_at: null,
+                last_success_cursor_at: null,
+                message: "Source is healthy. Scheduled pulls can continue.",
+                fix: "Run connector readiness before the next full reconciliation.",
+                updated_at: "2026-05-02T16:10:00Z",
+              },
             }),
           });
         }
@@ -592,6 +620,7 @@ describe("CivicClerk staff workspace", () => {
                   sync_paused_reason: null,
                   last_sync_status: "success",
                   last_error_at: null,
+                  last_success_cursor_at: "2026-05-02T15:00:00Z",
                   message: "Source is healthy. Scheduled pulls can continue.",
                   fix: "Keep monitoring run history after each vendor maintenance window.",
                   updated_at: "2026-05-02T15:00:00Z",
@@ -981,6 +1010,8 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByText(/This workspace records source configuration and run outcomes only/)).toBeInTheDocument();
     expect(screen.getAllByText("Granicus board packet feed").length).toBeGreaterThan(0);
     expect(screen.getByText(/Source is healthy/)).toBeInTheDocument();
+    expect(screen.getByText(/Last successful cursor:/)).toBeInTheDocument();
+    expect(screen.getByText(/Next pull starts from this point/)).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Failed"), { target: { value: "1" } });
     fireEvent.change(screen.getByLabelText("Error summary"), { target: { value: "Vendor returned 503." } });
@@ -989,6 +1020,12 @@ describe("CivicClerk staff workspace", () => {
     expect(await screen.findByText(/Run outcome recorded for Granicus board packet feed/)).toBeInTheDocument();
     expect(screen.getByText(/No vendor network call was made from this workspace/)).toBeInTheDocument();
     expect(screen.getByText(/Check vendor credentials/)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Cursor reset reason"), { target: { value: "Force full reconciliation after missed delta." } });
+    fireEvent.click(screen.getByRole("button", { name: "Reset cursor for full reconciliation" }));
+
+    expect(await screen.findByText(/Cursor reset for Granicus board packet feed/)).toBeInTheDocument();
+    expect(screen.getAllByText(/next enabled pull will run a full source reconciliation/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows actionable vendor sync QA empty, error, and partial states", async () => {

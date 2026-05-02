@@ -262,6 +262,28 @@ class VendorSyncRepository:
             ).mappings().all()
         return [_row_to_source(row) for row in rows]
 
+    def reset_success_cursor(
+        self,
+        *,
+        source_id: str,
+        cursor_at: datetime | None = None,
+    ) -> VendorSyncSourceRecord | None:
+        """Move or clear the delta cursor so operators can force safe reconciliation."""
+
+        source = self.get_source(source_id)
+        if source is None:
+            return None
+        now = datetime.now(UTC)
+        if cursor_at is not None and cursor_at.tzinfo is None:
+            cursor_at = cursor_at.replace(tzinfo=UTC)
+        with self.engine.begin() as connection:
+            connection.execute(
+                vendor_sync_sources.update()
+                .where(vendor_sync_sources.c.id == source_id)
+                .values(last_success_cursor_at=cursor_at, updated_at=now)
+            )
+        return self.get_source(source_id)
+
     def record_run(
         self,
         *,

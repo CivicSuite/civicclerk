@@ -62,7 +62,8 @@ persists in the vendor sync ledger, source health is computed as `healthy`,
 full-run failures or two post-unpause grace-period failures. The React staff
 workspace now surfaces this ledger through a Vendor Sync screen with source
 registration, health/circuit status, run-outcome logging, no-network safety
-copy, and actionable IT fix guidance. The first guarded vendor-network pull
+copy, persisted cursor visibility, full-reconciliation cursor reset, and
+actionable IT fix guidance. The first guarded vendor-network pull
 runner is present for one explicitly enabled source at a time: it refuses
 circuit-open sources, revalidates the source URL, reads credentials from a
 deployment secret env var, normalizes returned JSON through the existing
@@ -70,12 +71,14 @@ connector contract, and records the run outcome in the same circuit-breaker
 ledger. The first scheduled vendor-network pull task is also present in Celery
 Beat, disabled by default, guarded by both a schedule gate and live-network
 gate, and limited to configured approved source IDs with per-source reports.
-Remaining live-sync work is connector-specific delta semantics, deployment
-proof against real municipal vendor APIs, and operational runbook hardening.
-The first delta-planning and cursor persistence contract is now present: each
+Remaining live-sync work is deployment proof against real municipal vendor APIs
+and operational runbook hardening. The delta-planning, cursor persistence, and
+operator reset contract is now present: each
 supported connector gets an explicit "changed since" query parameter, sources
 persist `last_success_cursor_at`, one-time and scheduled pulls plan from that
-cursor, and the cursor advances only after a fully successful normalized run.
+cursor, the cursor advances only after a fully successful normalized run, and
+IT can clear or move the cursor without a vendor call when a full reconciliation
+or replay from an earlier point is required.
 The reusable City of Brookfield mock-city environment suite is now being added
 as shared product infrastructure for the remaining CivicSuite modules:
 `scripts/run_mock_city_environment_suite.py` verifies Legistar, Granicus,

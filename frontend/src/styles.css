@@ -1331,6 +1331,11 @@ h2 {
   color: var(--ink);
 }
 
+.secondary.danger-action {
+  background: #7f2417;
+  color: #fff8ed;
+}
+
 .secondary:disabled {
   opacity: 0.58;
   cursor: not-allowed;

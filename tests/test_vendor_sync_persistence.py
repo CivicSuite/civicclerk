@@ -144,6 +144,29 @@ def test_vendor_sync_success_cursor_advances_only_when_requested(tmp_path: Path)
     assert advanced[0].public_dict()["last_success_cursor_at"] == "2026-05-02T15:30:00+00:00"
 
 
+def test_vendor_sync_success_cursor_can_be_reset_for_reconciliation(tmp_path: Path) -> None:
+    repository = VendorSyncRepository(db_url=_db_url(tmp_path / "vendor-sync.db"))
+    source = repository.create_source(
+        connector="legistar",
+        source_name="Legistar production",
+        source_url="https://vendor.example.gov/api/meetings",
+        auth_method="bearer_token",
+    )
+    cursor = datetime(2026, 5, 2, 15, 30, tzinfo=UTC)
+    repository.record_run(
+        source_id=source.id,
+        result=VendorSyncRunResult(records_discovered=2, records_succeeded=2, records_failed=0),
+        advance_success_cursor=True,
+        cursor_at=cursor,
+    )
+
+    reset = repository.reset_success_cursor(source_id=source.id)
+
+    assert reset is not None
+    assert reset.last_success_cursor_at is None
+    assert reset.public_dict()["last_success_cursor_at"] is None
+
+
 @pytest.mark.asyncio
 async def test_vendor_live_sync_source_api_records_run_outcomes(
     tmp_path: Path,
@@ -185,6 +208,37 @@ async def test_vendor_live_sync_source_api_records_run_outcomes(
     assert listed.json()["sources"][0]["health_status"] == "circuit_open"
     assert runs.json()["network_calls"] is False
     assert len(runs.json()["runs"]) == 5
+
+
+@pytest.mark.asyncio
+async def test_vendor_live_sync_cursor_reset_api_is_actionable_and_network_safe(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CIVICCLERK_VENDOR_SYNC_DB_URL", _db_url(tmp_path / "vendor-sync-api.db"))
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        created = await client.post(
+            "/vendor-live-sync/sources",
+            json={
+                "connector": "legistar",
+                "source_name": "Legistar production",
+                "source_url": "https://vendor.example.gov/api/meetings",
+                "auth_method": "bearer_token",
+            },
+        )
+        source_id = created.json()["id"]
+        reset = await client.post(
+            f"/vendor-live-sync/sources/{source_id}/cursor-reset",
+            json={"cursor_at": None, "reason": "Force full reconciliation after vendor backfill."},
+        )
+
+    assert reset.status_code == 200
+    body = reset.json()
+    assert body["network_calls"] is False
+    assert body["source"]["last_success_cursor_at"] is None
+    assert body["message"] == "Vendor sync cursor cleared. The next enabled pull will run a full source reconciliation."
+    assert body["fix"] == "Run connector readiness first, confirm credentials are current, then start the controlled pull window."
+    assert body["reason_recorded"] == "Force full reconciliation after vendor backfill."
 
 
 @pytest.mark.asyncio
