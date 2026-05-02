@@ -160,11 +160,19 @@ def test_vendor_sync_success_cursor_can_be_reset_for_reconciliation(tmp_path: Pa
         cursor_at=cursor,
     )
 
-    reset = repository.reset_success_cursor(source_id=source.id)
+    reset = repository.reset_success_cursor(
+        source_id=source.id,
+        reset_reason="Force full reconciliation after vendor backfill.",
+    )
 
     assert reset is not None
-    assert reset.last_success_cursor_at is None
-    assert reset.public_dict()["last_success_cursor_at"] is None
+    reset_source, reset_event = reset
+    assert reset_source.last_success_cursor_at is None
+    assert reset_source.public_dict()["last_success_cursor_at"] is None
+    assert reset_event.status == "cursor_reset"
+    assert reset_event.error_summary == "Force full reconciliation after vendor backfill."
+    assert repository.list_runs(source.id)[0].status == "cursor_reset"
+    assert repository.list_runs(source.id)[0].error_summary == "Force full reconciliation after vendor backfill."
 
 
 @pytest.mark.asyncio
@@ -239,6 +247,8 @@ async def test_vendor_live_sync_cursor_reset_api_is_actionable_and_network_safe(
     assert body["message"] == "Vendor sync cursor cleared. The next enabled pull will run a full source reconciliation."
     assert body["fix"] == "Run connector readiness first, confirm credentials are current, then start the controlled pull window."
     assert body["reason_recorded"] == "Force full reconciliation after vendor backfill."
+    assert body["reset_event"]["status"] == "cursor_reset"
+    assert body["reset_event"]["error_summary"] == "Force full reconciliation after vendor backfill."
 
 
 @pytest.mark.asyncio

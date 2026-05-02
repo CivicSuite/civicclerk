@@ -29,7 +29,9 @@ All notable changes to CivicClerk are documented here.
   records.
 - Vendor Sync now exposes that cursor in the React staff workspace and adds a
   no-network cursor reset endpoint/workflow so IT can force a full source
-  reconciliation with an operator reason before the next controlled pull.
+  reconciliation with an operator reason before the next controlled pull; each
+  reset is persisted as a `cursor_reset` run-log event and returned as
+  `reset_event` by the API.
 
 ### Changed
 - Windows installer packaging and docs now explicitly warn that unsigned setup

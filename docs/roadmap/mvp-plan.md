@@ -78,7 +78,8 @@ supported connector gets an explicit "changed since" query parameter, sources
 persist `last_success_cursor_at`, one-time and scheduled pulls plan from that
 cursor, the cursor advances only after a fully successful normalized run, and
 IT can clear or move the cursor without a vendor call when a full reconciliation
-or replay from an earlier point is required.
+or replay from an earlier point is required, and each reset reason is preserved
+as a `cursor_reset` run-log event.
 The reusable City of Brookfield mock-city environment suite is now being added
 as shared product infrastructure for the remaining CivicSuite modules:
 `scripts/run_mock_city_environment_suite.py` verifies Legistar, Granicus,

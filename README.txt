@@ -325,7 +325,7 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
 - If IT suspects a missed vendor delta or receives a vendor backfill notice,
   use the Vendor Sync workspace or `POST /vendor-live-sync/sources/{id}/cursor-reset`
   with a clear reason to clear the cursor for full reconciliation; the reset is
-  recorded locally and still does not contact the vendor network
+  recorded locally as a `cursor_reset` run-log event and still does not contact the vendor network
    - For scheduled vendor-network pulls in Docker, keep `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=false` and `CIVICCLERK_VENDOR_NETWORK_SYNC_SCHEDULE_ENABLED=false` until IT has approved `/vendor-live-sync/sources` records, then set `CIVICCLERK_VENDOR_NETWORK_SYNC_SOURCE_IDS`, configure `CIVICCLERK_VENDOR_NETWORK_SYNC_AUTH_SECRET_ENV` or per-source secret env vars, and review the per-source reports under `CIVICCLERK_VENDOR_NETWORK_SYNC_REPORT_DIR`
    - Run `python scripts/run_connector_import_sync.py --payload-dir path\to\exports --connector granicus --output connector-import-ledger.json` when IT has local agenda-system export JSON files and wants a repeatable normalized import ledger without vendor network calls, or set `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true` with `CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST=.\connector-imports` in the Docker `.env` to let Celery Beat schedule the same local-first import repeatedly
    - Use `python scripts/check_deployment_readiness.py` to print a non-mutating deployment preflight before moving beyond local rehearsal; add `--strict` when CI or IT handoff should fail unless auth, persistent-store env vars, packet export root, release artifacts, docs, and trusted-header proxy references are deployment-ready
