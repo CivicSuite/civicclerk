@@ -88,7 +88,10 @@ as shared product infrastructure for the remaining CivicSuite modules:
 PrimeGov, and NovusAGENDA connector contracts without vendor network calls,
 labels public-reference versus vendor-gated interfaces honestly, and gives
 future modules a repeatable baseline before module-specific assertions are
-added. Unsigned Windows install remains expected until an enterprise
+added. The same suite now validates a Brookfield Entra ID-style municipal OIDC
+contract with issuer, audience, authorization-code + PKCE URLs, JWKS shape,
+role claims, and staff-token validation without contacting an identity provider
+or printing mock secrets. Unsigned Windows install remains expected until an enterprise
 code-signing certificate is issued and the secured signing workstation is ready;
 installer and docs warnings now name the "Unknown Publisher" / "Windows
 protected your PC" first-install experience directly. The pilot-readiness

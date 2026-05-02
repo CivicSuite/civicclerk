@@ -4,7 +4,12 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
-- No unreleased changes.
+### Added
+- `scripts/run_mock_city_environment_suite.py` now includes a reusable
+  Brookfield Entra ID-style municipal OIDC contract with issuer, audience,
+  authorization-code + PKCE URLs, JWKS shape, role claims, and staff-token
+  validation so future modules can reuse protected-auth proof without contacting
+  an identity provider or reporting mock secrets.
 
 ## [0.1.15] - 2026-05-02
 
