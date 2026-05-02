@@ -5,6 +5,9 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Fixed
+- The MVP plan now clearly states that OIDC browser-session support is shipped
+  and that the remaining production auth work is municipal IdP configuration,
+  operational hardening, and protected-deployment proof.
 - Frontend staff workspace tests now wait for async rendered headings in the
   notice checklist and meeting-detail flows, removing React `act(...)` warning
   noise from the test lane without changing product behavior.
