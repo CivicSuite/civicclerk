@@ -8,7 +8,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from civicclerk import __version__
-from civicclerk.mock_city_environment import MOCK_CITY_NAME, run_mock_city_contract_suite
+from civicclerk.mock_city_environment import (
+    MOCK_CITY_NAME,
+    run_mock_city_contract_suite,
+    run_mock_city_idp_contract_suite,
+)
 from scripts.check_installer_readiness import build_checks as build_installer_checks
 
 
@@ -138,8 +142,10 @@ def _installer_checks(*, version: str, dist_root: Path, bundle_path: Path) -> li
 
 def _mock_city_checks() -> list[Check]:
     contract_checks = run_mock_city_contract_suite(base_url="https://mock-city.example.gov")
+    idp_checks = run_mock_city_idp_contract_suite()
+    checks: list[Check] = []
     if all(check.ok for check in contract_checks):
-        return [
+        checks.append(
             Check(
                 status="PASS",
                 name="mock city vendor contract suite",
@@ -147,17 +153,40 @@ def _mock_city_checks() -> list[Check]:
                 fix="Reuse this suite for module-specific integration assertions before adding real vendor tenants.",
                 owner="developer",
             )
-        ]
-    failed = [check.connector for check in contract_checks if not check.ok]
-    return [
-        Check(
-            status="FAIL",
-            name="mock city vendor contract suite",
-            message="mock city contracts failed for: " + ", ".join(failed),
-            fix="Fix the reusable contract suite before using it as the baseline for other modules.",
-            owner="developer",
         )
-    ]
+    else:
+        failed = [check.connector for check in contract_checks if not check.ok]
+        checks.append(
+            Check(
+                status="FAIL",
+                name="mock city vendor contract suite",
+                message="mock city contracts failed for: " + ", ".join(failed),
+                fix="Fix the reusable contract suite before using it as the baseline for other modules.",
+                owner="developer",
+            )
+        )
+    if all(check.ok for check in idp_checks):
+        checks.append(
+            Check(
+                status="PASS",
+                name="mock city municipal IdP contract suite",
+                message=f"{MOCK_CITY_NAME} covers reusable no-network OIDC staff-auth contracts for future modules.",
+                fix="Reuse this suite for module protected-auth assertions before attaching a real city tenant proof.",
+                owner="developer",
+            )
+        )
+    else:
+        failed = [check.provider for check in idp_checks if not check.ok]
+        checks.append(
+            Check(
+                status="FAIL",
+                name="mock city municipal IdP contract suite",
+                message="mock city IdP contracts failed for: " + ", ".join(failed),
+                fix="Fix the reusable IdP contract suite before using it as the baseline for protected module tests.",
+                owner="developer",
+            )
+        )
+    return checks
 
 
 def _unsigned_warning_checks() -> list[Check]:
@@ -255,7 +284,8 @@ def _print_plan(version: str, dist_root: Path, bundle_path: Path) -> None:
     print("Developer-owned checks:")
     print("  1. Release artifacts and handoff bundle are present and checksum-valid.")
     print("  2. Mock city vendor contracts pass without contacting vendor networks.")
-    print("  3. Operator docs warn about unsigned Windows first-install prompts.")
+    print("  3. Mock city municipal IdP contracts pass without contacting an IdP.")
+    print("  4. Operator docs warn about unsigned Windows first-install prompts.")
     print("External proof slots:")
     print("  - code-signing certificate and signed-artifact proof")
     print("  - municipal IdP protected-deployment proof")

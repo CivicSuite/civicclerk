@@ -94,6 +94,7 @@ def test_pilot_readiness_is_developer_ready_with_external_dependencies_pending(t
     assert "external_dependencies_pending=true" in result.stdout
     assert "[PASS] installer checksums" in result.stdout
     assert "[PASS] mock city vendor contract suite" in result.stdout
+    assert "[PASS] mock city municipal IdP contract suite" in result.stdout
     assert "[PASS] unsigned installer warning docs" in result.stdout
     assert "[EXTERNAL] code-signing certificate" in result.stdout
     assert "PILOT-READINESS: DEVELOPER-READY" in result.stdout
@@ -172,5 +173,6 @@ def test_pilot_readiness_print_only_documents_external_proof_slots() -> None:
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Developer-owned checks:" in result.stdout
+    assert "Mock city municipal IdP contracts pass without contacting an IdP." in result.stdout
     assert "External proof slots:" in result.stdout
     assert "municipal vendor API live-sync proof" in result.stdout

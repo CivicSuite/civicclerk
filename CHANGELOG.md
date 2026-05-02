@@ -10,6 +10,9 @@ All notable changes to CivicClerk are documented here.
   authorization-code + PKCE URLs, JWKS shape, role claims, and staff-token
   validation so future modules can reuse protected-auth proof without contacting
   an identity provider or reporting mock secrets.
+- `scripts/check_pilot_readiness.py` now includes the mock municipal IdP
+  contract suite in its developer-owned readiness rollup, so pilot handoff
+  reports cannot pass on vendor contracts alone.
 
 ## [0.1.15] - 2026-05-02
 
