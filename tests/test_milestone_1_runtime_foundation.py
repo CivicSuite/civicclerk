@@ -13,7 +13,7 @@ from httpx import ASGITransport, AsyncClient
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.16"
+VERSION = "0.1.17"
 
 
 def load_pyproject() -> dict:
@@ -44,8 +44,8 @@ def test_pyproject_targets_published_civiccore_v0170_release_wheel() -> None:
     dependencies = data["project"]["dependencies"]
 
     assert (
-        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.18.1/"
-        "civiccore-0.18.1-py3-none-any.whl"
+        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.19.0/"
+        "civiccore-0.19.0-py3-none-any.whl"
     ) in dependencies
     assert not any(
         "civiccore>=" in dep or "civiccore~=" in dep or dep == "civiccore==0.12.0"
@@ -137,7 +137,7 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
         "status": "ok",
         "service": "civicclerk",
             "version": VERSION,
-        "civiccore": "0.18.1",
+        "civiccore": "0.19.0",
     }
 
 

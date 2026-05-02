@@ -4,6 +4,13 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.17] - 2026-05-02
+
+### Changed
+- CivicClerk now targets the published `civiccore` v0.19.0 release wheel and consumes shared CivicCore vendor-delta request planning plus reusable mock-city vendor, IdP, and backup-retention contracts instead of carrying local copies.
+- `civicclerk.vendor_delta` is now a compatibility export for `civiccore.connectors`, preserving the existing CivicClerk import path while moving the reusable delta contract to CivicCore for the rest of CivicSuite.
+- `civicclerk.mock_city_environment` now adapts the shared CivicCore mock-city contracts for CivicClerk-specific OIDC validation, so future modules can reuse the same contracts while each module keeps its own auth audience, client, and redirect proof.
+
 ## [0.1.16] - 2026-05-02
 
 ### Added
