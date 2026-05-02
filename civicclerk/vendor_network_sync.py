@@ -79,27 +79,36 @@ def run_vendor_network_sync(
 
     source = repository.get_source(source_id)
     if source is None:
-        return _blocked_report(
-            source_id=source_id,
-            connector="unknown",
-            message="Vendor live-sync source was not found.",
-            fix="Create and validate the source with POST /vendor-live-sync/sources before running a vendor pull.",
+        return _finalize_report(
+            output_path=output_path,
+            report=_blocked_report(
+                source_id=source_id,
+                connector="unknown",
+                message="Vendor live-sync source was not found.",
+                fix="Create and validate the source with POST /vendor-live-sync/sources before running a vendor pull.",
+            ),
         )
     if source.sync_paused:
-        return _blocked_report(
-            source_id=source.id,
-            connector=source.connector,
-            message="Vendor live sync is paused because the circuit breaker is open.",
-            fix="Review the run log, correct the vendor endpoint or credentials, then unpause the source before retrying.",
-            source_health_status=source.public_dict()["health_status"],
+        return _finalize_report(
+            output_path=output_path,
+            report=_blocked_report(
+                source_id=source.id,
+                connector=source.connector,
+                message="Vendor live sync is paused because the circuit breaker is open.",
+                fix="Review the run log, correct the vendor endpoint or credentials, then unpause the source before retrying.",
+                source_health_status=source.public_dict()["health_status"],
+            ),
         )
     if not enable_network and os.environ.get(NETWORK_ENABLED_ENV_VAR, "").lower() != "true":
-        return _blocked_report(
-            source_id=source.id,
-            connector=source.connector,
-            message="Vendor-network sync is disabled.",
-            fix=f"Set {NETWORK_ENABLED_ENV_VAR}=true or pass --enable-network for this one-time pull.",
-            source_health_status=source.public_dict()["health_status"],
+        return _finalize_report(
+            output_path=output_path,
+            report=_blocked_report(
+                source_id=source.id,
+                connector=source.connector,
+                message="Vendor-network sync is disabled.",
+                fix=f"Set {NETWORK_ENABLED_ENV_VAR}=true or pass --enable-network for this one-time pull.",
+                source_health_status=source.public_dict()["health_status"],
+            ),
         )
 
     try:
@@ -108,20 +117,26 @@ def run_vendor_network_sync(
         headers = _auth_headers(source=source, secret=secret)
         raw_payloads = _coerce_payloads((fetch_json or _fetch_json)(source, headers, timeout_seconds))
     except VendorNetworkSyncError as exc:
-        return _record_failed_run(
-            repository=repository,
-            source=source,
-            message=exc.message,
-            fix=exc.fix,
-            network_attempted=exc.network_attempted,
+        return _finalize_report(
+            output_path=output_path,
+            report=_record_failed_run(
+                repository=repository,
+                source=source,
+                message=exc.message,
+                fix=exc.fix,
+                network_attempted=exc.network_attempted,
+            ),
         )
     except ValueError as exc:
-        return _record_failed_run(
-            repository=repository,
-            source=source,
-            message=str(exc),
-            fix="Re-run source readiness, verify the host is still allowed, and save the corrected source before retrying.",
-            network_attempted=False,
+        return _finalize_report(
+            output_path=output_path,
+            report=_record_failed_run(
+                repository=repository,
+                source=source,
+                message=str(exc),
+                fix="Re-run source readiness, verify the host is still allowed, and save the corrected source before retrying.",
+                network_attempted=False,
+            ),
         )
 
     attempts = [_normalize_payload(source.connector, payload) for payload in raw_payloads]
@@ -138,11 +153,14 @@ def run_vendor_network_sync(
         ),
     )
     if recorded is None:
-        return _blocked_report(
-            source_id=source.id,
-            connector=source.connector,
-            message="Vendor sync run could not be recorded.",
-            fix="Confirm CIVICCLERK_VENDOR_SYNC_DB_URL points at the live vendor sync ledger and retry.",
+        return _finalize_report(
+            output_path=output_path,
+            report=_blocked_report(
+                source_id=source.id,
+                connector=source.connector,
+                message="Vendor sync run could not be recorded.",
+                fix="Confirm CIVICCLERK_VENDOR_SYNC_DB_URL points at the live vendor sync ledger and retry.",
+            ),
         )
     updated_source, run = recorded
     if records_failed:
@@ -164,8 +182,7 @@ def run_vendor_network_sync(
         fix=fix,
         attempts=attempts,
     )
-    _write_report(report, output_path)
-    return report
+    return _finalize_report(report=report, output_path=output_path)
 
 
 class VendorNetworkSyncError(RuntimeError):
@@ -332,3 +349,8 @@ def _write_report(report: VendorNetworkSyncReport, output_path: Path | None) -> 
         return
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(report.public_dict(), indent=2) + "\n", encoding="utf-8")
+
+
+def _finalize_report(*, report: VendorNetworkSyncReport, output_path: Path | None) -> VendorNetworkSyncReport:
+    _write_report(report, output_path)
+    return report
