@@ -10,7 +10,7 @@ from civicclerk.main import app
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.17"
+VERSION = "0.1.18"
 
 
 async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> None:

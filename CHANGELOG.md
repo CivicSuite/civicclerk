@@ -4,6 +4,19 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.18] - 2026-05-02
+
+### Changed
+- CivicClerk now targets the published `civiccore` v0.20.0 release wheel and
+  consumes shared CivicCore startup config placeholder detection for OIDC staff
+  auth readiness checks, keeping operator-facing misconfiguration guidance
+  consistent across CivicSuite modules.
+
+### Added
+- Added a staff-auth regression test proving CivicClerk uses the shared
+  `civiccore.security.looks_like_placeholder()` helper for OIDC placeholder
+  detection instead of carrying a module-local copy.
+
 ## [0.1.17] - 2026-05-02
 
 ### Changed

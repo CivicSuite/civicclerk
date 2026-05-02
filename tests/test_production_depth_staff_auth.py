@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
+from civiccore.security import looks_like_placeholder
 from httpx import ASGITransport, AsyncClient
 
 from civicclerk.main import (
@@ -203,6 +204,12 @@ async def test_oidc_mode_readiness_requires_provider_configuration(
     assert STAFF_AUTH_OIDC_AUDIENCE_ENV_VAR in response.json()["fix"]
     assert STAFF_AUTH_OIDC_JWKS_URL_ENV_VAR in response.json()["fix"]
     assert "session_probe" not in response.json()
+
+
+def test_oidc_placeholder_detection_uses_civiccore_security_helper() -> None:
+    assert looks_like_placeholder("<tenant-id>") is True
+    assert looks_like_placeholder("replace-with-real-issuer") is True
+    assert looks_like_placeholder("https://login.example.gov/brookfield/v2.0") is False
 
 
 @pytest.mark.asyncio
