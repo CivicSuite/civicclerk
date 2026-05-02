@@ -8,11 +8,17 @@ API-complete, tested, and represented by live-backed `/staff` cockpit panels.
 The runtime foundation, staff workflow HTML reference shell, prompt gates,
 release gates, connector import normalization, public archive filtering, the
 React public portal, packet export bundles, backup/restore rehearsal,
-OIDC staff-token validation, protected staff-auth rehearsal, deployment preflight, and fresh-install
-rehearsal helpers are present, and the first OIDC browser sign-in/session
-foundation now starts authorization-code sign-in at `/staff/login`, accepts the
-callback at `/staff/oidc/callback`, uses PKCE, and issues a signed HttpOnly
-CivicClerk staff session cookie for protected staff APIs. The first React app slice now exists under
+OIDC staff-token validation, protected staff-auth rehearsal, deployment
+preflight, and fresh-install rehearsal helpers are present. The OIDC
+browser-session foundation is now shipped: `/staff/login` starts
+authorization-code + PKCE sign-in, `/staff/oidc/callback` accepts the provider
+callback, CivicClerk issues a signed HttpOnly staff session cookie for
+protected staff APIs, `/staff/session` reports the active identity and roles,
+and the React dashboard staff-access panel makes the current auth mode,
+provider, subject, roles, and sign-in/readiness actions visible to clerks and
+IT staff. The remaining production auth work is municipal IdP configuration,
+operational hardening, and protected-deployment proof; it is not an unbuilt
+OIDC browser-session feature. The first React app slice now exists under
 `frontend/`: it translates the CivicSuite mockup into a typed staff shell,
 meeting calendar, meeting detail lifecycle ribbon, audit/evidence drawer, and
 explicit loading/success/empty/error/partial QA states, and the staff dashboard,
@@ -42,7 +48,8 @@ installer source packaging is now present for the same Docker stack, including
 install/repair and daily-start launchers, and the enterprise signing-readiness
 contract now verifies SignTool, certificate identity, timestamp URL, and setup
 artifact inputs without printing secrets. Remaining MVP work now centers on
-actual signed installer publication, vendor-network live sync, and deployment hardening. The Docker/PostgreSQL backup and restore
+actual signed installer publication, municipal IdP deployment proof,
+vendor-network live sync, and deployment hardening. The Docker/PostgreSQL backup and restore
 rehearsal for the Compose product path is now present; real deployments still
 need an approved retention schedule and off-host storage target. The connector
 path now has a local import-sync runner that produces normalized ledgers from
