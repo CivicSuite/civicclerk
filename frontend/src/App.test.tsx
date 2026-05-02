@@ -527,6 +527,79 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/vendor-live-sync/sources" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "vendor-source-2",
+              connector: "legistar",
+              source_name: "Brookfield agenda vendor feed",
+              source_url: "https://vendor.example.gov/api/agendas",
+              auth_method: "bearer_token",
+              health_status: "healthy",
+              consecutive_failure_count: 0,
+              active_failure_count: 0,
+              sync_paused: false,
+              sync_paused_reason: null,
+              last_sync_status: null,
+              last_error_at: null,
+              message: "Source is healthy. No failures are active.",
+              fix: "Keep monitoring scheduled runs.",
+              updated_at: "2026-05-02T16:00:00Z",
+            }),
+          });
+        }
+        if (url === "/api/vendor-live-sync/sources/vendor-source-1/run-log" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              source: {
+                id: "vendor-source-1",
+                connector: "granicus",
+                source_name: "Granicus board packet feed",
+                source_url: "https://granicus.example.gov/api/boards/packets",
+                auth_method: "api_key",
+                health_status: "degraded",
+                consecutive_failure_count: 1,
+                active_failure_count: 1,
+                sync_paused: false,
+                sync_paused_reason: null,
+                last_sync_status: "failed",
+                last_error_at: "2026-05-02T16:05:00Z",
+                message: "Vendor sync is degraded after one failed pull.",
+                fix: "Check vendor credentials, run connector readiness, then retry after vendor service is available.",
+                updated_at: "2026-05-02T16:05:00Z",
+              },
+              run: { id: "run-1" },
+            }),
+          });
+        }
+        if (url === "/api/vendor-live-sync/sources") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              sources: [
+                {
+                  id: "vendor-source-1",
+                  connector: "granicus",
+                  source_name: "Granicus board packet feed",
+                  source_url: "https://granicus.example.gov/api/boards/packets",
+                  auth_method: "api_key",
+                  health_status: "healthy",
+                  consecutive_failure_count: 0,
+                  active_failure_count: 0,
+                  sync_paused: false,
+                  sync_paused_reason: null,
+                  last_sync_status: "success",
+                  last_error_at: null,
+                  message: "Source is healthy. Scheduled pulls can continue.",
+                  fix: "Keep monitoring run history after each vendor maintenance window.",
+                  updated_at: "2026-05-02T15:00:00Z",
+                },
+              ],
+            }),
+          });
+        }
         if (url === "/api/agenda-intake") {
           return Promise.resolve({
             ok: true,
@@ -899,6 +972,45 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getAllByRole("button", { name: "Open public record" }).length).toBeGreaterThan(0);
   });
 
+  it("shows vendor sync health and records run outcomes without vendor network calls", async () => {
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /Vendor sync/ }));
+
+    expect(await screen.findByRole("heading", { name: "See connector health before it affects clerk work." })).toBeInTheDocument();
+    expect(screen.getByText(/This workspace records source configuration and run outcomes only/)).toBeInTheDocument();
+    expect(screen.getAllByText("Granicus board packet feed").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Source is healthy/)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Failed"), { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText("Error summary"), { target: { value: "Vendor returned 503." } });
+    fireEvent.click(screen.getByRole("button", { name: "Record run outcome" }));
+
+    expect(await screen.findByText(/Run outcome recorded for Granicus board packet feed/)).toBeInTheDocument();
+    expect(screen.getByText(/No vendor network call was made from this workspace/)).toBeInTheDocument();
+    expect(screen.getByText(/Check vendor credentials/)).toBeInTheDocument();
+  });
+
+  it("shows actionable vendor sync QA empty, error, and partial states", async () => {
+    window.history.replaceState({}, "", "/?page=sync&state=empty&source=demo");
+    const { unmount } = render(<App />);
+
+    expect(screen.getByRole("heading", { name: "No vendor sync data yet" })).toBeInTheDocument();
+    expect(screen.getByText(/use local export-drop ingestion until then/)).toBeInTheDocument();
+
+    unmount();
+    window.history.replaceState({}, "", "/?page=sync&state=error&source=demo");
+    const errorRender = render(<App />);
+    expect(screen.getByRole("heading", { name: "Could not load vendor sync" })).toBeInTheDocument();
+    expect(screen.getByText(/CIVICCLERK_VENDOR_SYNC_DB_URL/)).toBeInTheDocument();
+
+    errorRender.unmount();
+    window.history.replaceState({}, "", "/?page=sync&state=partial&source=demo");
+    render(<App />);
+    expect(screen.getByRole("heading", { name: "vendor sync is partially available" })).toBeInTheDocument();
+    expect(screen.getByText(/Do not enable scheduled pulls/)).toBeInTheDocument();
+  });
+
   it("opens the resident public portal directly from the /public product route", async () => {
     window.history.replaceState({}, "", "/public");
     render(<App />);
@@ -906,6 +1018,7 @@ describe("CivicClerk staff workspace", () => {
     expect(await screen.findByRole("heading", { name: "Find posted meetings without needing to understand clerk workflows." })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Good morning, City Clerk." })).not.toBeInTheDocument();
     expect(screen.getByText(/Only public archive API records appear here/)).toBeInTheDocument();
+    expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("/api/vendor-live-sync/sources"))).toBe(false);
   });
 
   it("opens the React staff dashboard directly from the /staff product route", async () => {

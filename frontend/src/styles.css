@@ -709,7 +709,8 @@ h2 {
 }
 
 .notice-legal-callout,
-.compliance-preview {
+.compliance-preview,
+.vendor-sync-callout {
   display: grid;
   gap: 6px;
   padding: 16px;
@@ -720,10 +721,24 @@ h2 {
 }
 
 .notice-legal-callout strong,
-.compliance-preview strong {
+.compliance-preview strong,
+.vendor-sync-callout strong {
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.vendor-sync-callout {
+  border-color: rgba(33, 85, 72, 0.22);
+  background:
+    linear-gradient(135deg, rgba(238, 247, 241, 0.96), rgba(255, 253, 247, 0.84)),
+    radial-gradient(circle at right, rgba(45, 106, 79, 0.16), transparent 34%);
+  color: var(--green);
+}
+
+.vendor-sync-callout span {
+  color: var(--ink);
+  line-height: 1.55;
 }
 
 .notice-blocker-panel {

@@ -59,9 +59,12 @@ foundation is also present: proposed source URLs are validated through
 CivicCore guards, credentials in URLs are rejected, source/run/failure state
 persists in the vendor sync ledger, source health is computed as `healthy`,
 `degraded`, or `circuit_open`, and the circuit opens after five consecutive
-full-run failures or two post-unpause grace-period failures. Remaining
-live-sync work is actual vendor adapters, scheduled pulls, and staff UI
-surfacing; the foundation does not yet claim vendor-network data movement.
+full-run failures or two post-unpause grace-period failures. The React staff
+workspace now surfaces this ledger through a Vendor Sync screen with source
+registration, health/circuit status, run-outcome logging, no-network safety
+copy, and actionable IT fix guidance. Remaining live-sync work is actual vendor
+adapters and scheduled pulls; the foundation does not yet claim vendor-network
+data movement.
 
 ## Sprint 1
 
