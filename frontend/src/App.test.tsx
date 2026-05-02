@@ -865,7 +865,7 @@ describe("CivicClerk staff workspace", () => {
     expect(await screen.findByRole("heading", { name: "Signed in with municipal SSO" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Notice checklist/ }));
 
-    expect(screen.getByRole("heading", { name: "Official notice record" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Official notice record" })).toBeInTheDocument();
     expect(screen.getAllByText("Proof incomplete").length).toBeGreaterThan(0);
     expect(screen.getByText("Finalized packet available before notice proof.")).toBeInTheDocument();
     expect(screen.getByText(/Computed deadline/)).toBeInTheDocument();
@@ -995,10 +995,10 @@ describe("CivicClerk staff workspace", () => {
     await screen.findByRole("heading", { name: "Good morning, City Clerk." });
     expect(await screen.findByRole("heading", { name: "Signed in with municipal SSO" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Meetings/ }));
-    expect(screen.getByRole("heading", { name: "May 2026 clerk calendar" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "May 2026 clerk calendar" })).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole("button", { name: /City Council/ })[0]);
-    expect(screen.getByRole("heading", { name: "Regular Meeting" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Regular Meeting" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Meeting lifecycle stages" })).toBeInTheDocument();
   });
 
