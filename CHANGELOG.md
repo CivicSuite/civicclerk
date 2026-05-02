@@ -13,6 +13,14 @@ All notable changes to CivicClerk are documented here.
 - `scripts/check_pilot_readiness.py` now includes the mock municipal IdP
   contract suite in its developer-owned readiness rollup, so pilot handoff
   reports cannot pass on vendor contracts alone.
+- `scripts/run_mock_city_environment_suite.py` now includes a reusable
+  Brookfield backup-retention/off-host policy contract with seven-year
+  retention, monthly restore-test cadence, encrypted immutable mock off-host
+  storage, legal-hold support, and restore-manifest fields so future modules can
+  reuse backup-readiness proof without contacting storage providers.
+- `scripts/check_pilot_readiness.py` now includes that backup-retention/off-host
+  contract suite in developer-owned readiness while keeping real city retention
+  approval as an external proof slot.
 
 ## [0.1.15] - 2026-05-02
 

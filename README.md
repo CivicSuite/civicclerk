@@ -220,8 +220,9 @@ Shipped in this foundation:
   payload contracts and future source guards without outbound network calls
 - `scripts/run_mock_city_environment_suite.py` to run the reusable no-network
   City of Brookfield mock-city contract suite for Legistar, Granicus, PrimeGov,
-  NovusAGENDA, and the Brookfield Entra ID OIDC contract before module teams add
-  their own module-specific assertions
+  NovusAGENDA, the Brookfield Entra ID OIDC contract, and the Brookfield
+  backup-retention/off-host policy contract before module teams add their own
+  module-specific assertions
 - `scripts/check_vendor_live_sync_readiness.py` to preview the vendor live-sync
   source contract, auth method, credential placement, health status, and
   circuit-breaker behavior without contacting vendor systems
@@ -338,7 +339,9 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
      and the release handoff bundle to prove developer-owned pilot readiness;
      the report keeps certificate signing, municipal IdP proof, real vendor API
      proof, and city backup-retention approval as explicit external proof slots
-     instead of marking them as unbuilt product code
+     instead of marking them as unbuilt product code; the developer-owned side
+     now includes the reusable vendor-interface, municipal IdP, and backup
+     retention/off-host mock-city contract suites
    - Use `powershell -ExecutionPolicy Bypass -File scripts/start_backup_restore_rehearsal.ps1 -PrintOnly` on Windows PowerShell or `bash scripts/start_backup_restore_rehearsal.sh --print-only` on Linux, macOS, or Git Bash to preview the backup/restore rehearsal; rerun without the print-only flag to seed the five persistent SQLite stores, create `backup/civicclerk-backup-manifest.json`, restore into `.backup-restore-rehearsal`, and verify the restored agenda intake, agenda item, meeting, packet assembly, notice checklist, and packet export evidence
    - For the Docker product path, use `powershell -ExecutionPolicy Bypass -File scripts/start_docker_backup_restore_rehearsal.ps1 -PrintOnly` on Windows PowerShell or `bash scripts/start_docker_backup_restore_rehearsal.sh --print-only` on Linux, macOS, or Git Bash to preview a PostgreSQL-native rehearsal; rerun without the print-only flag while the Compose stack is running to create `.docker-backup-restore-rehearsal`, capture `backup/civicclerk-postgres.dump` with `pg_dump`, restore it into a temporary database with `pg_restore`, write `backup/civicclerk-docker-backup-manifest.json`, verify restored application tables, and drop the temporary restore database without overwriting the source database
    - Use `powershell -ExecutionPolicy Bypass -File scripts/start_protected_demo_rehearsal.ps1 -PrintOnly` on Windows PowerShell or `bash scripts/start_protected_demo_rehearsal.sh --print-only` on Linux, macOS, or Git Bash to print the protected trusted-header demo profile before launching it

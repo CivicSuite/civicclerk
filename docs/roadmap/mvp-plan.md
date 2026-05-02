@@ -91,7 +91,11 @@ future modules a repeatable baseline before module-specific assertions are
 added. The same suite now validates a Brookfield Entra ID-style municipal OIDC
 contract with issuer, audience, authorization-code + PKCE URLs, JWKS shape,
 role claims, and staff-token validation without contacting an identity provider
-or printing mock secrets. Unsigned Windows install remains expected until an enterprise
+or printing mock secrets, and it now validates a Brookfield
+backup-retention/off-host policy contract with seven-year retention, monthly
+restore-test cadence, encrypted immutable mock off-host storage, legal-hold
+support, and restore-manifest fields without contacting storage providers or
+printing secrets. Unsigned Windows install remains expected until an enterprise
 code-signing certificate is issued and the secured signing workstation is ready;
 installer and docs warnings now name the "Unknown Publisher" / "Windows
 protected your PC" first-install experience directly. The pilot-readiness

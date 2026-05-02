@@ -8,8 +8,10 @@ from pathlib import Path
 
 from civicclerk.mock_city_environment import (
     MOCK_CITY_NAME,
+    mock_city_backup_retention_contract,
     mock_city_idp_contract,
     mock_city_vendor_contracts,
+    run_mock_city_backup_retention_suite,
     run_mock_city_contract_suite,
     run_mock_city_idp_contract_suite,
 )
@@ -52,6 +54,14 @@ def _print_plan(base_url: str) -> int:
         f"auth_code_pkce=true jwks={idp.jwks_path} roles={','.join(idp.role_claims)} "
         "secrets_reported=false"
     )
+    retention = mock_city_backup_retention_contract()
+    print("Reusable backup retention/off-host contract:")
+    print(
+        f"- {retention.city}: retention_years={retention.retention_years} "
+        f"restore_test_days={retention.restore_test_interval_days} "
+        f"off_host={retention.off_host_storage} immutable={str(retention.immutable_retention_required).lower()} "
+        "network_calls=false"
+    )
     print("Fix path: module teams should reuse these contracts and add only module-specific assertions.")
     print("MOCK-CITY-ENVIRONMENT-SUITE: PLAN")
     return 0
@@ -64,15 +74,22 @@ def main() -> int:
 
     checks = run_mock_city_contract_suite(base_url=args.base_url)
     idp_checks = run_mock_city_idp_contract_suite()
-    ready = all(check.ok for check in checks) and all(check.ok for check in idp_checks)
+    retention_checks = run_mock_city_backup_retention_suite()
+    ready = (
+        all(check.ok for check in checks)
+        and all(check.ok for check in idp_checks)
+        and all(check.ok for check in retention_checks)
+    )
     payload = {
         "mock_city": MOCK_CITY_NAME,
         "network_calls": False,
         "base_url": args.base_url,
         "contracts": [contract.public_dict() for contract in mock_city_vendor_contracts()],
         "idp_contract": mock_city_idp_contract().public_dict(),
+        "backup_retention_contract": mock_city_backup_retention_contract().public_dict(),
         "checks": [check.public_dict() for check in checks],
         "idp_checks": [check.public_dict() for check in idp_checks],
+        "backup_retention_checks": [check.public_dict() for check in retention_checks],
         "ready": ready,
     }
     if args.output:
@@ -94,6 +111,12 @@ def main() -> int:
         print(f"  fix: {check.fix}")
         if check.roles:
             print(f"  roles: {', '.join(check.roles)}")
+    for check in retention_checks:
+        status = "PASS" if check.ok else "FAIL"
+        print(f"[{status}] backup-retention: {check.message}")
+        print(f"  fix: {check.fix}")
+        if check.checked_fields:
+            print(f"  manifest_fields: {', '.join(check.checked_fields)}")
     print("MOCK-CITY-ENVIRONMENT-SUITE: PASSED" if ready else "MOCK-CITY-ENVIRONMENT-SUITE: FAILED")
     return 0 if ready else 1
 
