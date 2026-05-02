@@ -370,6 +370,19 @@ CivicCore host guards. It is intentionally not vendor-network live sync; it
 tells the team what must be fixed before scheduled vendor polling or database
 sync is designed.
 
+Then preview the first vendor live-sync operating contract without contacting a
+vendor:
+
+```bash
+python scripts/check_vendor_live_sync_readiness.py --connector legistar --source-url https://vendor.example.gov/api/meetings --auth-method bearer_token
+```
+
+This validates the supported connector, source URL host, credential placement,
+and auth method. It also shows the operator-facing health status and
+circuit-breaker behavior that future vendor adapters must use: `healthy`,
+`degraded`, or `circuit_open`, with the circuit opening after five consecutive
+full-run failures or two post-unpause grace-period failures.
+
 When IT has approved local agenda-system export files and wants the Docker
 product path to ingest them repeatedly, create the host drop folder and enable
 the Celery Beat schedule in `.env`:
@@ -594,9 +607,11 @@ notice checklist/posting-proof work, public posting, meeting outcomes, and
 minutes draft work against live API-backed data, and the dashboard now surfaces
 staff access/session status for local open mode, OIDC browser sessions, bearer
 mode, and trusted-header mode. Production municipal use still requires a signed
-installer and vendor-network live-sync hardening work before IT should treat it
-as a shared deployment; scheduled local connector export-drop ingestion is
-available for approved JSON files in the Docker product path. The Docker/PostgreSQL
+installer and actual vendor-network adapters/scheduled pulls before IT should
+treat it as a shared deployment; scheduled local connector export-drop
+ingestion is available for approved JSON files in the Docker product path, and
+the vendor live-sync readiness/circuit-breaker contract is present for the next
+runtime slice. The Docker/PostgreSQL
 backup/restore path now has a rehearsal helper, but cities still need their own
 retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility

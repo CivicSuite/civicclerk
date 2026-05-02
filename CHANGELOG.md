@@ -4,6 +4,15 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Added
+- Vendor live-sync readiness now has a bounded operational foundation:
+  `civicclerk.vendor_live_sync` validates proposed source URLs through
+  CivicCore guards, rejects credentials in URLs, computes
+  `healthy`/`degraded`/`circuit_open`, opens the circuit after five consecutive
+  full-run failures or two grace-period failures, and exposes actionable
+  operator fix text. `scripts/check_vendor_live_sync_readiness.py` previews that
+  contract without contacting vendor networks.
+
 ### Fixed
 - The MVP plan now clearly states that OIDC browser-session support is shipped
   and that the remaining production auth work is municipal IdP configuration,
