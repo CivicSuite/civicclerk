@@ -87,6 +87,7 @@ type VendorSyncSource = {
   syncPausedReason?: string | null;
   lastSyncStatus?: string | null;
   lastErrorAt?: string | null;
+  lastSuccessCursorAt?: string | null;
   message: string;
   fix: string;
   updatedAt: string;
@@ -105,6 +106,7 @@ type ApiVendorSyncSource = {
   sync_paused_reason?: string | null;
   last_sync_status?: string | null;
   last_error_at?: string | null;
+  last_success_cursor_at?: string | null;
   message: string;
   fix: string;
   updated_at: string;
@@ -123,6 +125,11 @@ type VendorSyncRunPayload = {
   records_failed: number;
   retries_attempted?: number;
   error_summary?: string;
+};
+
+type VendorSyncCursorResetPayload = {
+  cursor_at: string | null;
+  reason: string;
 };
 
 type AgendaIntakeItem = {
@@ -731,6 +738,7 @@ const demoVendorSyncSources: VendorSyncSource[] = [
     syncPausedReason: null,
     lastSyncStatus: "success",
     lastErrorAt: null,
+    lastSuccessCursorAt: "2026-05-02T15:00:00Z",
     message: "Source is healthy. Scheduled vendor pulls can remain enabled after credentials are verified in deployment secrets.",
     fix: "Keep monitoring the run log after each vendor maintenance window.",
     updatedAt: "2026-05-02T15:20:00Z",
@@ -748,6 +756,7 @@ const demoVendorSyncSources: VendorSyncSource[] = [
     syncPausedReason: "Circuit opened after five consecutive failed pulls.",
     lastSyncStatus: "failed",
     lastErrorAt: "2026-05-02T15:10:00Z",
+    lastSuccessCursorAt: "2026-05-02T12:45:00Z",
     message: "Vendor sync is paused for this source to protect the clerk workflow from repeated failed pulls.",
     fix: "Confirm the vendor URL, rotate credentials if needed, run connector readiness, then record a successful run before re-enabling scheduled pulls.",
     updatedAt: "2026-05-02T15:12:00Z",
@@ -1469,6 +1478,12 @@ export function App() {
                 setVendorSyncState("success");
                 return source;
               }}
+              onResetCursor={async (sourceId, payload) => {
+                const source = mapApiVendorSyncSource(await resetVendorSyncCursor(sourceId, payload));
+                setVendorSyncSources((current) => current.map((item) => item.id === source.id ? source : item));
+                setVendorSyncState("success");
+                return source;
+              }}
             />
           )}
         </section>
@@ -1656,6 +1671,22 @@ async function recordVendorSyncRun(sourceId: string, payload: VendorSyncRunPaylo
   const body = (await response.json()) as { source?: ApiVendorSyncSource };
   if (!body.source) {
     throw new Error("Vendor sync run record returned no updated source. Reload the workspace and verify the backend response contract.");
+  }
+  return body.source;
+}
+
+async function resetVendorSyncCursor(sourceId: string, payload: VendorSyncCursorResetPayload): Promise<ApiVendorSyncSource> {
+  const response = await fetch(`/api/vendor-live-sync/sources/${sourceId}/cursor-reset`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Vendor sync cursor reset"));
+  }
+  const body = (await response.json()) as { source?: ApiVendorSyncSource };
+  if (!body.source) {
+    throw new Error("Vendor sync cursor reset returned no updated source. Reload the workspace and verify the backend response contract.");
   }
   return body.source;
 }
@@ -2052,6 +2083,7 @@ function mapApiVendorSyncSource(record: ApiVendorSyncSource): VendorSyncSource {
     syncPausedReason: record.sync_paused_reason,
     lastSyncStatus: record.last_sync_status,
     lastErrorAt: record.last_error_at,
+    lastSuccessCursorAt: record.last_success_cursor_at,
     message: record.message,
     fix: record.fix,
     updatedAt: record.updated_at,
@@ -3957,12 +3989,14 @@ function VendorSyncWorkspace({
   sources,
   onCreateSource,
   onRecordRun,
+  onResetCursor,
 }: {
   viewState: ViewState;
   apiError: string | null;
   sources: VendorSyncSource[];
   onCreateSource: (payload: VendorSyncSourcePayload) => Promise<VendorSyncSource>;
   onRecordRun: (sourceId: string, payload: VendorSyncRunPayload) => Promise<VendorSyncSource>;
+  onResetCursor: (sourceId: string, payload: VendorSyncCursorResetPayload) => Promise<VendorSyncSource>;
 }) {
   const [connector, setConnector] = useState("legistar");
   const [sourceName, setSourceName] = useState("Brookfield agenda vendor feed");
@@ -3974,6 +4008,7 @@ function VendorSyncWorkspace({
   const [recordsFailed, setRecordsFailed] = useState("0");
   const [retriesAttempted, setRetriesAttempted] = useState("0");
   const [errorSummary, setErrorSummary] = useState("");
+  const [cursorResetReason, setCursorResetReason] = useState("Force full reconciliation after vendor backfill or suspected missed delta.");
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -4026,6 +4061,24 @@ function VendorSyncWorkspace({
     }
   }
 
+  async function resetCursor(source: VendorSyncSource) {
+    setMessage(null);
+    if (cursorResetReason.trim().length < 8) {
+      setMessage("Cursor reset needs a reason. Enter why IT is forcing a full reconciliation, then try again.");
+      return;
+    }
+    try {
+      const updated = await onResetCursor(source.id, {
+        cursor_at: null,
+        reason: cursorResetReason.trim(),
+      });
+      setSelectedSourceId(updated.id);
+      setMessage(`Cursor reset for ${updated.sourceName}. The next enabled pull will run a full source reconciliation. No vendor network call was made from this workspace.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Vendor sync cursor reset failed."} Confirm the source still exists, record a clear reset reason, run connector readiness, then retry.`);
+    }
+  }
+
   return (
     <div className="page-stack">
       <PageHeader
@@ -4041,6 +4094,10 @@ function VendorSyncWorkspace({
       <div className="vendor-sync-callout" role="status">
         <strong>Safety boundary</strong>
         <span>This workspace records source configuration and run outcomes only. It does not contact Granicus, Legistar, or any other vendor API; scheduled live adapters remain a controlled deployment task.</span>
+      </div>
+      <div className="notice-legal-callout">
+        <strong>Delta cursor controls are reconciliation controls</strong>
+        <span>Clearing a cursor is safe only when IT intentionally wants the next scheduled pull to re-check the full source. The reset is recorded here, but the actual vendor call still happens only in the controlled sync runner.</span>
       </div>
       <div className="agenda-grid">
         <section className="panel">
@@ -4120,6 +4177,10 @@ function VendorSyncWorkspace({
               Error summary
               <textarea value={errorSummary} onChange={(event) => setErrorSummary(event.target.value)} placeholder="Leave blank for a successful run." />
             </label>
+            <label className="wide">
+              Cursor reset reason
+              <textarea value={cursorResetReason} onChange={(event) => setCursorResetReason(event.target.value)} />
+            </label>
             <button type="submit">Record run outcome</button>
           </form>
         </section>
@@ -4145,6 +4206,11 @@ function VendorSyncWorkspace({
                 </div>
                 <p>{source.connector} - {source.authMethod.replace(/_/g, " ")} - {source.sourceUrl}</p>
                 <small>Last run: {source.lastSyncStatus ?? "No run logged"}{source.lastErrorAt ? ` at ${formatDateTime(source.lastErrorAt)}` : ""}. Updated {formatDateTime(source.updatedAt)}.</small>
+                <small>
+                  Last successful cursor: {source.lastSuccessCursorAt
+                    ? `${formatDateTime(source.lastSuccessCursorAt)}. Next pull starts from this point.`
+                    : "No cursor yet; next enabled pull will run a full source reconciliation."}
+                </small>
                 <small>Failures: {source.consecutiveFailureCount} consecutive, {source.activeFailureCount} active.</small>
                 {source.syncPaused && <p className="legal-warning">Pulls paused: {source.syncPausedReason ?? "Circuit breaker is open."}</p>}
                 <p>{source.message}</p>
@@ -4153,6 +4219,9 @@ function VendorSyncWorkspace({
               <div className="row-actions">
                 <button className="secondary" type="button" onClick={() => setSelectedSourceId(source.id)}>
                   Log run
+                </button>
+                <button className="secondary danger-action" type="button" onClick={() => resetCursor(source)}>
+                  Reset cursor for full reconciliation
                 </button>
               </div>
             </article>

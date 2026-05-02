@@ -377,6 +377,11 @@ class VendorSyncRunRecordCreate(BaseModel):
     error_summary: str | None = Field(default=None, min_length=1)
 
 
+class VendorSyncCursorReset(BaseModel):
+    cursor_at: datetime | None = None
+    reason: str = Field(min_length=8, max_length=500)
+
+
 @app.get("/")
 async def root() -> dict[str, str]:
     """Describe what the runtime foundation currently provides."""
@@ -1650,6 +1655,36 @@ async def list_vendor_live_sync_sources() -> dict[str, object]:
         "sources": sources,
         "message": "Vendor live-sync source health is loaded from CivicClerk persistence.",
         "fix": "If a source is degraded or circuit_open, review its run log before enabling scheduled pulls.",
+    }
+
+
+@app.post("/vendor-live-sync/sources/{source_id}/cursor-reset")
+async def reset_vendor_live_sync_cursor(source_id: str, payload: VendorSyncCursorReset) -> dict[str, object]:
+    """Clear or move a vendor delta cursor without contacting the vendor network."""
+    source = _get_vendor_sync_repository().reset_success_cursor(
+        source_id=source_id,
+        cursor_at=payload.cursor_at,
+    )
+    if source is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Vendor live-sync source not found.",
+                "fix": "Create the source with POST /vendor-live-sync/sources before resetting its cursor.",
+            },
+        )
+    if payload.cursor_at is None:
+        message = "Vendor sync cursor cleared. The next enabled pull will run a full source reconciliation."
+        fix = "Run connector readiness first, confirm credentials are current, then start the controlled pull window."
+    else:
+        message = "Vendor sync cursor moved. The next enabled pull will request records changed after the selected cursor."
+        fix = "Confirm the chosen cursor is before the missing vendor updates, then monitor the next run log."
+    return {
+        "network_calls": False,
+        "source": source.public_dict(),
+        "message": message,
+        "fix": fix,
+        "reason_recorded": payload.reason.strip(),
     }
 
 

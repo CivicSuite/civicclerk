@@ -94,8 +94,9 @@ normalizes local connector exports, records vendor live-sync source/run health
 without contacting vendor networks, and creates records-ready packet export
 bundles. The React staff workspace now includes Vendor Sync, where IT staff can
 register an approved source, see healthy/degraded/circuit-open status, record a
-controlled run outcome, and read the exact fix path before scheduled vendor
-pulls are enabled. The staff shell now checks `/staff/session` so IT staff and clerks can
+controlled run outcome, see the persisted delta cursor, reset that cursor for a
+full reconciliation with a reason, and read the exact fix path before scheduled
+vendor pulls are enabled. The staff shell now checks `/staff/session` so IT staff and clerks can
 see whether the service is in local open mode, OIDC-protected staff mode,
 OIDC browser-session mode, bearer-protected staff mode, or trusted-header staff
 mode.
@@ -188,7 +189,8 @@ posting gate explain that AI-drafted minutes cannot bypass human adoption.
 The Vendor Sync React surface is now present: IT staff can open Vendor Sync
 from the React navigation, register an approved Granicus, Legistar, PrimeGov,
 or NovusAgenda source without making a vendor call, record run outcomes into
-the durable ledger, see failure counts and circuit-breaker state, and read
+the durable ledger, see failure counts, cursor state, and circuit-breaker state,
+reset the cursor when a full source reconciliation is needed, and read
 actionable fix guidance before scheduled vendor-network pulls are enabled.
 
 ## Part 2: IT and Technical Overview
@@ -424,11 +426,17 @@ curl -X POST http://127.0.0.1:8776/vendor-live-sync/sources \
 curl -X POST http://127.0.0.1:8776/vendor-live-sync/sources/{id}/run-log \
   -H "content-type: application/json" \
   -d '{"records_discovered":1,"records_succeeded":0,"records_failed":1,"error_summary":"Vendor API unavailable."}'
+curl -X POST http://127.0.0.1:8776/vendor-live-sync/sources/{id}/cursor-reset \
+  -H "content-type: application/json" \
+  -d '{"cursor_at":null,"reason":"Force full reconciliation after vendor backfill notice."}'
 ```
 
 These endpoints validate and record source/run/failure state only. They return
 `network_calls: false`, health status, and actionable fix text; they do not
 contact Granicus, Legistar, PrimeGov, NovusAGENDA, or any other vendor network.
+The cursor reset path clears or moves `last_success_cursor_at` locally so the
+next controlled pull can perform a full reconciliation or replay from an
+operator-selected point; the reset itself never calls the vendor.
 
 For a deliberately enabled one-time vendor pull, keep the same ledger source,
 store the credential in a deployment secret environment variable, and run:
@@ -467,8 +475,10 @@ Celery Beat then calls the same guarded runner, writes per-source reports under
 circuit-breaker ledger visible from the Vendor Sync workspace.
 The delta-planning layer now defines the connector-specific "changed since"
 query parameter for Granicus, Legistar, PrimeGov, and NovusAGENDA; cursor
-persistence and advancement remain the next live-sync hardening step before a
-city should rely on unattended vendor polling.
+persistence, safe advancement, and operator-visible reset controls are present.
+Before a city relies on unattended vendor polling, IT still needs municipal
+vendor API credentials, approved source ids, and deployment proof against the
+actual city vendor tenant.
 
 When IT has approved local agenda-system export files and wants the Docker
 product path to ingest them repeatedly, create the host drop folder and enable

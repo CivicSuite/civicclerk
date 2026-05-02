@@ -27,6 +27,9 @@ All notable changes to CivicClerk are documented here.
   one-shot and scheduled pulls from that cursor, and advance it only after a
   fully successful normalized pull so failed or partial vendor runs do not skip
   records.
+- Vendor Sync now exposes that cursor in the React staff workspace and adds a
+  no-network cursor reset endpoint/workflow so IT can force a full source
+  reconciliation with an operator reason before the next controlled pull.
 
 ### Changed
 - Windows installer packaging and docs now explicitly warn that unsigned setup
