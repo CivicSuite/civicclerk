@@ -34,17 +34,17 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
     data = load_pyproject()
 
     assert data["project"]["name"] == "civicclerk"
-    assert data["project"]["version"] == "0.1.12"
+    assert data["project"]["version"] == "0.1.13"
     assert "CivicClerk" in data["project"]["description"]
 
 
-def test_pyproject_targets_published_civiccore_v0150_release_wheel() -> None:
+def test_pyproject_targets_published_civiccore_v0170_release_wheel() -> None:
     data = load_pyproject()
     dependencies = data["project"]["dependencies"]
 
     assert (
-        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.16.0/"
-        "civiccore-0.16.0-py3-none-any.whl"
+        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.17.0/"
+        "civiccore-0.17.0-py3-none-any.whl"
     ) in dependencies
     assert not any(
         "civiccore>=" in dep or "civiccore~=" in dep or dep == "civiccore==0.12.0"
@@ -91,8 +91,8 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["name"] == "CivicClerk"
-    assert payload["status"] == "v0.1.12 runtime foundation release"
-    assert "full integrated clerk console remains future work" in payload["message"]
+    assert payload["status"] == "v0.1.13 runtime foundation release"
+    assert "integrated React clerk console and public portal are now present" in payload["message"]
     assert "notice compliance" in payload["message"]
     assert "motion" in payload["message"]
     assert "vote" in payload["message"]
@@ -102,9 +102,10 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "Granicus" in payload["message"]
     assert "keyboard" in payload["message"]
     assert "shared CivicCore notice compliance helper" in payload["message"]
-    assert "v0.1.12" in payload["message"]
+    assert "v0.1.13" in payload["message"]
     assert "trusted-header reverse-proxy mode" in payload["message"]
     assert "trusted-proxy CIDR allowlist" in payload["message"]
+    assert "browser OIDC login/session foundation" in payload["message"]
     assert "agenda intake queue" in payload["message"]
     assert "packet assembly records" in payload["message"]
     assert "notice checklist records" in payload["message"]
@@ -117,7 +118,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "public archive staff screens can now publish public-safe records" in payload["message"]
     assert "connector import staff screens can now normalize local agenda-platform exports" in payload["message"]
     assert "packet export staff screens can now create records-ready bundles" in payload["message"]
-    assert payload["next_step"] == "Production-depth consolidation and next CivicSuite module planning"
+    assert payload["next_step"] == "Release alignment, signing readiness, and production deployment hardening"
 
 
 @pytest.mark.asyncio
@@ -134,8 +135,8 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
     assert payload == {
         "status": "ok",
         "service": "civicclerk",
-        "version": "0.1.12",
-        "civiccore": "0.16.0",
+        "version": "0.1.13",
+        "civiccore": "0.17.0",
     }
 
 

@@ -30,8 +30,8 @@ def _write_completed_profile(tmp_path: Path) -> Path:
     dist_root = tmp_path / "dist"
     dist_root.mkdir()
     for name in [
-        "civicclerk-0.1.12-py3-none-any.whl",
-        "civicclerk-0.1.12.tar.gz",
+        "civicclerk-0.1.13-py3-none-any.whl",
+        "civicclerk-0.1.13.tar.gz",
         "SHA256SUMS.txt",
     ]:
         (dist_root / name).write_text("test artifact\n", encoding="utf-8")
@@ -60,8 +60,8 @@ def _write_completed_trusted_header_profile(tmp_path: Path) -> Path:
     dist_root = tmp_path / "dist"
     dist_root.mkdir()
     for name in [
-        "civicclerk-0.1.12-py3-none-any.whl",
-        "civicclerk-0.1.12.tar.gz",
+        "civicclerk-0.1.13-py3-none-any.whl",
+        "civicclerk-0.1.13.tar.gz",
         "SHA256SUMS.txt",
     ]:
         (dist_root / name).write_text("test artifact\n", encoding="utf-8")

@@ -35,7 +35,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "1. Intake" in html
     assert "2. Build" in html
     assert "3. Publish" in html
-    assert "v0.1.12" in html
+    assert "v0.1.13" in html
     assert "browser-visible staff workflow screens" in html
     assert "bearer-protected staff mode" in html
     assert "trusted-header staff mode" in html

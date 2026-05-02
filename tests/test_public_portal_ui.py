@@ -26,7 +26,7 @@ async def test_public_portal_renders_accessible_resident_shell() -> None:
     assert 'aria-label="CivicClerk public portal shell"' in html
     assert "Skip to public meeting records" in html
     assert "CivicClerk Public Portal" in html
-    assert "v0.1.12 API-direct public portal fallback" in html
+    assert "v0.1.13 API-direct public portal fallback" in html
     assert "Docker/nginx product path" in html
     assert "/public/meetings" in html
     assert "/public/meetings/{id}" in html
