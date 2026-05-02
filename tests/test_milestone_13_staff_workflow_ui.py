@@ -10,6 +10,7 @@ from civicclerk.main import app
 
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = "0.1.16"
 
 
 async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> None:
@@ -35,7 +36,7 @@ async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> Non
     assert "1. Intake" in html
     assert "2. Build" in html
     assert "3. Publish" in html
-    assert "v0.1.15" in html
+    assert f"v{VERSION}" in html
     assert "browser-visible staff workflow screens" in html
     assert "bearer-protected staff mode" in html
     assert "trusted-header staff mode" in html

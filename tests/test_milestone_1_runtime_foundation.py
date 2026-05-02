@@ -13,6 +13,7 @@ from httpx import ASGITransport, AsyncClient
 
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = "0.1.16"
 
 
 def load_pyproject() -> dict:
@@ -34,7 +35,7 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
     data = load_pyproject()
 
     assert data["project"]["name"] == "civicclerk"
-    assert data["project"]["version"] == "0.1.15"
+    assert data["project"]["version"] == VERSION
     assert "CivicClerk" in data["project"]["description"]
 
 
@@ -91,7 +92,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["name"] == "CivicClerk"
-    assert payload["status"] == "v0.1.15 runtime foundation release"
+    assert payload["status"] == f"v{VERSION} runtime foundation release"
     assert "integrated React clerk console and public portal are now present" in payload["message"]
     assert "notice compliance" in payload["message"]
     assert "motion" in payload["message"]
@@ -102,7 +103,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
     assert "Granicus" in payload["message"]
     assert "keyboard" in payload["message"]
     assert "shared CivicCore notice compliance helper" in payload["message"]
-    assert "v0.1.15" in payload["message"]
+    assert f"v{VERSION}" in payload["message"]
     assert "trusted-header reverse-proxy mode" in payload["message"]
     assert "trusted-proxy CIDR allowlist" in payload["message"]
     assert "browser OIDC login/session foundation" in payload["message"]
@@ -135,7 +136,7 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
     assert payload == {
         "status": "ok",
         "service": "civicclerk",
-        "version": "0.1.15",
+            "version": VERSION,
         "civiccore": "0.18.1",
     }
 
