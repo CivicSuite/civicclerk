@@ -32,6 +32,7 @@ required=(
   scripts/verify-release.sh
   scripts/verify-browser-qa.py
   scripts/check_installer_readiness.py
+  scripts/check_pilot_readiness.py
   scripts/check_connector_sync_readiness.py
   scripts/run_mock_city_environment_suite.py
   scripts/run_vendor_live_sync.py

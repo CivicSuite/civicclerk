@@ -32,6 +32,10 @@ All notable changes to CivicClerk are documented here.
   reconciliation with an operator reason before the next controlled pull; each
   reset is persisted as a `cursor_reset` run-log event and returned as
   `reset_event` by the API.
+- `scripts/check_pilot_readiness.py` adds a no-network pilot handoff rollup
+  that proves developer-owned readiness while listing code-signing certificate,
+  municipal IdP, real vendor API, and city backup-retention proof as explicit
+  external dependencies.
 
 ### Changed
 - Windows installer packaging and docs now explicitly warn that unsigned setup

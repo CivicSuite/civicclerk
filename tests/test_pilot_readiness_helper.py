@@ -68,17 +68,20 @@ def _write_installer_inputs(tmp_path: Path) -> tuple[Path, Path]:
     return dist_root, bundle
 
 
-def test_installer_readiness_passes_complete_handoff_inputs(tmp_path: Path) -> None:
+def test_pilot_readiness_is_developer_ready_with_external_dependencies_pending(tmp_path: Path) -> None:
     dist_root, bundle = _write_installer_inputs(tmp_path)
+    report = tmp_path / "pilot-readiness.json"
 
     result = subprocess.run(
         [
             "python",
-            "scripts/check_installer_readiness.py",
+            "scripts/check_pilot_readiness.py",
             "--dist-root",
             str(dist_root),
             "--bundle",
             str(bundle),
+            "--output",
+            str(report),
         ],
         cwd=ROOT,
         check=False,
@@ -87,24 +90,28 @@ def test_installer_readiness_passes_complete_handoff_inputs(tmp_path: Path) -> N
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "installer_ready=true" in result.stdout
-    assert "[PASS] checksums" in result.stdout
-    assert "[PASS] handoff bundle entries" in result.stdout
-    assert "INSTALLER-READINESS: PASSED" in result.stdout
+    assert "developer_ready=true" in result.stdout
+    assert "external_dependencies_pending=true" in result.stdout
+    assert "[PASS] installer checksums" in result.stdout
+    assert "[PASS] mock city vendor contract suite" in result.stdout
+    assert "[PASS] unsigned installer warning docs" in result.stdout
+    assert "[EXTERNAL] code-signing certificate" in result.stdout
+    assert "PILOT-READINESS: DEVELOPER-READY" in result.stdout
+    assert '"developer_ready": true' in report.read_text(encoding="utf-8")
 
 
-def test_installer_readiness_fails_without_handoff_bundle(tmp_path: Path) -> None:
+def test_pilot_readiness_strict_external_proof_fails_until_city_proofs_exist(tmp_path: Path) -> None:
     dist_root, bundle = _write_installer_inputs(tmp_path)
-    bundle.unlink()
 
     result = subprocess.run(
         [
             "python",
-            "scripts/check_installer_readiness.py",
+            "scripts/check_pilot_readiness.py",
             "--dist-root",
             str(dist_root),
             "--bundle",
             str(bundle),
+            "--require-external-proof",
         ],
         cwd=ROOT,
         check=False,
@@ -113,41 +120,35 @@ def test_installer_readiness_fails_without_handoff_bundle(tmp_path: Path) -> Non
     )
 
     assert result.returncode == 1
-    assert "installer_ready=false" in result.stdout
-    assert "release handoff bundle is missing" in result.stdout
-    assert "INSTALLER-READINESS: FAILED" in result.stdout
+    assert "developer_ready=true" in result.stdout
+    assert "[EXTERNAL] municipal vendor API proof" in result.stdout
 
 
-def test_installer_readiness_fails_checksum_mismatch(tmp_path: Path) -> None:
+def test_pilot_readiness_passes_strict_when_external_proofs_are_attached(tmp_path: Path) -> None:
     dist_root, bundle = _write_installer_inputs(tmp_path)
-    (dist_root / f"civicclerk-{VERSION}.tar.gz").write_text("tampered\n", encoding="utf-8")
+    proofs = []
+    for name in ["signing.txt", "idp.txt", "vendor.txt", "retention.txt"]:
+        path = tmp_path / name
+        path.write_text("redacted proof\n", encoding="utf-8")
+        proofs.append(path)
 
     result = subprocess.run(
         [
             "python",
-            "scripts/check_installer_readiness.py",
+            "scripts/check_pilot_readiness.py",
             "--dist-root",
             str(dist_root),
             "--bundle",
             str(bundle),
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-
-    assert result.returncode == 1
-    assert "checksum mismatch" in result.stdout
-    assert "INSTALLER-READINESS: FAILED" in result.stdout
-
-
-def test_installer_readiness_print_only_documents_plan() -> None:
-    result = subprocess.run(
-        [
-            "python",
-            "scripts/check_installer_readiness.py",
-            "--print-only",
+            "--signing-proof",
+            str(proofs[0]),
+            "--idp-proof",
+            str(proofs[1]),
+            "--vendor-proof",
+            str(proofs[2]),
+            "--retention-proof",
+            str(proofs[3]),
+            "--require-external-proof",
         ],
         cwd=ROOT,
         check=False,
@@ -156,11 +157,20 @@ def test_installer_readiness_print_only_documents_plan() -> None:
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    for expected in [
-        "CivicClerk installer readiness",
-        "Confirm verify-release.sh produced the wheel",
-        "Confirm SHA256SUMS.txt matches",
-        "Confirm the release handoff zip exists",
-        "Not an installer",
-    ]:
-        assert expected in result.stdout
+    assert "external_dependencies_pending=false" in result.stdout
+    assert "[PASS] municipal IdP deployment proof" in result.stdout
+
+
+def test_pilot_readiness_print_only_documents_external_proof_slots() -> None:
+    result = subprocess.run(
+        ["python", "scripts/check_pilot_readiness.py", "--print-only"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Developer-owned checks:" in result.stdout
+    assert "External proof slots:" in result.stdout
+    assert "municipal vendor API live-sync proof" in result.stdout
