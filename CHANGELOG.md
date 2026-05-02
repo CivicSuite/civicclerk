@@ -10,6 +10,11 @@ All notable changes to CivicClerk are documented here.
   circuit-open refusal, URL revalidation, credential loading from deployment
   secret env vars, JSON normalization through the existing connector contract,
   secret-free reporting, and run outcome persistence in the vendor sync ledger.
+- `civicclerk.worker.vendor_network_sync` adds the first scheduled
+  vendor-network pull task for Celery Beat. It stays disabled by default,
+  requires both the schedule gate and live-network gate, runs only configured
+  approved source IDs, writes per-source reports, and reuses the same
+  circuit-breaker ledger as the one-shot runner.
 
 ## [0.1.14] - 2026-05-02
 
