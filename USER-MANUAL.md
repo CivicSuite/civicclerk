@@ -549,9 +549,11 @@ python scripts/check_pilot_readiness.py
 ```
 
 The report is intentionally honest: it can mark developer-owned readiness as
-ready while keeping code-signing certificate proof, real municipal IdP tenant
-proof, real vendor API proof, and city backup-retention/off-host storage approval
-as external proof slots. Use `--require-external-proof` only when those city or
+ready only after release artifacts, the reusable vendor-interface contracts, the
+reusable municipal IdP contract suite, and unsigned-installer warning docs pass,
+while keeping code-signing certificate proof, real municipal IdP tenant proof,
+real vendor API proof, and city backup-retention/off-host storage approval as
+external proof slots. Use `--require-external-proof` only when those city or
 certificate artifacts have been attached to the handoff packet.
 
 Before IT trusts restore operations, rehearse the local backup/restore path:
