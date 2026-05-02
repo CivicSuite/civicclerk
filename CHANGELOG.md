@@ -4,7 +4,10 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
-No unreleased changes yet.
+### Fixed
+- Frontend staff workspace tests now wait for async rendered headings in the
+  notice checklist and meeting-detail flows, removing React `act(...)` warning
+  noise from the test lane without changing product behavior.
 
 ## [0.1.13] - 2026-05-01
 
