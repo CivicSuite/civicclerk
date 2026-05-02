@@ -56,8 +56,8 @@ with durable transition audit entries, and database-backed notice
 checklist/posting-proof records.
 The `/staff` page now provides a product cockpit plus first staff workflow
 screens for agenda intake, packet assembly/export, notice
-checklist/posting-proof, meeting outcome, minutes draft, public archive, and
-connector import work. The cockpit gives clerks a day-at-a-glance desk before
+checklist/posting-proof, meeting outcome, minutes draft, public archive,
+connector import, and vendor sync work. The cockpit gives clerks a day-at-a-glance desk before
 they drill into individual forms, and it reads the live agenda intake queue for
 ready, pending, and needs-revision counts. The Agenda Intake panel also renders
 live queue rows with escaped submitted titles plus actionable empty and
