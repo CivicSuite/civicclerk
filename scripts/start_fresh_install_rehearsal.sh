@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-wheel_path="dist/civicclerk-0.1.16-py3-none-any.whl"
+wheel_path="dist/civicclerk-0.1.17-py3-none-any.whl"
 rehearsal_root=".fresh-install-rehearsal"
 app_port=8776
 keep_server=0
@@ -81,7 +81,7 @@ write_plan() {
   echo "Smoke check: GET ${app_url}/health"
   echo "Readiness check: GET ${app_url}/staff/auth-readiness"
   echo "Browser check: open ${app_url}/staff"
-  echo 'Expected health: {"status":"ok","service":"civicclerk","version":"0.1.16","civiccore":"0.18.1"}'
+  echo 'Expected health: {"status":"ok","service":"civicclerk","version":"0.1.17","civiccore":"0.19.0"}'
   echo "If the wheel is missing, build it first with: python -m build"
   echo "If port ${app_port} is already in use, stop the existing process or rerun with --app-port set to an available port."
   echo "By default this helper stops the app after smoke checks; pass --keep-server to keep it running."
@@ -164,13 +164,13 @@ for _ in {1..20}; do
   sleep 1
 done
 
-expected='{"civiccore": "0.18.1", "service": "civicclerk", "status": "ok", "version": "0.1.16"}'
+expected='{"civiccore": "0.19.0", "service": "civicclerk", "status": "ok", "version": "0.1.17"}'
 if [[ -z "${health}" ]]; then
   echo "The installed CivicClerk app did not answer ${app_url}/health within 20 seconds. Check the app process output and whether port ${app_port} is already in use." >&2
   exit 1
 fi
 if [[ "${health}" != "${expected}" ]]; then
-  echo "Unexpected /health response: ${health}. Expected CivicClerk 0.1.16 with CivicCore 0.18.1." >&2
+  echo "Unexpected /health response: ${health}. Expected CivicClerk 0.1.17 with CivicCore 0.19.0." >&2
   exit 1
 fi
 
