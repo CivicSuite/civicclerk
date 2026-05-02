@@ -262,8 +262,13 @@ The resulting setup package installs Start and Install or Repair shortcuts.
 It is unsigned unless the secured release-signing workstation sets
 `CIVICCLERK_SIGN_INSTALLER=true` plus Microsoft SignTool, a code-signing
 certificate identity, and an RFC 3161 timestamp URL. Without that signing
-profile, Windows SmartScreen may warn about an unknown publisher. To verify the
-enterprise signing inputs without printing secrets, run:
+profile, Windows SmartScreen may show "Unknown Publisher" or "Windows protected
+your PC" because Windows cannot verify a publisher certificate yet. That is
+expected until CivicSuite has an issued organization code-signing certificate
+and secured signing workstation; continue only when the installer came from a
+trusted CivicSuite release source or your IT team built it from the verified
+release handoff. To verify the enterprise signing inputs without printing
+secrets, run:
 
 ```bash
 python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-0.1.14-Setup.exe
@@ -379,6 +384,21 @@ a proposed `--source-url` or `--odbc-connection-string` with the shared
 CivicCore host guards. It is intentionally not vendor-network live sync; it
 tells the team what must be fixed before scheduled vendor polling or database
 sync is designed.
+
+Before repeating this pattern for another CivicSuite module, run the reusable
+mock-city environment suite:
+
+```bash
+python scripts/run_mock_city_environment_suite.py --output mock-city-report.json
+```
+
+This suite uses the City of Brookfield mock profile to verify the shared
+Legistar, Granicus, PrimeGov, and NovusAGENDA connector contracts, normalize the
+sample payloads, and plan connector-specific delta URLs without contacting
+vendor networks. Legistar is tracked as a public-reference interface; the other
+vendor contracts are explicitly labeled vendor-gated until a city provides
+account documentation or credentials. Module teams should reuse this report and
+add only the module-specific assertions needed for the new product surface.
 
 Then preview the first vendor live-sync operating contract without contacting a
 vendor:

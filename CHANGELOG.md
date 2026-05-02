@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- `civicclerk.mock_city_environment` and
+  `scripts/run_mock_city_environment_suite.py` add a reusable no-network City of
+  Brookfield test suite for Legistar, Granicus, PrimeGov, and NovusAGENDA
+  contracts so future CivicSuite modules can reuse the same municipal interface
+  evidence before adding module-specific assertions.
 - `civicclerk.vendor_network_sync` and `scripts/run_vendor_live_sync.py` add the
   first explicitly enabled vendor-network pull runner: approved source lookup,
   circuit-open refusal, URL revalidation, credential loading from deployment
@@ -18,6 +23,13 @@ All notable changes to CivicClerk are documented here.
 - `civicclerk.vendor_delta` adds connector-specific delta request planning for
   Legistar, Granicus, PrimeGov, and NovusAGENDA so scheduled pulls have a
   tested "changed since" URL contract before cursor persistence is wired in.
+
+### Changed
+- Windows installer packaging and docs now explicitly warn that unsigned setup
+  packages can trigger "Unknown Publisher" or "Windows protected your PC" until
+  CivicSuite has an issued code-signing certificate and secured signing
+  workstation; operators are told to continue only from a trusted release
+  source or verified IT-built handoff.
 
 ## [0.1.14] - 2026-05-02
 

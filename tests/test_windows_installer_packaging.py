@@ -54,6 +54,10 @@ def test_inno_setup_requires_version_and_bundles_product_sources() -> None:
     iss = _read("installer/windows/civicclerk.iss")
 
     assert "#error MyAppVersion must be supplied" in iss
+    assert "InitializeSetup" in iss
+    assert "Unknown Publisher" in iss
+    assert "Windows protected your PC" in iss
+    assert "trusted CivicSuite release source" in iss
     assert "OutputBaseFilename=CivicClerk-{#MyAppVersion}-Setup" in iss
     assert "PrivilegesRequired=lowest" in iss
     assert "Install or Repair CivicClerk" in iss
@@ -106,6 +110,9 @@ def test_installer_docs_do_not_overclaim_production_auth_or_data_deletion() -> N
     )
 
     assert "unsigned" in docs.lower()
+    assert "Windows SmartScreen" in docs
+    assert "unknown publisher" in docs.lower()
+    assert "trusted CivicSuite release source" in docs
     assert "CIVICCLERK_STAFF_AUTH_MODE=open" in docs
     assert "single-workstation rehearsal" in docs
     assert "bearer or trusted-header" in docs

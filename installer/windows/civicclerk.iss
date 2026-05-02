@@ -67,6 +67,15 @@ Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Fil
 Filename: "docker"; Parameters: "compose down"; WorkingDir: "{app}"; Flags: runhidden; RunOnceId: "StopCivicClerkStack"
 
 [Code]
+function InitializeSetup(): Boolean;
+begin
+  Result := MsgBox(
+    'CivicClerk setup may be unsigned until your organization has a code-signing certificate and release-signing workstation. Windows may show "Unknown Publisher" or "Windows protected your PC" because it cannot verify a publisher certificate yet. Continue only if this installer came from a trusted CivicSuite release source or your IT team built it from the verified release handoff.',
+    mbInformation,
+    MB_OKCANCEL
+  ) = IDOK;
+end;
+
 function InitializeUninstall(): Boolean;
 begin
   Result := MsgBox(

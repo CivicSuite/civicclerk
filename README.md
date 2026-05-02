@@ -186,7 +186,10 @@ Shipped in this foundation:
 - unsigned Windows installer source package with Inno Setup build script,
   Docker Desktop prerequisite check, Install or Repair shortcut, daily Start
   shortcut, `.env` creation from `docs/examples/docker.env.example`, generated
-  local PostgreSQL password, health checks, and seeded demo startup
+  local PostgreSQL password, health checks, seeded demo startup, and an
+  installer wizard warning that explains the expected "Unknown Publisher" /
+  "Windows protected your PC" first-install experience until enterprise
+  code-signing is available
 - enterprise installer signing readiness helper plus optional SignTool signing
   in the Windows installer build script when IT supplies a code-signing
   certificate identity and timestamp authority
@@ -214,6 +217,9 @@ Shipped in this foundation:
   without printing code-signing secrets
 - `scripts/check_connector_sync_readiness.py` to verify supported connector
   payload contracts and future source guards without outbound network calls
+- `scripts/run_mock_city_environment_suite.py` to run the reusable no-network
+  City of Brookfield mock-city contract suite for Legistar, Granicus, PrimeGov,
+  and NovusAGENDA before module teams add their own module-specific assertions
 - `scripts/check_vendor_live_sync_readiness.py` to preview the vendor live-sync
   source contract, auth method, credential placement, health status, and
   circuit-breaker behavior without contacting vendor systems
@@ -301,10 +307,12 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
    - Use `bash scripts/start_fresh_install_rehearsal.sh --print-only` to print the same fresh-install rehearsal plan from Linux, macOS, or Git Bash, or rerun without `--print-only` to create `.fresh-install-rehearsal/.venv`, install the release wheel, start the installed app, and run the same smoke checks automatically; Linux hosts need Python 3 with `venv` support installed first, such as `python3-venv` on Debian or Ubuntu
    - For the Docker product path on Windows, run `powershell -ExecutionPolicy Bypass -File install.ps1` from the source checkout or installed package to create `.env`, build/start Docker Compose, wait for `/health` and the React staff app, and open `http://127.0.0.1:8080/`
    - Build the unsigned Windows setup executable with `bash installer/windows/build-installer.sh` on a workstation with Inno Setup 6; SmartScreen will identify it as unsigned, and Docker volumes are intentionally preserved on uninstall
+   - Expect Windows SmartScreen to show "Unknown Publisher" or "Windows protected your PC" until CivicSuite has an issued code-signing certificate and secured signing workstation; that warning means Windows cannot verify the publisher certificate yet, not that the verified release handoff is automatically unsafe
    - Run `python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-0.1.14-Setup.exe --print-only` to preview the signing inputs; set `CIVICCLERK_SIGN_INSTALLER=true`, `CIVICCLERK_SIGNTOOL_PATH`, a certificate identity (`CIVICCLERK_SIGNING_CERT_SHA1` or `CIVICCLERK_SIGNING_PFX` plus `CIVICCLERK_SIGNING_PFX_PASSWORD_ENV`), and `CIVICCLERK_SIGNING_TIMESTAMP_URL` only on the secured release-signing workstation
    - Use `powershell -ExecutionPolicy Bypass -File scripts/build_release_handoff_bundle.ps1 -PrintOnly` on Windows PowerShell or `bash scripts/build_release_handoff_bundle.sh --print-only` on Linux, macOS, or Git Bash to preview the release handoff bundle, or rerun without the print-only flag after `bash scripts/verify-release.sh` has built `dist/` artifacts
    - Run `python scripts/check_installer_readiness.py` after creating the handoff bundle to verify installer input artifacts, checksums, docs, env examples, and rehearsal helpers before building or handing off the Windows setup package
    - Run `python scripts/check_connector_sync_readiness.py` before vendor-network live-sync design work to prove the supported local connector payload contracts and optional future URL/ODBC guard checks without making vendor network calls
+   - Run `python scripts/run_mock_city_environment_suite.py --output mock-city-report.json` to prove the reusable City of Brookfield vendor-interface contract suite before adding module-specific integration assertions; this does not contact vendor networks
    - Run `python scripts/check_vendor_live_sync_readiness.py --connector legistar --source-url https://vendor.example.gov/api/meetings --auth-method bearer_token` to preview the vendor source contract, credential-placement guard, health status, and circuit-breaker behavior before any scheduled vendor pull is wired
    - Set `CIVICCLERK_VENDOR_SYNC_DB_URL`, then use `POST /vendor-live-sync/sources` and `POST /vendor-live-sync/sources/{id}/run-log` to persist proposed vendor source health and run outcomes without making vendor network calls
    - For a deliberately enabled one-time vendor pull, set `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=true`, store the credential in a deployment secret env var, then run `python scripts/run_vendor_live_sync.py --source-id <id> --db-url <ledger-url> --auth-secret-env <SECRET_ENV>`; the runner records success/failure in the same circuit-breaker ledger and refuses circuit-open sources

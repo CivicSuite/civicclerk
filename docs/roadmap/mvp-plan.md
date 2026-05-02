@@ -75,6 +75,16 @@ proof against real municipal vendor APIs, and operational runbook hardening.
 The first delta-planning contract is now being added: each supported connector
 gets an explicit "changed since" query parameter plan before the scheduled
 worker persists and advances cursors.
+The reusable City of Brookfield mock-city environment suite is now being added
+as shared product infrastructure for the remaining CivicSuite modules:
+`scripts/run_mock_city_environment_suite.py` verifies Legistar, Granicus,
+PrimeGov, and NovusAGENDA connector contracts without vendor network calls,
+labels public-reference versus vendor-gated interfaces honestly, and gives
+future modules a repeatable baseline before module-specific assertions are
+added. Unsigned Windows install remains expected until an enterprise
+code-signing certificate is issued and the secured signing workstation is ready;
+installer and docs warnings now name the "Unknown Publisher" / "Windows
+protected your PC" first-install experience directly.
 
 ## Sprint 1
 

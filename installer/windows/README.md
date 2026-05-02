@@ -37,7 +37,7 @@ For PFX-based signing, use `CIVICCLERK_SIGNING_PFX=/secure/path/cert.pfx` and se
 
 ## Install Behavior
 
-The installer is unsigned unless the enterprise signing profile above is used. Windows SmartScreen may warn that the publisher is unknown; choose "More info" and "Run anyway" only when the installer came from a trusted CivicSuite release source.
+The installer is unsigned unless the enterprise signing profile above is used. Windows SmartScreen may show "Unknown Publisher" or "Windows protected your PC" on first install because Windows cannot verify a publisher certificate yet. Code-signing certificates require organizational validation and a secured release-signing process; they are not something the project can safely assume before product completion and certificate issuance. Choose "More info" and "Run anyway" only when the installer came from a trusted CivicSuite release source or your IT team built it from the verified release handoff.
 
 The first install or repair creates `.env` from `docs/examples/docker.env.example`, generates a local PostgreSQL password, starts the Docker Compose stack, and keeps `CIVICCLERK_DEMO_SEED=1` unless an operator changes it. That seed creates Brookfield demo meetings, agenda intake, packets, notices, outcomes, minutes, and public archive data so a clerk can see a real workflow immediately.
 

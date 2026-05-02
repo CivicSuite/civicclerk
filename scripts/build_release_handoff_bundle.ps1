@@ -29,6 +29,7 @@ $BundleFiles = @(
     "scripts/check_installer_readiness.py",
     "scripts/check_enterprise_installer_signing.py",
     "scripts/check_connector_sync_readiness.py",
+    "scripts/run_mock_city_environment_suite.py",
     "scripts/check_vendor_live_sync_readiness.py",
     "scripts/run_connector_import_sync.py",
     "scripts/run_vendor_live_sync.py",
