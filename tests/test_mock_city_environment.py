@@ -7,8 +7,10 @@ from pathlib import Path
 
 from civicclerk.mock_city_environment import (
     MOCK_CITY_NAME,
+    mock_city_idp_contract,
     mock_city_vendor_contracts,
     run_mock_city_contract_suite,
+    run_mock_city_idp_contract_suite,
 )
 
 
@@ -41,8 +43,30 @@ def test_mock_city_suite_normalizes_payloads_and_plans_delta_urls() -> None:
     assert "network" not in " ".join(check.message.lower() for check in checks)
 
 
+def test_mock_city_idp_contract_validates_staff_oidc_without_network() -> None:
+    contract = mock_city_idp_contract()
+    checks = run_mock_city_idp_contract_suite()
+
+    assert contract.provider == "Brookfield Entra ID"
+    assert contract.interface_status == "mock-municipal-idp"
+    assert contract.jwks_path.endswith("/keys")
+    assert contract.role_claims == ("roles", "groups")
+    assert contract.algorithms == ("RS256",)
+    assert len(checks) == 1
+    assert checks[0].ok is True
+    assert checks[0].auth_method == "oidc"
+    assert checks[0].subject == "clerk@brookfield.example.gov"
+    assert checks[0].roles == ("clerk_admin", "meeting_editor")
+
+
 def test_mock_city_contracts_are_public_and_secret_free() -> None:
-    serialized = json.dumps([contract.public_dict() for contract in mock_city_vendor_contracts()]).lower()
+    serialized = json.dumps(
+        {
+            "vendor_contracts": [contract.public_dict() for contract in mock_city_vendor_contracts()],
+            "idp_contract": mock_city_idp_contract().public_dict(),
+            "idp_checks": [check.public_dict() for check in run_mock_city_idp_contract_suite()],
+        }
+    ).lower()
 
     assert "password" not in serialized
     assert "secret" not in serialized
@@ -79,3 +103,10 @@ def test_mock_city_environment_cli_writes_reusable_report(tmp_path: Path) -> Non
         "novusagenda",
         "primegov",
     }
+    assert report["idp_contract"]["provider"] == "Brookfield Entra ID"
+    assert report["idp_contract"]["redirect_uri"].endswith("/staff/oidc/callback")
+    assert report["idp_checks"][0]["ok"] is True
+    assert report["idp_checks"][0]["roles"] == ["clerk_admin", "meeting_editor"]
+    serialized = json.dumps(report).lower()
+    assert "mock-client-secret" not in serialized
+    assert "mock-session-secret" not in serialized

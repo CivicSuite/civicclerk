@@ -398,6 +398,11 @@ This suite uses the City of Brookfield mock profile to verify the shared
 Legistar, Granicus, PrimeGov, and NovusAGENDA connector contracts, normalize the
 sample payloads, and plan connector-specific delta URLs without contacting
 vendor networks. Legistar is tracked as a public-reference interface; the other
+vendor contracts stay labeled as vendor-gated until a city provides account
+documentation. The same report now validates the Brookfield Entra ID-style OIDC
+contract, including issuer, audience, authorization-code + PKCE URLs, JWKS
+shape, role claims, and a staff-role token path without contacting an identity
+provider or writing secrets into the report.
 vendor contracts are explicitly labeled vendor-gated until a city provides
 account documentation or credentials. Module teams should reuse this report and
 add only the module-specific assertions needed for the new product surface.
@@ -544,9 +549,9 @@ python scripts/check_pilot_readiness.py
 ```
 
 The report is intentionally honest: it can mark developer-owned readiness as
-ready while keeping code-signing certificate proof, municipal IdP proof, real
-vendor API proof, and city backup-retention/off-host storage approval as
-external proof slots. Use `--require-external-proof` only when those city or
+ready while keeping code-signing certificate proof, real municipal IdP tenant
+proof, real vendor API proof, and city backup-retention/off-host storage approval
+as external proof slots. Use `--require-external-proof` only when those city or
 certificate artifacts have been attached to the handoff packet.
 
 Before IT trusts restore operations, rehearse the local backup/restore path:

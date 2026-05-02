@@ -6,7 +6,13 @@ import argparse
 import json
 from pathlib import Path
 
-from civicclerk.mock_city_environment import MOCK_CITY_NAME, mock_city_vendor_contracts, run_mock_city_contract_suite
+from civicclerk.mock_city_environment import (
+    MOCK_CITY_NAME,
+    mock_city_idp_contract,
+    mock_city_vendor_contracts,
+    run_mock_city_contract_suite,
+    run_mock_city_idp_contract_suite,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -39,6 +45,13 @@ def _print_plan(base_url: str) -> int:
             f"auth={contract.auth_method} status={contract.interface_status} "
             f"delta={contract.delta_query_param}"
         )
+    idp = mock_city_idp_contract()
+    print("Reusable municipal IdP contract:")
+    print(
+        f"- {idp.provider}: issuer={idp.issuer} audience={idp.audience} "
+        f"auth_code_pkce=true jwks={idp.jwks_path} roles={','.join(idp.role_claims)} "
+        "secrets_reported=false"
+    )
     print("Fix path: module teams should reuse these contracts and add only module-specific assertions.")
     print("MOCK-CITY-ENVIRONMENT-SUITE: PLAN")
     return 0
@@ -50,13 +63,16 @@ def main() -> int:
         return _print_plan(args.base_url)
 
     checks = run_mock_city_contract_suite(base_url=args.base_url)
-    ready = all(check.ok for check in checks)
+    idp_checks = run_mock_city_idp_contract_suite()
+    ready = all(check.ok for check in checks) and all(check.ok for check in idp_checks)
     payload = {
         "mock_city": MOCK_CITY_NAME,
         "network_calls": False,
         "base_url": args.base_url,
         "contracts": [contract.public_dict() for contract in mock_city_vendor_contracts()],
+        "idp_contract": mock_city_idp_contract().public_dict(),
         "checks": [check.public_dict() for check in checks],
+        "idp_checks": [check.public_dict() for check in idp_checks],
         "ready": ready,
     }
     if args.output:
@@ -72,6 +88,12 @@ def main() -> int:
         print(f"  fix: {check.fix}")
         if check.delta_request_url:
             print(f"  planned_delta_url: {check.delta_request_url}")
+    for check in idp_checks:
+        status = "PASS" if check.ok else "FAIL"
+        print(f"[{status}] municipal-idp: {check.message}")
+        print(f"  fix: {check.fix}")
+        if check.roles:
+            print(f"  roles: {', '.join(check.roles)}")
     print("MOCK-CITY-ENVIRONMENT-SUITE: PASSED" if ready else "MOCK-CITY-ENVIRONMENT-SUITE: FAILED")
     return 0 if ready else 1
 

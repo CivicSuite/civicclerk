@@ -220,7 +220,8 @@ Shipped in this foundation:
   payload contracts and future source guards without outbound network calls
 - `scripts/run_mock_city_environment_suite.py` to run the reusable no-network
   City of Brookfield mock-city contract suite for Legistar, Granicus, PrimeGov,
-  and NovusAGENDA before module teams add their own module-specific assertions
+  NovusAGENDA, and the Brookfield Entra ID OIDC contract before module teams add
+  their own module-specific assertions
 - `scripts/check_vendor_live_sync_readiness.py` to preview the vendor live-sync
   source contract, auth method, credential placement, health status, and
   circuit-breaker behavior without contacting vendor systems
@@ -318,7 +319,7 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
    - Use `powershell -ExecutionPolicy Bypass -File scripts/build_release_handoff_bundle.ps1 -PrintOnly` on Windows PowerShell or `bash scripts/build_release_handoff_bundle.sh --print-only` on Linux, macOS, or Git Bash to preview the release handoff bundle, or rerun without the print-only flag after `bash scripts/verify-release.sh` has built `dist/` artifacts
    - Run `python scripts/check_installer_readiness.py` after creating the handoff bundle to verify installer input artifacts, checksums, docs, env examples, and rehearsal helpers before building or handing off the Windows setup package
    - Run `python scripts/check_connector_sync_readiness.py` before vendor-network live-sync design work to prove the supported local connector payload contracts and optional future URL/ODBC guard checks without making vendor network calls
-   - Run `python scripts/run_mock_city_environment_suite.py --output mock-city-report.json` to prove the reusable City of Brookfield vendor-interface contract suite before adding module-specific integration assertions; this does not contact vendor networks
+   - Run `python scripts/run_mock_city_environment_suite.py --output mock-city-report.json` to prove the reusable City of Brookfield vendor-interface and municipal IdP contract suite before adding module-specific integration assertions; this does not contact vendor networks or expose mock secrets
    - Run `python scripts/check_vendor_live_sync_readiness.py --connector legistar --source-url https://vendor.example.gov/api/meetings --auth-method bearer_token` to preview the vendor source contract, credential-placement guard, health status, and circuit-breaker behavior before any scheduled vendor pull is wired
    - Set `CIVICCLERK_VENDOR_SYNC_DB_URL`, then use `POST /vendor-live-sync/sources` and `POST /vendor-live-sync/sources/{id}/run-log` to persist proposed vendor source health and run outcomes without making vendor network calls
    - For a deliberately enabled one-time vendor pull, set `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=true`, store the credential in a deployment secret env var, then run `python scripts/run_vendor_live_sync.py --source-id <id> --db-url <ledger-url> --auth-secret-env <SECRET_ENV>`; the runner records success/failure in the same circuit-breaker ledger and refuses circuit-open sources
