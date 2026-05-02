@@ -27,7 +27,7 @@ def test_enterprise_installer_signing_print_only_explains_inputs() -> None:
 
 
 def test_enterprise_installer_signing_fails_actionably_without_cert_inputs(tmp_path: Path) -> None:
-    artifact = tmp_path / "CivicClerk-0.1.13-Setup.exe"
+    artifact = tmp_path / "CivicClerk-0.1.14-Setup.exe"
     artifact.write_bytes(b"unsigned installer")
     env = os.environ.copy()
     env["PATH"] = str(tmp_path)
@@ -51,7 +51,7 @@ def test_enterprise_installer_signing_fails_actionably_without_cert_inputs(tmp_p
 
 
 def test_enterprise_installer_signing_passes_with_redacted_certificate_contract(tmp_path: Path) -> None:
-    artifact = tmp_path / "CivicClerk-0.1.13-Setup.exe"
+    artifact = tmp_path / "CivicClerk-0.1.14-Setup.exe"
     artifact.write_bytes(b"unsigned installer")
     signtool = tmp_path / "signtool.exe"
     signtool.write_text("fake signtool for readiness check\n", encoding="utf-8")

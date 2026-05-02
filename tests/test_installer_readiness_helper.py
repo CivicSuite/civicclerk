@@ -7,7 +7,7 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.13"
+VERSION = "0.1.14"
 
 
 def _bundle_entries(version: str) -> tuple[str, ...]:

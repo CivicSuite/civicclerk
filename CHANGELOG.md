@@ -4,6 +4,10 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.1.14] - 2026-05-02
+
 ### Added
 - React staff workspace now includes a Vendor Sync screen that reads
   `/api/vendor-live-sync/sources`, shows healthy/degraded/circuit-open source

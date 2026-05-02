@@ -20,7 +20,7 @@ From Git Bash, WSL, or another Bash shell with Inno Setup available:
 bash installer/windows/build-installer.sh
 ```
 
-Set `CIVICCLERK_VERSION=0.1.13` to override the version read from `pyproject.toml`, or set `ISCC=/path/to/ISCC.exe` if the compiler is installed outside the default locations.
+Set `CIVICCLERK_VERSION=0.1.14` to override the version read from `pyproject.toml`, or set `ISCC=/path/to/ISCC.exe` if the compiler is installed outside the default locations.
 
 ## Enterprise Signing
 
@@ -33,7 +33,7 @@ export CIVICCLERK_SIGNING_CERT_SHA1="<certificate-thumbprint>"
 export CIVICCLERK_SIGNING_TIMESTAMP_URL="<enterprise RFC 3161 timestamp URL>"
 ```
 
-For PFX-based signing, use `CIVICCLERK_SIGNING_PFX=/secure/path/cert.pfx` and set `CIVICCLERK_SIGNING_PFX_PASSWORD_ENV` to the name of a populated password environment variable. Do not commit certificates or passwords. Run `python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-0.1.13-Setup.exe` to verify the signing contract without printing secrets.
+For PFX-based signing, use `CIVICCLERK_SIGNING_PFX=/secure/path/cert.pfx` and set `CIVICCLERK_SIGNING_PFX_PASSWORD_ENV` to the name of a populated password environment variable. Do not commit certificates or passwords. Run `python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-0.1.14-Setup.exe` to verify the signing contract without printing secrets.
 
 ## Install Behavior
 
