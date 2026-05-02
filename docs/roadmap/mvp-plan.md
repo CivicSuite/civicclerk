@@ -67,8 +67,11 @@ runner is present for one explicitly enabled source at a time: it refuses
 circuit-open sources, revalidates the source URL, reads credentials from a
 deployment secret env var, normalizes returned JSON through the existing
 connector contract, and records the run outcome in the same circuit-breaker
-ledger. Remaining live-sync work is scheduled vendor pulls, connector-specific
-delta semantics, and deployment proof.
+ledger. The first scheduled vendor-network pull task is also present in Celery
+Beat, disabled by default, guarded by both a schedule gate and live-network
+gate, and limited to configured approved source IDs with per-source reports.
+Remaining live-sync work is connector-specific delta semantics, deployment
+proof against real municipal vendor APIs, and operational runbook hardening.
 
 ## Sprint 1
 

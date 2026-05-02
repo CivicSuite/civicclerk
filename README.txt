@@ -221,6 +221,11 @@ Shipped in this foundation:
   pull from an approved source, revalidate the URL, read credentials from a
   deployment secret env var, normalize returned JSON through the existing
   connector contract, and record the run outcome in the vendor sync ledger
+- optional scheduled vendor-network sync through Celery Beat, disabled by
+  default and gated by both `CIVICCLERK_VENDOR_NETWORK_SYNC_SCHEDULE_ENABLED`
+  and `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED`, so approved source IDs can be
+  pulled repeatedly only after IT has configured credentials and accepted live
+  vendor traffic
 - `/vendor-live-sync/sources` and `/vendor-live-sync/sources/{id}/run-log` to
   save proposed vendor sources and record run outcomes with durable operator
   health state; these endpoints are no-network ledgers and do not start vendor
@@ -257,9 +262,9 @@ Not shipped yet:
 - signed/enterprise installer release artifact
 - actual signed installer publication still requires an enterprise
   code-signing certificate and timestamp authority
-- scheduled vendor-network pulls beyond the guarded one-source pull runner,
-  readiness/persistence/circuit-breaker foundation, and scheduled local
-  export-drop ingestion
+- connector-specific vendor delta adapters and deployment proof for municipal
+  Granicus/Legistar/PrimeGov/NovusAGENDA live APIs beyond the guarded
+  scheduled pull foundation
 
 ## New user experience today
 
@@ -300,6 +305,7 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
    - Run `python scripts/check_vendor_live_sync_readiness.py --connector legistar --source-url https://vendor.example.gov/api/meetings --auth-method bearer_token` to preview the vendor source contract, credential-placement guard, health status, and circuit-breaker behavior before any scheduled vendor pull is wired
    - Set `CIVICCLERK_VENDOR_SYNC_DB_URL`, then use `POST /vendor-live-sync/sources` and `POST /vendor-live-sync/sources/{id}/run-log` to persist proposed vendor source health and run outcomes without making vendor network calls
    - For a deliberately enabled one-time vendor pull, set `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=true`, store the credential in a deployment secret env var, then run `python scripts/run_vendor_live_sync.py --source-id <id> --db-url <ledger-url> --auth-secret-env <SECRET_ENV>`; the runner records success/failure in the same circuit-breaker ledger and refuses circuit-open sources
+   - For scheduled vendor-network pulls in Docker, keep `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=false` and `CIVICCLERK_VENDOR_NETWORK_SYNC_SCHEDULE_ENABLED=false` until IT has approved `/vendor-live-sync/sources` records, then set `CIVICCLERK_VENDOR_NETWORK_SYNC_SOURCE_IDS`, configure `CIVICCLERK_VENDOR_NETWORK_SYNC_AUTH_SECRET_ENV` or per-source secret env vars, and review the per-source reports under `CIVICCLERK_VENDOR_NETWORK_SYNC_REPORT_DIR`
    - Run `python scripts/run_connector_import_sync.py --payload-dir path\to\exports --connector granicus --output connector-import-ledger.json` when IT has local agenda-system export JSON files and wants a repeatable normalized import ledger without vendor network calls, or set `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true` with `CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST=.\connector-imports` in the Docker `.env` to let Celery Beat schedule the same local-first import repeatedly
    - Use `python scripts/check_deployment_readiness.py` to print a non-mutating deployment preflight before moving beyond local rehearsal; add `--strict` when CI or IT handoff should fail unless auth, persistent-store env vars, packet export root, release artifacts, docs, and trusted-header proxy references are deployment-ready
    - Copy `docs/examples/deployment.env.example` to a private deployment profile, replace placeholders, and run `python scripts/check_deployment_readiness.py --env-file path\to\deployment.env --strict` to validate OIDC/protected auth, persistent stores, packet export root, release artifacts, docs, and proxy references without printing database URLs or token values

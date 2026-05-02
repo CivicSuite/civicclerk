@@ -28,6 +28,11 @@ def test_docker_compose_stack_declares_real_runtime_services() -> None:
         "CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR",
         "CIVICCLERK_CONNECTOR_SYNC_LEDGER_PATH",
         "CIVICCLERK_CONNECTOR_SYNC_INTERVAL_SECONDS",
+        "CIVICCLERK_VENDOR_SYNC_DB_URL",
+        "CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED",
+        "CIVICCLERK_VENDOR_NETWORK_SYNC_SCHEDULE_ENABLED",
+        "CIVICCLERK_VENDOR_NETWORK_SYNC_SOURCE_IDS",
+        "CIVICCLERK_VENDOR_NETWORK_SYNC_REPORT_DIR",
     ):
         assert variable in compose
     assert '"psycopg2-binary>=2.9.0,<3.0.0"' in pyproject

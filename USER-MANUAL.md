@@ -424,6 +424,24 @@ normalizes returned JSON through the existing connector contract, writes an
 optional report without secrets, and records success or failure in the same
 circuit-breaker ledger.
 
+For scheduled vendor-network pulls in Docker, keep both live-sync gates disabled
+until IT has approved source records and credentials:
+
+```bash
+CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=false
+CIVICCLERK_VENDOR_NETWORK_SYNC_SCHEDULE_ENABLED=false
+```
+
+When IT is ready for live scheduled pulls, set
+`CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=true`,
+`CIVICCLERK_VENDOR_NETWORK_SYNC_SCHEDULE_ENABLED=true`,
+`CIVICCLERK_VENDOR_NETWORK_SYNC_SOURCE_IDS=<id>`, and either
+`CIVICCLERK_VENDOR_NETWORK_SYNC_AUTH_SECRET_ENV` for a shared pilot secret or
+per-source secret env vars using `CIVICCLERK_VENDOR_NETWORK_SYNC_AUTH_SECRET_ENV_PREFIX`.
+Celery Beat then calls the same guarded runner, writes per-source reports under
+`CIVICCLERK_VENDOR_NETWORK_SYNC_REPORT_DIR`, and records outcomes in the same
+circuit-breaker ledger visible from the Vendor Sync workspace.
+
 When IT has approved local agenda-system export files and wants the Docker
 product path to ingest them repeatedly, create the host drop folder and enable
 the Celery Beat schedule in `.env`:
