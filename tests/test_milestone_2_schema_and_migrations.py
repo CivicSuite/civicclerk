@@ -230,7 +230,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
             text=True,
         ).stdout.strip()
         port = mapped.rsplit(":", maxsplit=1)[-1]
-        db_url = f"postgresql+psycopg2://postgres:postgres@localhost:{port}/civicclerk_test"
+        db_url = f"postgresql+psycopg2://postgres:postgres@127.0.0.1:{port}/civicclerk_test"
         engine = create_engine(db_url)
 
         deadline = time.monotonic() + 30

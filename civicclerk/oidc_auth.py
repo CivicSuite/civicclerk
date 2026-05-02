@@ -14,6 +14,7 @@ from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
 from civiccore.auth import AuthenticatedPrincipal
+from civiccore.security import looks_like_placeholder
 
 
 @dataclass(frozen=True)
@@ -73,13 +74,13 @@ def oidc_config_errors(config: OidcStaffAuthConfig) -> list[str]:
     """Return actionable configuration gaps without revealing secret values."""
 
     errors: list[str] = []
-    if not config.issuer or _looks_like_placeholder(config.issuer):
+    if not config.issuer or looks_like_placeholder(config.issuer):
         errors.append("issuer")
-    if not config.audience or _looks_like_placeholder(config.audience):
+    if not config.audience or looks_like_placeholder(config.audience):
         errors.append("audience")
     if (
-        (not config.jwks_url or _looks_like_placeholder(config.jwks_url))
-        and (not config.jwks_json or _looks_like_placeholder(config.jwks_json))
+        (not config.jwks_url or looks_like_placeholder(config.jwks_url))
+        and (not config.jwks_json or looks_like_placeholder(config.jwks_json))
     ):
         errors.append("jwks")
     if not config.role_claims:
@@ -93,17 +94,17 @@ def oidc_browser_login_config_errors(config: OidcStaffAuthConfig) -> list[str]:
     """Return missing browser authorization-code flow settings."""
 
     errors: list[str] = []
-    if not config.authorization_url or _looks_like_placeholder(config.authorization_url):
+    if not config.authorization_url or looks_like_placeholder(config.authorization_url):
         errors.append("authorization_url")
-    if not config.token_url or _looks_like_placeholder(config.token_url):
+    if not config.token_url or looks_like_placeholder(config.token_url):
         errors.append("token_url")
-    if not config.client_id or _looks_like_placeholder(config.client_id):
+    if not config.client_id or looks_like_placeholder(config.client_id):
         errors.append("client_id")
-    if not config.client_secret or _looks_like_placeholder(config.client_secret):
+    if not config.client_secret or looks_like_placeholder(config.client_secret):
         errors.append("client_secret")
-    if not config.redirect_uri or _looks_like_placeholder(config.redirect_uri):
+    if not config.redirect_uri or looks_like_placeholder(config.redirect_uri):
         errors.append("redirect_uri")
-    if not config.session_cookie_secret or _looks_like_placeholder(config.session_cookie_secret):
+    if not config.session_cookie_secret or looks_like_placeholder(config.session_cookie_secret):
         errors.append("session_cookie_secret")
     return errors
 
@@ -249,7 +250,7 @@ def authorize_oidc_staff_session_cookie(
             },
             headers={"WWW-Authenticate": "Bearer"},
         )
-    if not config.session_cookie_secret or _looks_like_placeholder(config.session_cookie_secret):
+    if not config.session_cookie_secret or looks_like_placeholder(config.session_cookie_secret):
         raise HTTPException(
             status_code=503,
             detail={
@@ -348,13 +349,6 @@ def _first_string_claim(claims: dict, names: Iterable[str]) -> str | None:
 
 def _split_csv(raw_value: str) -> tuple[str, ...]:
     return tuple(part.strip() for part in raw_value.split(",") if part.strip())
-
-
-def _looks_like_placeholder(value: str | None) -> bool:
-    if value is None:
-        return False
-    lowered = value.lower()
-    return "<" in value or ">" in value or "replace-" in lowered or "change-this" in lowered
 
 
 def _missing_config_fix(missing: Iterable[str], env_names: dict[str, str]) -> str:

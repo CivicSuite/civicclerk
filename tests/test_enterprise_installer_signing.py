@@ -7,7 +7,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.17"
+VERSION = "0.1.18"
 
 
 def test_enterprise_installer_signing_print_only_explains_inputs() -> None:

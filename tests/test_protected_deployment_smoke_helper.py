@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.17"
+VERSION = "0.1.18"
 DEPLOYMENT_ENV_VARS = (
     "CIVICCLERK_STAFF_AUTH_MODE",
     "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES",

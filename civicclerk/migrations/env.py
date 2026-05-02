@@ -68,8 +68,9 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
 
+    _run_civiccore_migrations(section["sqlalchemy.url"])
+
     with connectable.connect() as connection:
-        _run_civiccore_migrations(section["sqlalchemy.url"])
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
