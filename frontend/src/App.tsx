@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "outcomes" | "minutes" | "public";
+type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "outcomes" | "minutes" | "public" | "sync";
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -70,6 +70,59 @@ type StaffSession = {
   provider?: string;
   message: string;
   fix: string;
+};
+
+type VendorSyncHealthStatus = "healthy" | "degraded" | "circuit_open";
+
+type VendorSyncSource = {
+  id: string;
+  connector: string;
+  sourceName: string;
+  sourceUrl: string;
+  authMethod: string;
+  healthStatus: VendorSyncHealthStatus;
+  consecutiveFailureCount: number;
+  activeFailureCount: number;
+  syncPaused: boolean;
+  syncPausedReason?: string | null;
+  lastSyncStatus?: string | null;
+  lastErrorAt?: string | null;
+  message: string;
+  fix: string;
+  updatedAt: string;
+};
+
+type ApiVendorSyncSource = {
+  id: string;
+  connector: string;
+  source_name: string;
+  source_url: string;
+  auth_method: string;
+  health_status: VendorSyncHealthStatus;
+  consecutive_failure_count: number;
+  active_failure_count: number;
+  sync_paused: boolean;
+  sync_paused_reason?: string | null;
+  last_sync_status?: string | null;
+  last_error_at?: string | null;
+  message: string;
+  fix: string;
+  updated_at: string;
+};
+
+type VendorSyncSourcePayload = {
+  connector: string;
+  source_name: string;
+  source_url: string;
+  auth_method: string;
+};
+
+type VendorSyncRunPayload = {
+  records_discovered: number;
+  records_succeeded: number;
+  records_failed: number;
+  retries_attempted?: number;
+  error_summary?: string;
 };
 
 type AgendaIntakeItem = {
@@ -664,6 +717,43 @@ const demoPublicRecords: PublicMeetingRecord[] = [
   },
 ];
 
+const demoVendorSyncSources: VendorSyncSource[] = [
+  {
+    id: "vendor-source-demo-1",
+    connector: "legistar",
+    sourceName: "Brookfield Legistar agenda feed",
+    sourceUrl: "https://legistar.example.gov/api/v1/agenda-items",
+    authMethod: "bearer_token",
+    healthStatus: "healthy",
+    consecutiveFailureCount: 0,
+    activeFailureCount: 0,
+    syncPaused: false,
+    syncPausedReason: null,
+    lastSyncStatus: "success",
+    lastErrorAt: null,
+    message: "Source is healthy. Scheduled vendor pulls can remain enabled after credentials are verified in deployment secrets.",
+    fix: "Keep monitoring the run log after each vendor maintenance window.",
+    updatedAt: "2026-05-02T15:20:00Z",
+  },
+  {
+    id: "vendor-source-demo-2",
+    connector: "granicus",
+    sourceName: "Granicus board packet feed",
+    sourceUrl: "https://granicus.example.gov/api/boards/packets",
+    authMethod: "api_key",
+    healthStatus: "circuit_open",
+    consecutiveFailureCount: 5,
+    activeFailureCount: 5,
+    syncPaused: true,
+    syncPausedReason: "Circuit opened after five consecutive failed pulls.",
+    lastSyncStatus: "failed",
+    lastErrorAt: "2026-05-02T15:10:00Z",
+    message: "Vendor sync is paused for this source to protect the clerk workflow from repeated failed pulls.",
+    fix: "Confirm the vendor URL, rotate credentials if needed, run connector readiness, then record a successful run before re-enabling scheduled pulls.",
+    updatedAt: "2026-05-02T15:12:00Z",
+  },
+];
+
 function Icon({ label }: { label: string }) {
   return <span className="icon" aria-hidden="true">{label.slice(0, 1)}</span>;
 }
@@ -701,6 +791,9 @@ export function App() {
   const [minutesError, setMinutesError] = useState<string | null>(null);
   const [publicState, setPublicState] = useState<ViewState>("loading");
   const [publicError, setPublicError] = useState<string | null>(null);
+  const [vendorSyncSources, setVendorSyncSources] = useState<VendorSyncSource[]>([]);
+  const [vendorSyncState, setVendorSyncState] = useState<ViewState>("loading");
+  const [vendorSyncError, setVendorSyncError] = useState<string | null>(null);
   const [staffSession, setStaffSession] = useState<StaffSession | null>(null);
   const [staffSessionState, setStaffSessionState] = useState<ViewState>("loading");
   const [staffSessionError, setStaffSessionError] = useState<string | null>(null);
@@ -718,6 +811,7 @@ export function App() {
   const visibleMinutesDrafts = qaState === null ? minutesDrafts : demoMinutesDrafts;
   const visiblePublicRecords = qaState === null ? publicRecords : demoPublicRecords;
   const visiblePublicDetail = qaState === null ? publicRecordDetail : demoPublicRecords[0];
+  const visibleVendorSyncSources = qaState === null ? vendorSyncSources : demoVendorSyncSources;
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
 
   async function loadWorkspaceData(cancelled: () => boolean) {
@@ -855,6 +949,7 @@ export function App() {
       setLoadedMinutesMeetingIds(demoMeetings.map((meeting) => meeting.id));
       setPublicRecords(demoPublicRecords);
       setPublicRecordDetail(demoPublicRecords[0]);
+      setVendorSyncSources(demoVendorSyncSources);
       setApiState("success");
       setBodyState("success");
       setPacketState("success");
@@ -862,6 +957,7 @@ export function App() {
       setOutcomeState("success");
       setMinutesState("success");
       setPublicState("success");
+      setVendorSyncState("success");
       setActiveMeetingId(demoMeetings[0].id);
       return;
     }
@@ -883,11 +979,38 @@ export function App() {
         setOutcomeState("error");
         setMinutesState("error");
         setPublicState("error");
+        setVendorSyncState("error");
+        setVendorSyncError("Vendor sync health was not checked because the core staff API did not load.");
       });
     return () => {
       cancelled = true;
     };
   }, [initial.source]);
+
+  useEffect(() => {
+    if (initial.source === "demo" || qaState !== null || page === "public") {
+      return;
+    }
+    let cancelled = false;
+    setVendorSyncState("loading");
+    setVendorSyncError(null);
+    fetchVendorSyncSources()
+      .then((sources) => {
+        if (cancelled) return;
+        const mappedSources = sources.map(mapApiVendorSyncSource);
+        setVendorSyncSources(mappedSources);
+        setVendorSyncState(mappedSources.length === 0 ? "empty" : "success");
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setVendorSyncSources([]);
+        setVendorSyncState("error");
+        setVendorSyncError(`${error.message} Confirm CIVICCLERK_VENDOR_SYNC_DB_URL is configured, staff auth is valid, and the backend has the vendor sync persistence migration.`);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [initial.source, page, qaState]);
 
   useEffect(() => {
     if (initial.source === "demo" || qaState !== null || page === "public") {
@@ -1090,6 +1213,9 @@ export function App() {
           </button>
           <button className={page === "minutes" ? "active" : ""} onClick={() => setPage("minutes")}>
             <Icon label="Minutes" /> Minutes
+          </button>
+          <button className={page === "sync" ? "active" : ""} onClick={() => setPage("sync")}>
+            <Icon label="Sync" /> Vendor sync
           </button>
         </nav>
         <div className="install-card">
@@ -1326,6 +1452,25 @@ export function App() {
               }}
             />
           )}
+          {page === "sync" && (
+            <VendorSyncWorkspace
+              viewState={qaState ?? vendorSyncState}
+              apiError={vendorSyncError}
+              sources={qaState === "empty" ? [] : visibleVendorSyncSources}
+              onCreateSource={async (payload) => {
+                const source = mapApiVendorSyncSource(await createVendorSyncSource(payload));
+                setVendorSyncSources((current) => [source, ...current.filter((item) => item.id !== source.id)]);
+                setVendorSyncState("success");
+                return source;
+              }}
+              onRecordRun={async (sourceId, payload) => {
+                const source = mapApiVendorSyncSource(await recordVendorSyncRun(sourceId, payload));
+                setVendorSyncSources((current) => current.map((item) => item.id === source.id ? source : item));
+                setVendorSyncState("success");
+                return source;
+              }}
+            />
+          )}
         </section>
         {auditOpen && <AuditDrawer meeting={activeMeeting} />}
       </main>
@@ -1474,6 +1619,45 @@ async function searchPublicArchive(query: string): Promise<ApiPublicMeetingRecor
   }
   const payload = (await response.json()) as { results?: ApiPublicMeetingRecord[] };
   return Array.isArray(payload.results) ? payload.results : [];
+}
+
+async function fetchVendorSyncSources(): Promise<ApiVendorSyncSource[]> {
+  const response = await fetch("/api/vendor-live-sync/sources", {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Vendor sync sources"));
+  }
+  const payload = (await response.json()) as { sources?: ApiVendorSyncSource[] };
+  return Array.isArray(payload.sources) ? payload.sources : [];
+}
+
+async function createVendorSyncSource(payload: VendorSyncSourcePayload): Promise<ApiVendorSyncSource> {
+  const response = await fetch("/api/vendor-live-sync/sources", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Vendor sync source create"));
+  }
+  return response.json();
+}
+
+async function recordVendorSyncRun(sourceId: string, payload: VendorSyncRunPayload): Promise<ApiVendorSyncSource> {
+  const response = await fetch(`/api/vendor-live-sync/sources/${sourceId}/run-log`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Vendor sync run record"));
+  }
+  const body = (await response.json()) as { source?: ApiVendorSyncSource };
+  if (!body.source) {
+    throw new Error("Vendor sync run record returned no updated source. Reload the workspace and verify the backend response contract.");
+  }
+  return body.source;
 }
 
 async function createMeetingBody(name: string, bodyType: string): Promise<ApiMeetingBody> {
@@ -1854,6 +2038,26 @@ function mapApiPublicMeetingRecord(record: ApiPublicMeetingRecord): PublicMeetin
   };
 }
 
+function mapApiVendorSyncSource(record: ApiVendorSyncSource): VendorSyncSource {
+  return {
+    id: record.id,
+    connector: record.connector,
+    sourceName: record.source_name,
+    sourceUrl: record.source_url,
+    authMethod: record.auth_method,
+    healthStatus: record.health_status,
+    consecutiveFailureCount: record.consecutive_failure_count,
+    activeFailureCount: record.active_failure_count,
+    syncPaused: record.sync_paused,
+    syncPausedReason: record.sync_paused_reason,
+    lastSyncStatus: record.last_sync_status,
+    lastErrorAt: record.last_error_at,
+    message: record.message,
+    fix: record.fix,
+    updatedAt: record.updated_at,
+  };
+}
+
 function sortNoticeChecklistRecords(records: NoticeChecklistRecord[]): NoticeChecklistRecord[] {
   return [...records].sort((left, right) => {
     const rightTime = new Date(right.updatedAt || right.createdAt).getTime();
@@ -1913,7 +2117,7 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "minutes", "public"];
+  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "minutes", "public", "sync"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const routePage = normalizedPath === "/public" || normalizedPath.startsWith("/public/")
@@ -3747,6 +3951,218 @@ function MinutesDraftWorkspace({
   );
 }
 
+function VendorSyncWorkspace({
+  viewState,
+  apiError,
+  sources,
+  onCreateSource,
+  onRecordRun,
+}: {
+  viewState: ViewState;
+  apiError: string | null;
+  sources: VendorSyncSource[];
+  onCreateSource: (payload: VendorSyncSourcePayload) => Promise<VendorSyncSource>;
+  onRecordRun: (sourceId: string, payload: VendorSyncRunPayload) => Promise<VendorSyncSource>;
+}) {
+  const [connector, setConnector] = useState("legistar");
+  const [sourceName, setSourceName] = useState("Brookfield agenda vendor feed");
+  const [sourceUrl, setSourceUrl] = useState("https://vendor.example.gov/api/agendas");
+  const [authMethod, setAuthMethod] = useState("bearer_token");
+  const [selectedSourceId, setSelectedSourceId] = useState(sources[0]?.id ?? "");
+  const [recordsDiscovered, setRecordsDiscovered] = useState("12");
+  const [recordsSucceeded, setRecordsSucceeded] = useState("12");
+  const [recordsFailed, setRecordsFailed] = useState("0");
+  const [retriesAttempted, setRetriesAttempted] = useState("0");
+  const [errorSummary, setErrorSummary] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedSourceId((current) => current && sources.some((source) => source.id === current) ? current : sources[0]?.id ?? "");
+  }, [sources]);
+
+  if (viewState !== "success") {
+    return <StateMessage state={viewState} context="vendor sync" apiError={apiError} />;
+  }
+
+  const unhealthyCount = sources.filter((source) => source.healthStatus !== "healthy").length;
+  const pausedCount = sources.filter((source) => source.syncPaused).length;
+  const selectedSource = sources.find((source) => source.id === selectedSourceId) ?? sources[0];
+
+  async function submitSource(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    try {
+      const source = await onCreateSource({
+        connector: connector.trim(),
+        source_name: sourceName.trim(),
+        source_url: sourceUrl.trim(),
+        auth_method: authMethod.trim(),
+      });
+      setSelectedSourceId(source.id);
+      setMessage(`Source ${source.sourceName} saved to the vendor sync ledger. No vendor network call was made; run readiness checks before enabling scheduled pulls.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Vendor sync source create failed."} Confirm the URL is allowed by SSRF guards, credentials are stored in deployment secrets, and CIVICCLERK_VENDOR_SYNC_DB_URL is configured.`);
+    }
+  }
+
+  async function submitRun(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    if (!selectedSource) {
+      setMessage("Run logging needs a saved vendor source first. Create a source, verify its URL and auth method, then record the pull outcome.");
+      return;
+    }
+    try {
+      const source = await onRecordRun(selectedSource.id, {
+        records_discovered: Number(recordsDiscovered),
+        records_succeeded: Number(recordsSucceeded),
+        records_failed: Number(recordsFailed),
+        retries_attempted: Number(retriesAttempted),
+        error_summary: errorSummary.trim() || undefined,
+      });
+      setMessage(`Run outcome recorded for ${source.sourceName}. Health is now ${vendorHealthLabel(source.healthStatus)}. No vendor network call was made from this workspace.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Vendor sync run logging failed."} Confirm the source still exists, enter numeric run counts, then retry.`);
+    }
+  }
+
+  return (
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Vendor sync"
+        title="See connector health before it affects clerk work."
+        description="Register approved vendor sources, record pull outcomes, and make circuit-breaker status visible without hiding the fix path from IT."
+      />
+      <div className="metric-grid">
+        <MetricCard label="Registered sources" value={String(sources.length)} note="Approved vendor endpoints in the ledger" />
+        <MetricCard label="Needs attention" value={String(unhealthyCount)} note={unhealthyCount ? "Review fix guidance before enabling pulls" : "All visible sources are healthy"} tone={unhealthyCount ? "warn" : undefined} />
+        <MetricCard label="Paused circuits" value={String(pausedCount)} note={pausedCount ? "Scheduled pulls must stay paused" : "No circuit breaker pauses"} tone={pausedCount ? "warn" : undefined} />
+      </div>
+      <div className="vendor-sync-callout" role="status">
+        <strong>Safety boundary</strong>
+        <span>This workspace records source configuration and run outcomes only. It does not contact Granicus, Legistar, or any other vendor API; scheduled live adapters remain a controlled deployment task.</span>
+      </div>
+      <div className="agenda-grid">
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Register vendor source</h2>
+              <p>Save the connector, URL, and auth mode after IT has approved the endpoint and stored credentials outside the browser.</p>
+            </div>
+            <StatusBadge tone="Ready" label="No pull" />
+          </div>
+          <form className="intake-form" onSubmit={submitSource}>
+            <label>
+              Connector
+              <select value={connector} onChange={(event) => setConnector(event.target.value)} required>
+                <option value="legistar">Legistar</option>
+                <option value="granicus">Granicus</option>
+                <option value="primegov">PrimeGov</option>
+                <option value="novusagenda">NovusAgenda</option>
+              </select>
+            </label>
+            <label>
+              Auth method
+              <select value={authMethod} onChange={(event) => setAuthMethod(event.target.value)} required>
+                <option value="bearer_token">Bearer token</option>
+                <option value="api_key">API key</option>
+                <option value="oauth_client_credentials">OAuth client credentials</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+            <label className="wide">
+              Source name
+              <input value={sourceName} onChange={(event) => setSourceName(event.target.value)} required />
+            </label>
+            <label className="wide">
+              Vendor API URL
+              <input type="url" value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} required />
+            </label>
+            <button type="submit">Save source without vendor pull</button>
+          </form>
+          {message && <p className="form-message">{message}</p>}
+        </section>
+        <section className="panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Record run outcome</h2>
+              <p>Log the result from a controlled sync run so the circuit breaker and health badge stay honest.</p>
+            </div>
+            <StatusBadge tone={selectedSource?.syncPaused ? "Blocked" : selectedSource?.healthStatus === "degraded" ? "Warning" : "Ready"} label={selectedSource ? vendorHealthLabel(selectedSource.healthStatus) : "No source"} />
+          </div>
+          <form className="intake-form" onSubmit={submitRun}>
+            <label className="wide">
+              Source
+              <select value={selectedSource?.id ?? ""} onChange={(event) => setSelectedSourceId(event.target.value)} required>
+                {sources.length === 0 && <option value="">Create a source first</option>}
+                {sources.map((source) => (
+                  <option key={source.id} value={source.id}>{source.sourceName}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Discovered
+              <input type="number" min="0" value={recordsDiscovered} onChange={(event) => setRecordsDiscovered(event.target.value)} required />
+            </label>
+            <label>
+              Succeeded
+              <input type="number" min="0" value={recordsSucceeded} onChange={(event) => setRecordsSucceeded(event.target.value)} required />
+            </label>
+            <label>
+              Failed
+              <input type="number" min="0" value={recordsFailed} onChange={(event) => setRecordsFailed(event.target.value)} required />
+            </label>
+            <label>
+              Retries
+              <input type="number" min="0" value={retriesAttempted} onChange={(event) => setRetriesAttempted(event.target.value)} required />
+            </label>
+            <label className="wide">
+              Error summary
+              <textarea value={errorSummary} onChange={(event) => setErrorSummary(event.target.value)} placeholder="Leave blank for a successful run." />
+            </label>
+            <button type="submit">Record run outcome</button>
+          </form>
+        </section>
+      </div>
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <h2>Source health ledger</h2>
+            <p>Each row shows whether scheduled pulls are safe, paused, or need intervention before the clerk depends on imported records.</p>
+          </div>
+          <StatusBadge tone={unhealthyCount ? "Warning" : "Ready"} label={unhealthyCount ? "Review required" : "All clear"} />
+        </div>
+        <div className="agenda-list">
+          {sources.length === 0 && (
+            <p className="empty-inline">No vendor sync sources are registered yet. Add a source only after IT has an approved vendor endpoint and credentials stored in deployment secrets; use local export-drop ingestion until then.</p>
+          )}
+          {sources.map((source) => (
+            <article key={source.id} className={source.syncPaused ? "agenda-row blocked-row" : "agenda-row"}>
+              <div>
+                <div className="row-title">
+                  <h3>{source.sourceName}</h3>
+                  <StatusBadge tone={source.healthStatus === "healthy" ? "Ready" : source.healthStatus === "degraded" ? "Warning" : "Blocked"} label={vendorHealthLabel(source.healthStatus)} />
+                </div>
+                <p>{source.connector} - {source.authMethod.replace(/_/g, " ")} - {source.sourceUrl}</p>
+                <small>Last run: {source.lastSyncStatus ?? "No run logged"}{source.lastErrorAt ? ` at ${formatDateTime(source.lastErrorAt)}` : ""}. Updated {formatDateTime(source.updatedAt)}.</small>
+                <small>Failures: {source.consecutiveFailureCount} consecutive, {source.activeFailureCount} active.</small>
+                {source.syncPaused && <p className="legal-warning">Pulls paused: {source.syncPausedReason ?? "Circuit breaker is open."}</p>}
+                <p>{source.message}</p>
+                <p><strong>Fix:</strong> {source.fix}</p>
+              </div>
+              <div className="row-actions">
+                <button className="secondary" type="button" onClick={() => setSelectedSourceId(source.id)}>
+                  Log run
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function PublicPostedMeetingWorkspace({
   viewState,
   apiError,
@@ -4288,6 +4704,20 @@ function StateMessage({ state, context, apiError }: { state: ViewState; context:
       ? `${apiError} Confirm the public API is running and retry; if the meeting is time-sensitive, ask the clerk for the official posted record link.`
       : "The public archive API did not respond. Confirm the public API is running and retry; if the meeting is time-sensitive, ask the clerk for the official posted record link.";
   }
+  if (context === "vendor sync" && state === "empty") {
+    copy.body = "No vendor sync sources are registered yet. Add a source only after IT has an approved vendor endpoint and credentials stored in deployment secrets; use local export-drop ingestion until then.";
+    copy.action = "Add approved source";
+  }
+  if (context === "vendor sync" && state === "partial") {
+    copy.body = "Vendor sync health is only partially visible. Do not enable scheduled pulls until source URL, auth method, run log, failure counts, circuit state, and fix guidance are all visible.";
+    copy.action = "Check sync ledger";
+  }
+  if (context === "vendor sync" && state === "error") {
+    copy.body = apiError
+      ? `${apiError} Do not rely on live vendor pulls until the ledger loads; confirm the backend, staff auth, and sync database, then retry.`
+      : "The vendor sync ledger did not load. Confirm the backend, staff auth, CIVICCLERK_VENDOR_SYNC_DB_URL, and migration state before enabling scheduled pulls.";
+    copy.action = "Check sync setup";
+  }
 
   return (
     <section className={`state-card ${state}`} role={state === "error" ? "alert" : "status"}>
@@ -4335,6 +4765,15 @@ function MetricCard({
       <p>{note}</p>
     </article>
   );
+}
+
+function vendorHealthLabel(status: VendorSyncHealthStatus): string {
+  const labels: Record<VendorSyncHealthStatus, string> = {
+    healthy: "Healthy",
+    degraded: "Degraded",
+    circuit_open: "Circuit open",
+  };
+  return labels[status];
 }
 
 function readinessLabel(status: AgendaIntakeItem["readinessStatus"]): string {

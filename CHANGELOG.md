@@ -5,6 +5,10 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- React staff workspace now includes a Vendor Sync screen that reads
+  `/api/vendor-live-sync/sources`, shows healthy/degraded/circuit-open source
+  state, registers approved no-network sources, records run outcomes, and gives
+  IT actionable fix copy before scheduled vendor pulls are enabled.
 - Vendor live-sync operator state now persists: `civicclerk.vendor_sync_persistence`
   adds durable source, run-log, and failure records plus
   `/vendor-live-sync/sources` and `/vendor-live-sync/sources/{id}/run-log`

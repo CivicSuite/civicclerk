@@ -92,7 +92,10 @@ posting-proof records, captures meeting outcome records, creates
 citation-gated minutes draft records, publishes public archive records, and
 normalizes local connector exports, records vendor live-sync source/run health
 without contacting vendor networks, and creates records-ready packet export
-bundles. The staff shell now checks `/staff/session` so IT staff and clerks can
+bundles. The React staff workspace now includes Vendor Sync, where IT staff can
+register an approved source, see healthy/degraded/circuit-open status, record a
+controlled run outcome, and read the exact fix path before scheduled vendor
+pulls are enabled. The staff shell now checks `/staff/session` so IT staff and clerks can
 see whether the service is in local open mode, OIDC-protected staff mode,
 OIDC browser-session mode, bearer-protected staff mode, or trusted-header staff
 mode.
@@ -182,6 +185,11 @@ select a meeting, review existing citation-gated drafts, enter source material,
 draft sentences, sentence-level citations, model, prompt version, and human
 approver, create a cited draft through the live minutes API, and see the public
 posting gate explain that AI-drafted minutes cannot bypass human adoption.
+The Vendor Sync React surface is now present: IT staff can open Vendor Sync
+from the React navigation, register an approved Granicus, Legistar, PrimeGov,
+or NovusAgenda source without making a vendor call, record run outcomes into
+the durable ledger, see failure counts and circuit-breaker state, and read
+actionable fix guidance before scheduled vendor-network pulls are enabled.
 
 ## Part 2: IT and Technical Overview
 
@@ -623,14 +631,14 @@ packet exports reject closed-session and restricted source files. The React
 staff workspace now covers meeting body setup, scheduling, calendar viewing,
 detail viewing, pre-lock schedule editing, agenda intake, packet building,
 notice checklist/posting-proof work, public posting, meeting outcomes, and
-minutes draft work against live API-backed data, and the dashboard now surfaces
+minutes draft work, plus vendor sync source-health/run logging, against live API-backed data, and the dashboard now surfaces
 staff access/session status for local open mode, OIDC browser sessions, bearer
 mode, and trusted-header mode. Production municipal use still requires a signed
 installer and actual vendor-network adapters/scheduled pulls before IT should
 treat it as a shared deployment; scheduled local connector export-drop
 ingestion is available for approved JSON files in the Docker product path, and
 the vendor live-sync readiness/persistence/circuit-breaker contract is present
-for the next adapter and staff-UI slices. The Docker/PostgreSQL
+for the next adapter/scheduled-pull slices. The Docker/PostgreSQL
 backup/restore path now has a rehearsal helper, but cities still need their own
 retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility
