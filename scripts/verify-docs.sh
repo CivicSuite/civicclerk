@@ -33,6 +33,7 @@ required=(
   scripts/verify-browser-qa.py
   scripts/check_installer_readiness.py
   scripts/check_connector_sync_readiness.py
+  scripts/run_mock_city_environment_suite.py
   scripts/run_vendor_live_sync.py
   scripts/check_backup_restore_rehearsal.py
   scripts/check_protected_deployment_smoke.py
@@ -75,6 +76,20 @@ fi
 for file in README.md README.txt docs/index.html; do
   if ! grep -q "connector runtime validation" "$file"; then
     echo "  MISSING CURRENT CONNECTOR CLAIM: $file"
+    fail=1
+  fi
+done
+
+for file in README.md README.txt USER-MANUAL.md USER-MANUAL.txt docs/index.html installer/windows/README.md; do
+  if ! grep -q "Unknown Publisher" "$file"; then
+    echo "  MISSING UNSIGNED INSTALLER WARNING: $file"
+    fail=1
+  fi
+done
+
+for file in README.md README.txt USER-MANUAL.md USER-MANUAL.txt docs/index.html; do
+  if ! grep -q "run_mock_city_environment_suite.py" "$file"; then
+    echo "  MISSING MOCK CITY SUITE DOC: $file"
     fail=1
   fi
 done

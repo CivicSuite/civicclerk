@@ -1,10 +1,10 @@
 {
-    "version":  "0.1.14",
-    "reviewed_at":  "2026-05-02T00:00:00Z",
-    "page":  "docs/index.html",
-    "page_sha256":  "70242eccf57771d843ae6f00a2e3010169eda48944aa49b4414c7c32623a88be",
-    "screenshots":  {
-                        "desktop":  "docs/screenshots/vendor-sync-staff-ui-docs-desktop.png",
-                        "mobile":  "docs/screenshots/vendor-sync-staff-ui-docs-mobile.png"
-                    }
+    "version": "0.1.14",
+    "reviewed_at": "2026-05-02T00:00:00Z",
+    "page": "docs/index.html",
+    "page_sha256": "ad22505308b996d5593820a09a185cf34ac1e6648be0ece81af75296244f4b72",
+    "screenshots": {
+        "desktop": "docs/screenshots/vendor-sync-staff-ui-docs-desktop.png",
+        "mobile": "docs/screenshots/vendor-sync-staff-ui-docs-mobile.png"
+    }
 }
