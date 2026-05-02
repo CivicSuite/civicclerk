@@ -37,13 +37,17 @@ def test_vendor_network_sync_requires_explicit_network_gate(tmp_path: Path, monk
     monkeypatch.delenv(NETWORK_ENABLED_ENV_VAR, raising=False)
     repository = VendorSyncRepository(db_url=_db_url(tmp_path / "vendor-sync.db"))
     source_id = _source(repository)
+    output = tmp_path / "blocked-report.json"
 
-    report = run_vendor_network_sync(repository=repository, source_id=source_id)
+    report = run_vendor_network_sync(repository=repository, source_id=source_id, output_path=output)
 
     assert report.network_calls is False
     assert report.records_discovered == 0
     assert NETWORK_ENABLED_ENV_VAR in report.fix
     assert repository.list_runs(source_id) == []
+    saved = json.loads(output.read_text(encoding="utf-8"))
+    assert saved["network_calls"] is False
+    assert saved["records_failed"] == 0
 
 
 def test_vendor_network_sync_fetches_normalizes_and_records_success(tmp_path: Path) -> None:
@@ -79,12 +83,14 @@ def test_vendor_network_sync_fetches_normalizes_and_records_success(tmp_path: Pa
 def test_vendor_network_sync_missing_secret_is_recorded_without_claiming_network_call(tmp_path: Path) -> None:
     repository = VendorSyncRepository(db_url=_db_url(tmp_path / "vendor-sync.db"))
     source_id = _source(repository)
+    output = tmp_path / "missing-secret-report.json"
 
     report = run_vendor_network_sync(
         repository=repository,
         source_id=source_id,
         enable_network=True,
         fetch_json=lambda *_: [LEGISTAR_PAYLOAD],
+        output_path=output,
     )
 
     assert report.network_calls is False
@@ -92,6 +98,10 @@ def test_vendor_network_sync_missing_secret_is_recorded_without_claiming_network
     assert "credentials are required" in report.message
     assert "deployment secret" in report.fix
     assert repository.list_runs(source_id)[0].status == "failed"
+    saved = json.loads(output.read_text(encoding="utf-8"))
+    assert saved["network_calls"] is False
+    assert saved["records_failed"] == 1
+    assert "credentials are required" in saved["message"]
 
 
 def test_vendor_network_sync_records_actionable_failures_and_opens_circuit(tmp_path: Path) -> None:
