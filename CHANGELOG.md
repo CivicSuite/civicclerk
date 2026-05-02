@@ -4,6 +4,10 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+- No unreleased changes.
+
+## [0.1.15] - 2026-05-02
+
 ### Added
 - `civicclerk.mock_city_environment` and
   `scripts/run_mock_city_environment_suite.py` add a reusable no-network City of
@@ -38,6 +42,18 @@ All notable changes to CivicClerk are documented here.
   external dependencies.
 
 ### Changed
+- CivicClerk now targets the published `civiccore` v0.18.1 release wheel and
+  consumes the shared `civiccore.connectors` live-sync circuit primitives for
+  vendor source health, run-result transitions, and operator-facing
+  healthy/degraded/circuit-open copy.
+- The vendor sync ledger, source validation, delta cursor handling,
+  no-network cursor reset, and module-specific persistence stay in
+  CivicClerk; the reusable circuit-breaker contract now lives in CivicCore so
+  the next CivicSuite modules can adopt the same behavior instead of cloning
+  it.
+- Release docs, install rehearsal paths, health-check examples, and build
+  artifact checks now identify CivicClerk v0.1.15 paired with CivicCore
+  v0.18.1.
 - Windows installer packaging and docs now explicitly warn that unsigned setup
   packages can trigger "Unknown Publisher" or "Windows protected your PC" until
   CivicSuite has an issued code-signing certificate and secured signing

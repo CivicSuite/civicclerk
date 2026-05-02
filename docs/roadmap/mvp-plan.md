@@ -3,7 +3,7 @@
 The first CivicClerk MVP is a vertical slice, not a full Granicus-style
 replacement.
 
-Current status after CivicClerk v0.1.14: all four MVP sprint goals below are
+Current status after CivicClerk v0.1.15: all four MVP sprint goals below are
 API-complete, tested, and represented by live-backed `/staff` cockpit panels.
 The runtime foundation, staff workflow HTML reference shell, prompt gates,
 release gates, connector import normalization, public archive filtering, the
