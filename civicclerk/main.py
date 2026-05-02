@@ -405,11 +405,12 @@ async def root() -> dict[str, str]:
             "staff workflow APIs now support a local-open rehearsal mode, a bearer-protected bridge mode, "
             "and a trusted-header reverse-proxy mode with a required trusted-proxy CIDR allowlist, "
             "with the /staff screen showing the current access "
-            "state while full OIDC login remains future work; "
-            "all current production-depth clerk-console form submissions are live for the released "
-            "API foundation, while the full integrated clerk console remains future work."
+            "state and supporting the browser OIDC login/session foundation; "
+            "the integrated React clerk console and public portal are now present for local "
+            "Docker product rehearsal, while production municipal rollout still depends on "
+            "enterprise code signing and city-approved deployment hardening."
         ),
-        "next_step": "Production-depth consolidation and next CivicSuite module planning",
+        "next_step": "Release alignment, signing readiness, and production deployment hardening",
     }
 
 

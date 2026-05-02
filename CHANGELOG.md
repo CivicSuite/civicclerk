@@ -6,6 +6,18 @@ All notable changes to CivicClerk are documented here.
 
 No unreleased changes yet.
 
+## [0.1.13] - 2026-05-01
+
+### Changed
+- CivicClerk now targets the published `civiccore` v0.17.0 release wheel so the
+  Clerk product stays aligned with the shared persisted audit primitives already
+  released from CivicCore and adopted by CivicRecords AI.
+- Release, install, handoff, readiness, and browser-QA version surfaces now
+  identify CivicClerk v0.1.13 and expect CivicCore v0.17.0 in `/health`.
+- The root product status copy now states that the integrated React clerk
+  console and public portal are present for Docker product rehearsal instead of
+  describing them as future work.
+
 ## [0.1.12] - 2026-05-01
 
 ### Added

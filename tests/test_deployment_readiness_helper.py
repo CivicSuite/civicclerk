@@ -66,8 +66,8 @@ def test_deployment_readiness_helper_passes_configured_bearer_environment(tmp_pa
     dist_root = tmp_path / "dist"
     dist_root.mkdir()
     for name in [
-        "civicclerk-0.1.12-py3-none-any.whl",
-        "civicclerk-0.1.12.tar.gz",
+        "civicclerk-0.1.13-py3-none-any.whl",
+        "civicclerk-0.1.13.tar.gz",
         "SHA256SUMS.txt",
     ]:
         (dist_root / name).write_text("test artifact\n", encoding="utf-8")
@@ -108,8 +108,8 @@ def test_deployment_readiness_helper_loads_env_file_without_printing_secrets(tmp
     dist_root = tmp_path / "dist"
     dist_root.mkdir()
     for name in [
-        "civicclerk-0.1.12-py3-none-any.whl",
-        "civicclerk-0.1.12.tar.gz",
+        "civicclerk-0.1.13-py3-none-any.whl",
+        "civicclerk-0.1.13.tar.gz",
         "SHA256SUMS.txt",
     ]:
         (dist_root / name).write_text("test artifact\n", encoding="utf-8")
