@@ -62,9 +62,13 @@ persists in the vendor sync ledger, source health is computed as `healthy`,
 full-run failures or two post-unpause grace-period failures. The React staff
 workspace now surfaces this ledger through a Vendor Sync screen with source
 registration, health/circuit status, run-outcome logging, no-network safety
-copy, and actionable IT fix guidance. Remaining live-sync work is actual vendor
-adapters and scheduled pulls; the foundation does not yet claim vendor-network
-data movement.
+copy, and actionable IT fix guidance. The first guarded vendor-network pull
+runner is present for one explicitly enabled source at a time: it refuses
+circuit-open sources, revalidates the source URL, reads credentials from a
+deployment secret env var, normalizes returned JSON through the existing
+connector contract, and records the run outcome in the same circuit-breaker
+ledger. Remaining live-sync work is scheduled vendor pulls, connector-specific
+delta semantics, and deployment proof.
 
 ## Sprint 1
 

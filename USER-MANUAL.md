@@ -410,6 +410,20 @@ These endpoints validate and record source/run/failure state only. They return
 `network_calls: false`, health status, and actionable fix text; they do not
 contact Granicus, Legistar, PrimeGov, NovusAGENDA, or any other vendor network.
 
+For a deliberately enabled one-time vendor pull, keep the same ledger source,
+store the credential in a deployment secret environment variable, and run:
+
+```bash
+CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=true \
+python scripts/run_vendor_live_sync.py --source-id <id> --db-url <ledger-url> --auth-secret-env LEGISTAR_TOKEN --output vendor-sync-report.json
+```
+
+The runner refuses circuit-open sources, revalidates the source URL before the
+HTTP request, reads credentials from the named env var instead of the URL,
+normalizes returned JSON through the existing connector contract, writes an
+optional report without secrets, and records success or failure in the same
+circuit-breaker ledger.
+
 When IT has approved local agenda-system export files and wants the Docker
 product path to ingest them repeatedly, create the host drop folder and enable
 the Celery Beat schedule in `.env`:
