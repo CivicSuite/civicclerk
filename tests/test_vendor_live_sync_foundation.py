@@ -10,6 +10,7 @@ from civicclerk.vendor_live_sync import (
     apply_vendor_sync_result,
     compute_health_status,
     operator_status,
+    source_status,
     validate_live_sync_config,
 )
 
@@ -61,6 +62,23 @@ def test_circuit_opens_after_five_consecutive_full_run_failures() -> None:
     assert state.sync_paused is True
     assert compute_health_status(state) == "circuit_open"
     assert "unpause" in operator_status(state)["fix"]
+
+
+def test_source_status_uses_shared_civiccore_projection_for_source_lists() -> None:
+    state = VendorSyncState(
+        connector="legistar",
+        source_name="Legistar production",
+        active_failure_count=2,
+        last_sync_status="partial",
+    )
+
+    status = source_status(state)
+
+    assert status["health_status"] == "degraded"
+    assert status["active_failure_count"] == 2
+    assert status["last_sync_status"] == "partial"
+    assert status["next_sync_at"] is None
+    assert "live sync is degraded" in str(status["message"])
 
 
 def test_circuit_stays_degraded_before_threshold() -> None:

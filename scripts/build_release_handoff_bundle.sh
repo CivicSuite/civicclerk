@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version="0.1.19"
+version="0.1.20"
 output_path=""
 print_only=0
 

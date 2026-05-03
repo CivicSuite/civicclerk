@@ -32,6 +32,7 @@ def test_vendor_sync_source_persists_across_repository_instances(tmp_path: Path)
     assert reloaded.source_name == "Legistar production"
     assert reloaded.last_success_cursor_at is None
     assert reloaded.public_dict()["health_status"] == "healthy"
+    assert reloaded.public_dict()["next_sync_at"] is None
     assert reloaded.public_dict()["last_success_cursor_at"] is None
 
 

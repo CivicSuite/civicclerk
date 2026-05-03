@@ -15,7 +15,7 @@ from civicclerk.vendor_live_sync import (
     VendorSyncState,
     apply_vendor_sync_result,
     live_sync_config_ready,
-    operator_status,
+    source_status,
     validate_live_sync_config,
 )
 
@@ -109,7 +109,8 @@ class VendorSyncSourceRecord:
         )
 
     def public_dict(self) -> dict:
-        status = operator_status(self.state())
+        status = source_status(self.state())
+        next_sync_at = status["next_sync_at"]
         return {
             "id": self.id,
             "connector": self.connector,
@@ -123,6 +124,7 @@ class VendorSyncSourceRecord:
             "sync_paused_at": self.sync_paused_at.isoformat() if self.sync_paused_at else None,
             "sync_paused_reason": self.sync_paused_reason,
             "last_sync_status": self.last_sync_status,
+            "next_sync_at": next_sync_at.isoformat() if isinstance(next_sync_at, datetime) else None,
             "last_error_at": self.last_error_at.isoformat() if self.last_error_at else None,
             "last_success_cursor_at": self.last_success_cursor_at.isoformat()
             if self.last_success_cursor_at

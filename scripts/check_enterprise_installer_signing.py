@@ -10,7 +10,7 @@ import shutil
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_VERSION = "0.1.19"
+DEFAULT_VERSION = "0.1.20"
 DEFAULT_ARTIFACT = Path("installer/windows/build") / f"CivicClerk-{DEFAULT_VERSION}-Setup.exe"
 SIGNTOOL_ENV_VARS = ("CIVICCLERK_SIGNTOOL_PATH", "SIGNTOOL")
 SHA1_ENV_VAR = "CIVICCLERK_SIGNING_CERT_SHA1"
