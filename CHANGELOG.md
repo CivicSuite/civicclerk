@@ -4,6 +4,13 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.19] - 2026-05-02
+
+### Changed
+- CivicClerk now targets the published `civiccore` v0.21.0 release wheel so
+  its runtime health contract, CI install path, fresh-install rehearsal, and
+  operator docs stay aligned with the current shared CivicSuite platform line.
+
 ## [0.1.18] - 2026-05-02
 
 ### Changed

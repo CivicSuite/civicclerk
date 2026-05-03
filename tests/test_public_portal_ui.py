@@ -11,7 +11,7 @@ from civicclerk.main import STAFF_AUTH_MODE_ENV_VAR, STAFF_BEARER_MODE, app
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.18"
+VERSION = "0.1.19"
 
 
 @pytest.mark.asyncio

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "civicclerk"
-version = "0.1.18"
+version = "0.1.19"
 description = "CivicClerk runtime foundation for municipal meeting, agenda, packet, and minutes workflows."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,7 +13,7 @@ authors = [
   { name = "CivicSuite contributors" }
 ]
 dependencies = [
-  "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.20.0/civiccore-0.20.0-py3-none-any.whl",
+  "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v0.21.0/civiccore-0.21.0-py3-none-any.whl",
   "celery[redis]>=5.4.0,<6.0.0",
   "fastapi>=0.115.0,<1.0.0",
   "psycopg2-binary>=2.9.0,<3.0.0",
