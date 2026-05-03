@@ -14,6 +14,7 @@ from civiccore.connectors import (
     SyncRunResult,
     apply_sync_run_result,
     build_sync_operator_status,
+    build_sync_source_status,
     compute_sync_health_status,
 )
 
@@ -159,6 +160,10 @@ def compute_health_status(state: VendorSyncState) -> SyncHealthStatus:
 
 def operator_status(state: VendorSyncState) -> dict[str, str | int | bool | None]:
     return build_sync_operator_status(state, policy=_CIVICCLERK_CIRCUIT_POLICY).public_dict()
+
+
+def source_status(state: VendorSyncState) -> dict[str, str | int | bool | datetime | None]:
+    return build_sync_source_status(state, policy=_CIVICCLERK_CIRCUIT_POLICY).public_dict()
 
 
 def _credential_location_check(source_url: str) -> LiveSyncCheck:

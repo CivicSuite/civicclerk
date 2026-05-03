@@ -4,6 +4,19 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [0.1.20] - 2026-05-03
+
+### Changed
+- CivicClerk now targets the published `civiccore` v0.22.0 release wheel and
+  consumes the shared CivicCore vendor sync source-list status projection for
+  persisted source health, active-failure, pause, last-status, next-run, and
+  operator fix-path fields.
+
+### Added
+- Added regression coverage proving CivicClerk source-list health uses the
+  shared CivicCore `build_sync_source_status()` projection instead of
+  maintaining module-local source health shaping.
+
 ## [0.1.19] - 2026-05-02
 
 ### Changed
