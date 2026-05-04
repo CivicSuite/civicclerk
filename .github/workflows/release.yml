@@ -12,10 +12,24 @@ jobs:
   verify-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+      - name: Install CivicCore release-provenance helper
+        run: python -m pip install "git+https://github.com/CivicSuite/civiccore.git@main"
+      - name: Verify release provenance before building artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          target_commit="$(git rev-list -n 1 "$GITHUB_REF_NAME")"
+          expected_tree="$(git show -s --format=%T "$target_commit")"
+          python scripts/verify-release-provenance.py "$GITHUB_REF_NAME" \
+            --repo "${{ github.repository }}" \
+            --expected-target "$target_commit" \
+            --expected-tree "$expected_tree"
       - name: Install CivicCore release wheel
         run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/v0.22.0/civiccore-0.22.0-py3-none-any.whl
       - name: Install package and test dependencies
