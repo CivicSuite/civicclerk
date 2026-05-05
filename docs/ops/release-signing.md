@@ -1,4 +1,4 @@
-# Release Signing and Provenance
+﻿# Release Signing and Provenance
 
 CivicClerk consumes the canonical CivicSuite release-provenance gate from
 `civiccore.release_provenance`. The local `scripts/verify-release-provenance.py`
@@ -36,9 +36,9 @@ python scripts/verify-release-provenance.py <tag> \
   --artifacts-dir .
 ```
 
-## v0.1.20 Defect Statement
+## v0.1.20 CO-4 Ledger Statement
 
-Current public artifact: `v0.1.20`
+Historical pre-gate artifact: `v0.1.20`
 
 Defect an outside auditor can verify:
 
@@ -47,6 +47,9 @@ Defect an outside auditor can verify:
 - The target commit is GitHub-verified and uses the GitHub web-flow identity.
 - The release tag is lightweight, so there is no verified annotated tag object.
 - Therefore v0.1.20 fails the strengthened release provenance bar.
+- CO-4 records this release as `pre_gate_no_attestation_do_not_promote` in
+  [`docs/ops/tier1-retrofit-ledger.md`](tier1-retrofit-ledger.md). No public
+  release notes, tags, or assets were changed by that decision.
 
 Reproducer:
 
@@ -60,6 +63,6 @@ Expected output:
 FAIL: Live release verification requires --attestation and --bundle under the Sigstore attestation provenance model.
 ```
 
-This release is part of the Tier 1 live-surface correction window. Do not delete
-or recreate it, edit its release notes, or attach retrofit attestation assets
-without explicit chat authorization for that specific release.
+Do not delete or recreate this release, edit its release notes, attach retrofit
+attestation assets, mirror it, or promote it as an attested provenance baseline
+without a future explicit release-class authorization and a new ledger entry.

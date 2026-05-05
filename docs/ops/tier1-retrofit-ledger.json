@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "sprint": "CO-4",
+  "repo": "CivicSuite/civicclerk",
+  "status": "closed_by_repo_ledger_no_public_release_artifact_changes",
+  "generated_at": "2026-05-05",
+  "upstream_attested_baseline": {
+    "repo": "CivicSuite/civiccore",
+    "tag": "v0.22.1",
+    "release_url": "https://github.com/CivicSuite/civiccore/releases/tag/v0.22.1",
+    "target_commit": "46c99854adbce6dc8a056ae5215278bb1eba9a19",
+    "attestation_status": "sigstore_verified"
+  },
+  "target_release_count": 1,
+  "entries": [
+    {
+      "tag": "v0.1.20",
+      "published_at": "2026-05-03T08:59:13Z",
+      "release_url": "https://github.com/CivicSuite/civicclerk/releases/tag/v0.1.20",
+      "tag_ref_type": "commit",
+      "tag_ref_sha": "4a100f10694cfb167c815b98f2f2abc62d5ca2ca",
+      "target_commit": "4a100f10694cfb167c815b98f2f2abc62d5ca2ca",
+      "release_assets": [
+        {
+          "name": "civicclerk-0.1.20-py3-none-any.whl",
+          "sha256": "eb7e754bc0de50b0d7d1d4eb826ad97ca4ed2e3ce89c5a647fbc966f6132f52a"
+        },
+        {
+          "name": "civicclerk-0.1.20.tar.gz",
+          "sha256": "18f41bbca3c4fb59118c82c90892110405351028742a4045fcf45e345d84a15d"
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "sha256": "d03d48cde971a1acbaa03a24d51dd1e20a3872485a95476fcd40baccee8dab87"
+        }
+      ],
+      "workflow_run_url": "https://github.com/CivicSuite/civicclerk/actions/runs/25274852339",
+      "ledger_status": "pre_gate_no_attestation_do_not_promote",
+      "attestation_status": "none_pre_gate",
+      "rationale": "The public release assets contain the wheel, source distribution, and SHA256SUMS only. The original tag workflow artifact download also contains no release-attestation.json or release-attestation.json.bundle, so there is no existing Sigstore attestation to promote.",
+      "downstream_rule": "Retain for historical installs only. Do not mirror or promote v0.1.20 as an attested provenance baseline."
+    }
+  ]
+}

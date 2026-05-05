@@ -78,9 +78,9 @@ def test_release_workflow_and_docs_reference_v0120_release() -> None:
     assert "contents: write" in workflow
     assert "gh release create" in workflow
     assert "dist/*" in workflow
-    assert "civiccore/releases/download/v0.22.0/civiccore-0.22.0-py3-none-any.whl" in workflow
+    assert "civiccore/releases/download/v0.22.1/civiccore-0.22.1-py3-none-any.whl" in workflow
     assert "civicclerk v0.1.20" in docs
-    assert "published `civiccore` v0.22.0 release wheel" in docs
+    assert "published `civiccore` v0.22.1 release wheel" in docs
 
 
 def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
@@ -216,7 +216,7 @@ def test_fresh_install_rehearsal_script_prints_expected_plan() -> None:
         "Smoke check: GET http://127.0.0.1:8776/health",
         "Readiness check: GET http://127.0.0.1:8776/staff/auth-readiness",
         "Browser check: open http://127.0.0.1:8776/staff",
-        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"0.1.20\",\"civiccore\":\"0.22.0\"}",
+        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"0.1.20\",\"civiccore\":\"0.22.1\"}",
         "If the wheel is missing, build it first with: python -m build",
         "If port 8776 is already in use, stop the existing process or rerun with -AppPort set to an available port.",
         "pass -KeepServer to keep it running",
@@ -270,7 +270,7 @@ def test_fresh_install_rehearsal_bash_script_prints_expected_plan() -> None:
         "Smoke check: GET http://127.0.0.1:8776/health",
         "Readiness check: GET http://127.0.0.1:8776/staff/auth-readiness",
         "Browser check: open http://127.0.0.1:8776/staff",
-        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"0.1.20\",\"civiccore\":\"0.22.0\"}",
+        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"0.1.20\",\"civiccore\":\"0.22.1\"}",
         "If the wheel is missing, build it first with: python -m build",
         "If port 8776 is already in use, stop the existing process or rerun with --app-port set to an available port.",
         "pass --keep-server to keep it running",
