@@ -1,8 +1,8 @@
 {
     "version":  "0.1.20",
-    "reviewed_at":  "2026-05-04T23:55:00Z",
+    "reviewed_at":  "2026-05-05T00:00:00Z",
     "page":  "docs/index.html",
-    "page_sha256":  "5278dc259a9d1291b90791189a480b19749f2745a3aed336eb9372c5e091280a",
+    "page_sha256":  "ff076a737d9be5659d5e28028ac15b2c196d209d7946575cf4daba30ea8252f7",
     "screenshots":  {
                         "desktop":  "docs/screenshots/release-sigstore-provenance/desktop.png",
                         "mobile":  "docs/screenshots/release-sigstore-provenance/mobile-390.png"

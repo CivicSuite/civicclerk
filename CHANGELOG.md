@@ -4,7 +4,14 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Added
+- Added the CO-4 Tier 1 retrofit ledger for `v0.1.20`, marking the release as
+  historical pre-gate/no-attestation/do-not-promote without changing public
+  release notes, tags, or assets.
+
 ### Changed
+- Updated the active CivicCore dependency and current install/provenance docs to
+  the first attested CivicCore baseline, `v0.22.1`.
 - Wired CivicClerk release workflows to the new CivicCore Sigstore attestation
   provenance model. Future release builds run the canonical adversarial fixture
   suite first, verify the full release gate, generate and cosign
@@ -15,8 +22,9 @@ All notable changes to CivicClerk are documented here.
 ## [0.1.20] - 2026-05-03
 
 ### Changed
-- CivicClerk now targets the published `civiccore` v0.22.0 release wheel and
-  consumes the shared CivicCore vendor sync source-list status projection for
+- At the v0.1.20 release cut, CivicClerk targeted the then-published
+  CivicCore v0.22.0 release wheel and consumed the shared CivicCore vendor sync
+  source-list status projection for
   persisted source health, active-failure, pause, last-status, next-run, and
   operator fix-path fields.
 
