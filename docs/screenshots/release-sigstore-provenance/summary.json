@@ -1,0 +1,28 @@
+[
+  {
+    "viewport": "desktop",
+    "hasSigstore": true,
+    "hasRetrofit": true,
+    "overflowX": false,
+    "focusAfterTab": {
+      "tag": "A",
+      "text": "Read the README",
+      "href": "../README.md"
+    },
+    "consoleMessages": [],
+    "screenshot": "C:\\Users\\scott\\OneDrive\\Desktop\\Claude\\civicclerk\\docs\\screenshots\\release-sigstore-provenance\\desktop.png"
+  },
+  {
+    "viewport": "mobile-390",
+    "hasSigstore": true,
+    "hasRetrofit": true,
+    "overflowX": false,
+    "focusAfterTab": {
+      "tag": "A",
+      "text": "Read the README",
+      "href": "../README.md"
+    },
+    "consoleMessages": [],
+    "screenshot": "C:\\Users\\scott\\OneDrive\\Desktop\\Claude\\civicclerk\\docs\\screenshots\\release-sigstore-provenance\\mobile-390.png"
+  }
+]

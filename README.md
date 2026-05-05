@@ -12,14 +12,15 @@ Depends on: published `civiccore` v0.22.0 release wheel
 CivicClerk now wires the strengthened CivicCore release-provenance preflight
 into release-class workflows. GitHub release pages can display a "Verified"
 badge for the target commit even when the release tag itself is lightweight or
-unsigned, so CivicClerk treats that badge as a commit-only signal. The release
-gate now verifies the tag ref, signed annotated tag object, target commit,
-committer identity, and release tree before release assets are published.
+unsigned, so CivicClerk treats that badge as a commit-only signal. Post-baseline
+releases are verified by a Sigstore-signed `release-attestation.json` plus
+bundle, and the exact verification shape lives in `docs/ops/release-signing.md`.
 
 The current public `v0.1.20` release is in the Tier 1 correction window because
-its tag is lightweight even though its target commit is GitHub-verified. Do not
-delete or recreate that release without explicit chat authorization for that
-specific destructive correction. See `docs/ops/release-signing.md`.
+its tag predates the attestation model even though its target commit is
+GitHub-verified. Do not delete, recreate, edit release notes, or retrofit
+attestation assets for that release without explicit chat authorization for that
+specific operation. See `docs/ops/release-signing.md`.
 
 ## What CivicClerk will do
 

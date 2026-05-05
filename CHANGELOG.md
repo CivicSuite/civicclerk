@@ -4,6 +4,14 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Changed
+- Wired CivicClerk release workflows to the new CivicCore Sigstore attestation
+  provenance model. Future release builds run the canonical adversarial fixture
+  suite first, verify the full release gate, generate and cosign
+  `release-attestation.json`, verify it before publication, and upload the
+  attestation plus bundle alongside the wheel, sdist, and checksum manifest.
+  No existing release, tag, or release notes were modified by this change.
+
 ## [0.1.20] - 2026-05-03
 
 ### Changed
