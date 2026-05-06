@@ -14,6 +14,10 @@ from civicclerk.main import app
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _bash_service_unavailable(output: str) -> bool:
+    return "Bash/Service/" in output.replace("\x00", "")
+
+
 def test_version_surfaces_are_synchronized_to_v100() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     current_docs = "\n".join(
@@ -256,7 +260,7 @@ def test_fresh_install_rehearsal_bash_script_prints_expected_plan() -> None:
         text=True,
     )
 
-    if result.returncode != 0 and "Bash/Service/" in (result.stdout + result.stderr):
+    if result.returncode != 0 and _bash_service_unavailable(result.stdout + result.stderr):
         pytest.skip("Bash exists but the WSL/Bash service is unavailable in this environment.")
 
     assert result.returncode == 0, result.stdout + result.stderr
@@ -369,6 +373,9 @@ def test_release_handoff_bundle_bash_script_prints_expected_plan() -> None:
         text=True,
     )
 
+    if result.returncode != 0 and _bash_service_unavailable(result.stdout + result.stderr):
+        pytest.skip("Bash exists but the WSL/Bash service is unavailable in this environment.")
+
     assert result.returncode == 0, result.stdout + result.stderr
     output = result.stdout
     for expected in [
@@ -425,6 +432,9 @@ def test_protected_demo_rehearsal_bash_script_prints_expected_plan() -> None:
         capture_output=True,
         text=True,
     )
+
+    if result.returncode != 0 and _bash_service_unavailable(result.stdout + result.stderr):
+        pytest.skip("Bash exists but the WSL/Bash service is unavailable in this environment.")
 
     assert result.returncode == 0, result.stdout + result.stderr
     output = result.stdout
