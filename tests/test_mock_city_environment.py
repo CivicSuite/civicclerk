@@ -7,11 +7,16 @@ from pathlib import Path
 
 from civicclerk.mock_city_environment import (
     MOCK_CITY_NAME,
+    mock_city_backup_retention_hostile_fixtures,
+    mock_city_hostile_fixtures,
     mock_city_backup_retention_contract,
     mock_city_idp_contract,
+    mock_city_idp_hostile_fixtures,
+    mock_city_vendor_hostile_fixtures,
     mock_city_vendor_contracts,
     run_mock_city_backup_retention_suite,
     run_mock_city_contract_suite,
+    run_mock_city_hostile_mode_suite,
     run_mock_city_idp_contract_suite,
 )
 
@@ -100,6 +105,68 @@ def test_mock_city_contracts_are_public_and_secret_free() -> None:
     assert "tenant-specific" in serialized
 
 
+def test_mock_city_hostile_fixtures_cover_cc2_required_failure_modes() -> None:
+    fixtures = mock_city_hostile_fixtures()
+    scenarios = {fixture.scenario for fixture in fixtures}
+    vendor_targets = {fixture.target for fixture in mock_city_vendor_hostile_fixtures()}
+    idp_targets = {fixture.target for fixture in mock_city_idp_hostile_fixtures()}
+    backup_scenarios = {fixture.scenario for fixture in mock_city_backup_retention_hostile_fixtures()}
+
+    assert {
+        "expired_access_token",
+        "group_claim_only",
+        "jwks_rotation",
+        "mfa_challenge",
+        "clock_skew_not_before",
+        "refresh_required",
+        "rate_limit",
+        "pagination",
+        "schema_drift",
+        "partial_outage",
+        "duplicate_ids",
+        "stale_delta",
+        "delayed_restore",
+        "missing_manifest_fields",
+        "stale_restore_proof",
+        "legal_hold_conflict",
+        "checksum_mismatch",
+    } <= scenarios
+    assert {"legistar", "granicus", "primegov", "novusagenda"} <= vendor_targets
+    assert {"Brookfield Entra ID", "Brookfield Okta", "Brookfield Keycloak"} <= idp_targets
+    assert {
+        "delayed_restore",
+        "missing_manifest_fields",
+        "stale_restore_proof",
+        "legal_hold_conflict",
+        "checksum_mismatch",
+    } == backup_scenarios
+
+    serialized = json.dumps([fixture.public_dict() for fixture in fixtures]).lower()
+    assert "password" not in serialized
+    assert "client_secret_value" not in serialized
+    assert "token_value" not in serialized
+    assert "api_key_value" not in serialized
+
+
+def test_mock_city_hostile_mode_suite_validates_actionable_failures_without_network() -> None:
+    checks = run_mock_city_hostile_mode_suite()
+
+    assert checks
+    assert all(check.ok for check in checks)
+    by_scenario = {check.scenario: check for check in checks if check.area == "idp"}
+    assert "OIDC token has expired" in by_scenario["expired_access_token"].message
+    assert "Group-claim-only" in by_scenario["group_claim_only"].message
+    assert "OIDC token is not valid yet" in by_scenario["clock_skew_not_before"].message
+    assert "clock synchronization" in by_scenario["clock_skew_not_before"].fix
+    assert any(
+        check.scenario == "schema_drift"
+        and "PrimeGov meeting payload is missing required field title" in check.message
+        for check in checks
+    )
+    assert any(check.scenario == "partial_outage" and "Partial outage" in check.message for check in checks)
+    assert any(check.scenario == "checksum_mismatch" and "Reject the backup" in check.fix for check in checks)
+
+
 def test_mock_city_environment_cli_writes_reusable_report(tmp_path: Path) -> None:
     output = tmp_path / "mock-city-report.json"
     result = subprocess.run(
@@ -121,6 +188,7 @@ def test_mock_city_environment_cli_writes_reusable_report(tmp_path: Path) -> Non
     report = json.loads(output.read_text(encoding="utf-8"))
     assert report["mock_city"] == "City of Brookfield"
     assert report["network_calls"] is False
+    assert report["hostile_mode"] is False
     assert report["ready"] is True
     assert {contract["connector"] for contract in report["contracts"]} == {
         "granicus",
@@ -139,3 +207,88 @@ def test_mock_city_environment_cli_writes_reusable_report(tmp_path: Path) -> Non
     serialized = json.dumps(report).lower()
     assert "mock-client-secret" not in serialized
     assert "mock-session-secret" not in serialized
+
+
+def test_mock_city_environment_cli_writes_hostile_mode_report(tmp_path: Path) -> None:
+    output = tmp_path / "mock-city-hostile-report.json"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mock_city_environment_suite.py",
+            "--hostile-mode",
+            "--output",
+            str(output),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "hostile_mode=true" in result.stdout
+    assert "[PASS] hostile/idp/expired_access_token" in result.stdout
+    assert "[PASS] hostile/vendor/rate_limit" in result.stdout
+    assert "[PASS] hostile/backup_retention/checksum_mismatch" in result.stdout
+    assert "MOCK-CITY-ENVIRONMENT-SUITE: PASSED" in result.stdout
+    report = json.loads(output.read_text(encoding="utf-8"))
+    assert report["hostile_mode"] is True
+    assert report["ready"] is True
+    assert {fixture["area"] for fixture in report["hostile_fixtures"]} == {
+        "idp",
+        "vendor",
+        "backup_retention",
+    }
+    assert all(check["ok"] for check in report["hostile_checks"])
+    serialized = json.dumps(report).lower()
+    assert "password" not in serialized
+    assert "client_secret_value" not in serialized
+    assert "token_value" not in serialized
+    assert "api_key_value" not in serialized
+
+
+def test_mock_city_environment_cli_prints_hostile_plan() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_mock_city_environment_suite.py",
+            "--hostile-mode",
+            "--print-only",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "hostile_mode=true" in result.stdout
+    assert "Hostile-mode fixtures:" in result.stdout
+    assert "idp/clock_skew_not_before" in result.stdout
+    assert "vendor/stale_delta" in result.stdout
+    assert "backup_retention/legal_hold_conflict" in result.stdout
+
+
+def test_mock_city_hostile_mode_docs_are_current() -> None:
+    docs = "\n".join(
+        [
+            (ROOT / "README.md").read_text(encoding="utf-8"),
+            (ROOT / "README.txt").read_text(encoding="utf-8"),
+            (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8"),
+            (ROOT / "USER-MANUAL.txt").read_text(encoding="utf-8"),
+            (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"),
+            (ROOT / "scripts/verify-docs.sh").read_text(encoding="utf-8"),
+        ]
+    )
+
+    for expected in (
+        "--hostile-mode",
+        "mock-city-hostile-report.json",
+        "JWKS rotation",
+        "clock skew",
+        "schema drift",
+        "partial outage",
+        "legal-hold",
+        "checksum",
+    ):
+        assert expected in docs

@@ -403,9 +403,23 @@ documentation. The same report now validates the Brookfield Entra ID-style OIDC
 contract, including issuer, audience, authorization-code + PKCE URLs, JWKS
 shape, role claims, and a staff-role token path without contacting an identity
 provider or writing secrets into the report.
-vendor contracts are explicitly labeled vendor-gated until a city provides
-account documentation or credentials. Module teams should reuse this report and
-add only the module-specific assertions needed for the new product surface.
+The normal suite should stay green and no-network for every module that reuses
+the Brookfield contract.
+
+Run hostile mode before live city integration work:
+
+```bash
+python scripts/run_mock_city_environment_suite.py --hostile-mode --output mock-city-hostile-report.json
+```
+
+Hostile mode adds secret-free adversarial fixtures for IdP expiry, refresh
+requirements, JWKS rotation, MFA prompts, clock skew, and group-claim-only
+roles; vendor rate limits, pagination, schema drift, partial outages, duplicate
+IDs, and stale deltas; and backup-retention delayed restore proof, missing
+manifest fields, stale restore proof, legal-hold conflicts, and checksum
+mismatch. Every hostile report entry must say what failed and how an operator
+should recover. Module teams should reuse this report and add only the
+module-specific assertions needed for the new product surface.
 
 Then preview the first vendor live-sync operating contract without contacting a
 vendor:

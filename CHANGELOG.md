@@ -12,6 +12,10 @@ All notable changes to CivicClerk are documented here.
   cleanroom runner, two-run stable manifest comparison, offline runtime smoke
   phase, CivicCore freeze asset checksum/Sigstore/provenance verification, and
   GitHub Actions artifact upload path.
+- Added CC-2 `--hostile-mode` for the mock-city environment suite, covering
+  secret-free IdP expiry/refresh/JWKS/MFA/clock-skew/group-claim cases,
+  agenda-vendor rate-limit/pagination/schema-drift/partial-outage/duplicate/stale-delta
+  cases, and backup-retention restore/manifest/legal-hold/checksum failures.
 
 ### Changed
 - Updated the active CivicCore dependency and current install/provenance docs to

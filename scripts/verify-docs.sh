@@ -100,6 +100,13 @@ for file in README.md README.txt USER-MANUAL.md USER-MANUAL.txt docs/index.html;
   fi
 done
 
+for file in README.md README.txt USER-MANUAL.md USER-MANUAL.txt CHANGELOG.md; do
+  if ! grep -q -- "--hostile-mode" "$file"; then
+    echo "  MISSING MOCK CITY HOSTILE MODE DOC: $file"
+    fail=1
+  fi
+done
+
 if [[ $fail -ne 0 ]]; then
   echo "VERIFY-DOCS: FAILED"
   exit 1
