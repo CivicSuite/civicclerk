@@ -56,8 +56,8 @@ with durable transition audit entries, and database-backed notice
 checklist/posting-proof records.
 The `/staff` page now provides a product cockpit plus first staff workflow
 screens for agenda intake, packet assembly/export, notice
-checklist/posting-proof, meeting outcome, minutes draft, public archive,
-connector import, and vendor sync work. The cockpit gives clerks a day-at-a-glance desk before
+checklist/posting-proof, meeting outcome, member packet, minutes draft, public
+archive, connector import, and vendor sync work. The cockpit gives clerks a day-at-a-glance desk before
 they drill into individual forms, and it reads the live agenda intake queue for
 ready, pending, and needs-revision counts. The Agenda Intake panel also renders
 live queue rows with escaped submitted titles plus actionable empty and
@@ -176,12 +176,18 @@ that plainly, disables proof attachment, and tells the clerk to reschedule or
 document the lawful emergency/special basis before proceeding. The Public
 Posting React surface is also present: staff can open a resident-safe view of
 posted public records, show the public agenda, packet, and approved minutes
-text, and search public archive records without exposing or implying restricted
-closed-session material. The Meeting Outcomes React surface is now present:
-staff can select a meeting, capture immutable motions, record roll-call votes
-against a selected motion, create action items that reference the source
-motion, and see copy explaining that corrections must be append-only rather
-than silent edits. The Minutes Draft React surface is now present: staff can
+text, show plain-language summaries, adopted/signed minutes metadata, download
+agenda/packet/minutes text files, support public comment intake where enabled,
+and search public archive records without exposing or implying
+restricted closed-session material. The Meeting Outcomes React surface is now
+present: staff can select a meeting, capture immutable motions with seconded-by
+metadata, record roll-call votes against a selected motion including
+abstentions, recusals, and absences, create action items that reference the
+source motion, and see copy explaining that corrections must be append-only
+rather than silent edits. The Member Packet React surface is now present:
+members can review packet contents, item history, role-aware staff-report
+visibility, prior vote ledger entries, and conflict/vote capture without moving
+restricted material into the resident view. The Minutes Draft React surface is now present: staff can
 select a meeting, review existing citation-gated drafts, enter source material,
 draft sentences, sentence-level citations, model, prompt version, and human
 approver, create a cited draft through the live minutes API, and see the public

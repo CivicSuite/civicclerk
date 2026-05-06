@@ -10,6 +10,44 @@ from civicclerk.main import app
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_cc4_workflow_claims_registry_docs_are_current() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    readme_txt = (ROOT / "README.txt").read_text(encoding="utf-8")
+    user_manual = (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8")
+    user_manual_txt = (ROOT / "USER-MANUAL.txt").read_text(encoding="utf-8")
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    docs_index = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
+    normalized_manual = " ".join(user_manual.split())
+    normalized_manual_txt = " ".join(user_manual_txt.split())
+
+    registry_tokens = [
+        "### CC-4 workflow claims registry",
+        "tests/test_milestone_8_public_archive.py::test_public_record_downloads_comments_and_plain_language_summary",
+        "tests/test_milestone_8_public_archive.py::test_public_comment_intake_refuses_closed_or_disabled_records_with_fix",
+        "tests/test_milestone_6_motion_vote_action_capture.py::test_api_captured_motion_is_immutable_and_corrections_reference_original",
+        "frontend/src/App.test.tsx::opens the member packet surface for item history, staff report visibility, and conflict recording",
+        "frontend/src/App.test.tsx::cancels a scheduled meeting through the lifecycle audit path",
+    ]
+    for token in registry_tokens:
+        assert token in readme
+        assert token in readme_txt
+
+    documentation_tokens = [
+        "plain-language summaries",
+        "public comment intake where enabled",
+        "Member Packet React surface",
+        "seconded-by metadata",
+        "recusals, and absences",
+    ]
+    for token in documentation_tokens:
+        assert token in normalized_manual
+        assert token in normalized_manual_txt
+
+    assert "CC-4 workflow surface completion" in changelog
+    assert "For members" in docs_index
+    assert "public downloads, summaries, adopted/signed minutes metadata, and comment intake" in docs_index
+
+
 async def _create_meeting(client: AsyncClient, title: str, meeting_type: str = "regular") -> str:
     response = await client.post(
         "/meetings",
@@ -93,6 +131,78 @@ async def test_public_detail_never_leaks_closed_session_content_or_existence() -
     assert "Closed Personnel" not in detail.text
     assert "Employee discipline" not in detail.text
     assert "closed" not in detail.text.lower()
+
+
+@pytest.mark.asyncio
+async def test_public_record_downloads_comments_and_plain_language_summary() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        meeting_id = await _create_meeting(client, "Comment Enabled Meeting")
+        record = await client.post(
+            f"/meetings/{meeting_id}/public-record",
+            json={
+                "title": "Comment Enabled Meeting",
+                "visibility": "public",
+                "posted_agenda": "Agenda: sidewalk project and public comment.",
+                "posted_packet": "Packet: staff report and phasing map.",
+                "approved_minutes": "Approved minutes: project advanced.",
+                "public_comment_enabled": True,
+                "plain_language_summary": "Council will discuss sidewalk project timing.",
+                "minutes_adopted_at": "2026-05-12T19:30:00Z",
+                "minutes_signed_by": "City Clerk",
+            },
+        )
+        record_id = record.json()["id"]
+
+        agenda_download = await client.get(f"/public/meetings/{record_id}/agenda.txt")
+        packet_download = await client.get(f"/public/meetings/{record_id}/packet.txt")
+        comment = await client.post(
+            f"/public/meetings/{record_id}/comments",
+            json={
+                "commenter_name": "Jordan Resident",
+                "comment": "Please discuss accessible sidewalk phasing.",
+            },
+        )
+        comments = await client.get(f"/public/meetings/{record_id}/comments")
+
+    assert record.status_code == 201
+    payload = record.json()
+    assert payload["public_comment_enabled"] is True
+    assert payload["plain_language_summary"] == "Council will discuss sidewalk project timing."
+    assert payload["agenda_download_url"] == f"/public/meetings/{record_id}/agenda.txt"
+    assert payload["minutes_adopted_at"] == "2026-05-12T19:30:00Z"
+    assert payload["minutes_signed_by"] == "City Clerk"
+    assert agenda_download.status_code == 200
+    assert agenda_download.text == "Agenda: sidewalk project and public comment."
+    assert packet_download.headers["content-disposition"] == f'attachment; filename="{record_id}-packet.txt"'
+    assert comment.status_code == 201
+    assert comment.json()["status"] == "RECEIVED"
+    assert "clerk review" in comment.json()["message"]
+    assert comments.json()["total_count"] == 1
+    assert comments.json()["comments"][0]["comment"] == "Please discuss accessible sidewalk phasing."
+
+
+@pytest.mark.asyncio
+async def test_public_comment_intake_refuses_closed_or_disabled_records_with_fix() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        meeting_id = await _create_meeting(client, "Comment Disabled Meeting")
+        record = await _publish_public_record(
+            client,
+            meeting_id=meeting_id,
+            title="Comment Disabled Meeting",
+        )
+
+        rejected = await client.post(
+            f"/public/meetings/{record['id']}/comments",
+            json={
+                "commenter_name": "Jordan Resident",
+                "comment": "I want to comment after intake closed.",
+            },
+        )
+
+    assert rejected.status_code == 409
+    detail = rejected.json()["detail"]
+    assert detail["message"] == "Public comment intake is closed for this meeting record."
+    assert "official comment method" in detail["fix"]
 
 
 @pytest.mark.asyncio
@@ -240,6 +350,13 @@ async def test_publish_public_record_response_does_not_echo_closed_session_notes
         "posted_agenda": "Agenda: personnel review.",
         "posted_packet": "Packet: confidential memo.",
         "approved_minutes": "Approved minutes withheld.",
+        "public_comment_enabled": False,
+        "plain_language_summary": None,
+        "agenda_download_url": f"/public/meetings/{response.json()['id']}/agenda.txt",
+        "packet_download_url": f"/public/meetings/{response.json()['id']}/packet.txt",
+        "minutes_download_url": f"/public/meetings/{response.json()['id']}/minutes.txt",
+        "minutes_adopted_at": None,
+        "minutes_signed_by": None,
     }
     assert "closed_session_notes" not in response.text
 

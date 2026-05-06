@@ -82,22 +82,23 @@ Shipped in this foundation:
 - `/meetings/{id}/notice-checklists` create/list endpoint and
   `/notice-checklists/{id}/posting-proof` endpoint with durable audit hashes
 - approved public notice posting records with actionable warning/error responses
-- immutable captured motions with append-only correction records
-- immutable captured votes with append-only correction records
+- immutable captured motions with seconded-by metadata and append-only correction records
+- immutable captured votes with aye, nay, abstain, recusal, and absent outcomes plus append-only correction records
 - action items linked to meeting outcomes and source motions
 - live `/staff` meeting outcome form actions backed by `/meetings/{id}/motions`,
   `/motions/{id}/votes`, and `/meetings/{id}/action-items`
 - live `/staff` minutes draft form actions backed by
   `/meetings/{id}/minutes/drafts`
 - live `/staff` public archive form actions backed by
-  `/meetings/{id}/public-record`, `/public/meetings`, and
-  `/public/archive/search`
+  `/meetings/{id}/public-record`, `/public/meetings`,
+  `/public/meetings/{id}/{agenda|packet|minutes}.txt`,
+  `/public/meetings/{id}/comments`, and `/public/archive/search`
 - live `/staff` connector import form actions backed by
   `/imports/{connector}/meetings`
 - citation-gated minutes draft records
 - provenance for minutes drafts: model, prompt version, data sources, and human approver
 - rejection of uncited AI-drafted minutes output before it can be accepted
-- permission-aware public meeting calendar, detail, and archive search endpoints
+- permission-aware public meeting calendar, detail, archive search, document download, and public comment endpoints
 - resident-facing React public portal at `/public` in the Docker/nginx product
   path, backed by public calendar, detail, and archive search APIs
 - closed-session leak prevention for anonymous public archive bodies, counts, suggestions, and not-found responses
@@ -153,12 +154,17 @@ Shipped in this foundation:
   evidence from the live notice checklist APIs
 - React Public Posting portal for resident-safe public meeting list/detail and
   archive search over posted agenda, posted packet, and approved minutes
-  records, with official-record sections, missing-record guidance, and
-  restricted-session non-disclosure copy
+  records, with plain-language summaries, adopted/signed minutes metadata,
+  document downloads, public comment intake where enabled, official-record
+  sections, missing-record guidance, and restricted-session non-disclosure copy
 - React Meeting Outcomes workflow for selecting a meeting, loading captured
-  motions/votes/action items, capturing immutable motions, recording
-  roll-call votes, creating follow-up action items tied to source motions, and
-  warning clerks that corrections are append-only rather than silent edits
+  motions/votes/action items, capturing immutable motions with seconded-by
+  metadata, recording roll-call votes including abstentions, recusals, and
+  absences, creating follow-up action items tied to source motions, and warning
+  clerks that corrections are append-only rather than silent edits
+- React Member Packet workflow for reviewing packet contents, item history,
+  staff-report visibility by role, prior vote ledger entries, and member
+  conflict/vote recording from the same workflow surface
 - React Minutes Draft workflow for selecting a meeting, loading citation-gated
   drafts, creating drafts with explicit source material, sentence-level
   citations, model/prompt provenance, and human approver, and showing that
@@ -169,6 +175,16 @@ Shipped in this foundation:
   making the no-network safety boundary, persisted delta cursor, full
   reconciliation reset control, and IT fix guidance visible before scheduled
   vendor pulls are enabled
+
+### CC-4 workflow claims registry
+
+| README workflow claim | Verification |
+| --- | --- |
+| Public records include plain-language summaries, adopted/signed minutes metadata, agenda/packet/minutes downloads, and comment intake where enabled. | `tests/test_milestone_8_public_archive.py::test_public_record_downloads_comments_and_plain_language_summary`; `frontend/src/App.test.tsx::shows public downloads, summaries, and comment intake where enabled` |
+| Public comment intake refuses disabled or closed public records with an actionable fix path. | `tests/test_milestone_8_public_archive.py::test_public_comment_intake_refuses_closed_or_disabled_records_with_fix` |
+| Meeting outcomes capture seconded-by motion metadata and roll-call votes including recusals and absences. | `tests/test_milestone_6_motion_vote_action_capture.py::test_api_captured_motion_is_immutable_and_corrections_reference_original`; `frontend/src/App.test.tsx::opens the member packet surface for item history, staff report visibility, and conflict recording` |
+| The staff workflow exposes department/legal/clerk agenda routing and audit signoff, plus member packet review for item history, staff-report visibility, and conflict recording. | `frontend/src/App.test.tsx::submits and reviews agenda intake from the staff workspace`; `frontend/src/App.test.tsx::opens the member packet surface for item history, staff report visibility, and conflict recording` |
+| Meeting cancellation reaches the lifecycle audit path from the React meeting detail surface. | `frontend/src/App.test.tsx::cancels a scheduled meeting through the lifecycle audit path` |
 - Docker Compose deployment stack with PostgreSQL 17 + pgvector, Redis 7.2,
   Ollama, FastAPI, Celery worker, Celery Beat, and nginx-served React frontend
   wired to the `/api` proxy path

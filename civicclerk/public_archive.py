@@ -26,9 +26,16 @@ class PublicMeetingRecord:
     posted_agenda: str
     posted_packet: str
     approved_minutes: str
+    public_comment_enabled: bool = False
+    plain_language_summary: str | None = None
+    agenda_download_url: str | None = None
+    packet_download_url: str | None = None
+    minutes_download_url: str | None = None
+    minutes_adopted_at: str | None = None
+    minutes_signed_by: str | None = None
     closed_session_notes: str | None = None
 
-    def public_dict(self, *, include_closed: bool = False) -> dict[str, str | None]:
+    def public_dict(self, *, include_closed: bool = False) -> dict[str, str | bool | None]:
         payload = {
             "id": self.id,
             "meeting_id": self.meeting_id,
@@ -36,11 +43,38 @@ class PublicMeetingRecord:
             "posted_agenda": self.posted_agenda,
             "posted_packet": self.posted_packet,
             "approved_minutes": self.approved_minutes,
+            "public_comment_enabled": self.public_comment_enabled,
+            "plain_language_summary": self.plain_language_summary,
+            "agenda_download_url": self.agenda_download_url,
+            "packet_download_url": self.packet_download_url,
+            "minutes_download_url": self.minutes_download_url,
+            "minutes_adopted_at": self.minutes_adopted_at,
+            "minutes_signed_by": self.minutes_signed_by,
         }
         if include_closed:
             payload["visibility"] = self.visibility
             payload["closed_session_notes"] = self.closed_session_notes
         return payload
+
+
+@dataclass(frozen=True)
+class PublicCommentRecord:
+    id: str
+    public_record_id: str
+    commenter_name: str
+    comment: str
+    submitted_at: str
+    status: str = "RECEIVED"
+
+    def public_dict(self) -> dict[str, str]:
+        return {
+            "id": self.id,
+            "public_record_id": self.public_record_id,
+            "commenter_name": self.commenter_name,
+            "comment": self.comment,
+            "submitted_at": self.submitted_at,
+            "status": self.status,
+        }
 
 
 class PublicArchiveStore:
@@ -59,16 +93,28 @@ class PublicArchiveStore:
         posted_agenda: str,
         posted_packet: str,
         approved_minutes: str,
+        public_comment_enabled: bool = False,
+        plain_language_summary: str | None = None,
+        minutes_adopted_at: str | None = None,
+        minutes_signed_by: str | None = None,
         closed_session_notes: str | None = None,
     ) -> PublicMeetingRecord:
+        record_id = str(uuid4())
         record = PublicMeetingRecord(
-            id=str(uuid4()),
+            id=record_id,
             meeting_id=meeting_id,
             title=title,
             visibility=normalize_visibility(visibility),
             posted_agenda=posted_agenda,
             posted_packet=posted_packet,
             approved_minutes=approved_minutes,
+            public_comment_enabled=public_comment_enabled,
+            plain_language_summary=_normalize_optional_text(plain_language_summary),
+            agenda_download_url=f"/public/meetings/{record_id}/agenda.txt",
+            packet_download_url=f"/public/meetings/{record_id}/packet.txt",
+            minutes_download_url=f"/public/meetings/{record_id}/minutes.txt",
+            minutes_adopted_at=_normalize_optional_text(minutes_adopted_at),
+            minutes_signed_by=_normalize_optional_text(minutes_signed_by),
             closed_session_notes=closed_session_notes,
         )
         self._records[record.id] = record
@@ -99,12 +145,54 @@ class PublicArchiveStore:
         return results
 
 
+class PublicCommentStore:
+    """Collect resident comments against public records when comments are enabled."""
+
+    def __init__(self) -> None:
+        self._comments: dict[str, PublicCommentRecord] = {}
+        self._comments_by_record: dict[str, list[str]] = {}
+
+    def submit(
+        self,
+        *,
+        public_record: PublicMeetingRecord,
+        commenter_name: str,
+        comment: str,
+        submitted_at: str,
+    ) -> PublicCommentRecord | None:
+        if public_record.visibility != PUBLIC_VISIBILITY or not public_record.public_comment_enabled:
+            return None
+        record = PublicCommentRecord(
+            id=str(uuid4()),
+            public_record_id=public_record.id,
+            commenter_name=commenter_name.strip(),
+            comment=comment.strip(),
+            submitted_at=submitted_at,
+        )
+        self._comments[record.id] = record
+        self._comments_by_record.setdefault(public_record.id, []).append(record.id)
+        return record
+
+    def list_for_record(self, public_record_id: str) -> list[PublicCommentRecord]:
+        return [
+            self._comments[comment_id]
+            for comment_id in self._comments_by_record.get(public_record_id, [])
+        ]
+
+
 def normalize_visibility(visibility: str) -> str:
     return visibility.strip().lower()
 
 
 def can_view_closed_sessions(roles: set[str] | frozenset[str] | list[str] | tuple[str, ...]) -> bool:
     return roles_grant_access(roles, allowed_roles=PERMITTED_CLOSED_SESSION_ROLES)
+
+
+def _normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip()
+    return normalized or None
 
 
 def _record_matches(
@@ -130,6 +218,8 @@ __all__ = [
     "PERMITTED_CLOSED_SESSION_ROLES",
     "PUBLIC_VISIBILITY",
     "PublicArchiveStore",
+    "PublicCommentRecord",
+    "PublicCommentStore",
     "PublicMeetingRecord",
     "can_view_closed_sessions",
     "normalize_visibility",

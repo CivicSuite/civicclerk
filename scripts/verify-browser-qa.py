@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import tomllib
+import json
 from pathlib import Path
 
 from civiccore.verification import validate_release_browser_evidence
@@ -39,9 +40,28 @@ def main() -> int:
         ROOT / "docs" / "screenshots" / "public-portal-shell-empty-desktop.png",
         ROOT / "docs" / "screenshots" / "public-portal-shell-desktop.png",
         ROOT / "docs" / "screenshots" / "public-portal-shell-mobile.png",
+        ROOT / "docs" / "screenshots" / "cc4-member-success-desktop.png",
+        ROOT / "docs" / "screenshots" / "cc4-member-success-mobile.png",
+        ROOT / "docs" / "screenshots" / "cc4-member-state-loading.png",
+        ROOT / "docs" / "screenshots" / "cc4-member-state-empty.png",
+        ROOT / "docs" / "screenshots" / "cc4-member-state-error.png",
+        ROOT / "docs" / "screenshots" / "cc4-member-state-partial.png",
+        ROOT / "docs" / "screenshots" / "cc4-public-success-desktop.png",
+        ROOT / "docs" / "screenshots" / "cc4-public-success-mobile.png",
+        ROOT / "docs" / "screenshots" / "cc4-public-state-loading.png",
+        ROOT / "docs" / "screenshots" / "cc4-public-state-empty.png",
+        ROOT / "docs" / "screenshots" / "cc4-public-state-error.png",
+        ROOT / "docs" / "screenshots" / "cc4-public-state-partial.png",
+        ROOT / "docs" / "screenshots" / "cc4-public-comment-closed-refusal.png",
+        ROOT / "docs" / "screenshots" / "cc4-public-closed-session-blocked.png",
+        ROOT / "docs" / "screenshots" / "cc4-agenda-routing-signoff-desktop.png",
+        ROOT / "docs" / "screenshots" / "cc4-outcomes-seconded-recusal-desktop.png",
+        ROOT / "docs" / "screenshots" / "cc4-meeting-cancel-danger-desktop.png",
     ]
     milestone13_summary = ROOT / "docs" / "screenshots" / "milestone13-staff-ui-summary.md"
     public_portal_summary = ROOT / "docs" / "screenshots" / "public-portal-shell-summary.md"
+    cc4_summary = ROOT / "docs" / "screenshots" / "cc4-workflow-surface-summary.md"
+    cc4_evidence = ROOT / "docs" / "browser-qa" / "cc4-workflow-surface-qa-2026-05-06.json"
 
     if not checklist.exists():
         failures.append("missing docs/browser-qa/milestone11-checklist.md")
@@ -120,6 +140,67 @@ def main() -> int:
                     "public portal summary missing phrase: "
                     f"{required_phrase}"
                 )
+
+    if not cc4_summary.exists():
+        failures.append("missing CC-4 workflow browser QA summary: docs/screenshots/cc4-workflow-surface-summary.md")
+    else:
+        cc4_text = cc4_summary.read_text(encoding="utf-8").lower()
+        for required_phrase in (
+            "cc-4 workflow surface browser qa",
+            "loading",
+            "success",
+            "empty",
+            "error",
+            "partial",
+            "desktop",
+            "mobile",
+            "keyboard",
+            "focus",
+            "contrast",
+            "refusal path",
+            "closed-session blocked path",
+            "console errors: 0",
+            "exceptions: 0",
+            "text check failures: 0",
+        ):
+            if required_phrase not in cc4_text:
+                failures.append(f"CC-4 workflow QA summary missing phrase: {required_phrase}")
+
+    if not cc4_evidence.exists():
+        failures.append("missing CC-4 workflow browser QA evidence: docs/browser-qa/cc4-workflow-surface-qa-2026-05-06.json")
+    else:
+        evidence = json.loads(cc4_evidence.read_text(encoding="utf-8"))
+        totals = evidence.get("totals", {})
+        if totals.get("consoleErrors") != 0:
+            failures.append("CC-4 workflow QA evidence reports console errors")
+        if totals.get("exceptions") != 0:
+            failures.append("CC-4 workflow QA evidence reports runtime exceptions")
+        if totals.get("textCheckFailures") != 0:
+            failures.append("CC-4 workflow QA evidence reports failed visible-text checks")
+        if totals.get("minContrast", 0) < 4.5:
+            failures.append("CC-4 workflow QA evidence reports sampled contrast below 4.5")
+        case_names = {case.get("name") for case in evidence.get("cases", [])}
+        for required_case in (
+            "member-success-desktop",
+            "member-success-mobile",
+            "member-loading-desktop",
+            "member-empty-desktop",
+            "member-error-desktop",
+            "member-partial-desktop",
+            "public-success-desktop",
+            "public-success-mobile",
+            "public-loading-desktop",
+            "public-empty-desktop",
+            "public-error-desktop",
+            "public-partial-desktop",
+            "public-comment-refusal-desktop",
+            "public-closed-session-blocked-desktop",
+            "agenda-routing-signoff-desktop",
+            "outcomes-seconded-recusal-desktop",
+            "meeting-cancel-danger-desktop",
+        ):
+            if required_case not in case_names:
+                failures.append(f"CC-4 workflow QA evidence missing case: {required_case}")
 
     try:
         release_result = validate_release_browser_evidence(

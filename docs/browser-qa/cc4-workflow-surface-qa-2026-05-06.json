@@ -1,0 +1,564 @@
+{
+  "generatedAt": "2026-05-06T05:29:03.839Z",
+  "baseUrl": "http://127.0.0.1:5198",
+  "browser": "C:/Users/scott/AppData/Local/ms-playwright/chromium-1217/chrome-win64/chrome.exe",
+  "renderedStates": {
+    "member": [
+      "loading",
+      "success",
+      "empty",
+      "error",
+      "partial"
+    ],
+    "publicPostedMeeting": [
+      "loading",
+      "success",
+      "empty",
+      "error",
+      "partial"
+    ]
+  },
+  "requiredUxChecks": [
+    "desktop",
+    "mobile",
+    "keyboard",
+    "focus",
+    "contrast",
+    "console",
+    "copy review",
+    "refusal",
+    "closed-session blocked"
+  ],
+  "cases": [
+    {
+      "name": "member-success-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=member&state=success",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-member-success-desktop.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 28,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "contrast": {
+        "min": 5.1,
+        "sample": "Ready"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Packet view": true,
+        "Staff reports": true,
+        "Limited": true,
+        "Restricted staff report": true,
+        "Conflict note": true,
+        "recusal": true
+      }
+    },
+    {
+      "name": "member-success-mobile",
+      "url": "http://127.0.0.1:5198/?source=demo&page=member&state=success",
+      "viewport": {
+        "width": 390,
+        "height": 900,
+        "mobile": true
+      },
+      "screenshot": "docs/screenshots/cc4-member-success-mobile.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 28,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "contrast": {
+        "min": 5.1,
+        "sample": "Ready"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Packet view": true,
+        "Staff reports": true,
+        "Record member vote": true
+      }
+    },
+    {
+      "name": "member-loading-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=member&state=loading",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-member-state-loading.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 23,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.59,
+        "sample": "Search city work... Ctrl K"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "check the API service": true,
+        "Retry loading": true
+      }
+    },
+    {
+      "name": "member-empty-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=member&state=empty",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-member-state-empty.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 23,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.59,
+        "sample": "Search city work... Ctrl K"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Ask the clerk to finalize packet": true,
+        "Ask clerk to finalize packet": true
+      }
+    },
+    {
+      "name": "member-error-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=member&state=error",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-member-state-error.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 23,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.59,
+        "sample": "Search city work... Ctrl K"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Confirm the meeting, packet, and outcomes APIs": true
+      }
+    },
+    {
+      "name": "member-partial-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=member&state=partial",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-member-state-partial.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 23,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.59,
+        "sample": "Search city work... Ctrl K"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Do not rely on this view": true,
+        "Check member packet source": true
+      }
+    },
+    {
+      "name": "public-success-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=public&state=success",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-public-success-desktop.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 32,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "contrast": {
+        "min": 5.1,
+        "sample": "Public"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Download agenda": true,
+        "Download packet": true,
+        "Download minutes": true,
+        "Comment intake": true
+      }
+    },
+    {
+      "name": "public-success-mobile",
+      "url": "http://127.0.0.1:5198/?source=demo&page=public&state=success",
+      "viewport": {
+        "width": 390,
+        "height": 900,
+        "mobile": true
+      },
+      "screenshot": "docs/screenshots/cc4-public-success-mobile.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 32,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "contrast": {
+        "min": 5.1,
+        "sample": "Public"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Download agenda": true,
+        "Public comment": true
+      }
+    },
+    {
+      "name": "public-loading-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=public&state=loading",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-public-state-loading.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 23,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.59,
+        "sample": "Search city work... Ctrl K"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "check the API service": true,
+        "Retry loading": true
+      }
+    },
+    {
+      "name": "public-empty-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=public&state=empty",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-public-state-empty.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 23,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.59,
+        "sample": "Search city work... Ctrl K"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Ask clerk to publish": true,
+        "Staff should publish a public-safe record": true
+      }
+    },
+    {
+      "name": "public-error-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=public&state=error",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-public-state-error.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 23,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.59,
+        "sample": "Search city work... Ctrl K"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Confirm the public API is running": true,
+        "ask the clerk for the official posted record link": true
+      }
+    },
+    {
+      "name": "public-partial-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=public&state=partial",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-public-state-partial.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 23,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.59,
+        "sample": "Search city work... Ctrl K"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "should not assume a missing meeting is closed": true,
+        "Check public archive": true
+      }
+    },
+    {
+      "name": "public-comment-refusal-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=public",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-public-comment-closed-refusal.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 29,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.1,
+        "sample": "Public"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Comment intake is closed here": true,
+        "use the method listed on the posted agenda": true,
+        "Closed": true
+      }
+    },
+    {
+      "name": "public-closed-session-blocked-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=public&state=success",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-public-closed-session-blocked.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 32,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "none",
+        "outlineWidth": "3px"
+      },
+      "contrast": {
+        "min": 5.1,
+        "sample": "Public"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "restricted or closed-session records": true,
+        "not a hint about restricted or closed-session records": true
+      }
+    },
+    {
+      "name": "agenda-routing-signoff-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=agenda&state=success",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-agenda-routing-signoff-desktop.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 32,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "contrast": {
+        "min": 5.1,
+        "sample": "Sign-off ready"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Department": true,
+        "Legal": true,
+        "Clerk": true,
+        "Audit sign-off": true
+      }
+    },
+    {
+      "name": "outcomes-seconded-recusal-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=outcomes&state=success",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-outcomes-seconded-recusal-desktop.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 36,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "contrast": {
+        "min": 5.1,
+        "sample": "Outcome selected"
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Seconded by": true,
+        "Council Member Patel": true,
+        "recusal": true,
+        "absent": true
+      }
+    },
+    {
+      "name": "meeting-cancel-danger-desktop",
+      "url": "http://127.0.0.1:5198/?source=demo&page=meeting-detail&state=success",
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "mobile": false
+      },
+      "screenshot": "docs/screenshots/cc4-meeting-cancel-danger-desktop.png",
+      "title": "CivicClerk Staff Workspace",
+      "consoleErrors": 0,
+      "consoleEvents": 3,
+      "exceptions": 0,
+      "keyboardFocus": {
+        "count": 28,
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "contrast": {
+        "min": 4.76,
+        "sample": "Source, user, timestamp, and export provenance will remain attached."
+      },
+      "actionableCopy": true,
+      "visibleTextChecks": {
+        "Cancel meeting": true,
+        "Direct cancellation is only available before agenda publication": true,
+        "replacement meeting": true
+      }
+    }
+  ],
+  "totals": {
+    "screenshots": 17,
+    "consoleErrors": 0,
+    "exceptions": 0,
+    "textCheckFailures": 0,
+    "minContrast": 4.76
+  },
+  "textCheckFailures": []
+}

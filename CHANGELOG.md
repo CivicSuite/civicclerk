@@ -20,6 +20,15 @@ All notable changes to CivicClerk are documented here.
   lifecycle audit rows now carry CivicCore-verifiable persisted audit hashes,
   invalid transition API responses include concrete fix paths, and generated
   sequence tests exercise valid/invalid lifecycle paths beyond the edge matrix.
+- Added CC-4 workflow surface completion: public records now carry
+  plain-language summaries, adopted/signed minutes metadata, document download
+  URLs, and public comment intake where enabled; motions preserve seconded-by
+  metadata; the React staff workspace adds agenda routing signoff, member
+  packet review, conflict/vote capture, recusal/absence visibility, and meeting
+  cancellation from the lifecycle audit path.
+- Added a CC-4 README workflow claims registry that maps the new public,
+  outcomes, agenda-routing, member-packet, and cancellation claims to concrete
+  Python and React regression tests.
 
 ### Changed
 - Updated the active CivicCore dependency and current install/provenance docs to
