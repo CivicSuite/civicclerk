@@ -59,6 +59,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 26px;
+  overflow-y: auto;
 }
 
 .brand {
@@ -110,6 +111,22 @@ button {
 .rail nav button.active {
   background: #23465f;
   box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.nav-section {
+  display: grid;
+  gap: 7px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(247, 243, 234, 0.18);
+}
+
+.nav-section > span {
+  padding: 0 12px;
+  color: var(--gold-soft);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .rail nav button.muted {
@@ -415,6 +432,47 @@ h2 {
   justify-content: space-between;
   gap: 16px;
   align-items: flex-start;
+}
+
+.spec-panel {
+  background:
+    linear-gradient(135deg, rgba(255, 253, 247, 0.94), rgba(235, 241, 235, 0.82)),
+    linear-gradient(90deg, rgba(24, 54, 80, 0.08), transparent);
+}
+
+.spec-lanes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.spec-lanes > div {
+  padding: 16px;
+  border: 1px solid rgba(24, 54, 80, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 253, 247, 0.7);
+}
+
+.spec-lanes h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.spec-lanes ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+}
+
+.spec-lanes code {
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(24, 54, 80, 0.08);
+  color: var(--ink);
+  overflow-wrap: anywhere;
 }
 
 .task-list,
@@ -1577,6 +1635,14 @@ h2 {
     overflow-x: auto;
   }
 
+  .nav-section {
+    display: contents;
+  }
+
+  .nav-section > span {
+    display: none;
+  }
+
   .install-card {
     display: none;
   }
@@ -1641,6 +1707,7 @@ h2 {
   .notice-blocker-panel,
   .notice-gate-list,
   .notice-record-grid,
+  .spec-lanes,
   .agenda-row,
   .body-row {
     grid-template-columns: 1fr;
