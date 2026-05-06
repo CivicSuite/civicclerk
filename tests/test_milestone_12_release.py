@@ -75,6 +75,13 @@ def test_release_workflow_and_docs_reference_v100_release() -> None:
 
     assert "v*" in workflow
     assert "bash scripts/verify-release.sh" in workflow
+    assert "bash scripts/build_release_handoff_bundle.sh" in workflow
+    assert workflow.index("bash scripts/verify-release.sh") < workflow.index(
+        "bash scripts/build_release_handoff_bundle.sh"
+    )
+    assert workflow.index("bash scripts/build_release_handoff_bundle.sh") < workflow.index(
+        "python scripts/build-release-attestation.py"
+    )
     assert "contents: write" in workflow
     assert "gh release create" in workflow
     assert "dist/*" in workflow
