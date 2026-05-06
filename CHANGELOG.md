@@ -8,10 +8,15 @@ All notable changes to CivicClerk are documented here.
 - Added the CO-4 Tier 1 retrofit ledger for `v0.1.20`, marking the release as
   historical pre-gate/no-attestation/do-not-promote without changing public
   release notes, tags, or assets.
+- Added the CC-1 cleanroom harness: a digest-pinned Docker build, no-cache
+  cleanroom runner, two-run stable manifest comparison, offline runtime smoke
+  phase, CivicCore freeze asset checksum/Sigstore/provenance verification, and
+  GitHub Actions artifact upload path.
 
 ### Changed
 - Updated the active CivicCore dependency and current install/provenance docs to
-  the first attested CivicCore baseline, `v0.22.1`.
+  the first attested CivicCore freeze tag, `civiccore-m1-freeze`, while keeping
+  the package version at `0.22.1`.
 - Wired CivicClerk release workflows to the new CivicCore Sigstore attestation
   provenance model. Future release builds run the canonical adversarial fixture
   suite first, verify the full release gate, generate and cosign

@@ -20,13 +20,13 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-      - name: Install CivicCore release-provenance helper
-        run: python -m pip install "git+https://github.com/CivicSuite/civiccore.git@main"
-      - name: Checkout canonical CivicCore provenance fixtures
+      - name: Install CivicCore freeze release-provenance helper
+        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/civiccore-m1-freeze/civiccore-0.22.1-py3-none-any.whl
+      - name: Checkout canonical CivicCore freeze provenance fixtures
         uses: actions/checkout@v6
         with:
           repository: CivicSuite/civiccore
-          ref: main
+          ref: civiccore-m1-freeze
           path: .tmp-civiccore
       - name: Verify adversarial release provenance fixtures
         run: python scripts/verify-release-provenance.py --fixtures-dir .tmp-civiccore/tests/fixtures/release_provenance
@@ -41,14 +41,14 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - name: Install CivicCore release wheel
-        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/v0.22.1/civiccore-0.22.1-py3-none-any.whl
+      - name: Install CivicCore freeze release wheel
+        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/civiccore-m1-freeze/civiccore-0.22.1-py3-none-any.whl
       - name: Install package and test dependencies
         run: python -m pip install -e ".[dev]"
       - name: Verify release
         run: bash scripts/verify-release.sh
-      - name: Install CivicCore release-provenance helper
-        run: python -m pip install --force-reinstall "git+https://github.com/CivicSuite/civiccore.git@main"
+      - name: Install CivicCore freeze release-provenance helper
+        run: python -m pip install --force-reinstall https://github.com/CivicSuite/civiccore/releases/download/civiccore-m1-freeze/civiccore-0.22.1-py3-none-any.whl
       - name: Resolve release ref
         id: release_ref
         env:
@@ -107,26 +107,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          cat > release-notes.md <<NOTES
+          CivicClerk $GITHUB_REF_NAME runtime foundation release. Built by the release workflow after verify-release.sh passed.
+
+          Release provenance:
+          - The Git tag is a release pointer; the trust artifact is release-attestation.json plus release-attestation.json.bundle.
+          - Pre-flight provenance fixtures and live attestation verification ran before publication in workflow run ${{ github.run_id }}.
+          - Verify with:
+
+          \`\`\`bash
+          cosign verify-blob release-attestation.json \\
+            --bundle release-attestation.json.bundle \\
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/${GITHUB_REF_NAME}" \\
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+          sha256sum -c SHA256SUMS.txt
+          python scripts/verify-release-provenance.py "${GITHUB_REF_NAME}" \\
+            --repo "${{ github.repository }}" \\
+            --attestation release-attestation.json \\
+            --bundle release-attestation.json.bundle \\
+            --artifacts-dir .
+          \`\`\`
+          NOTES
           gh release create "$GITHUB_REF_NAME" dist/* release-attestation.json release-attestation.json.bundle \
             --title "CivicClerk $GITHUB_REF_NAME" \
-            --notes "CivicClerk $GITHUB_REF_NAME runtime foundation release. Built by the release workflow after verify-release.sh passed.
-
-Release provenance:
-- The Git tag is a release pointer; the trust artifact is release-attestation.json plus release-attestation.json.bundle.
-- Pre-flight provenance fixtures and live attestation verification ran before publication in workflow run ${{ github.run_id }}.
-- Verify with:
-
-\`\`\`bash
-cosign verify-blob release-attestation.json \\
-  --bundle release-attestation.json.bundle \\
-  --certificate-identity \"https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/${GITHUB_REF_NAME}\" \\
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com
-
-sha256sum -c SHA256SUMS.txt
-python scripts/verify-release-provenance.py \"${GITHUB_REF_NAME}\" \\
-  --repo \"${{ github.repository }}\" \\
-  --attestation release-attestation.json \\
-  --bundle release-attestation.json.bundle \\
-  --artifacts-dir .
-\`\`\`" \
+            --notes-file release-notes.md \
             --verify-tag

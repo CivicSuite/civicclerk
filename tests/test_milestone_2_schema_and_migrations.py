@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -200,6 +201,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
 ) -> None:
     """Run the actual operator migration path against disposable Postgres."""
     name = f"civicclerk-m2-{uuid.uuid4().hex[:12]}"
+    docker_host = os.environ.get("CIVICCLERK_DOCKER_HOST_ADDRESS", "127.0.0.1")
     subprocess.run(
         [
             "docker",
@@ -230,7 +232,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
             text=True,
         ).stdout.strip()
         port = mapped.rsplit(":", maxsplit=1)[-1]
-        db_url = f"postgresql+psycopg2://postgres:postgres@127.0.0.1:{port}/civicclerk_test"
+        db_url = f"postgresql+psycopg2://postgres:postgres@{docker_host}:{port}/civicclerk_test"
         engine = create_engine(db_url)
 
         deadline = time.monotonic() + 30

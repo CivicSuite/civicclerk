@@ -78,9 +78,9 @@ def test_release_workflow_and_docs_reference_v0120_release() -> None:
     assert "contents: write" in workflow
     assert "gh release create" in workflow
     assert "dist/*" in workflow
-    assert "civiccore/releases/download/v0.22.1/civiccore-0.22.1-py3-none-any.whl" in workflow
+    assert "civiccore/releases/download/civiccore-m1-freeze/civiccore-0.22.1-py3-none-any.whl" in workflow
     assert "civicclerk v0.1.20" in docs
-    assert "published `civiccore` v0.22.1 release wheel" in docs
+    assert "published `civiccore` 0.22.1 wheel from the `civiccore-m1-freeze` release asset" in docs
 
 
 def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
