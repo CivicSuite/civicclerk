@@ -103,6 +103,28 @@ type StaffSession = {
   fix: string;
 };
 
+type IntegrationContract = {
+  id: string;
+  label: string;
+  status: "ready" | "degraded" | "blocked";
+  mode: string;
+  dependent_module_required: boolean;
+  network_calls: boolean;
+  supported_operations: string[];
+  absent_dependency_behavior: string;
+  operator_fix: string;
+};
+
+type ApiIntegrationReadiness = {
+  readiness: "ready" | "blocked";
+  proof_model: string;
+  network_calls: boolean;
+  dependent_modules_required: boolean;
+  contracts: IntegrationContract[];
+  message: string;
+  fix: string;
+};
+
 type VendorSyncHealthStatus = "healthy" | "degraded" | "circuit_open";
 
 type VendorSyncSource = {
@@ -846,6 +868,50 @@ const demoVendorSyncSources: VendorSyncSource[] = [
   },
 ];
 
+const demoIntegrationReadiness: ApiIntegrationReadiness = {
+  readiness: "ready",
+  proof_model: "adversarial_mock_validation",
+  network_calls: false,
+  dependent_modules_required: false,
+  message: "Integration contracts are mock-proven without requiring adjacent CivicSuite modules or live vendor tenants.",
+  fix: "Enable real dependencies only after their contract suite passes and credentials are stored outside the repo.",
+  contracts: [
+    {
+      id: "civicrecords-search",
+      label: "CivicRecords search bridge",
+      status: "ready",
+      mode: "contract-and-mock",
+      dependent_module_required: false,
+      network_calls: false,
+      supported_operations: ["permission-aware meeting archive query", "closed-session refusal parity", "unavailable-service fallback"],
+      absent_dependency_behavior: "Local public archive search remains authoritative while CivicRecords is absent.",
+      operator_fix: "Configure CivicRecords, run adversarial mocks, then enable cross-module search.",
+    },
+    {
+      id: "civiccode-handoff",
+      label: "CivicCode adopted-action handoff",
+      status: "ready",
+      mode: "contract-and-mock",
+      dependent_module_required: false,
+      network_calls: false,
+      supported_operations: ["ordinance/resolution payload export", "idempotent replay", "retry/audit ledger shape"],
+      absent_dependency_behavior: "Adopted-action handoffs remain queued for legal/code review until CivicCode exists.",
+      operator_fix: "Replay pending handoffs after CivicCode is deployed and contract tests pass.",
+    },
+    {
+      id: "cms-posting",
+      label: "City website CMS posting",
+      status: "ready",
+      mode: "preview-contract-and-mock",
+      dependent_module_required: false,
+      network_calls: false,
+      supported_operations: ["posting preview", "clerk confirmation gate", "withdrawal ledger shape"],
+      absent_dependency_behavior: "The resident portal stays live and a CMS-ready preview is available.",
+      operator_fix: "Select a CMS adapter, store credentials outside the app, and require clerk confirmation.",
+    },
+  ],
+};
+
 function Icon({ label }: { label: string }) {
   return <span className="icon" aria-hidden="true">{label.slice(0, 1)}</span>;
 }
@@ -932,6 +998,9 @@ export function App() {
   const [staffSession, setStaffSession] = useState<StaffSession | null>(null);
   const [staffSessionState, setStaffSessionState] = useState<ViewState>("loading");
   const [staffSessionError, setStaffSessionError] = useState<string | null>(null);
+  const [integrationReadiness, setIntegrationReadiness] = useState<ApiIntegrationReadiness | null>(null);
+  const [integrationState, setIntegrationState] = useState<ViewState>("loading");
+  const [integrationError, setIntegrationError] = useState<string | null>(null);
   const [activeMeetingId, setActiveMeetingId] = useState(demoMeetings[0].id);
   const [auditOpen, setAuditOpen] = useState(initial.audit);
   const viewState = qaState ?? apiState;
@@ -947,6 +1016,7 @@ export function App() {
   const visiblePublicRecords = qaState === null ? publicRecords : demoPublicRecords;
   const visiblePublicDetail = qaState === null ? publicRecordDetail : demoPublicRecords[0];
   const visibleVendorSyncSources = qaState === null ? vendorSyncSources : demoVendorSyncSources;
+  const visibleIntegrationReadiness = qaState === null ? integrationReadiness : demoIntegrationReadiness;
   const activeMeeting = visibleMeetings.find((meeting) => meeting.id === activeMeetingId) ?? visibleMeetings[0] ?? demoMeetings[0];
 
   async function loadWorkspaceData(cancelled: () => boolean) {
@@ -1158,6 +1228,9 @@ export function App() {
       });
       setStaffSessionState("success");
       setStaffSessionError(null);
+      setIntegrationReadiness(demoIntegrationReadiness);
+      setIntegrationState("success");
+      setIntegrationError(null);
       return;
     }
     let cancelled = false;
@@ -1174,6 +1247,33 @@ export function App() {
         setStaffSession(null);
         setStaffSessionState("error");
         setStaffSessionError(error.message);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [initial.source, page, qaState]);
+
+  useEffect(() => {
+    if (initial.source === "demo" || qaState !== null || isPage(page, "public", "public-calendar", "public-detail")) {
+      setIntegrationReadiness(demoIntegrationReadiness);
+      setIntegrationState("success");
+      setIntegrationError(null);
+      return;
+    }
+    let cancelled = false;
+    setIntegrationState("loading");
+    setIntegrationError(null);
+    fetchIntegrationReadiness()
+      .then((readiness) => {
+        if (cancelled) return;
+        setIntegrationReadiness(readiness);
+        setIntegrationState(readiness.readiness === "ready" ? "success" : "partial");
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setIntegrationReadiness(null);
+        setIntegrationState("error");
+        setIntegrationError(`${error.message} Confirm staff auth is valid, then retry /integrations/readiness before enabling external integrations.`);
       });
     return () => {
       cancelled = true;
@@ -1576,6 +1676,9 @@ export function App() {
               publicRecords={visiblePublicRecords}
               vendorSyncSources={visibleVendorSyncSources}
               staffSession={staffSession}
+              integrationReadiness={visibleIntegrationReadiness}
+              integrationState={integrationState}
+              integrationError={integrationError}
             />
           )}
           {page === "member" && (
@@ -1710,6 +1813,16 @@ async function fetchStaffSession(): Promise<StaffSession> {
   });
   if (!response.ok) {
     throw new Error(await formatApiError(response, "Staff session"));
+  }
+  return response.json();
+}
+
+async function fetchIntegrationReadiness(): Promise<ApiIntegrationReadiness> {
+  const response = await fetch("/api/integrations/readiness", {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Integration readiness"));
   }
   return response.json();
 }
@@ -2547,6 +2660,9 @@ function SpecCompletenessWorkspace({
   publicRecords,
   vendorSyncSources,
   staffSession,
+  integrationReadiness,
+  integrationState,
+  integrationError,
 }: {
   page: Page;
   viewState: ViewState;
@@ -2556,12 +2672,17 @@ function SpecCompletenessWorkspace({
   publicRecords: PublicMeetingRecord[];
   vendorSyncSources: VendorSyncSource[];
   staffSession: StaffSession | null;
+  integrationReadiness: ApiIntegrationReadiness | null;
+  integrationState: ViewState;
+  integrationError: string | null;
 }) {
   const readyAgenda = agendaItems.filter((item) => item.readinessStatus === "READY").length;
   const reportSources = agendaItems.reduce((total, item) => total + item.sourceReferences.length, 0);
   const commentEnabled = publicRecords.filter((record) => record.publicCommentEnabled).length;
   const blockedNotices = meetings.filter((meeting) => meeting.noticeStatus !== "Ready").length;
   const unhealthySources = vendorSyncSources.filter((source) => source.healthStatus !== "healthy").length;
+  const integrationContracts = integrationReadiness?.contracts ?? [];
+  const readyIntegrationContracts = integrationContracts.filter((contract) => contract.status === "ready").length;
   const copy = getSpecWorkspaceCopy(page, {
     meetingCount: meetings.length,
     readyAgenda,
@@ -2571,6 +2692,8 @@ function SpecCompletenessWorkspace({
     blockedNotices,
     unhealthySources,
     authMode: staffSession?.mode ?? "unknown",
+    integrationContractCount: integrationContracts.length,
+    readyIntegrationContracts,
   });
 
   if (viewState !== "success") {
@@ -2626,6 +2749,51 @@ function SpecCompletenessWorkspace({
           </div>
         </div>
       </section>
+      {page === "admin-settings" && (
+        <section className="panel spec-panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Integration contract depth</h2>
+              <p>CivicClerk proves external-module and vendor seams with no-network adversarial mocks before any city-specific endpoint is enabled.</p>
+            </div>
+            <StatusBadge
+              tone={integrationState === "error" ? "Blocked" : integrationReadiness?.readiness === "ready" ? "Ready" : "Warning"}
+              label={integrationReadiness?.readiness === "ready" ? "Mock-proven" : integrationState}
+            />
+          </div>
+          {integrationState === "error" ? (
+            <div role="alert" className="legal-warning">
+              {integrationError ?? "Integration readiness did not load. Confirm staff auth, then retry the readiness check."}
+            </div>
+          ) : (
+            <>
+              <div className="vendor-sync-callout" role="status">
+                <strong>{integrationReadiness?.proof_model?.replace(/_/g, " ") ?? "adversarial mock validation"}</strong>
+                <span>
+                  {integrationReadiness?.message ?? "Integration readiness is being checked."}
+                  {" "}
+                  {integrationReadiness?.fix ?? "Run adversarial mocks before enabling real dependencies."}
+                </span>
+              </div>
+              <div className="agenda-list">
+                {integrationContracts.map((contract) => (
+                  <article key={contract.id} className="agenda-row">
+                    <div>
+                      <div className="row-title">
+                        <h3>{contract.label}</h3>
+                        <StatusBadge tone={contract.status === "ready" ? "Ready" : contract.status === "degraded" ? "Warning" : "Blocked"} label={contract.status} />
+                      </div>
+                      <p>{contract.absent_dependency_behavior}</p>
+                      <small>Mode: {contract.mode}. Network calls: {contract.network_calls ? "yes" : "no"}. Dependency required now: {contract.dependent_module_required ? "yes" : "no"}.</small>
+                      <p><strong>Fix:</strong> {contract.operator_fix}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+      )}
     </div>
   );
 }
@@ -2641,6 +2809,8 @@ function getSpecWorkspaceCopy(
     blockedNotices: number;
     unhealthySources: number;
     authMode: string;
+    integrationContractCount: number;
+    readyIntegrationContracts: number;
   },
 ) {
   const sharedProof = [
@@ -2759,18 +2929,18 @@ function getSpecWorkspaceCopy(
     "admin-settings": {
       context: "admin settings",
       title: "Verify auth, endpoints, and installed service coverage.",
-      description: "IT and clerk admins can see the current staff auth mode, CivicCore helper path, and CC-7 coverage manifest.",
-      panelTitle: "Configuration lane",
-      panelDescription: "The admin surface points operators to the exact setting that must change before protected use.",
+      description: "IT and clerk admins can see staff auth, CC-7 coverage, and no-network integration contracts for absent dependencies.",
+      panelTitle: "Configuration and integration lane",
+      panelDescription: "The admin surface points operators to the exact setting or contract that must pass before protected or external use.",
       ready: counts.authMode !== "unknown",
       metrics: [
         { label: "Auth mode", value: counts.authMode, note: "Current staff access posture" },
-        { label: "API groups", value: "16", note: "CC-7 OpenAPI categories" },
+        { label: "Integrations", value: `${counts.readyIntegrationContracts}/${counts.integrationContractCount}`, note: "Mock-proven contracts" },
         { label: "Source issues", value: String(counts.unhealthySources), note: "Connector records needing IT", tone: counts.unhealthySources ? "warn" : undefined },
       ],
-      controls: ["Inspect staff auth readiness", "Open OpenAPI coverage", "Review connector health"],
-      apiPaths: ["/admin/config", "/staff/auth-readiness", "/vendor-live-sync/sources"],
-      releaseProof: sharedProof,
+      controls: ["Inspect staff auth readiness", "Open integration readiness", "Review connector health"],
+      apiPaths: ["/admin/config", "/staff/auth-readiness", "/integrations/readiness", "/vendor-live-sync/sources"],
+      releaseProof: [...sharedProof, "Integration contracts use adversarial mocks and make no external network calls."],
     },
     "prompt-library-admin": {
       context: "prompt library admin",

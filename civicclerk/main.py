@@ -35,6 +35,7 @@ from civicclerk.agenda_intake import AgendaIntakeRepository, AgendaReadinessStat
 from civicclerk.agenda_lifecycle import AgendaItemRepository, AgendaItemStore
 from civicclerk.cc7_completeness import cc7_api_category_payload, cc7_frontend_page_payload
 from civicclerk.connectors import ConnectorImportError, import_meeting_payload
+from civicclerk.integration_contracts import integration_readiness_payload
 from civicclerk.meeting_body import MeetingBodyRepository
 from civicclerk.meeting_lifecycle import MeetingScheduleUpdateError, MeetingStore
 from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
@@ -835,9 +836,25 @@ async def admin_config() -> dict[str, object]:
         },
         "api_categories": cc7_api_category_payload(),
         "frontend_pages": cc7_frontend_page_payload(),
-        "message": "CC-7 API and frontend coverage is published for clerk, public, and admin surfaces.",
-        "fix": "If a category is missing from OpenAPI or browser evidence, block release until the route or page is added.",
+        "integration_depth": {
+            "path": "/integrations/readiness",
+            "proof_model": "adversarial_mock_validation",
+            "network_calls": False,
+            "dependent_modules_required": False,
+        },
+        "message": "CC-7 API, frontend, and integration-depth coverage is published for clerk, public, and admin surfaces.",
+        "fix": (
+            "If a category, page, or integration contract is missing from OpenAPI, browser evidence, "
+            "or adversarial mock validation, block release until the route, page, or contract is added."
+        ),
     }
+
+
+@app.get("/integrations/readiness")
+async def integrations_readiness() -> dict[str, object]:
+    """Report no-network integration contracts for absent CivicSuite dependencies."""
+
+    return integration_readiness_payload()
 
 
 @app.get("/admin/prompts")

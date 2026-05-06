@@ -4,6 +4,14 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Added
+- Added final integration-depth contracts for CivicRecords search, CivicCode
+  handoff, codification-system fallback export, city CMS posting, and vendor
+  live API adapters. The new `/integrations/readiness` admin endpoint and React
+  admin settings panel expose no-network adversarial mock proof, absent-module
+  fallback behavior, and operator fix paths before any real dependency is
+  enabled.
+
 ## [1.0.0] - 2026-05-06
 
 ### Added

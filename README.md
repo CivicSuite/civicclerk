@@ -143,6 +143,10 @@ Shipped in this foundation:
   pages, five QA states, desktop, 390px mobile, keyboard focus, contrast,
   horizontal overflow, visible copy, and console/runtime checks
 - prompt-version provenance enforcement for minutes drafts
+- integration-depth readiness at `/integrations/readiness` for CivicRecords search,
+  CivicCode handoff, codification export, city CMS posting, and vendor live API
+  adapters using no-network adversarial mock contracts while dependent modules
+  or city-specific systems are absent
 - local-first Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports
 - source provenance on imported meetings and agenda items
 - records-ready packet export bundles with CivicCore v1.0.0 manifests, SHA256 checksums, provenance, and hash-chained audit events
@@ -360,9 +364,11 @@ Not shipped yet:
 - signed installer publication is certificate-gated and not expected during the
   developer process; unsigned installer warnings remain the supported path until
   an enterprise code-signing certificate and timestamp authority are available
-- connector-specific vendor delta adapters and deployment proof for municipal
-  Granicus/Legistar/PrimeGov/NovusAGENDA live APIs beyond the guarded
-  scheduled pull foundation
+- city-specific live endpoint enablement for CivicRecords, CivicCode, CMS,
+  codifier, or municipal Granicus/Legistar/PrimeGov/NovusAGENDA tenants. The
+  CivicClerk side now ships contract-backed, adversarial-mock-proven readiness
+  for those seams, but real credentials and endpoint activation remain a
+  deployment task.
 
 ## New user experience today
 

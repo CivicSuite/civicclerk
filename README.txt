@@ -7,6 +7,21 @@ Current version: `1.0.0`
 Repository: <https://github.com/CivicSuite/civicclerk>  
 Depends on: published, Sigstore-attested `civiccore` 1.0.0 wheel from the `v1.0` release asset
 
+## Release Provenance
+
+CivicClerk now wires the strengthened CivicCore release-provenance preflight
+into release-class workflows. GitHub release pages can display a "Verified"
+badge for the target commit even when the release tag itself is lightweight or
+unsigned, so CivicClerk treats that badge as a commit-only signal. Post-baseline
+releases are verified by a Sigstore-signed `release-attestation.json` plus
+bundle, and the exact verification shape lives in `docs/ops/release-signing.md`.
+
+The prior public `v0.1.20` release is a historical pre-gate artifact because
+its tag predates the attestation model and its public release assets do not
+include `release-attestation.json` or `release-attestation.json.bundle`. CO-4
+records the decision in `docs/ops/tier1-retrofit-ledger.md`: do not delete,
+recreate, mirror, or promote `v0.1.20` as an attested provenance baseline.
+
 ## What CivicClerk will do
 
 CivicClerk is designed for the legal record of public meetings:
@@ -128,6 +143,10 @@ Shipped in this foundation:
   pages, five QA states, desktop, 390px mobile, keyboard focus, contrast,
   horizontal overflow, visible copy, and console/runtime checks
 - prompt-version provenance enforcement for minutes drafts
+- integration-depth readiness at `/integrations/readiness` for CivicRecords search,
+  CivicCode handoff, codification export, city CMS posting, and vendor live API
+  adapters using no-network adversarial mock contracts while dependent modules
+  or city-specific systems are absent
 - local-first Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports
 - source provenance on imported meetings and agenda items
 - records-ready packet export bundles with CivicCore v1.0.0 manifests, SHA256 checksums, provenance, and hash-chained audit events
@@ -345,9 +364,11 @@ Not shipped yet:
 - signed installer publication is certificate-gated and not expected during the
   developer process; unsigned installer warnings remain the supported path until
   an enterprise code-signing certificate and timestamp authority are available
-- connector-specific vendor delta adapters and deployment proof for municipal
-  Granicus/Legistar/PrimeGov/NovusAGENDA live APIs beyond the guarded
-  scheduled pull foundation
+- city-specific live endpoint enablement for CivicRecords, CivicCode, CMS,
+  codifier, or municipal Granicus/Legistar/PrimeGov/NovusAGENDA tenants. The
+  CivicClerk side now ships contract-backed, adversarial-mock-proven readiness
+  for those seams, but real credentials and endpoint activation remain a
+  deployment task.
 
 ## New user experience today
 
@@ -395,7 +416,8 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
    - If IT suspects a missed vendor delta or receives a vendor backfill notice,
      use the Vendor Sync workspace or `POST /vendor-live-sync/sources/{id}/cursor-reset`
      with a clear reason to clear the cursor for full reconciliation; the reset is
-     recorded locally as a `cursor_reset` run-log event and still does not contact the vendor network
+     recorded locally as a `cursor_reset` run-log event and still does not contact
+     the vendor network
    - For scheduled vendor-network pulls in Docker, keep `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=false` and `CIVICCLERK_VENDOR_NETWORK_SYNC_SCHEDULE_ENABLED=false` until IT has approved `/vendor-live-sync/sources` records, then set `CIVICCLERK_VENDOR_NETWORK_SYNC_SOURCE_IDS`, configure `CIVICCLERK_VENDOR_NETWORK_SYNC_AUTH_SECRET_ENV` or per-source secret env vars, and review the per-source reports under `CIVICCLERK_VENDOR_NETWORK_SYNC_REPORT_DIR`
    - Run `python scripts/run_connector_import_sync.py --payload-dir path\to\exports --connector granicus --output connector-import-ledger.json` when IT has local agenda-system export JSON files and wants a repeatable normalized import ledger without vendor network calls, or set `CIVICCLERK_CONNECTOR_SYNC_ENABLED=true` with `CIVICCLERK_CONNECTOR_SYNC_PAYLOAD_DIR_HOST=.\connector-imports` in the Docker `.env` to let Celery Beat schedule the same local-first import repeatedly
    - Use `python scripts/check_deployment_readiness.py` to print a non-mutating deployment preflight before moving beyond local rehearsal; add `--strict` when CI or IT handoff should fail unless auth, persistent-store env vars, packet export root, release artifacts, docs, and trusted-header proxy references are deployment-ready

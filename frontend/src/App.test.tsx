@@ -698,6 +698,43 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/integrations/readiness") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              readiness: "ready",
+              proof_model: "adversarial_mock_validation",
+              network_calls: false,
+              dependent_modules_required: false,
+              message: "CivicClerk integration contracts are mock-proven without live dependencies.",
+              fix: "Run adversarial mocks before enabling real dependencies.",
+              contracts: [
+                {
+                  id: "civicrecords-search",
+                  label: "CivicRecords search bridge",
+                  status: "ready",
+                  mode: "contract-and-mock",
+                  dependent_module_required: false,
+                  network_calls: false,
+                  supported_operations: ["permission-aware meeting archive query"],
+                  absent_dependency_behavior: "Local public archive search remains authoritative while CivicRecords is absent.",
+                  operator_fix: "Configure CivicRecords and rerun adversarial mocks before enabling cross-module search.",
+                },
+                {
+                  id: "cms-posting",
+                  label: "City website CMS posting",
+                  status: "ready",
+                  mode: "preview-contract-and-mock",
+                  dependent_module_required: false,
+                  network_calls: false,
+                  supported_operations: ["posting preview"],
+                  absent_dependency_behavior: "The resident portal stays live and a CMS-ready preview is available.",
+                  operator_fix: "Select a CMS adapter and require clerk confirmation before publishing.",
+                },
+              ],
+            }),
+          });
+        }
         if (url === "/api/agenda-intake") {
           return Promise.resolve({
             ok: true,
@@ -1135,6 +1172,19 @@ describe("CivicClerk staff workspace", () => {
 
     expect(await screen.findByText(/Cursor reset for Granicus board packet feed/)).toBeInTheDocument();
     expect(screen.getAllByText(/next enabled pull will run a full source reconciliation/i).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("shows integration contract depth on the admin settings page without live dependencies", async () => {
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /IT\/Admin/ }));
+
+    expect(await screen.findByRole("heading", { name: "Integration contract depth" })).toBeInTheDocument();
+    expect(screen.getByText("CivicRecords search bridge")).toBeInTheDocument();
+    expect(screen.getByText("City website CMS posting")).toBeInTheDocument();
+    expect(screen.getAllByText(/Network calls: no/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Dependency required now: no/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Run adversarial mocks before enabling real dependencies/)).toBeInTheDocument();
   });
 
   it("shows actionable vendor sync QA empty, error, and partial states", async () => {
