@@ -56,6 +56,11 @@ Shipped in this foundation:
 - `/agenda-intake` submit/list/review/promote endpoints with audit events for consequential review and promotion actions
 - canonical SQLAlchemy metadata for the fourteen CivicClerk tables
 - Alembic scaffold and first idempotent migration for the `civicclerk` schema
+- CC-5 canonical data model completion through Alembic migration
+  `civicclerk_0011_data_model`, adding downstream contract columns for packet
+  version uniqueness, motion/vote correction metadata, public comment intake,
+  closed-session ACLs, document references, transcript sensitivity, and
+  CivicCode ordinance handoff status
 - agenda item lifecycle enforcement from `DRAFTED` through `ARCHIVED`
 - optional database-backed agenda item lifecycle persistence with `CIVICCLERK_AGENDA_ITEM_DB_URL`
 - CivicCore-verifiable persisted audit hashes for allowed and rejected agenda item transitions
@@ -185,6 +190,16 @@ Shipped in this foundation:
 | Meeting outcomes capture seconded-by motion metadata and roll-call votes including recusals and absences. | `tests/test_milestone_6_motion_vote_action_capture.py::test_api_captured_motion_is_immutable_and_corrections_reference_original`; `frontend/src/App.test.tsx::opens the member packet surface for item history, staff report visibility, and conflict recording` |
 | The staff workflow exposes department/legal/clerk agenda routing and audit signoff, plus member packet review for item history, staff-report visibility, and conflict recording. | `frontend/src/App.test.tsx::submits and reviews agenda intake from the staff workspace`; `frontend/src/App.test.tsx::opens the member packet surface for item history, staff report visibility, and conflict recording` |
 | Meeting cancellation reaches the lifecycle audit path from the React meeting detail surface. | `frontend/src/App.test.tsx::cancels a scheduled meeting through the lifecycle audit path` |
+
+### CC-5 data model claims registry
+
+| README data model claim | Verification |
+| --- | --- |
+| All fourteen canonical CivicClerk tables remain present in the shared `civicclerk` schema. | `tests/test_milestone_2_schema_and_migrations.py::test_canonical_table_models_exist_and_no_tables_are_missing_or_extra` |
+| `civicclerk_0011_data_model` upgrades, downgrades to the prior release head, and re-upgrades while preserving the packet-version contract. | `tests/test_milestone_2_schema_and_migrations.py::test_alembic_command_upgrades_real_pgvector_database`; `tests/test_milestone_2_schema_and_migrations.py::test_data_model_completion_migration_declares_reversible_cc5_contract` |
+| Packet snapshots are versioned per meeting by schema constraint. | `tests/test_milestone_2_schema_and_migrations.py::test_packet_versions_are_versioned_per_meeting_by_schema_contract` |
+| Motion and vote records carry append-only correction metadata that references the original record. | `tests/test_milestone_2_schema_and_migrations.py::test_motion_vote_canonical_tables_preserve_append_only_correction_contract`; `tests/test_milestone_6_motion_vote_action_capture.py::test_api_captured_motion_is_immutable_and_corrections_reference_original` |
+| Closed-session material has staff-only ACL fields, and archive search uses released CivicCore search helpers while document-table references remain ADR-bound until CivicCore ships document tables. | `tests/test_milestone_2_schema_and_migrations.py::test_closed_session_material_has_staff_only_acl_schema_contract`; `tests/test_milestone_2_schema_and_migrations.py::test_civiccore_document_and_search_extraction_boundary_is_documented`; `tests/test_milestone_8_public_archive.py::test_archive_search_requires_allowed_bearer_role_for_closed_session_visibility` |
 - Docker Compose deployment stack with PostgreSQL 17 + pgvector, Redis 7.2,
   Ollama, FastAPI, Celery worker, Celery Beat, and nginx-served React frontend
   wired to the `/api` proxy path

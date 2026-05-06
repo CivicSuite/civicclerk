@@ -1,0 +1,35 @@
+{
+  "page": "docs/index.html",
+  "reviewed_at": "2026-05-06T05:49:58.548916Z",
+  "cases": [
+    {
+      "name": "docs-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc5-data-model-docs-desktop.png",
+      "bytes": 1869249,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true
+    },
+    {
+      "name": "docs-mobile",
+      "viewport": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc5-data-model-docs-mobile.png",
+      "bytes": 1395503,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true
+    }
+  ],
+  "totals": {
+    "consoleErrors": 0,
+    "exceptions": 0,
+    "textCheckFailures": 0
+  }
+}

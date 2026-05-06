@@ -1,17 +1,27 @@
 # CivicClerk ADR-0003: Transcription Packaging Scope
 
-Status: Proposed
+Status: Accepted
 
 ## Context
 
-The existing CivicClerk scaffold ADR excludes "full transcription packaging" from the MVP, while AGENTS.md §6 lists `civicclerk.transcripts` as a canonical table and AGENTS.md §5 includes minutes drafting with cited source material.
+The unified spec lists `civicclerk.transcripts` as a canonical table and the
+minutes workflow needs cited source material. Full automatic transcription
+packaging is not required for the current product slice, but downstream modules
+need a stable place to reference transcript artifacts once a city supplies or
+approves them.
 
 ## Decision
 
-Status: Open Question - pending human decision.
+CivicClerk ships the `transcripts` table as a source-reference index with
+`source_uri`, status, optional `document_ref`, sensitivity label, and staff ACL
+roles. The table can point at externally produced or later CivicCore-managed
+transcript material. CivicClerk does not claim automatic transcription
+generation in this release window.
 
 ## Consequences
 
-- If transcripts ship in v0.1.0, Milestones 2, 7, and 8 need schema, citation, permission, and public archive coverage.
-- If transcripts are deferred to v0.2.0, minutes drafting still needs source-citation behavior without overstating transcription capability.
-- The current accepted scaffold ADR must be superseded or amended before implementation.
+- Minutes drafting can cite transcript source material without inventing a
+  separate local table later.
+- Staff-only or closed-session transcript material has explicit ACL fields.
+- A future transcription package may populate the table, but must preserve the
+  existing source-reference contract.

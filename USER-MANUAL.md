@@ -759,6 +759,13 @@ retention schedule, off-host storage target, and restore-runbook approval.
 Browser QA gates now verify the required state fixtures and accessibility
 evidence before browser-visible changes merge.
 
+CC-5 completes the canonical data model contract. The Alembic chain now ends at
+`civicclerk_0011_data_model`, which adds downstream-facing columns for packet
+version uniqueness, motion and vote correction metadata, public comments,
+closed-session ACLs, opaque document references, transcript sensitivity, and
+CivicCode ordinance handoff status. The migration is tested forward, backward to
+the prior release head, and forward again against PostgreSQL.
+
 - `meeting_bodies`
 - `meetings`
 - `agenda_items`

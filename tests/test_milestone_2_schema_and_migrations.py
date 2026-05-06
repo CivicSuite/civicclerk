@@ -35,19 +35,199 @@ CANONICAL_TABLES = [
 
 REQUIRED_COLUMNS = {
     "meeting_bodies": {"id", "name", "body_type", "is_active", "created_at", "updated_at"},
-    "meetings": {"id", "meeting_body_id", "title", "scheduled_start", "status", "created_at", "updated_at"},
-    "agenda_items": {"id", "meeting_id", "title", "status", "department_name", "created_at", "updated_at"},
-    "staff_reports": {"id", "agenda_item_id", "title", "body", "created_at", "updated_at"},
-    "motions": {"id", "meeting_id", "agenda_item_id", "text", "correction_of_id", "created_at", "updated_at"},
-    "votes": {"id", "motion_id", "voter_name", "vote", "correction_of_id", "created_at", "updated_at"},
-    "public_comments": {"id", "meeting_id", "agenda_item_id", "commenter_name", "body", "visibility", "created_at", "updated_at"},
-    "notices": {"id", "meeting_id", "notice_type", "due_at", "posted_at", "statutory_basis", "created_at", "updated_at"},
-    "minutes": {"id", "meeting_id", "status", "body", "created_at", "updated_at"},
-    "transcripts": {"id", "meeting_id", "source_uri", "status", "created_at", "updated_at"},
-    "action_items": {"id", "meeting_id", "description", "status", "created_at", "updated_at"},
-    "packet_versions": {"id", "meeting_id", "version", "snapshot_uri", "created_at", "updated_at"},
-    "ordinances_adopted": {"id", "meeting_id", "agenda_item_id", "ordinance_number", "created_at", "updated_at"},
-    "closed_sessions": {"id", "meeting_id", "statutory_basis", "access_level", "created_at", "updated_at"},
+    "meetings": {
+        "id",
+        "meeting_body_id",
+        "title",
+        "meeting_type",
+        "scheduled_start",
+        "location",
+        "status",
+        "statutory_basis",
+        "cancelled_at",
+        "cancellation_reason",
+        "created_at",
+        "updated_at",
+    },
+    "agenda_items": {
+        "id",
+        "meeting_id",
+        "title",
+        "status",
+        "department_name",
+        "source_references",
+        "staff_report_required",
+        "created_at",
+        "updated_at",
+    },
+    "staff_reports": {
+        "id",
+        "agenda_item_id",
+        "title",
+        "body",
+        "document_ref",
+        "source_references",
+        "sensitivity_label",
+        "staff_acl_roles",
+        "created_at",
+        "updated_at",
+    },
+    "motions": {
+        "id",
+        "meeting_id",
+        "agenda_item_id",
+        "text",
+        "seconded_by",
+        "captured_by",
+        "correction_of_id",
+        "correction_reason",
+        "immutable_hash",
+        "created_at",
+        "updated_at",
+    },
+    "votes": {
+        "id",
+        "motion_id",
+        "voter_name",
+        "vote",
+        "actor",
+        "correction_of_id",
+        "correction_reason",
+        "immutable_hash",
+        "created_at",
+        "updated_at",
+    },
+    "public_comments": {
+        "id",
+        "meeting_id",
+        "agenda_item_id",
+        "public_record_id",
+        "commenter_name",
+        "body",
+        "visibility",
+        "status",
+        "submitted_at",
+        "moderation_notes",
+        "created_at",
+        "updated_at",
+    },
+    "notices": {
+        "id",
+        "meeting_id",
+        "notice_type",
+        "due_at",
+        "posted_at",
+        "statutory_basis",
+        "posting_proof",
+        "document_ref",
+        "created_at",
+        "updated_at",
+    },
+    "minutes": {
+        "id",
+        "meeting_id",
+        "status",
+        "body",
+        "source_materials",
+        "sentence_citations",
+        "prompt_version",
+        "human_approver",
+        "adopted_at",
+        "signed_by",
+        "document_ref",
+        "created_at",
+        "updated_at",
+    },
+    "transcripts": {
+        "id",
+        "meeting_id",
+        "source_uri",
+        "status",
+        "document_ref",
+        "sensitivity_label",
+        "staff_acl_roles",
+        "created_at",
+        "updated_at",
+    },
+    "action_items": {
+        "id",
+        "meeting_id",
+        "description",
+        "status",
+        "assigned_to",
+        "source_motion_id",
+        "created_at",
+        "updated_at",
+    },
+    "packet_versions": {
+        "id",
+        "meeting_id",
+        "version",
+        "snapshot_uri",
+        "agenda_item_ids",
+        "snapshot_hash",
+        "actor",
+        "created_at",
+        "updated_at",
+    },
+    "ordinances_adopted": {
+        "id",
+        "meeting_id",
+        "agenda_item_id",
+        "ordinance_number",
+        "title",
+        "adopted_at",
+        "civiccode_handoff_status",
+        "document_ref",
+        "created_at",
+        "updated_at",
+    },
+    "closed_sessions": {
+        "id",
+        "meeting_id",
+        "statutory_basis",
+        "access_level",
+        "staff_acl_roles",
+        "material_uri",
+        "public_redaction",
+        "sensitivity_label",
+        "created_at",
+        "updated_at",
+    },
+}
+
+CC5_EVOLVED_COLUMNS = {
+    table_name: columns - {"id", "created_at", "updated_at"} - {
+        "name",
+        "body_type",
+        "is_active",
+        "meeting_body_id",
+        "title",
+        "scheduled_start",
+        "status",
+        "meeting_id",
+        "department_name",
+        "agenda_item_id",
+        "body",
+        "text",
+        "motion_id",
+        "voter_name",
+        "vote",
+        "correction_of_id",
+        "commenter_name",
+        "visibility",
+        "notice_type",
+        "due_at",
+        "posted_at",
+        "statutory_basis",
+        "source_uri",
+        "description",
+        "version",
+        "snapshot_uri",
+        "ordinance_number",
+        "access_level",
+    }
+    for table_name, columns in REQUIRED_COLUMNS.items()
 }
 
 PLACEHOLDER_TARGET_PREFIXES = {
@@ -105,6 +285,16 @@ def vendor_sync_persistence_migration_path() -> Path:
         / "migrations"
         / "versions"
         / "civicclerk_0009_vendor_sync_persistence.py"
+    )
+
+
+def data_model_completion_migration_path() -> Path:
+    return (
+        ROOT
+        / "civicclerk"
+        / "migrations"
+        / "versions"
+        / "civicclerk_0011_data_model_completion.py"
     )
 
 
@@ -176,6 +366,7 @@ def test_alembic_scaffold_exists_for_civicclerk_schema_chain() -> None:
         meeting_records_migration_path(),
         agenda_item_lifecycle_records_migration_path(),
         vendor_sync_persistence_migration_path(),
+        data_model_completion_migration_path(),
     ]
 
     for path in expected:
@@ -259,6 +450,30 @@ def test_alembic_command_upgrades_real_pgvector_database(
             civicclerk_revision = connection.execute(
                 text("select version_num from alembic_version_civicclerk")
             ).scalar_one()
+            packet_version_columns = set(
+                connection.execute(
+                    text(
+                        """
+                        select column_name
+                        from information_schema.columns
+                        where table_schema = 'civicclerk'
+                          and table_name = 'packet_versions'
+                        """
+                    )
+                ).scalars()
+            )
+            packet_version_constraints = set(
+                connection.execute(
+                    text(
+                        """
+                        select constraint_name
+                        from information_schema.table_constraints
+                        where table_schema = 'civicclerk'
+                          and table_name = 'packet_versions'
+                        """
+                    )
+                ).scalars()
+            )
             civicclerk_tables = set(
                 connection.execute(
                     text(
@@ -272,7 +487,9 @@ def test_alembic_command_upgrades_real_pgvector_database(
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civicclerk_revision == "civicclerk_0010_vendor_cursor"
+        assert civicclerk_revision == "civicclerk_0011_data_model"
+        assert {"agenda_item_ids", "snapshot_hash", "actor"} <= packet_version_columns
+        assert "uq_packet_versions_meeting_version" in packet_version_constraints
         assert civicclerk_tables == set(CANONICAL_TABLES) | {
             "agenda_item_lifecycle_records",
             "agenda_intake_queue",
@@ -283,6 +500,46 @@ def test_alembic_command_upgrades_real_pgvector_database(
             "vendor_sync_run_log",
             "vendor_sync_sources",
         }
+
+        command.downgrade(cfg, "civicclerk_0010_vendor_cursor")
+        with engine.connect() as connection:
+            downgraded_revision = connection.execute(
+                text("select version_num from alembic_version_civicclerk")
+            ).scalar_one()
+            downgraded_packet_columns = set(
+                connection.execute(
+                    text(
+                        """
+                        select column_name
+                        from information_schema.columns
+                        where table_schema = 'civicclerk'
+                          and table_name = 'packet_versions'
+                        """
+                    )
+                ).scalars()
+            )
+        assert downgraded_revision == "civicclerk_0010_vendor_cursor"
+        assert "snapshot_hash" not in downgraded_packet_columns
+
+        command.upgrade(cfg, "head")
+        with engine.connect() as connection:
+            reupgraded_revision = connection.execute(
+                text("select version_num from alembic_version_civicclerk")
+            ).scalar_one()
+            reupgraded_packet_columns = set(
+                connection.execute(
+                    text(
+                        """
+                        select column_name
+                        from information_schema.columns
+                        where table_schema = 'civicclerk'
+                          and table_name = 'packet_versions'
+                        """
+                    )
+                ).scalars()
+            )
+        assert reupgraded_revision == "civicclerk_0011_data_model"
+        assert {"agenda_item_ids", "snapshot_hash", "actor"} <= reupgraded_packet_columns
     finally:
         subprocess.run(["docker", "rm", "-f", name], check=False, capture_output=True, text=True)
 
@@ -403,6 +660,96 @@ def test_vendor_sync_cursor_migration_declares_success_cursor_column() -> None:
     assert 'schema="civicclerk"' in text
 
 
+def test_data_model_completion_migration_declares_reversible_cc5_contract() -> None:
+    text = data_model_completion_migration_path().read_text(encoding="utf-8")
+
+    assert 'revision = "civicclerk_0011_data_model"' in text
+    assert 'down_revision = "civicclerk_0010_vendor_cursor"' in text
+    for table_name, column_names in CC5_EVOLVED_COLUMNS.items():
+        if not column_names:
+            continue
+        assert f'"{table_name}"' in text
+        for column_name in column_names:
+            assert f'"{column_name}"' in text
+    assert "uq_packet_versions_meeting_version" in text
+    assert "fk_action_items_source_motion_id_motions" in text
+    assert "op.add_column" in text
+    assert "op.drop_column" in text
+    assert "op.create_unique_constraint" in text
+    assert "op.drop_constraint" in text
+
+
+def test_packet_versions_are_versioned_per_meeting_by_schema_contract() -> None:
+    models = model_module()
+    table = models.Base.metadata.tables["civicclerk.packet_versions"]
+
+    unique_constraints = {
+        constraint.name: tuple(column.name for column in constraint.columns)
+        for constraint in table.constraints
+        if getattr(constraint, "name", None)
+    }
+    assert unique_constraints["uq_packet_versions_meeting_version"] == ("meeting_id", "version")
+    assert {"agenda_item_ids", "snapshot_hash", "actor"} <= set(table.columns.keys())
+
+
+def test_motion_vote_canonical_tables_preserve_append_only_correction_contract() -> None:
+    models = model_module()
+    motions = models.Base.metadata.tables["civicclerk.motions"]
+    votes = models.Base.metadata.tables["civicclerk.votes"]
+
+    assert {"correction_of_id", "correction_reason", "immutable_hash", "seconded_by"} <= set(motions.columns.keys())
+    assert {"correction_of_id", "correction_reason", "immutable_hash", "actor"} <= set(votes.columns.keys())
+    assert any(
+        element.target_fullname == "civicclerk.motions.id"
+        for constraint in motions.foreign_key_constraints
+        for element in constraint.elements
+        if element.parent.name == "correction_of_id"
+    )
+    assert any(
+        element.target_fullname == "civicclerk.votes.id"
+        for constraint in votes.foreign_key_constraints
+        for element in constraint.elements
+        if element.parent.name == "correction_of_id"
+    )
+
+
+def test_closed_session_material_has_staff_only_acl_schema_contract() -> None:
+    models = model_module()
+    closed_sessions = models.Base.metadata.tables["civicclerk.closed_sessions"]
+    staff_reports = models.Base.metadata.tables["civicclerk.staff_reports"]
+    transcripts = models.Base.metadata.tables["civicclerk.transcripts"]
+
+    for table in [closed_sessions, staff_reports, transcripts]:
+        assert {"sensitivity_label", "staff_acl_roles"} <= set(table.columns.keys())
+    assert {"material_uri", "public_redaction"} <= set(closed_sessions.columns.keys())
+
+
+def test_public_comment_schema_matches_live_public_comment_intake_contract() -> None:
+    models = model_module()
+    public_comments = models.Base.metadata.tables["civicclerk.public_comments"]
+
+    assert {
+        "public_record_id",
+        "commenter_name",
+        "body",
+        "status",
+        "submitted_at",
+        "moderation_notes",
+    } <= set(public_comments.columns.keys())
+
+
+def test_civiccore_document_and_search_extraction_boundary_is_documented() -> None:
+    public_archive = (ROOT / "civicclerk" / "public_archive.py").read_text(encoding="utf-8")
+    adr = (ROOT / "docs" / "adr" / "civicclerk-adr-0006.md").read_text(encoding="utf-8").lower()
+
+    assert "from civiccore.search import" in public_archive
+    assert "status: accepted" in adr
+    assert "civiccore 0.22.1 ships search helpers" in adr
+    assert "no document-table package" in adr
+    assert "document_ref" in adr
+    assert "extraction plan" in adr
+
+
 def test_docs_and_changelog_record_schema_milestone_without_claiming_lifecycle_behavior() -> None:
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8").lower()
     manual = (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8").lower()
@@ -413,3 +760,19 @@ def test_docs_and_changelog_record_schema_milestone_without_claiming_lifecycle_b
         assert "alembic" in document_text
         assert "agenda lifecycle enforcement shipped" not in document_text
         assert "meeting workflows are implemented" not in document_text
+
+
+def test_cc5_docs_claims_registry_maps_data_model_claims_to_tests() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    manual = (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8")
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    landing = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
+
+    assert "### CC-5 data model claims registry" in readme
+    assert "civicclerk_0011_data_model" in readme
+    assert "test_packet_versions_are_versioned_per_meeting_by_schema_contract" in readme
+    assert "test_civiccore_document_and_search_extraction_boundary_is_documented" in readme
+    for text in [manual, changelog, landing]:
+        assert "CC-5" in text
+        assert "civicclerk_0011_data_model" in text
+        assert "closed-session ACL" in text
