@@ -57,11 +57,15 @@ def main() -> int:
         ROOT / "docs" / "screenshots" / "cc4-agenda-routing-signoff-desktop.png",
         ROOT / "docs" / "screenshots" / "cc4-outcomes-seconded-recusal-desktop.png",
         ROOT / "docs" / "screenshots" / "cc4-meeting-cancel-danger-desktop.png",
+        ROOT / "docs" / "screenshots" / "cc5-data-model-docs-desktop.png",
+        ROOT / "docs" / "screenshots" / "cc5-data-model-docs-mobile.png",
     ]
     milestone13_summary = ROOT / "docs" / "screenshots" / "milestone13-staff-ui-summary.md"
     public_portal_summary = ROOT / "docs" / "screenshots" / "public-portal-shell-summary.md"
     cc4_summary = ROOT / "docs" / "screenshots" / "cc4-workflow-surface-summary.md"
     cc4_evidence = ROOT / "docs" / "browser-qa" / "cc4-workflow-surface-qa-2026-05-06.json"
+    cc5_docs_summary = ROOT / "docs" / "screenshots" / "cc5-data-model-docs-summary.md"
+    cc5_docs_evidence = ROOT / "docs" / "browser-qa" / "cc5-data-model-docs-qa-2026-05-06.json"
 
     if not checklist.exists():
         failures.append("missing docs/browser-qa/milestone11-checklist.md")
@@ -201,6 +205,38 @@ def main() -> int:
         ):
             if required_case not in case_names:
                 failures.append(f"CC-4 workflow QA evidence missing case: {required_case}")
+
+    if not cc5_docs_summary.exists():
+        failures.append("missing CC-5 docs browser QA summary: docs/screenshots/cc5-data-model-docs-summary.md")
+    else:
+        cc5_docs_text = cc5_docs_summary.read_text(encoding="utf-8").lower()
+        for required_phrase in (
+            "cc-5 data model docs browser qa",
+            "docs/index.html",
+            "console errors: 0",
+            "exceptions: 0",
+            "text check failures: 0",
+            "docs-desktop",
+            "docs-mobile",
+        ):
+            if required_phrase not in cc5_docs_text:
+                failures.append(f"CC-5 docs QA summary missing phrase: {required_phrase}")
+
+    if not cc5_docs_evidence.exists():
+        failures.append("missing CC-5 docs browser QA evidence: docs/browser-qa/cc5-data-model-docs-qa-2026-05-06.json")
+    else:
+        evidence = json.loads(cc5_docs_evidence.read_text(encoding="utf-8"))
+        totals = evidence.get("totals", {})
+        if totals.get("consoleErrors") != 0:
+            failures.append("CC-5 docs QA evidence reports console errors")
+        if totals.get("exceptions") != 0:
+            failures.append("CC-5 docs QA evidence reports runtime exceptions")
+        if totals.get("textCheckFailures") != 0:
+            failures.append("CC-5 docs QA evidence reports failed visible-text checks")
+        case_names = {case.get("name") for case in evidence.get("cases", [])}
+        for required_case in ("docs-desktop", "docs-mobile"):
+            if required_case not in case_names:
+                failures.append(f"CC-5 docs QA evidence missing case: {required_case}")
 
     try:
         release_result = validate_release_browser_evidence(

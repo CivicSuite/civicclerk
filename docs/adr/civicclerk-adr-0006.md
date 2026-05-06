@@ -1,17 +1,28 @@
 # CivicClerk ADR-0006: Document and Search Extraction Order
 
-Status: Proposed
+Status: Accepted
 
 ## Context
 
-AGENTS.md §3.1 marks CivicCore ingest and search packages as placeholders in v0.2.0. CivicClerk v0.1.0 needs packet documents, minutes source material, archive search, and permission-aware public/staff access.
+CivicClerk needs packet documents, minutes source material, archive search, and
+permission-aware public/staff access. CivicCore 0.22.1 ships search helpers but
+no document-table package, while `civiccore.ingest`, `civiccore.exports`, and
+`civiccore.provenance` cover cited source material and records-ready bundles.
 
 ## Decision
 
-Status: Open Question - pending human decision.
+CivicClerk uses released CivicCore search helpers for permission-aware archive
+search and uses module-local `document_ref` / source-reference fields wherever
+canonical tables need to point at packet, minutes, transcript, notice, staff
+report, or ordinance material. These references are intentionally opaque until
+CivicCore document tables are fully extracted and released.
 
 ## Consequences
 
-- CivicClerk cannot import from `civiccore.ingest` or `civiccore.search` until those packages have real implementations.
-- Local document/search behavior must not create a dependency edge from CivicCore back to CivicClerk.
-- Archive search tests must cover anonymous users, staff users with insufficient roles, and staff users with permitted roles.
+- `public_archive.py` imports `civiccore.search` instead of carrying a
+  module-local search implementation.
+- Canonical tables use `document_ref`, `source_references`, or source material
+  JSON fields rather than foreign keys to unreleased CivicCore document tables.
+- Extraction plan: when CivicCore releases document tables, add an ADR and
+  migration that backfills `document_ref` values into shared document foreign
+  keys while preserving compatibility tests for existing records.

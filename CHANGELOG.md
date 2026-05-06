@@ -29,6 +29,14 @@ All notable changes to CivicClerk are documented here.
 - Added a CC-4 README workflow claims registry that maps the new public,
   outcomes, agenda-routing, member-packet, and cancellation claims to concrete
   Python and React regression tests.
+- Added CC-5 data model completion: the fourteen canonical CivicClerk tables
+  now carry downstream contract columns for packet version uniqueness,
+  motion/vote correction metadata, public comment intake, closed-session ACLs,
+  document references, and ordinance handoff status through Alembic migration
+  `civicclerk_0011_data_model`.
+- Accepted the stale CivicClerk table/public-comment/transcript/RBAC/document
+  extraction ADRs so the repository records the implemented data-model truth
+  and the CivicCore document-table extraction plan.
 
 ### Changed
 - Updated the active CivicCore dependency and current install/provenance docs to
