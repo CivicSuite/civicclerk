@@ -811,6 +811,7 @@ async def transition_agenda_item(
             status_code=result.http_status,
             detail={
                 "message": result.message,
+                "fix": result.fix,
                 "current_status": item.status,
                 "requested_status": payload.to_status,
             },
@@ -820,7 +821,7 @@ async def transition_agenda_item(
 
 
 @app.get("/agenda-items/{item_id}/audit")
-async def get_agenda_item_audit(item_id: str) -> dict[str, list[dict[str, str]]]:
+async def get_agenda_item_audit(item_id: str) -> dict[str, list[dict[str, object]]]:
     """Return lifecycle audit entries for an agenda item."""
     item = _get_agenda_items().get(item_id)
     if item is None:
@@ -1121,6 +1122,7 @@ async def transition_meeting(
             status_code=result.http_status,
             detail={
                 "message": result.message,
+                "fix": result.fix,
                 "current_status": meeting.status,
                 "requested_status": payload.to_status,
             },
@@ -1132,7 +1134,7 @@ async def transition_meeting(
 
 
 @app.get("/meetings/{meeting_id}/audit")
-async def get_meeting_audit(meeting_id: str) -> dict[str, list[dict[str, str]]]:
+async def get_meeting_audit(meeting_id: str) -> dict[str, list[dict[str, object]]]:
     """Return lifecycle audit entries for a meeting."""
     meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
