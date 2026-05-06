@@ -59,6 +59,14 @@ records with lifecycle audit entries, database-backed packet assembly records
 with source/citation metadata, database-backed agenda item lifecycle records
 with durable transition audit entries, and database-backed notice
 checklist/posting-proof records.
+CC-7 now adds a published OpenAPI artifact at `docs/api/openapi.json`, generated
+from the live FastAPI app, and direct React QA routes for all 20 spec frontend
+pages. New API surfaces cover staff report normalization, transcript capture,
+ordinance/resolution handoff, public comment review, admin configuration, and
+prompt-library administration. Browser evidence in
+`docs/browser-qa/cc7-api-frontend-completeness-qa-2026-05-06.json` covers all
+20 pages across loading, success, empty, error, and partial states at desktop
+and 390px mobile widths.
 The `/staff` page now provides a product cockpit plus first staff workflow
 screens for agenda intake, packet assembly/export, notice
 checklist/posting-proof, meeting outcome, member packet, minutes draft, public
@@ -738,6 +746,9 @@ Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
 builds release artifacts and checksums, and publishes CivicClerk v0.1.20.
+CC-7 extends browser QA to every named spec page through
+`node scripts/capture-cc7-browser-qa.mjs`; the verification script requires the
+resulting 200-case ledger before browser-visible changes can merge.
 The current production-depth branch pairs CivicClerk with the published `civiccore` 0.22.1 wheel from the `civiccore-m1-freeze` release asset
 so packet exports, packet assembly records, notice checklist records, and the
 browser QA release-evidence gate can use shared CivicCore manifests,

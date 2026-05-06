@@ -1,0 +1,7054 @@
+{
+  "page": "frontend React CC-7 spec surfaces",
+  "reviewed_at": "2026-05-06T06:50:42.369Z",
+  "pages": [
+    "staff-dashboard",
+    "meeting-calendar",
+    "meeting-detail",
+    "agenda-builder",
+    "agenda-intake",
+    "staff-report-editor",
+    "packet-builder",
+    "notice-checklist",
+    "live-meeting-capture",
+    "minutes-review",
+    "motions-votes-actions",
+    "transcript-management",
+    "public-comment-review",
+    "closed-session-workspace",
+    "archive-search",
+    "public-calendar",
+    "public-detail",
+    "admin-settings",
+    "prompt-library-admin",
+    "connector-import-admin"
+  ],
+  "states": [
+    "loading",
+    "success",
+    "empty",
+    "error",
+    "partial"
+  ],
+  "viewports": {
+    "desktop": {
+      "width": 1440,
+      "height": 1100
+    },
+    "mobile": {
+      "width": 390,
+      "height": 1100
+    }
+  },
+  "cases": [
+    {
+      "name": "staff-dashboard-loading-desktop",
+      "page": "staff-dashboard",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-loading-mobile",
+      "page": "staff-dashboard",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-success-desktop",
+      "page": "staff-dashboard",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-staff-dashboard-desktop.png",
+      "bytes": 564038,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-success-mobile",
+      "page": "staff-dashboard",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-staff-dashboard-mobile.png",
+      "bytes": 150184,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-empty-desktop",
+      "page": "staff-dashboard",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-empty-mobile",
+      "page": "staff-dashboard",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-error-desktop",
+      "page": "staff-dashboard",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-error-mobile",
+      "page": "staff-dashboard",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-partial-desktop",
+      "page": "staff-dashboard",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-dashboard-partial-mobile",
+      "page": "staff-dashboard",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-loading-desktop",
+      "page": "meeting-calendar",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-loading-mobile",
+      "page": "meeting-calendar",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-success-desktop",
+      "page": "meeting-calendar",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-meeting-calendar-desktop.png",
+      "bytes": 466811,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-success-mobile",
+      "page": "meeting-calendar",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-meeting-calendar-mobile.png",
+      "bytes": 106628,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-empty-desktop",
+      "page": "meeting-calendar",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-empty-mobile",
+      "page": "meeting-calendar",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-error-desktop",
+      "page": "meeting-calendar",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-error-mobile",
+      "page": "meeting-calendar",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-partial-desktop",
+      "page": "meeting-calendar",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-calendar-partial-mobile",
+      "page": "meeting-calendar",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-detail-loading-desktop",
+      "page": "meeting-detail",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-detail-loading-mobile",
+      "page": "meeting-detail",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-detail-success-desktop",
+      "page": "meeting-detail",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-meeting-detail-desktop.png",
+      "bytes": 382374,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 4.54,
+      "minContrastSample": {
+        "tag": "LI",
+        "className": "",
+        "text": "4In session",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgb(238, 229, 210)",
+        "inheritedBackground": "rgb(238, 229, 210)"
+      }
+    },
+    {
+      "name": "meeting-detail-success-mobile",
+      "page": "meeting-detail",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-meeting-detail-mobile.png",
+      "bytes": 89695,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 4.54,
+      "minContrastSample": {
+        "tag": "LI",
+        "className": "",
+        "text": "4In session",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgb(238, 229, 210)",
+        "inheritedBackground": "rgb(238, 229, 210)"
+      }
+    },
+    {
+      "name": "meeting-detail-empty-desktop",
+      "page": "meeting-detail",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-detail-empty-mobile",
+      "page": "meeting-detail",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-detail-error-desktop",
+      "page": "meeting-detail",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-detail-error-mobile",
+      "page": "meeting-detail",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-detail-partial-desktop",
+      "page": "meeting-detail",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "meeting-detail-partial-mobile",
+      "page": "meeting-detail",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-loading-desktop",
+      "page": "agenda-builder",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-loading-mobile",
+      "page": "agenda-builder",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-success-desktop",
+      "page": "agenda-builder",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-agenda-builder-desktop.png",
+      "bytes": 548348,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-success-mobile",
+      "page": "agenda-builder",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-agenda-builder-mobile.png",
+      "bytes": 137621,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-empty-desktop",
+      "page": "agenda-builder",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-empty-mobile",
+      "page": "agenda-builder",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-error-desktop",
+      "page": "agenda-builder",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-error-mobile",
+      "page": "agenda-builder",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-partial-desktop",
+      "page": "agenda-builder",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-builder-partial-mobile",
+      "page": "agenda-builder",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-loading-desktop",
+      "page": "agenda-intake",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-loading-mobile",
+      "page": "agenda-intake",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-success-desktop",
+      "page": "agenda-intake",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-agenda-intake-desktop.png",
+      "bytes": 468972,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-success-mobile",
+      "page": "agenda-intake",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-agenda-intake-mobile.png",
+      "bytes": 120854,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-empty-desktop",
+      "page": "agenda-intake",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-empty-mobile",
+      "page": "agenda-intake",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-error-desktop",
+      "page": "agenda-intake",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-error-mobile",
+      "page": "agenda-intake",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-partial-desktop",
+      "page": "agenda-intake",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "agenda-intake-partial-mobile",
+      "page": "agenda-intake",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-loading-desktop",
+      "page": "staff-report-editor",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-loading-mobile",
+      "page": "staff-report-editor",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-success-desktop",
+      "page": "staff-report-editor",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-staff-report-editor-desktop.png",
+      "bytes": 548606,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-success-mobile",
+      "page": "staff-report-editor",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-staff-report-editor-mobile.png",
+      "bytes": 137081,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-empty-desktop",
+      "page": "staff-report-editor",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-empty-mobile",
+      "page": "staff-report-editor",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-error-desktop",
+      "page": "staff-report-editor",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-error-mobile",
+      "page": "staff-report-editor",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-partial-desktop",
+      "page": "staff-report-editor",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "staff-report-editor-partial-mobile",
+      "page": "staff-report-editor",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-loading-desktop",
+      "page": "packet-builder",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-loading-mobile",
+      "page": "packet-builder",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-success-desktop",
+      "page": "packet-builder",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-packet-builder-desktop.png",
+      "bytes": 498218,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-success-mobile",
+      "page": "packet-builder",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-packet-builder-mobile.png",
+      "bytes": 129775,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-empty-desktop",
+      "page": "packet-builder",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-empty-mobile",
+      "page": "packet-builder",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-error-desktop",
+      "page": "packet-builder",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-error-mobile",
+      "page": "packet-builder",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-partial-desktop",
+      "page": "packet-builder",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "packet-builder-partial-mobile",
+      "page": "packet-builder",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "notice-checklist-loading-desktop",
+      "page": "notice-checklist",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "notice-checklist-loading-mobile",
+      "page": "notice-checklist",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "notice-checklist-success-desktop",
+      "page": "notice-checklist",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-notice-checklist-desktop.png",
+      "bytes": 389852,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 4.98,
+      "minContrastSample": {
+        "tag": "P",
+        "className": "notice-decision",
+        "text": "Not legally noticed yet. Do not proceed until the checklist passes and posting p",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgb(247, 239, 224)",
+        "inheritedBackground": "rgb(247, 239, 224)"
+      }
+    },
+    {
+      "name": "notice-checklist-success-mobile",
+      "page": "notice-checklist",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-notice-checklist-mobile.png",
+      "bytes": 121444,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 4.98,
+      "minContrastSample": {
+        "tag": "P",
+        "className": "notice-decision",
+        "text": "Not legally noticed yet. Do not proceed until the checklist passes and posting p",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgb(247, 239, 224)",
+        "inheritedBackground": "rgb(247, 239, 224)"
+      }
+    },
+    {
+      "name": "notice-checklist-empty-desktop",
+      "page": "notice-checklist",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "notice-checklist-empty-mobile",
+      "page": "notice-checklist",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "notice-checklist-error-desktop",
+      "page": "notice-checklist",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "notice-checklist-error-mobile",
+      "page": "notice-checklist",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "notice-checklist-partial-desktop",
+      "page": "notice-checklist",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "notice-checklist-partial-mobile",
+      "page": "notice-checklist",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-loading-desktop",
+      "page": "live-meeting-capture",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-loading-mobile",
+      "page": "live-meeting-capture",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-success-desktop",
+      "page": "live-meeting-capture",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-live-meeting-capture-desktop.png",
+      "bytes": 558730,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-success-mobile",
+      "page": "live-meeting-capture",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-live-meeting-capture-mobile.png",
+      "bytes": 121036,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-empty-desktop",
+      "page": "live-meeting-capture",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-empty-mobile",
+      "page": "live-meeting-capture",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-error-desktop",
+      "page": "live-meeting-capture",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-error-mobile",
+      "page": "live-meeting-capture",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-partial-desktop",
+      "page": "live-meeting-capture",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "live-meeting-capture-partial-mobile",
+      "page": "live-meeting-capture",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "minutes-review-loading-desktop",
+      "page": "minutes-review",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "minutes-review-loading-mobile",
+      "page": "minutes-review",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "minutes-review-success-desktop",
+      "page": "minutes-review",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-minutes-review-desktop.png",
+      "bytes": 563571,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 4.68,
+      "minContrastSample": {
+        "tag": "P",
+        "className": "legal-warning",
+        "text": "Adopted: no. Posted: no. AI-drafted minutes cannot be auto-posted.",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgb(255, 227, 222)",
+        "inheritedBackground": "rgb(255, 227, 222)"
+      }
+    },
+    {
+      "name": "minutes-review-success-mobile",
+      "page": "minutes-review",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-minutes-review-mobile.png",
+      "bytes": 126080,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 4.68,
+      "minContrastSample": {
+        "tag": "P",
+        "className": "legal-warning",
+        "text": "Adopted: no. Posted: no. AI-drafted minutes cannot be auto-posted.",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgb(255, 227, 222)",
+        "inheritedBackground": "rgb(255, 227, 222)"
+      }
+    },
+    {
+      "name": "minutes-review-empty-desktop",
+      "page": "minutes-review",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "minutes-review-empty-mobile",
+      "page": "minutes-review",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "minutes-review-error-desktop",
+      "page": "minutes-review",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "minutes-review-error-mobile",
+      "page": "minutes-review",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "minutes-review-partial-desktop",
+      "page": "minutes-review",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "minutes-review-partial-mobile",
+      "page": "minutes-review",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-loading-desktop",
+      "page": "motions-votes-actions",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-loading-mobile",
+      "page": "motions-votes-actions",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-success-desktop",
+      "page": "motions-votes-actions",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-motions-votes-actions-desktop.png",
+      "bytes": 558730,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-success-mobile",
+      "page": "motions-votes-actions",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-motions-votes-actions-mobile.png",
+      "bytes": 121065,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-empty-desktop",
+      "page": "motions-votes-actions",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-empty-mobile",
+      "page": "motions-votes-actions",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-error-desktop",
+      "page": "motions-votes-actions",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-error-mobile",
+      "page": "motions-votes-actions",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-partial-desktop",
+      "page": "motions-votes-actions",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "motions-votes-actions-partial-mobile",
+      "page": "motions-votes-actions",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-loading-desktop",
+      "page": "transcript-management",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-loading-mobile",
+      "page": "transcript-management",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-success-desktop",
+      "page": "transcript-management",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-transcript-management-desktop.png",
+      "bytes": 553671,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-success-mobile",
+      "page": "transcript-management",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-transcript-management-mobile.png",
+      "bytes": 142903,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-empty-desktop",
+      "page": "transcript-management",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-empty-mobile",
+      "page": "transcript-management",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-error-desktop",
+      "page": "transcript-management",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-error-mobile",
+      "page": "transcript-management",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-partial-desktop",
+      "page": "transcript-management",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "transcript-management-partial-mobile",
+      "page": "transcript-management",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-loading-desktop",
+      "page": "public-comment-review",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-loading-mobile",
+      "page": "public-comment-review",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-success-desktop",
+      "page": "public-comment-review",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-public-comment-review-desktop.png",
+      "bytes": 556144,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-success-mobile",
+      "page": "public-comment-review",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-public-comment-review-mobile.png",
+      "bytes": 140084,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-empty-desktop",
+      "page": "public-comment-review",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-empty-mobile",
+      "page": "public-comment-review",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-error-desktop",
+      "page": "public-comment-review",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-error-mobile",
+      "page": "public-comment-review",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-partial-desktop",
+      "page": "public-comment-review",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-comment-review-partial-mobile",
+      "page": "public-comment-review",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-loading-desktop",
+      "page": "closed-session-workspace",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-loading-mobile",
+      "page": "closed-session-workspace",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-success-desktop",
+      "page": "closed-session-workspace",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-closed-session-workspace-desktop.png",
+      "bytes": 556269,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-success-mobile",
+      "page": "closed-session-workspace",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-closed-session-workspace-mobile.png",
+      "bytes": 139112,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-empty-desktop",
+      "page": "closed-session-workspace",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-empty-mobile",
+      "page": "closed-session-workspace",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-error-desktop",
+      "page": "closed-session-workspace",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-error-mobile",
+      "page": "closed-session-workspace",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-partial-desktop",
+      "page": "closed-session-workspace",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "closed-session-workspace-partial-mobile",
+      "page": "closed-session-workspace",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-loading-desktop",
+      "page": "archive-search",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-loading-mobile",
+      "page": "archive-search",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-success-desktop",
+      "page": "archive-search",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-archive-search-desktop.png",
+      "bytes": 559353,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-success-mobile",
+      "page": "archive-search",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-archive-search-mobile.png",
+      "bytes": 142981,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-empty-desktop",
+      "page": "archive-search",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-empty-mobile",
+      "page": "archive-search",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-error-desktop",
+      "page": "archive-search",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-error-mobile",
+      "page": "archive-search",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-partial-desktop",
+      "page": "archive-search",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "archive-search-partial-mobile",
+      "page": "archive-search",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-loading-desktop",
+      "page": "public-calendar",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-loading-mobile",
+      "page": "public-calendar",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-success-desktop",
+      "page": "public-calendar",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-public-calendar-desktop.png",
+      "bytes": 557403,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-success-mobile",
+      "page": "public-calendar",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-public-calendar-mobile.png",
+      "bytes": 201850,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-empty-desktop",
+      "page": "public-calendar",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-empty-mobile",
+      "page": "public-calendar",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-error-desktop",
+      "page": "public-calendar",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-error-mobile",
+      "page": "public-calendar",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-partial-desktop",
+      "page": "public-calendar",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-calendar-partial-mobile",
+      "page": "public-calendar",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-loading-desktop",
+      "page": "public-detail",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-loading-mobile",
+      "page": "public-detail",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-success-desktop",
+      "page": "public-detail",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-public-detail-desktop.png",
+      "bytes": 557403,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-success-mobile",
+      "page": "public-detail",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-public-detail-mobile.png",
+      "bytes": 201856,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-empty-desktop",
+      "page": "public-detail",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-empty-mobile",
+      "page": "public-detail",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-error-desktop",
+      "page": "public-detail",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-error-mobile",
+      "page": "public-detail",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-partial-desktop",
+      "page": "public-detail",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "public-detail-partial-mobile",
+      "page": "public-detail",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-loading-desktop",
+      "page": "admin-settings",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-loading-mobile",
+      "page": "admin-settings",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-success-desktop",
+      "page": "admin-settings",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-admin-settings-desktop.png",
+      "bytes": 550973,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-success-mobile",
+      "page": "admin-settings",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-admin-settings-mobile.png",
+      "bytes": 141066,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-empty-desktop",
+      "page": "admin-settings",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-empty-mobile",
+      "page": "admin-settings",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-error-desktop",
+      "page": "admin-settings",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-error-mobile",
+      "page": "admin-settings",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-partial-desktop",
+      "page": "admin-settings",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "admin-settings-partial-mobile",
+      "page": "admin-settings",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-loading-desktop",
+      "page": "prompt-library-admin",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-loading-mobile",
+      "page": "prompt-library-admin",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-success-desktop",
+      "page": "prompt-library-admin",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-prompt-library-admin-desktop.png",
+      "bytes": 553687,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-success-mobile",
+      "page": "prompt-library-admin",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-prompt-library-admin-mobile.png",
+      "bytes": 142023,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-empty-desktop",
+      "page": "prompt-library-admin",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-empty-mobile",
+      "page": "prompt-library-admin",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-error-desktop",
+      "page": "prompt-library-admin",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-error-mobile",
+      "page": "prompt-library-admin",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-partial-desktop",
+      "page": "prompt-library-admin",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "prompt-library-admin-partial-mobile",
+      "page": "prompt-library-admin",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "connector-import-admin-loading-desktop",
+      "page": "connector-import-admin",
+      "state": "loading",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "connector-import-admin-loading-mobile",
+      "page": "connector-import-admin",
+      "state": "loading",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "connector-import-admin-success-desktop",
+      "page": "connector-import-admin",
+      "state": "success",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-connector-import-admin-desktop.png",
+      "bytes": 461795,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 4.68,
+      "minContrastSample": {
+        "tag": "P",
+        "className": "legal-warning",
+        "text": "Pulls paused: Circuit opened after five consecutive failed pulls.",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgb(255, 227, 222)",
+        "inheritedBackground": "rgb(255, 227, 222)"
+      }
+    },
+    {
+      "name": "connector-import-admin-success-mobile",
+      "page": "connector-import-admin",
+      "state": "success",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc7-connector-import-admin-mobile.png",
+      "bytes": 123959,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 4.68,
+      "minContrastSample": {
+        "tag": "P",
+        "className": "legal-warning",
+        "text": "Pulls paused: Circuit opened after five consecutive failed pulls.",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgb(255, 227, 222)",
+        "inheritedBackground": "rgb(255, 227, 222)"
+      }
+    },
+    {
+      "name": "connector-import-admin-empty-desktop",
+      "page": "connector-import-admin",
+      "state": "empty",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "connector-import-admin-empty-mobile",
+      "page": "connector-import-admin",
+      "state": "empty",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "connector-import-admin-error-desktop",
+      "page": "connector-import-admin",
+      "state": "error",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "connector-import-admin-error-mobile",
+      "page": "connector-import-admin",
+      "state": "error",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "connector-import-admin-partial-desktop",
+      "page": "connector-import-admin",
+      "state": "partial",
+      "viewport": "desktop",
+      "viewportSize": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    },
+    {
+      "name": "connector-import-admin-partial-mobile",
+      "page": "connector-import-admin",
+      "state": "partial",
+      "viewport": "mobile",
+      "viewportSize": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": null,
+      "bytes": 0,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outlineStyle": "auto",
+        "outlineWidth": "1px"
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.13,
+      "minContrastSample": {
+        "tag": "BUTTON",
+        "className": "",
+        "text": "live",
+        "color": "rgb(93, 104, 115)",
+        "background": "rgba(0, 0, 0, 0)",
+        "inheritedBackground": "rgb(247, 243, 234)"
+      }
+    }
+  ],
+  "totals": {
+    "consoleErrors": 0,
+    "exceptions": 0,
+    "textCheckFailures": 0,
+    "minContrast": 4.54,
+    "keyboardFailures": 0,
+    "focusFailures": 0,
+    "horizontalOverflowFailures": 0
+  }
+}

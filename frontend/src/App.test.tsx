@@ -1302,6 +1302,39 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByLabelText("Audit and evidence drawer")).toBeInTheDocument();
   });
 
+  it("routes every CC-7 spec page from direct URLs for browser evidence", () => {
+    const specPages = [
+      "staff-dashboard",
+      "meeting-calendar",
+      "meeting-detail",
+      "agenda-builder",
+      "agenda-intake",
+      "staff-report-editor",
+      "packet-builder",
+      "notice-checklist",
+      "live-meeting-capture",
+      "minutes-review",
+      "motions-votes-actions",
+      "transcript-management",
+      "public-comment-review",
+      "closed-session-workspace",
+      "archive-search",
+      "public-calendar",
+      "public-detail",
+      "admin-settings",
+      "prompt-library-admin",
+      "connector-import-admin",
+    ];
+
+    for (const page of specPages) {
+      window.history.replaceState({}, "", `/?page=${page}&state=success&source=demo`);
+      const { container, unmount } = render(<App />);
+      expect(container.querySelector(`[data-current-page="${page}"]`)).not.toBeNull();
+      expect(container).toHaveTextContent("QA states");
+      unmount();
+    }
+  });
+
   it("shows an actionable API error when live meeting loading fails", async () => {
     vi.stubGlobal(
       "fetch",

@@ -43,6 +43,14 @@ All notable changes to CivicClerk are documented here.
   `civiccore.llm.resolve_template`, and pass offline evals for citation policy,
   closed-session refusal, legal-determination refusal, public approval gates,
   and input mutation stability.
+- Added CC-7 API and frontend completeness: the live FastAPI app now publishes
+  a generated `docs/api/openapi.json` contract, adds staff report, transcript,
+  ordinance/resolution handoff, public comment review, admin config, and prompt
+  admin surfaces, routes all 20 spec frontend pages, and records 200 browser QA
+  cases across loading/success/empty/error/partial states at desktop and 390px
+  mobile widths.
+- Accepted ADR-0009 for the module-local OIDC browser-session bridge, with the
+  CivicCore helper split, threat model note, and extraction plan documented.
 
 ### Changed
 - Updated the active CivicCore dependency and current install/provenance docs to

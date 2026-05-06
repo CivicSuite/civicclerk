@@ -179,6 +179,9 @@ class PublicCommentStore:
             for comment_id in self._comments_by_record.get(public_record_id, [])
         ]
 
+    def list_all(self) -> list[PublicCommentRecord]:
+        return list(self._comments.values())
+
 
 def normalize_visibility(visibility: str) -> str:
     return visibility.strip().lower()

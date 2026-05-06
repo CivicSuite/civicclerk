@@ -12,6 +12,7 @@ import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
+from uuid import uuid4
 
 from civiccore.auth import (
     AuthenticatedPrincipal,
@@ -32,6 +33,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from civicclerk import __version__
 from civicclerk.agenda_intake import AgendaIntakeRepository, AgendaReadinessStatus
 from civicclerk.agenda_lifecycle import AgendaItemRepository, AgendaItemStore
+from civicclerk.cc7_completeness import cc7_api_category_payload, cc7_frontend_page_payload
 from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.meeting_body import MeetingBodyRepository
 from civicclerk.meeting_lifecycle import MeetingScheduleUpdateError, MeetingStore
@@ -75,6 +77,8 @@ motion_votes = MotionVoteStore()
 minutes_drafts = MinutesDraftStore()
 public_archive = PublicArchiveStore()
 public_comments = PublicCommentStore()
+transcript_records: dict[str, list[dict[str, object]]] = {}
+ordinance_resolution_handoffs: dict[str, list[dict[str, object]]] = {}
 _archive_search_bearer = HTTPBearer(auto_error=False)
 STAFF_AUTH_MODE_ENV_VAR = "CIVICCLERK_STAFF_AUTH_MODE"
 STAFF_AUTH_TOKEN_ROLES_ENV_VAR = "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES"
@@ -217,6 +221,16 @@ class AgendaIntakePromoteRequest(BaseModel):
     notes: str = Field(default="Promoted to agenda lifecycle.", min_length=1)
 
 
+class StaffReportCreate(BaseModel):
+    title: str = Field(min_length=1)
+    department_name: str = Field(min_length=1)
+    author: str = Field(min_length=1)
+    summary: str = Field(min_length=1)
+    source_references: list[dict] = Field(min_length=1)
+    agenda_item_id: str | None = Field(default=None, min_length=1)
+    legal_reviewer: str | None = Field(default=None, min_length=1)
+
+
 class MeetingCreate(BaseModel):
     title: str = Field(min_length=1)
     meeting_type: str = Field(min_length=1)
@@ -353,6 +367,26 @@ class MinutesDraftCreate(BaseModel):
     human_approver: str = Field(min_length=1)
     source_materials: list[SourceMaterialCreate] = Field(min_length=1)
     sentences: list[MinutesSentenceCreate] = Field(min_length=1)
+
+
+class TranscriptCreate(BaseModel):
+    actor: str = Field(min_length=1)
+    source_label: str = Field(min_length=1)
+    transcript_text: str = Field(min_length=1)
+    public_release_requested: bool = False
+    closed_session: bool = False
+
+
+class OrdinanceResolutionHandoffCreate(BaseModel):
+    item_type: str = Field(pattern="^(ordinance|resolution)$")
+    title: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    legal_reviewer: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    source_motion_id: str | None = Field(default=None, min_length=1)
+    ordinance_number: str | None = Field(default=None, min_length=1)
+    resolution_number: str | None = Field(default=None, min_length=1)
+    source_references: list[dict] = Field(default_factory=list)
 
 
 class PublicMeetingRecordCreate(BaseModel):
@@ -782,6 +816,64 @@ async def staff_auth_readiness() -> dict[str, object]:
     return _get_staff_trusted_header_readiness()
 
 
+@app.get("/admin/config")
+async def admin_config() -> dict[str, object]:
+    """Describe CC-7 runtime coverage and staff-auth configuration posture."""
+
+    mode = _get_staff_auth_mode()
+    return {
+        "service": "civicclerk",
+        "version": __version__,
+        "civiccore_version": CIVICCORE_VERSION,
+        "staff_auth_mode": mode,
+        "staff_auth_helpers": {
+            "bearer": "civiccore.auth.authorize_bearer_roles",
+            "trusted_header": "civiccore.auth.authorize_trusted_header_roles",
+            "trusted_proxy_source": "civiccore.auth.enforce_trusted_proxy_source",
+            "optional_archive_bearer": "civiccore.auth.resolve_optional_bearer_roles",
+            "oidc_browser_session": "civicclerk.oidc_auth, ADR-documented extraction candidate",
+        },
+        "api_categories": cc7_api_category_payload(),
+        "frontend_pages": cc7_frontend_page_payload(),
+        "message": "CC-7 API and frontend coverage is published for clerk, public, and admin surfaces.",
+        "fix": "If a category is missing from OpenAPI or browser evidence, block release until the route or page is added.",
+    }
+
+
+@app.get("/admin/prompts")
+async def admin_prompts() -> dict[str, object]:
+    """List prompt-library definitions and public approval gates for admins."""
+
+    from civicclerk.prompt_library import (
+        _remove_civiccore_prompt_tables_from_shared_metadata,
+        list_prompts,
+    )
+
+    prompts = []
+    try:
+        for prompt in list_prompts():
+            prompts.append(
+                {
+                    "id": prompt.id,
+                    "version": prompt.version,
+                    "reference": prompt.reference,
+                    "provider": prompt.provider,
+                    "purpose": prompt.purpose,
+                    "public_facing": prompt.public_facing,
+                    "approval_required": prompt.approval_required,
+                    "required_variables": list(prompt.required_variables),
+                }
+            )
+    finally:
+        _remove_civiccore_prompt_tables_from_shared_metadata()
+    return {
+        "consumer_app": "civicclerk",
+        "prompts": prompts,
+        "message": "Prompt-library admin shows YAML prompts resolved through the CivicCore override path.",
+        "fix": "For public-facing prompt changes, complete clerk-and-attorney approval before enabling the prompt.",
+    }
+
+
 @app.post("/agenda-items", status_code=201)
 async def create_agenda_item(payload: AgendaItemCreate) -> dict[str, str]:
     """Create a draft agenda item for lifecycle enforcement."""
@@ -963,6 +1055,59 @@ async def promote_agenda_intake_item(
         "agenda_item": (_get_agenda_items().get(agenda_item.id) or agenda_item).public_dict(),
         "next_step": "Add the agenda item to the target meeting packet assembly.",
         "message": "Agenda intake item promoted into the agenda lifecycle.",
+    }
+
+
+@app.post("/meetings/{meeting_id}/staff-reports", status_code=201)
+async def create_staff_report(meeting_id: str, payload: StaffReportCreate) -> dict[str, object]:
+    """Normalize a staff report into the clerk-visible agenda intake trail."""
+
+    _require_meeting_or_404(meeting_id)
+    source_references = [
+        {
+            **reference,
+            "meeting_id": meeting_id,
+            "agenda_item_id": payload.agenda_item_id,
+            "legal_reviewer": payload.legal_reviewer,
+            "staff_report": True,
+        }
+        for reference in payload.source_references
+    ]
+    item = _get_agenda_intake_repository().submit(
+        title=payload.title,
+        department_name=payload.department_name,
+        submitted_by=payload.author,
+        summary=payload.summary,
+        source_references=source_references,
+    )
+    return _staff_report_from_intake_item(
+        item.public_dict(),
+        meeting_id=meeting_id,
+        legal_reviewer=payload.legal_reviewer,
+    )
+
+
+@app.get("/meetings/{meeting_id}/staff-reports")
+async def list_staff_reports(meeting_id: str) -> dict[str, object]:
+    """List staff report records linked to a meeting."""
+
+    _require_meeting_or_404(meeting_id)
+    reports = [
+        _staff_report_from_intake_item(item.public_dict(), meeting_id=meeting_id)
+        for item in _get_agenda_intake_repository().list_queue()
+        if _intake_item_matches_meeting(item.public_dict(), meeting_id)
+    ]
+    return {
+        "meeting_id": meeting_id,
+        "staff_reports": reports,
+        "message": (
+            "Staff reports are normalized through agenda intake so legal review, clerk sign-off, "
+            "and packet citations stay in one audit trail."
+        ),
+        "fix": (
+            "POST a staff report with source_references, then complete agenda intake review "
+            "before packet assembly."
+        ),
     }
 
 
@@ -1534,6 +1679,60 @@ async def list_action_items(meeting_id: str) -> dict[str, list[dict]]:
     }
 
 
+@app.post("/meetings/{meeting_id}/ordinance-resolution-handoff", status_code=201)
+async def create_ordinance_resolution_handoff(
+    meeting_id: str,
+    payload: OrdinanceResolutionHandoffCreate,
+) -> dict[str, object]:
+    """Create a code-drafting handoff from adopted meeting action."""
+
+    _require_meeting_or_404(meeting_id)
+    if payload.source_motion_id is not None:
+        motion = motion_votes.get_motion(payload.source_motion_id)
+        if motion is None:
+            raise HTTPException(status_code=404, detail="Source motion not found.")
+        if motion.meeting_id != meeting_id:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "message": "Ordinance or resolution source motion belongs to a different meeting.",
+                    "fix": "Use a motion captured for this meeting, then retry the handoff.",
+                },
+            )
+    record = {
+        "id": str(uuid4()),
+        "meeting_id": meeting_id,
+        "item_type": payload.item_type,
+        "title": payload.title,
+        "actor": payload.actor,
+        "legal_reviewer": payload.legal_reviewer,
+        "text": payload.text,
+        "source_motion_id": payload.source_motion_id,
+        "ordinance_number": payload.ordinance_number,
+        "resolution_number": payload.resolution_number,
+        "source_references": payload.source_references,
+        "status": "READY_FOR_CODE_OR_LEGAL_REVIEW",
+        "created_at": datetime.now(UTC).isoformat(),
+        "message": "Handoff recorded for legal/code drafting review.",
+        "fix": "Keep this handoff attached to the adopted motion before publication or codification.",
+    }
+    ordinance_resolution_handoffs.setdefault(meeting_id, []).append(record)
+    return record
+
+
+@app.get("/meetings/{meeting_id}/ordinance-resolution-handoff")
+async def list_ordinance_resolution_handoffs(meeting_id: str) -> dict[str, object]:
+    """List ordinance and resolution handoffs for a meeting."""
+
+    _require_meeting_or_404(meeting_id)
+    return {
+        "meeting_id": meeting_id,
+        "handoffs": ordinance_resolution_handoffs.get(meeting_id, []),
+        "message": "Code handoffs stay linked to the meeting, motion, legal reviewer, and source references.",
+        "fix": "POST a handoff after the motion is captured and before the item enters publication or codification.",
+    }
+
+
 @app.post("/meetings/{meeting_id}/minutes/drafts", status_code=201)
 async def create_minutes_draft(meeting_id: str, payload: MinutesDraftCreate) -> dict:
     """Create an AI-assisted minutes draft only when every sentence is cited."""
@@ -1598,6 +1797,44 @@ async def reject_automatic_minutes_posting(minute_id: str) -> None:
             "fix": "Review, cite-check, and adopt minutes through a human approval workflow before public posting.",
         },
     )
+
+
+@app.post("/meetings/{meeting_id}/transcripts", status_code=201)
+async def create_transcript_record(meeting_id: str, payload: TranscriptCreate) -> dict[str, object]:
+    """Capture transcript material for clerk review before public release."""
+
+    _require_meeting_or_404(meeting_id)
+    record = {
+        "id": str(uuid4()),
+        "meeting_id": meeting_id,
+        "actor": payload.actor,
+        "source_label": payload.source_label,
+        "transcript_text": payload.transcript_text,
+        "public_release_requested": payload.public_release_requested,
+        "closed_session": payload.closed_session,
+        "status": "STAFF_REVIEW_REQUIRED",
+        "created_at": datetime.now(UTC).isoformat(),
+        "message": "Transcript captured for clerk review.",
+        "fix": (
+            "Review speaker labels, restricted-session handling, and minutes citations before public release."
+        ),
+    }
+    transcript_records.setdefault(meeting_id, []).append(record)
+    return record
+
+
+@app.get("/meetings/{meeting_id}/transcripts")
+async def list_transcript_records(meeting_id: str) -> dict[str, object]:
+    """List transcript records queued for a meeting."""
+
+    _require_meeting_or_404(meeting_id)
+    records = transcript_records.get(meeting_id, [])
+    return {
+        "meeting_id": meeting_id,
+        "transcripts": records,
+        "message": "Transcript records remain staff-only until reviewed for public release.",
+        "fix": "POST transcript text with source_label, then complete clerk review before attaching it to minutes.",
+    }
 
 
 @app.post("/meetings/{meeting_id}/public-record", status_code=201)
@@ -1843,6 +2080,19 @@ async def list_public_comments(record_id: str) -> dict[str, int | list[dict]]:
         raise HTTPException(status_code=404, detail="Public meeting record not found.")
     comments = [comment.public_dict() for comment in public_comments.list_for_record(record.id)]
     return {"total_count": len(comments), "comments": comments}
+
+
+@app.get("/public-comments/review-queue")
+async def list_public_comment_review_queue() -> dict[str, object]:
+    """List resident comments awaiting staff review across public records."""
+
+    comments = [comment.public_dict() for comment in public_comments.list_all()]
+    return {
+        "total_count": len(comments),
+        "comments": comments,
+        "message": "Resident comments remain queued for staff review before any meeting packet use.",
+        "fix": "If a needed comment is missing, confirm the public record has public_comment_enabled=true and resubmit.",
+    }
 
 
 @app.get("/public/archive/search")
@@ -2488,6 +2738,67 @@ def _request_is_https(request: Request) -> bool:
 def _pkce_s256_challenge(code_verifier: str) -> str:
     digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
     return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+
+
+def _require_meeting_or_404(meeting_id: str):
+    meeting = _get_meeting_store().get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return meeting
+
+
+def _intake_item_matches_meeting(item: dict, meeting_id: str) -> bool:
+    for reference in item.get("source_references", []):
+        if isinstance(reference, dict) and reference.get("meeting_id") == meeting_id:
+            return True
+    return False
+
+
+def _staff_report_from_intake_item(
+    item: dict,
+    *,
+    meeting_id: str,
+    legal_reviewer: str | None = None,
+) -> dict[str, object]:
+    source_references = [
+        reference
+        for reference in item.get("source_references", [])
+        if isinstance(reference, dict)
+    ]
+    agenda_item_id = next(
+        (
+            reference.get("agenda_item_id")
+            for reference in source_references
+            if reference.get("agenda_item_id")
+        ),
+        None,
+    )
+    return {
+        "id": item["id"],
+        "meeting_id": meeting_id,
+        "agenda_item_id": agenda_item_id,
+        "title": item["title"],
+        "department_name": item["department_name"],
+        "author": item["submitted_by"],
+        "summary": item["summary"],
+        "readiness_status": item["readiness_status"],
+        "reviewer": item.get("reviewer"),
+        "review_notes": item.get("review_notes"),
+        "legal_reviewer": legal_reviewer or next(
+            (
+                reference.get("legal_reviewer")
+                for reference in source_references
+                if reference.get("legal_reviewer")
+            ),
+            None,
+        ),
+        "source_references": source_references,
+        "last_audit_hash": item["last_audit_hash"],
+        "created_at": item["created_at"],
+        "updated_at": item["updated_at"],
+        "message": "Staff report is tied to agenda intake readiness and packet citation review.",
+        "fix": "Complete clerk review before adding this report to a packet assembly.",
+    }
 
 
 def _is_staff_protected_path(path: str) -> bool:

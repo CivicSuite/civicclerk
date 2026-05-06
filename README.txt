@@ -117,6 +117,16 @@ Shipped in this foundation:
   and outbound network blocked, covering citation requirements,
   closed-session refusal, legal-determination refusal, public approval gates,
   and input mutation stability
+- CC-7 API/frontend completeness contract with generated
+  `docs/api/openapi.json`, `scripts/generate-openapi-spec.py`, staff report,
+  transcript, ordinance/resolution handoff, public comment review, admin config,
+  and prompt admin endpoints, plus 20 direct React page routes for the spec
+  surfaces
+- CC-7 browser QA evidence in
+  `docs/browser-qa/cc7-api-frontend-completeness-qa-2026-05-06.json` and
+  `docs/screenshots/cc7-api-frontend-completeness-summary.md`, covering all 20
+  pages, five QA states, desktop, 390px mobile, keyboard focus, contrast,
+  horizontal overflow, visible copy, and console/runtime checks
 - prompt-version provenance enforcement for minutes drafts
 - local-first Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports
 - source provenance on imported meetings and agenda items
@@ -139,6 +149,10 @@ Shipped in this foundation:
   open mode, OIDC browser-session mode, bearer mode, or trusted-header mode,
   displays signed-in subject/provider/roles when available, and links clerks or
   IT directly to `/staff/login`, `/staff/logout`, and `/staff/auth-readiness`
+- ADR-0009 documents why the OIDC browser session bridge remains module-local
+  until CivicCore ships that helper, while protected API access continues to
+  use CivicCore bearer, trusted-header, trusted-proxy-source, and optional
+  archive bearer helpers
 - nginx-served Docker/installer product routing for `/staff`, `/staff/...`,
   `/public`, and `/public/...`, with workflow API calls staying under
   `/api/...` and staff auth-readiness/session contracts still proxied to the

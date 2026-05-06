@@ -1,0 +1,4716 @@
+{
+  "components": {
+    "schemas": {
+      "ActionItemCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "assigned_to": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To"
+          },
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "source_motion_id": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Motion Id"
+          }
+        },
+        "required": [
+          "description",
+          "actor"
+        ],
+        "title": "ActionItemCreate",
+        "type": "object"
+      },
+      "AgendaIntakeCreate": {
+        "properties": {
+          "department_name": {
+            "minLength": 1,
+            "title": "Department Name",
+            "type": "string"
+          },
+          "source_references": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "minItems": 1,
+            "title": "Source References",
+            "type": "array"
+          },
+          "submitted_by": {
+            "minLength": 1,
+            "title": "Submitted By",
+            "type": "string"
+          },
+          "summary": {
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "department_name",
+          "submitted_by",
+          "summary",
+          "source_references"
+        ],
+        "title": "AgendaIntakeCreate",
+        "type": "object"
+      },
+      "AgendaIntakePromoteRequest": {
+        "properties": {
+          "notes": {
+            "default": "Promoted to agenda lifecycle.",
+            "minLength": 1,
+            "title": "Notes",
+            "type": "string"
+          },
+          "reviewer": {
+            "minLength": 1,
+            "title": "Reviewer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reviewer"
+        ],
+        "title": "AgendaIntakePromoteRequest",
+        "type": "object"
+      },
+      "AgendaIntakeReviewRequest": {
+        "properties": {
+          "notes": {
+            "minLength": 1,
+            "title": "Notes",
+            "type": "string"
+          },
+          "ready": {
+            "title": "Ready",
+            "type": "boolean"
+          },
+          "reviewer": {
+            "minLength": 1,
+            "title": "Reviewer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reviewer",
+          "ready",
+          "notes"
+        ],
+        "title": "AgendaIntakeReviewRequest",
+        "type": "object"
+      },
+      "AgendaItemCreate": {
+        "properties": {
+          "department_name": {
+            "minLength": 1,
+            "title": "Department Name",
+            "type": "string"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "department_name"
+        ],
+        "title": "AgendaItemCreate",
+        "type": "object"
+      },
+      "AgendaItemTransitionRequest": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "to_status": {
+            "minLength": 1,
+            "title": "To Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to_status",
+          "actor"
+        ],
+        "title": "AgendaItemTransitionRequest",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "MeetingBodyCreate": {
+        "properties": {
+          "body_type": {
+            "minLength": 1,
+            "title": "Body Type",
+            "type": "string"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "body_type"
+        ],
+        "title": "MeetingBodyCreate",
+        "type": "object"
+      },
+      "MeetingBodyUpdate": {
+        "properties": {
+          "body_type": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Type"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "MeetingBodyUpdate",
+        "type": "object"
+      },
+      "MeetingCreate": {
+        "properties": {
+          "location": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "meeting_body_id": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Body Id"
+          },
+          "meeting_type": {
+            "minLength": 1,
+            "title": "Meeting Type",
+            "type": "string"
+          },
+          "scheduled_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled Start"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "meeting_type"
+        ],
+        "title": "MeetingCreate",
+        "type": "object"
+      },
+      "MeetingTransitionRequest": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "statutory_basis": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statutory Basis"
+          },
+          "to_status": {
+            "minLength": 1,
+            "title": "To Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to_status",
+          "actor"
+        ],
+        "title": "MeetingTransitionRequest",
+        "type": "object"
+      },
+      "MeetingUpdate": {
+        "properties": {
+          "actor": {
+            "default": "clerk@example.gov",
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "meeting_body_id": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Body Id"
+          },
+          "meeting_type": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Type"
+          },
+          "scheduled_start": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled Start"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "MeetingUpdate",
+        "type": "object"
+      },
+      "MinutesDraftCreate": {
+        "properties": {
+          "human_approver": {
+            "minLength": 1,
+            "title": "Human Approver",
+            "type": "string"
+          },
+          "model": {
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "prompt_version": {
+            "minLength": 1,
+            "title": "Prompt Version",
+            "type": "string"
+          },
+          "sentences": {
+            "items": {
+              "$ref": "#/components/schemas/MinutesSentenceCreate"
+            },
+            "minItems": 1,
+            "title": "Sentences",
+            "type": "array"
+          },
+          "source_materials": {
+            "items": {
+              "$ref": "#/components/schemas/SourceMaterialCreate"
+            },
+            "minItems": 1,
+            "title": "Source Materials",
+            "type": "array"
+          }
+        },
+        "required": [
+          "model",
+          "prompt_version",
+          "human_approver",
+          "source_materials",
+          "sentences"
+        ],
+        "title": "MinutesDraftCreate",
+        "type": "object"
+      },
+      "MinutesSentenceCreate": {
+        "properties": {
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "text": {
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "MinutesSentenceCreate",
+        "type": "object"
+      },
+      "MotionCorrectionCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "reason": {
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "text": {
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "actor",
+          "reason"
+        ],
+        "title": "MotionCorrectionCreate",
+        "type": "object"
+      },
+      "MotionCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "agenda_item_id": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agenda Item Id"
+          },
+          "seconded_by": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seconded By"
+          },
+          "text": {
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "actor"
+        ],
+        "title": "MotionCreate",
+        "type": "object"
+      },
+      "NoticeChecklistCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "minimum_notice_hours": {
+            "exclusiveMinimum": 0.0,
+            "title": "Minimum Notice Hours",
+            "type": "integer"
+          },
+          "notice_type": {
+            "minLength": 1,
+            "title": "Notice Type",
+            "type": "string"
+          },
+          "posted_at": {
+            "format": "date-time",
+            "title": "Posted At",
+            "type": "string"
+          },
+          "statutory_basis": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statutory Basis"
+          }
+        },
+        "required": [
+          "notice_type",
+          "posted_at",
+          "minimum_notice_hours",
+          "actor"
+        ],
+        "title": "NoticeChecklistCreate",
+        "type": "object"
+      },
+      "NoticeComplianceRequest": {
+        "properties": {
+          "approved_by": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "minimum_notice_hours": {
+            "exclusiveMinimum": 0.0,
+            "title": "Minimum Notice Hours",
+            "type": "integer"
+          },
+          "notice_type": {
+            "minLength": 1,
+            "title": "Notice Type",
+            "type": "string"
+          },
+          "posted_at": {
+            "format": "date-time",
+            "title": "Posted At",
+            "type": "string"
+          },
+          "statutory_basis": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statutory Basis"
+          }
+        },
+        "required": [
+          "notice_type",
+          "posted_at",
+          "minimum_notice_hours"
+        ],
+        "title": "NoticeComplianceRequest",
+        "type": "object"
+      },
+      "NoticePostingProofCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "posting_proof": {
+            "additionalProperties": true,
+            "minProperties": 1,
+            "title": "Posting Proof",
+            "type": "object"
+          }
+        },
+        "required": [
+          "actor",
+          "posting_proof"
+        ],
+        "title": "NoticePostingProofCreate",
+        "type": "object"
+      },
+      "OrdinanceResolutionHandoffCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "item_type": {
+            "pattern": "^(ordinance|resolution)$",
+            "title": "Item Type",
+            "type": "string"
+          },
+          "legal_reviewer": {
+            "minLength": 1,
+            "title": "Legal Reviewer",
+            "type": "string"
+          },
+          "ordinance_number": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ordinance Number"
+          },
+          "resolution_number": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Number"
+          },
+          "source_motion_id": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Motion Id"
+          },
+          "source_references": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Source References",
+            "type": "array"
+          },
+          "text": {
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_type",
+          "title",
+          "actor",
+          "legal_reviewer",
+          "text"
+        ],
+        "title": "OrdinanceResolutionHandoffCreate",
+        "type": "object"
+      },
+      "PacketAssemblyCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "agenda_item_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Agenda Item Ids",
+            "type": "array"
+          },
+          "citations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "minItems": 1,
+            "title": "Citations",
+            "type": "array"
+          },
+          "source_references": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "minItems": 1,
+            "title": "Source References",
+            "type": "array"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "agenda_item_ids",
+          "actor",
+          "source_references",
+          "citations"
+        ],
+        "title": "PacketAssemblyCreate",
+        "type": "object"
+      },
+      "PacketAssemblyFinalizeRequest": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "actor"
+        ],
+        "title": "PacketAssemblyFinalizeRequest",
+        "type": "object"
+      },
+      "PacketExportCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "bundle_name": {
+            "minLength": 1,
+            "title": "Bundle Name",
+            "type": "string"
+          },
+          "public_bundle": {
+            "default": true,
+            "title": "Public Bundle",
+            "type": "boolean"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/PacketSourceCreate"
+            },
+            "minItems": 1,
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "bundle_name",
+          "actor",
+          "sources"
+        ],
+        "title": "PacketExportCreate",
+        "type": "object"
+      },
+      "PacketSnapshotCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "agenda_item_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Agenda Item Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "agenda_item_ids",
+          "actor"
+        ],
+        "title": "PacketSnapshotCreate",
+        "type": "object"
+      },
+      "PacketSourceCreate": {
+        "properties": {
+          "checksum": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checksum"
+          },
+          "citation_label": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Citation Label"
+          },
+          "kind": {
+            "default": "document",
+            "minLength": 1,
+            "title": "Kind",
+            "type": "string"
+          },
+          "sensitivity_label": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensitivity Label"
+          },
+          "source_id": {
+            "minLength": 1,
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_path": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Path"
+          },
+          "source_system": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source System"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_id",
+          "title"
+        ],
+        "title": "PacketSourceCreate",
+        "type": "object"
+      },
+      "PublicCommentCreate": {
+        "properties": {
+          "comment": {
+            "minLength": 1,
+            "title": "Comment",
+            "type": "string"
+          },
+          "commenter_name": {
+            "minLength": 1,
+            "title": "Commenter Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "commenter_name",
+          "comment"
+        ],
+        "title": "PublicCommentCreate",
+        "type": "object"
+      },
+      "PublicMeetingRecordCreate": {
+        "properties": {
+          "approved_minutes": {
+            "minLength": 1,
+            "title": "Approved Minutes",
+            "type": "string"
+          },
+          "closed_session_notes": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Session Notes"
+          },
+          "minutes_adopted_at": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minutes Adopted At"
+          },
+          "minutes_signed_by": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minutes Signed By"
+          },
+          "plain_language_summary": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plain Language Summary"
+          },
+          "posted_agenda": {
+            "minLength": 1,
+            "title": "Posted Agenda",
+            "type": "string"
+          },
+          "posted_packet": {
+            "minLength": 1,
+            "title": "Posted Packet",
+            "type": "string"
+          },
+          "public_comment_enabled": {
+            "default": false,
+            "title": "Public Comment Enabled",
+            "type": "boolean"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "visibility": {
+            "minLength": 1,
+            "title": "Visibility",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "visibility",
+          "posted_agenda",
+          "posted_packet",
+          "approved_minutes"
+        ],
+        "title": "PublicMeetingRecordCreate",
+        "type": "object"
+      },
+      "SourceMaterialCreate": {
+        "properties": {
+          "label": {
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "source_id": {
+            "minLength": 1,
+            "title": "Source Id",
+            "type": "string"
+          },
+          "text": {
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_id",
+          "label",
+          "text"
+        ],
+        "title": "SourceMaterialCreate",
+        "type": "object"
+      },
+      "StaffReportCreate": {
+        "properties": {
+          "agenda_item_id": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agenda Item Id"
+          },
+          "author": {
+            "minLength": 1,
+            "title": "Author",
+            "type": "string"
+          },
+          "department_name": {
+            "minLength": 1,
+            "title": "Department Name",
+            "type": "string"
+          },
+          "legal_reviewer": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Reviewer"
+          },
+          "source_references": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "minItems": 1,
+            "title": "Source References",
+            "type": "array"
+          },
+          "summary": {
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "department_name",
+          "author",
+          "summary",
+          "source_references"
+        ],
+        "title": "StaffReportCreate",
+        "type": "object"
+      },
+      "TranscriptCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "closed_session": {
+            "default": false,
+            "title": "Closed Session",
+            "type": "boolean"
+          },
+          "public_release_requested": {
+            "default": false,
+            "title": "Public Release Requested",
+            "type": "boolean"
+          },
+          "source_label": {
+            "minLength": 1,
+            "title": "Source Label",
+            "type": "string"
+          },
+          "transcript_text": {
+            "minLength": 1,
+            "title": "Transcript Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "actor",
+          "source_label",
+          "transcript_text"
+        ],
+        "title": "TranscriptCreate",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VendorSyncCursorReset": {
+        "properties": {
+          "cursor_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor At"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 8,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "VendorSyncCursorReset",
+        "type": "object"
+      },
+      "VendorSyncRunRecordCreate": {
+        "properties": {
+          "error_summary": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Summary"
+          },
+          "records_discovered": {
+            "minimum": 0.0,
+            "title": "Records Discovered",
+            "type": "integer"
+          },
+          "records_failed": {
+            "minimum": 0.0,
+            "title": "Records Failed",
+            "type": "integer"
+          },
+          "records_succeeded": {
+            "minimum": 0.0,
+            "title": "Records Succeeded",
+            "type": "integer"
+          },
+          "retries_attempted": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Retries Attempted",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "records_discovered",
+          "records_succeeded",
+          "records_failed"
+        ],
+        "title": "VendorSyncRunRecordCreate",
+        "type": "object"
+      },
+      "VendorSyncSourceCreate": {
+        "properties": {
+          "auth_method": {
+            "minLength": 1,
+            "title": "Auth Method",
+            "type": "string"
+          },
+          "connector": {
+            "minLength": 1,
+            "title": "Connector",
+            "type": "string"
+          },
+          "source_name": {
+            "minLength": 1,
+            "title": "Source Name",
+            "type": "string"
+          },
+          "source_url": {
+            "minLength": 1,
+            "title": "Source Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connector",
+          "source_name",
+          "source_url",
+          "auth_method"
+        ],
+        "title": "VendorSyncSourceCreate",
+        "type": "object"
+      },
+      "VoteCorrectionCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "reason": {
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "vote": {
+            "minLength": 1,
+            "title": "Vote",
+            "type": "string"
+          }
+        },
+        "required": [
+          "vote",
+          "actor",
+          "reason"
+        ],
+        "title": "VoteCorrectionCreate",
+        "type": "object"
+      },
+      "VoteCreate": {
+        "properties": {
+          "actor": {
+            "minLength": 1,
+            "title": "Actor",
+            "type": "string"
+          },
+          "vote": {
+            "minLength": 1,
+            "title": "Vote",
+            "type": "string"
+          },
+          "voter_name": {
+            "minLength": 1,
+            "title": "Voter Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "voter_name",
+          "vote",
+          "actor"
+        ],
+        "title": "VoteCreate",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "summary": "Runtime foundation for CivicClerk municipal meeting workflows.",
+    "title": "CivicClerk",
+    "version": "0.1.20"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/": {
+      "get": {
+        "description": "Describe what the runtime foundation currently provides.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Root  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Root"
+      }
+    },
+    "/admin/config": {
+      "get": {
+        "description": "Describe CC-7 runtime coverage and staff-auth configuration posture.",
+        "operationId": "admin_config_admin_config_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Admin Config Admin Config Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Admin Config"
+      }
+    },
+    "/admin/prompts": {
+      "get": {
+        "description": "List prompt-library definitions and public approval gates for admins.",
+        "operationId": "admin_prompts_admin_prompts_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Admin Prompts Admin Prompts Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Admin Prompts"
+      }
+    },
+    "/agenda-intake": {
+      "get": {
+        "description": "List department-submitted agenda intake items awaiting staff review.",
+        "operationId": "list_agenda_intake_items_agenda_intake_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "readiness_status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Readiness Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Agenda Intake Items Agenda Intake Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Agenda Intake Items"
+      },
+      "post": {
+        "description": "Submit a department agenda item into the database-backed staff queue.",
+        "operationId": "submit_agenda_intake_item_agenda_intake_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgendaIntakeCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Submit Agenda Intake Item Agenda Intake Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Agenda Intake Item"
+      }
+    },
+    "/agenda-intake/{item_id}/promote": {
+      "post": {
+        "description": "Promote a clerk-ready intake item into the canonical agenda lifecycle.",
+        "operationId": "promote_agenda_intake_item_agenda_intake__item_id__promote_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgendaIntakePromoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Promote Agenda Intake Item Agenda Intake  Item Id  Promote Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Promote Agenda Intake Item"
+      }
+    },
+    "/agenda-intake/{item_id}/review": {
+      "post": {
+        "description": "Record clerk readiness review for an intake queue item.",
+        "operationId": "review_agenda_intake_item_agenda_intake__item_id__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgendaIntakeReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Review Agenda Intake Item Agenda Intake  Item Id  Review Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review Agenda Intake Item"
+      }
+    },
+    "/agenda-items": {
+      "post": {
+        "description": "Create a draft agenda item for lifecycle enforcement.",
+        "operationId": "create_agenda_item_agenda_items_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgendaItemCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Create Agenda Item Agenda Items Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Agenda Item"
+      }
+    },
+    "/agenda-items/{item_id}": {
+      "get": {
+        "description": "Return the current agenda item state.",
+        "operationId": "get_agenda_item_agenda_items__item_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Get Agenda Item Agenda Items  Item Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Agenda Item"
+      }
+    },
+    "/agenda-items/{item_id}/audit": {
+      "get": {
+        "description": "Return lifecycle audit entries for an agenda item.",
+        "operationId": "get_agenda_item_audit_agenda_items__item_id__audit_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response Get Agenda Item Audit Agenda Items  Item Id  Audit Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Agenda Item Audit"
+      }
+    },
+    "/agenda-items/{item_id}/transitions": {
+      "post": {
+        "description": "Apply a canonical agenda item lifecycle transition.",
+        "operationId": "transition_agenda_item_agenda_items__item_id__transitions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgendaItemTransitionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Transition Agenda Item Agenda Items  Item Id  Transitions Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Transition Agenda Item"
+      }
+    },
+    "/favicon.ico": {
+      "get": {
+        "description": "Return an empty public favicon response so browser QA stays console-clean.",
+        "operationId": "favicon_favicon_ico_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Favicon"
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Provide a simple operational health check for IT staff.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/imports/{connector_name}/meetings": {
+      "post": {
+        "description": "Import a local connector export payload without outbound network calls.",
+        "operationId": "import_connector_meeting_imports__connector_name__meetings_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connector_name",
+            "required": true,
+            "schema": {
+              "title": "Connector Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "title": "Payload",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Import Connector Meeting Imports  Connector Name  Meetings Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Connector Meeting"
+      }
+    },
+    "/meeting-bodies": {
+      "get": {
+        "description": "List municipal meeting bodies for staff setup and scheduling clients.",
+        "operationId": "list_meeting_bodies_meeting_bodies_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "active_only",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Active Only",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "items": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    ]
+                  },
+                  "title": "Response List Meeting Bodies Meeting Bodies Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Meeting Bodies"
+      },
+      "post": {
+        "description": "Create a municipal meeting body for staff calendar workflows.",
+        "operationId": "create_meeting_body_meeting_bodies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeetingBodyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "title": "Response Create Meeting Body Meeting Bodies Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Meeting Body"
+      }
+    },
+    "/meeting-bodies/{body_id}": {
+      "delete": {
+        "description": "Deactivate a meeting body instead of hard-deleting legal history.",
+        "operationId": "deactivate_meeting_body_meeting_bodies__body_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "body_id",
+            "required": true,
+            "schema": {
+              "title": "Body Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "title": "Response Deactivate Meeting Body Meeting Bodies  Body Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Deactivate Meeting Body"
+      },
+      "get": {
+        "description": "Return one municipal meeting body.",
+        "operationId": "get_meeting_body_meeting_bodies__body_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "body_id",
+            "required": true,
+            "schema": {
+              "title": "Body Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "title": "Response Get Meeting Body Meeting Bodies  Body Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Meeting Body"
+      },
+      "patch": {
+        "description": "Update a municipal meeting body without losing its record identity.",
+        "operationId": "update_meeting_body_meeting_bodies__body_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "body_id",
+            "required": true,
+            "schema": {
+              "title": "Body Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeetingBodyUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  },
+                  "title": "Response Update Meeting Body Meeting Bodies  Body Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Meeting Body"
+      }
+    },
+    "/meetings": {
+      "get": {
+        "description": "List meetings for staff calendar and dashboard clients.",
+        "operationId": "list_meetings_meetings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "items": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    ]
+                  },
+                  "title": "Response List Meetings Meetings Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Meetings"
+      },
+      "post": {
+        "description": "Create a scheduled meeting for lifecycle enforcement.",
+        "operationId": "create_meeting_meetings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeetingCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Create Meeting Meetings Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Meeting"
+      }
+    },
+    "/meetings/{meeting_id}": {
+      "get": {
+        "description": "Return the current meeting state.",
+        "operationId": "get_meeting_meetings__meeting_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Get Meeting Meetings  Meeting Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Meeting"
+      },
+      "patch": {
+        "description": "Edit staff scheduling fields before the public meeting is locked.",
+        "operationId": "update_meeting_schedule_meetings__meeting_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeetingUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Update Meeting Schedule Meetings  Meeting Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Meeting Schedule"
+      }
+    },
+    "/meetings/{meeting_id}/action-items": {
+      "get": {
+        "description": "List action items linked to a meeting.",
+        "operationId": "list_action_items_meetings__meeting_id__action_items_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Action Items Meetings  Meeting Id  Action Items Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Action Items"
+      },
+      "post": {
+        "description": "Create an action item linked to a meeting outcome.",
+        "operationId": "create_action_item_meetings__meeting_id__action_items_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionItemCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Action Item Meetings  Meeting Id  Action Items Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Action Item"
+      }
+    },
+    "/meetings/{meeting_id}/audit": {
+      "get": {
+        "description": "Return lifecycle audit entries for a meeting.",
+        "operationId": "get_meeting_audit_meetings__meeting_id__audit_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response Get Meeting Audit Meetings  Meeting Id  Audit Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Meeting Audit"
+      }
+    },
+    "/meetings/{meeting_id}/export-bundle": {
+      "post": {
+        "description": "Create a records-ready packet export bundle with manifest, checksums, and audit.",
+        "operationId": "create_packet_export_bundle_meetings__meeting_id__export_bundle_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PacketExportCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Packet Export Bundle Meetings  Meeting Id  Export Bundle Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Packet Export Bundle"
+      }
+    },
+    "/meetings/{meeting_id}/minutes/drafts": {
+      "get": {
+        "description": "List citation-gated minutes drafts for a meeting.",
+        "operationId": "list_minutes_drafts_meetings__meeting_id__minutes_drafts_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Minutes Drafts Meetings  Meeting Id  Minutes Drafts Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Minutes Drafts"
+      },
+      "post": {
+        "description": "Create an AI-assisted minutes draft only when every sentence is cited.",
+        "operationId": "create_minutes_draft_meetings__meeting_id__minutes_drafts_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MinutesDraftCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Minutes Draft Meetings  Meeting Id  Minutes Drafts Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Minutes Draft"
+      }
+    },
+    "/meetings/{meeting_id}/motions": {
+      "get": {
+        "description": "List captured motions and correction records for a meeting.",
+        "operationId": "list_motions_meetings__meeting_id__motions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Motions Meetings  Meeting Id  Motions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Motions"
+      },
+      "post": {
+        "description": "Capture an immutable motion for a meeting.",
+        "operationId": "capture_motion_meetings__meeting_id__motions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MotionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Capture Motion Meetings  Meeting Id  Motions Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Motion"
+      }
+    },
+    "/meetings/{meeting_id}/notice-checklists": {
+      "get": {
+        "description": "List persisted notice checklist records for a meeting.",
+        "operationId": "list_notice_checklist_records_meetings__meeting_id__notice_checklists_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Notice Checklist Records Meetings  Meeting Id  Notice Checklists Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Notice Checklist Records"
+      },
+      "post": {
+        "description": "Persist a notice compliance checklist record for staff review.",
+        "operationId": "create_notice_checklist_record_meetings__meeting_id__notice_checklists_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticeChecklistCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Notice Checklist Record Meetings  Meeting Id  Notice Checklists Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Notice Checklist Record"
+      }
+    },
+    "/meetings/{meeting_id}/notices/check": {
+      "post": {
+        "description": "Check public notice compliance without posting.",
+        "operationId": "check_notice_compliance_meetings__meeting_id__notices_check_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticeComplianceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Check Notice Compliance Meetings  Meeting Id  Notices Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check Notice Compliance"
+      }
+    },
+    "/meetings/{meeting_id}/notices/post": {
+      "post": {
+        "description": "Post a public notice after deadline and human-approval checks pass.",
+        "operationId": "post_notice_meetings__meeting_id__notices_post_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticeComplianceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Post Notice Meetings  Meeting Id  Notices Post Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Post Notice"
+      }
+    },
+    "/meetings/{meeting_id}/ordinance-resolution-handoff": {
+      "get": {
+        "description": "List ordinance and resolution handoffs for a meeting.",
+        "operationId": "list_ordinance_resolution_handoffs_meetings__meeting_id__ordinance_resolution_handoff_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Ordinance Resolution Handoffs Meetings  Meeting Id  Ordinance Resolution Handoff Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Ordinance Resolution Handoffs"
+      },
+      "post": {
+        "description": "Create a code-drafting handoff from adopted meeting action.",
+        "operationId": "create_ordinance_resolution_handoff_meetings__meeting_id__ordinance_resolution_handoff_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrdinanceResolutionHandoffCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Ordinance Resolution Handoff Meetings  Meeting Id  Ordinance Resolution Handoff Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Ordinance Resolution Handoff"
+      }
+    },
+    "/meetings/{meeting_id}/packet-assemblies": {
+      "get": {
+        "description": "List persisted packet assembly records for a meeting.",
+        "operationId": "list_packet_assembly_records_meetings__meeting_id__packet_assemblies_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Packet Assembly Records Meetings  Meeting Id  Packet Assemblies Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Packet Assembly Records"
+      },
+      "post": {
+        "description": "Create a persisted packet assembly record tied to a packet snapshot.",
+        "operationId": "create_packet_assembly_record_meetings__meeting_id__packet_assemblies_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PacketAssemblyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Packet Assembly Record Meetings  Meeting Id  Packet Assemblies Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Packet Assembly Record"
+      }
+    },
+    "/meetings/{meeting_id}/packet-snapshots": {
+      "get": {
+        "description": "Return packet snapshot versions for a meeting.",
+        "operationId": "list_packet_snapshots_meetings__meeting_id__packet_snapshots_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Packet Snapshots Meetings  Meeting Id  Packet Snapshots Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Packet Snapshots"
+      },
+      "post": {
+        "description": "Create an immutable packet snapshot version for a meeting.",
+        "operationId": "create_packet_snapshot_meetings__meeting_id__packet_snapshots_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PacketSnapshotCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Packet Snapshot Meetings  Meeting Id  Packet Snapshots Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Packet Snapshot"
+      }
+    },
+    "/meetings/{meeting_id}/public-record": {
+      "post": {
+        "description": "Create a public or restricted archive record for a meeting.",
+        "operationId": "publish_public_record_meetings__meeting_id__public_record_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicMeetingRecordCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Publish Public Record Meetings  Meeting Id  Public Record Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Publish Public Record"
+      }
+    },
+    "/meetings/{meeting_id}/staff-reports": {
+      "get": {
+        "description": "List staff report records linked to a meeting.",
+        "operationId": "list_staff_reports_meetings__meeting_id__staff_reports_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Staff Reports Meetings  Meeting Id  Staff Reports Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Staff Reports"
+      },
+      "post": {
+        "description": "Normalize a staff report into the clerk-visible agenda intake trail.",
+        "operationId": "create_staff_report_meetings__meeting_id__staff_reports_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffReportCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Staff Report Meetings  Meeting Id  Staff Reports Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Staff Report"
+      }
+    },
+    "/meetings/{meeting_id}/transcripts": {
+      "get": {
+        "description": "List transcript records queued for a meeting.",
+        "operationId": "list_transcript_records_meetings__meeting_id__transcripts_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Transcript Records Meetings  Meeting Id  Transcripts Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Transcript Records"
+      },
+      "post": {
+        "description": "Capture transcript material for clerk review before public release.",
+        "operationId": "create_transcript_record_meetings__meeting_id__transcripts_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranscriptCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Transcript Record Meetings  Meeting Id  Transcripts Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Transcript Record"
+      }
+    },
+    "/meetings/{meeting_id}/transitions": {
+      "post": {
+        "description": "Apply a canonical meeting lifecycle transition.",
+        "operationId": "transition_meeting_meetings__meeting_id__transitions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeetingTransitionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Transition Meeting Meetings  Meeting Id  Transitions Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Transition Meeting"
+      }
+    },
+    "/minutes/{minute_id}/post": {
+      "post": {
+        "description": "Reject automatic public posting of AI-drafted minutes.",
+        "operationId": "reject_automatic_minutes_posting_minutes__minute_id__post_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "minute_id",
+            "required": true,
+            "schema": {
+              "title": "Minute Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reject Automatic Minutes Posting"
+      }
+    },
+    "/motions/{motion_id}": {
+      "patch": {
+        "description": "Reject edits to captured motions; corrections must be append-only.",
+        "operationId": "reject_motion_mutation_motions__motion_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "motion_id",
+            "required": true,
+            "schema": {
+              "title": "Motion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reject Motion Mutation"
+      },
+      "put": {
+        "description": "Reject edits to captured motions; corrections must be append-only.",
+        "operationId": "reject_motion_mutation_motions__motion_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "motion_id",
+            "required": true,
+            "schema": {
+              "title": "Motion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reject Motion Mutation"
+      }
+    },
+    "/motions/{motion_id}/corrections": {
+      "post": {
+        "description": "Create an append-only correction record for a captured motion.",
+        "operationId": "correct_motion_motions__motion_id__corrections_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "motion_id",
+            "required": true,
+            "schema": {
+              "title": "Motion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MotionCorrectionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Correct Motion Motions  Motion Id  Corrections Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Correct Motion"
+      }
+    },
+    "/motions/{motion_id}/votes": {
+      "get": {
+        "description": "List captured votes and correction records for a motion.",
+        "operationId": "list_votes_motions__motion_id__votes_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "motion_id",
+            "required": true,
+            "schema": {
+              "title": "Motion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Votes Motions  Motion Id  Votes Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Votes"
+      },
+      "post": {
+        "description": "Capture an immutable vote for a motion.",
+        "operationId": "capture_vote_motions__motion_id__votes_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "motion_id",
+            "required": true,
+            "schema": {
+              "title": "Motion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoteCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Capture Vote Motions  Motion Id  Votes Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Vote"
+      }
+    },
+    "/notice-checklists/{record_id}/posting-proof": {
+      "post": {
+        "description": "Attach posting proof metadata to a persisted notice checklist record.",
+        "operationId": "attach_notice_posting_proof_notice_checklists__record_id__posting_proof_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoticePostingProofCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Attach Notice Posting Proof Notice Checklists  Record Id  Posting Proof Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Attach Notice Posting Proof"
+      }
+    },
+    "/packet-assemblies/{record_id}/finalize": {
+      "post": {
+        "description": "Finalize a persisted packet assembly record.",
+        "operationId": "finalize_packet_assembly_record_packet_assemblies__record_id__finalize_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PacketAssemblyFinalizeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Finalize Packet Assembly Record Packet Assemblies  Record Id  Finalize Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Finalize Packet Assembly Record"
+      }
+    },
+    "/public": {
+      "get": {
+        "description": "Render the resident-facing public portal shell.",
+        "operationId": "public_portal_public_get",
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Public Portal"
+      }
+    },
+    "/public-comments/review-queue": {
+      "get": {
+        "description": "List resident comments awaiting staff review across public records.",
+        "operationId": "list_public_comment_review_queue_public_comments_review_queue_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Public Comment Review Queue Public Comments Review Queue Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Public Comment Review Queue"
+      }
+    },
+    "/public/archive/search": {
+      "get": {
+        "description": "Search public archives with permission-aware closed-session filtering.",
+        "operationId": "public_archive_search_public_archive_search_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "items": {
+                          "additionalProperties": true,
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    ]
+                  },
+                  "title": "Response Public Archive Search Public Archive Search Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Public Archive Search"
+      }
+    },
+    "/public/meetings": {
+      "get": {
+        "description": "Return public meeting calendar records only.",
+        "operationId": "public_meetings_public_meetings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "items": {
+                          "additionalProperties": true,
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    ]
+                  },
+                  "title": "Response Public Meetings Public Meetings Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Public Meetings"
+      }
+    },
+    "/public/meetings/{record_id}": {
+      "get": {
+        "description": "Return one public meeting record without revealing restricted records.",
+        "operationId": "public_meeting_detail_public_meetings__record_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Public Meeting Detail Public Meetings  Record Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Meeting Detail"
+      }
+    },
+    "/public/meetings/{record_id}/comments": {
+      "get": {
+        "description": "List resident comments collected for a public record.",
+        "operationId": "list_public_comments_public_meetings__record_id__comments_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "items": {
+                          "additionalProperties": true,
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    ]
+                  },
+                  "title": "Response List Public Comments Public Meetings  Record Id  Comments Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Public Comments"
+      },
+      "post": {
+        "description": "Accept a resident comment only for public records with comment intake enabled.",
+        "operationId": "submit_public_comment_public_meetings__record_id__comments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicCommentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Submit Public Comment Public Meetings  Record Id  Comments Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Public Comment"
+      }
+    },
+    "/public/meetings/{record_id}/{document_kind}.txt": {
+      "get": {
+        "description": "Download one public-safe agenda, packet, or adopted-minutes text file.",
+        "operationId": "public_meeting_download_public_meetings__record_id___document_kind__txt_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "title": "Record Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_kind",
+            "required": true,
+            "schema": {
+              "title": "Document Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Meeting Download"
+      }
+    },
+    "/staff": {
+      "get": {
+        "description": "Render the staff-facing workflow foundation.",
+        "operationId": "staff_dashboard_staff_get",
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff Dashboard"
+      }
+    },
+    "/staff/auth-readiness": {
+      "get": {
+        "description": "Report whether the current staff auth mode is configured for safe use.",
+        "operationId": "staff_auth_readiness_staff_auth_readiness_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Staff Auth Readiness Staff Auth Readiness Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff Auth Readiness"
+      }
+    },
+    "/staff/login": {
+      "get": {
+        "description": "Start the municipal OIDC browser sign-in flow for staff users.",
+        "operationId": "staff_login_staff_login_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff Login"
+      }
+    },
+    "/staff/logout": {
+      "get": {
+        "description": "Clear the local CivicClerk staff browser session.",
+        "operationId": "staff_logout_staff_logout_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff Logout"
+      }
+    },
+    "/staff/oidc/callback": {
+      "get": {
+        "description": "Complete the OIDC authorization-code callback and issue a staff session cookie.",
+        "operationId": "staff_oidc_callback_staff_oidc_callback_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff Oidc Callback"
+      }
+    },
+    "/staff/session": {
+      "get": {
+        "description": "Describe the current staff access mode for the browser workflow shell.",
+        "operationId": "staff_session_staff_session_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Staff Session Staff Session Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff Session"
+      }
+    },
+    "/vendor-live-sync/sources": {
+      "get": {
+        "description": "List persisted vendor live-sync source health without contacting vendors.",
+        "operationId": "list_vendor_live_sync_sources_vendor_live_sync_sources_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Vendor Live Sync Sources Vendor Live Sync Sources Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Vendor Live Sync Sources"
+      },
+      "post": {
+        "description": "Create a durable vendor live-sync source record without contacting the vendor.",
+        "operationId": "create_vendor_live_sync_source_vendor_live_sync_sources_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorSyncSourceCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Vendor Live Sync Source Vendor Live Sync Sources Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Vendor Live Sync Source"
+      }
+    },
+    "/vendor-live-sync/sources/{source_id}/cursor-reset": {
+      "post": {
+        "description": "Clear or move a vendor delta cursor without contacting the vendor network.",
+        "operationId": "reset_vendor_live_sync_cursor_vendor_live_sync_sources__source_id__cursor_reset_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorSyncCursorReset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Reset Vendor Live Sync Cursor Vendor Live Sync Sources  Source Id  Cursor Reset Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Vendor Live Sync Cursor"
+      }
+    },
+    "/vendor-live-sync/sources/{source_id}/run-log": {
+      "get": {
+        "description": "Return persisted run history for one vendor source without contacting vendors.",
+        "operationId": "list_vendor_live_sync_runs_vendor_live_sync_sources__source_id__run_log_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Vendor Live Sync Runs Vendor Live Sync Sources  Source Id  Run Log Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Vendor Live Sync Runs"
+      },
+      "post": {
+        "description": "Record one vendor sync run outcome without starting a vendor pull.",
+        "operationId": "record_vendor_live_sync_run_vendor_live_sync_sources__source_id__run_log_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorSyncRunRecordCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Vendor Live Sync Run Vendor Live Sync Sources  Source Id  Run Log Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Vendor Live Sync Run"
+      }
+    },
+    "/votes/{vote_id}": {
+      "patch": {
+        "description": "Reject edits to captured votes; corrections must be append-only.",
+        "operationId": "reject_vote_mutation_votes__vote_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "vote_id",
+            "required": true,
+            "schema": {
+              "title": "Vote Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reject Vote Mutation"
+      },
+      "put": {
+        "description": "Reject edits to captured votes; corrections must be append-only.",
+        "operationId": "reject_vote_mutation_votes__vote_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "vote_id",
+            "required": true,
+            "schema": {
+              "title": "Vote Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reject Vote Mutation"
+      }
+    },
+    "/votes/{vote_id}/corrections": {
+      "post": {
+        "description": "Create an append-only correction record for a captured vote.",
+        "operationId": "correct_vote_votes__vote_id__corrections_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "vote_id",
+            "required": true,
+            "schema": {
+              "title": "Vote Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoteCorrectionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Correct Vote Votes  Vote Id  Corrections Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Correct Vote"
+      }
+    }
+  }
+}

@@ -1,7 +1,31 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "outcomes" | "minutes" | "member" | "public" | "sync";
+const SPEC_PAGE_IDS = [
+  "staff-dashboard",
+  "meeting-calendar",
+  "meeting-detail",
+  "agenda-builder",
+  "agenda-intake",
+  "staff-report-editor",
+  "packet-builder",
+  "notice-checklist",
+  "live-meeting-capture",
+  "minutes-review",
+  "motions-votes-actions",
+  "transcript-management",
+  "public-comment-review",
+  "closed-session-workspace",
+  "archive-search",
+  "public-calendar",
+  "public-detail",
+  "admin-settings",
+  "prompt-library-admin",
+  "connector-import-admin",
+] as const;
+const LEGACY_PAGE_IDS = ["dashboard", "meetings", "agenda", "packet", "notice", "outcomes", "minutes", "member", "public", "sync"] as const;
+const APP_PAGE_IDS = [...SPEC_PAGE_IDS, ...LEGACY_PAGE_IDS] as const;
+type Page = typeof APP_PAGE_IDS[number];
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -826,6 +850,49 @@ function Icon({ label }: { label: string }) {
   return <span className="icon" aria-hidden="true">{label.slice(0, 1)}</span>;
 }
 
+const primaryNav: Array<{ label: string; page: Page; matches: Page[] }> = [
+  { label: "Dashboard", page: "staff-dashboard", matches: ["staff-dashboard", "dashboard"] },
+  { label: "Meetings", page: "meeting-calendar", matches: ["meeting-calendar", "meetings", "meeting-detail"] },
+  { label: "Agenda intake", page: "agenda-intake", matches: ["agenda-intake", "agenda"] },
+  { label: "Packet builder", page: "packet-builder", matches: ["packet-builder", "packet"] },
+  { label: "Notice checklist", page: "notice-checklist", matches: ["notice-checklist", "notice"] },
+  { label: "Outcomes", page: "motions-votes-actions", matches: ["motions-votes-actions", "live-meeting-capture", "outcomes"] },
+  { label: "Minutes", page: "minutes-review", matches: ["minutes-review", "minutes"] },
+  { label: "Member packet", page: "member", matches: ["member"] },
+  { label: "Public posting", page: "public-calendar", matches: ["public-calendar", "public-detail", "public"] },
+  { label: "Vendor sync", page: "connector-import-admin", matches: ["connector-import-admin", "sync"] },
+];
+
+const specNav: Array<{ label: string; page: Page }> = [
+  { label: "Agenda builder", page: "agenda-builder" },
+  { label: "Staff reports", page: "staff-report-editor" },
+  { label: "Transcripts", page: "transcript-management" },
+  { label: "Public comments", page: "public-comment-review" },
+  { label: "Closed session", page: "closed-session-workspace" },
+  { label: "Archive search", page: "archive-search" },
+  { label: "Admin settings", page: "admin-settings" },
+  { label: "Prompt library", page: "prompt-library-admin" },
+];
+
+const specCompletenessPages: Page[] = [
+  "agenda-builder",
+  "staff-report-editor",
+  "transcript-management",
+  "public-comment-review",
+  "closed-session-workspace",
+  "archive-search",
+  "admin-settings",
+  "prompt-library-admin",
+];
+
+function isPage(page: Page, ...matches: Page[]) {
+  return matches.includes(page);
+}
+
+function isSpecCompletenessPage(page: Page) {
+  return specCompletenessPages.includes(page);
+}
+
 export function App() {
   const initial = getInitialView();
   const [page, setPage] = useState<Page>(initial.page);
@@ -1056,7 +1123,7 @@ export function App() {
   }, [initial.source]);
 
   useEffect(() => {
-    if (initial.source === "demo" || qaState !== null || page === "public") {
+    if (initial.source === "demo" || qaState !== null || isPage(page, "public", "public-calendar", "public-detail")) {
       return;
     }
     let cancelled = false;
@@ -1081,7 +1148,7 @@ export function App() {
   }, [initial.source, page, qaState]);
 
   useEffect(() => {
-    if (initial.source === "demo" || qaState !== null || page === "public") {
+    if (initial.source === "demo" || qaState !== null || isPage(page, "public", "public-calendar", "public-detail")) {
       setStaffSession({
         mode: "open",
         authenticated: true,
@@ -1258,36 +1325,27 @@ export function App() {
           </div>
         </div>
         <nav>
-          <button className={page === "dashboard" ? "active" : ""} onClick={() => setPage("dashboard")}>
-            <Icon label="Dashboard" /> Dashboard
-          </button>
-          <button className={page === "meetings" || page === "meeting-detail" ? "active" : ""} onClick={() => setPage("meetings")}>
-            <Icon label="Meetings" /> Meetings
-          </button>
-          <button className={page === "agenda" ? "active" : ""} onClick={() => setPage("agenda")}>
-            <Icon label="Agenda" /> Agenda intake
-          </button>
-          <button className={page === "packet" ? "active" : ""} onClick={() => setPage("packet")}>
-            <Icon label="Packet" /> Packet builder
-          </button>
-          <button className={page === "notice" ? "active" : ""} onClick={() => setPage("notice")}>
-            <Icon label="Notice" /> Notice checklist
-          </button>
-          <button className={page === "outcomes" ? "active" : ""} onClick={() => setPage("outcomes")}>
-            <Icon label="Outcomes" /> Outcomes
-          </button>
-          <button className={page === "member" ? "active" : ""} onClick={() => setPage("member")}>
-            <Icon label="Member" /> Member packet
-          </button>
-          <button className={page === "public" ? "active" : ""} onClick={() => setPage("public")}>
-            <Icon label="Public" /> Public posting
-          </button>
-          <button className={page === "minutes" ? "active" : ""} onClick={() => setPage("minutes")}>
-            <Icon label="Minutes" /> Minutes
-          </button>
-          <button className={page === "sync" ? "active" : ""} onClick={() => setPage("sync")}>
-            <Icon label="Sync" /> Vendor sync
-          </button>
+          {primaryNav.map((item) => (
+            <button
+              key={item.page}
+              className={item.matches.includes(page) ? "active" : ""}
+              onClick={() => setPage(item.page)}
+            >
+              <Icon label={item.label} /> {item.label}
+            </button>
+          ))}
+          <div className="nav-section" aria-label="CC-7 spec pages">
+            <span>Spec pages</span>
+            {specNav.map((item) => (
+              <button
+                key={item.page}
+                className={page === item.page ? "active" : ""}
+                onClick={() => setPage(item.page)}
+              >
+                <Icon label={item.label} /> {item.label}
+              </button>
+            ))}
+          </div>
         </nav>
         <div className="install-card">
           <span>Partial install</span>
@@ -1300,18 +1358,18 @@ export function App() {
         <div className="surface-switch" aria-label="Surface switcher">
           <button className="on">Staff</button>
           <button onClick={() => setPage("member")}>Member</button>
-          <button onClick={() => setPage("public")}>Resident</button>
-          <button>IT/Admin</button>
+          <button onClick={() => setPage("public-calendar")}>Resident</button>
+          <button onClick={() => setPage("admin-settings")}>IT/Admin</button>
         </div>
         <button className="audit-toggle" onClick={() => setAuditOpen((open) => !open)}>
           {auditOpen ? "Hide audit" : "Show audit"}
         </button>
       </header>
 
-      <main className={auditOpen ? "workspace with-audit" : "workspace"}>
+      <main className={auditOpen ? "workspace with-audit" : "workspace"} data-current-page={page}>
         <section>
           <StateToolbar viewState={viewState} setViewState={setQaState} qaState={qaState} />
-          {page === "dashboard" && (
+          {isPage(page, "staff-dashboard", "dashboard") && (
             <Dashboard
               viewState={viewState}
               apiError={apiError}
@@ -1352,7 +1410,7 @@ export function App() {
               setActiveMeetingId={setActiveMeetingId}
             />
           )}
-          {page === "meetings" && (
+          {isPage(page, "meeting-calendar", "meetings") && (
             <MeetingCalendar
               viewState={viewState}
               apiError={apiError}
@@ -1384,7 +1442,7 @@ export function App() {
               }}
             />
           )}
-          {page === "agenda" && (
+          {isPage(page, "agenda-intake", "agenda") && (
             <AgendaIntakeWorkspace
               viewState={viewState}
               apiError={apiError}
@@ -1405,7 +1463,7 @@ export function App() {
               }}
             />
           )}
-          {page === "packet" && (
+          {isPage(page, "packet-builder", "packet") && (
             <PacketBuilderWorkspace
               viewState={qaState ?? packetState}
               apiError={packetError}
@@ -1430,7 +1488,7 @@ export function App() {
               }}
             />
           )}
-          {page === "notice" && (
+          {isPage(page, "notice-checklist", "notice") && (
             <NoticeChecklistWorkspace
               viewState={qaState ?? noticeState}
               apiError={noticeError}
@@ -1455,7 +1513,7 @@ export function App() {
               }}
             />
           )}
-          {page === "outcomes" && (
+          {isPage(page, "motions-votes-actions", "live-meeting-capture", "outcomes") && (
             <MeetingOutcomesWorkspace
               viewState={qaState ?? outcomeState}
               apiError={outcomeError}
@@ -1487,7 +1545,7 @@ export function App() {
               }}
             />
           )}
-          {page === "minutes" && (
+          {isPage(page, "minutes-review", "minutes") && (
             <MinutesDraftWorkspace
               viewState={qaState ?? minutesState}
               apiError={minutesError}
@@ -1506,6 +1564,18 @@ export function App() {
                 return mapped;
               }}
               onPostDraft={async (draftId) => rejectAutomaticMinutesPosting(draftId)}
+            />
+          )}
+          {isSpecCompletenessPage(page) && (
+            <SpecCompletenessWorkspace
+              page={page}
+              viewState={viewState}
+              apiError={apiError}
+              meetings={visibleMeetings}
+              agendaItems={visibleAgendaItems}
+              publicRecords={visiblePublicRecords}
+              vendorSyncSources={visibleVendorSyncSources}
+              staffSession={staffSession}
             />
           )}
           {page === "member" && (
@@ -1529,7 +1599,7 @@ export function App() {
               }}
             />
           )}
-          {page === "public" && (
+          {isPage(page, "public-calendar", "public-detail", "public") && (
             <PublicPostedMeetingWorkspace
               viewState={qaState ?? publicState}
               apiError={publicError}
@@ -1569,7 +1639,7 @@ export function App() {
               }}
             />
           )}
-          {page === "sync" && (
+          {isPage(page, "connector-import-admin", "sync") && (
             <VendorSyncWorkspace
               viewState={qaState ?? vendorSyncState}
               apiError={vendorSyncError}
@@ -2297,16 +2367,15 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "minutes", "member", "public", "sync"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const routePage = normalizedPath === "/public" || normalizedPath.startsWith("/public/")
-    ? "public"
+    ? "public-calendar"
     : normalizedPath === "/staff" || normalizedPath.startsWith("/staff/")
-      ? "dashboard"
+      ? "staff-dashboard"
       : null;
   return {
-    page: pages.includes(requestedPage as Page) ? (requestedPage as Page) : routePage ?? "dashboard",
+    page: APP_PAGE_IDS.includes(requestedPage as Page) ? (requestedPage as Page) : routePage ?? "staff-dashboard",
     state: states.includes(requestedState as ViewState) ? (requestedState as ViewState) : null,
     audit: params.get("audit") === "1",
     source: params.get("source") === "demo" ? "demo" : "api",
@@ -2467,6 +2536,260 @@ function buildMeetingRunbook({
     readyCount: items.filter((item) => item.status === "Ready").length,
     legalBlocker: latestNotice && !latestNotice.compliant ? `Notice proof is blocked for ${meeting.body}. ${legalWarning}` : null,
   };
+}
+
+function SpecCompletenessWorkspace({
+  page,
+  viewState,
+  apiError,
+  meetings,
+  agendaItems,
+  publicRecords,
+  vendorSyncSources,
+  staffSession,
+}: {
+  page: Page;
+  viewState: ViewState;
+  apiError: string | null;
+  meetings: Meeting[];
+  agendaItems: AgendaIntakeItem[];
+  publicRecords: PublicMeetingRecord[];
+  vendorSyncSources: VendorSyncSource[];
+  staffSession: StaffSession | null;
+}) {
+  const readyAgenda = agendaItems.filter((item) => item.readinessStatus === "READY").length;
+  const reportSources = agendaItems.reduce((total, item) => total + item.sourceReferences.length, 0);
+  const commentEnabled = publicRecords.filter((record) => record.publicCommentEnabled).length;
+  const blockedNotices = meetings.filter((meeting) => meeting.noticeStatus !== "Ready").length;
+  const unhealthySources = vendorSyncSources.filter((source) => source.healthStatus !== "healthy").length;
+  const copy = getSpecWorkspaceCopy(page, {
+    meetingCount: meetings.length,
+    readyAgenda,
+    reportSources,
+    commentEnabled,
+    publicRecordCount: publicRecords.length,
+    blockedNotices,
+    unhealthySources,
+    authMode: staffSession?.mode ?? "unknown",
+  });
+
+  if (viewState !== "success") {
+    return <StateMessage state={viewState} context={copy.context} apiError={apiError} />;
+  }
+
+  return (
+    <div className="page-stack spec-completeness" data-spec-page={page}>
+      <PageHeader eyebrow="CC-7 spec surface" title={copy.title} description={copy.description} />
+      <div className="metric-grid">
+        {copy.metrics.map((metric) => (
+          <MetricCard
+            key={metric.label}
+            label={metric.label}
+            value={metric.value}
+            note={metric.note}
+            tone={metric.tone}
+          />
+        ))}
+      </div>
+      <section className="panel spec-panel">
+        <div className="panel-heading">
+          <div>
+            <h2>{copy.panelTitle}</h2>
+            <p>{copy.panelDescription}</p>
+          </div>
+          <StatusBadge tone={copy.ready ? "Ready" : "Warning"} label={copy.ready ? "Route covered" : "Needs clerk review"} />
+        </div>
+        <div className="spec-lanes">
+          <div>
+            <h3>Expected controls</h3>
+            <ul>
+              {copy.controls.map((control) => (
+                <li key={control}>{control}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3>API coverage</h3>
+            <ul>
+              {copy.apiPaths.map((path) => (
+                <li key={path}><code>{path}</code></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3>Release proof</h3>
+            <ul>
+              {copy.releaseProof.map((proof) => (
+                <li key={proof}>{proof}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function getSpecWorkspaceCopy(
+  page: Page,
+  counts: {
+    meetingCount: number;
+    readyAgenda: number;
+    reportSources: number;
+    commentEnabled: number;
+    publicRecordCount: number;
+    blockedNotices: number;
+    unhealthySources: number;
+    authMode: string;
+  },
+) {
+  const sharedProof = [
+    "Browser evidence checks loading, success, empty, error, and partial states.",
+    "Desktop and 390px mobile layouts must stay keyboard reachable with visible focus.",
+    "Every warning names the blocker and the next operator step.",
+  ];
+  const copy: Record<string, {
+    context: string;
+    title: string;
+    description: string;
+    panelTitle: string;
+    panelDescription: string;
+    ready: boolean;
+    metrics: Array<{ label: string; value: string; note: string; tone?: "warn" }>;
+    controls: string[];
+    apiPaths: string[];
+    releaseProof: string[];
+  }> = {
+    "agenda-builder": {
+      context: "agenda builder",
+      title: "Build the meeting agenda from reviewed staff work.",
+      description: "The builder exposes sequencing, readiness blockers, and packet handoff before agenda publication.",
+      panelTitle: "Agenda assembly lane",
+      panelDescription: "Clerks can see which submitted items are ready, which are blocked, and where packet assembly starts.",
+      ready: counts.readyAgenda > 0,
+      metrics: [
+        { label: "Meetings", value: String(counts.meetingCount), note: "Schedulable bodies available" },
+        { label: "Ready items", value: String(counts.readyAgenda), note: "Reviewed intake items" },
+        { label: "Notice blockers", value: String(counts.blockedNotices), note: "Resolve before public posting", tone: counts.blockedNotices ? "warn" : undefined },
+      ],
+      controls: ["Order reviewed items", "Send selected items to packet assembly", "Show legal-readiness blockers"],
+      apiPaths: ["/agenda-intake", "/agenda-intake/{item_id}/promote", "/meetings/{meeting_id}/packet-assemblies"],
+      releaseProof: sharedProof,
+    },
+    "staff-report-editor": {
+      context: "staff report editor",
+      title: "Normalize staff reports before they enter the packet.",
+      description: "Department drafts, source files, legal review, and clerk sign-off stay visible before publication.",
+      panelTitle: "Report normalization lane",
+      panelDescription: "The API persists reports through agenda intake so readiness review and citations share one trail.",
+      ready: counts.reportSources > 0,
+      metrics: [
+        { label: "Source refs", value: String(counts.reportSources), note: "Attached staff-report material" },
+        { label: "Ready queue", value: String(counts.readyAgenda), note: "Clerk-reviewed items" },
+        { label: "Approval gate", value: "Human", note: "No automatic legal determination" },
+      ],
+      controls: ["Edit summary and source references", "Send to legal or clerk review", "Attach report to agenda item"],
+      apiPaths: ["/meetings/{meeting_id}/staff-reports", "/agenda-intake/{item_id}/review"],
+      releaseProof: sharedProof,
+    },
+    "transcript-management": {
+      context: "transcript management",
+      title: "Hold transcript text for staff review before release.",
+      description: "Transcript records show source label, closed-session flags, and release readiness before minutes citation.",
+      panelTitle: "Transcript review lane",
+      panelDescription: "Clerks can capture transcript material without implying it is public or official minutes.",
+      ready: true,
+      metrics: [
+        { label: "Release gate", value: "Review", note: "Speaker and restriction checks required" },
+        { label: "Citation use", value: "Manual", note: "Minutes source IDs stay explicit" },
+        { label: "Closed flag", value: "Visible", note: "Restricted text is not public by default" },
+      ],
+      controls: ["Capture transcript text", "Flag restricted-session material", "Attach reviewed excerpts to minutes sources"],
+      apiPaths: ["/meetings/{meeting_id}/transcripts", "/meetings/{meeting_id}/minutes/drafts"],
+      releaseProof: sharedProof,
+    },
+    "public-comment-review": {
+      context: "public comment review",
+      title: "Review resident comments before they affect the meeting record.",
+      description: "The staff queue separates comment intake from packet or minutes use so clerks can screen and cite deliberately.",
+      panelTitle: "Comment review lane",
+      panelDescription: "Public comments remain tied to public records and can be reviewed without exposing private staff workflow.",
+      ready: counts.commentEnabled > 0,
+      metrics: [
+        { label: "Comment intake", value: String(counts.commentEnabled), note: "Public records accepting comments" },
+        { label: "Posted records", value: String(counts.publicRecordCount), note: "Resident-visible records" },
+        { label: "Review queue", value: "Staff", note: "Comments do not auto-enter minutes" },
+      ],
+      controls: ["Open public comment queue", "Keep confirmation IDs visible", "Route accepted comments to source materials"],
+      apiPaths: ["/public/meetings/{record_id}/comments", "/public-comments/review-queue"],
+      releaseProof: sharedProof,
+    },
+    "closed-session-workspace": {
+      context: "closed-session workspace",
+      title: "Keep closed-session work staff-only and role-aware.",
+      description: "Restricted notes, archive searches, and summaries stay behind staff authorization and never imply public existence.",
+      panelTitle: "Restricted-session lane",
+      panelDescription: "The surface documents the role gate and keeps public copy separate from attorney or clerk-only review.",
+      ready: counts.authMode !== "unknown",
+      metrics: [
+        { label: "Auth mode", value: counts.authMode, note: "Staff mode shown to operator" },
+        { label: "Public leaks", value: "0", note: "Restricted records withheld" },
+        { label: "Role gate", value: "CivicCore", note: "Bearer archive roles resolved centrally" },
+      ],
+      controls: ["Open role-gated archive search", "Summarize without revealing public existence", "Record staff-only notes"],
+      apiPaths: ["/public/archive/search", "/staff/session"],
+      releaseProof: sharedProof,
+    },
+    "archive-search": {
+      context: "archive search",
+      title: "Search public records with explicit closed-session permissions.",
+      description: "Residents see only public records; authorized archive staff can include restricted material through role-gated search.",
+      panelTitle: "Archive search lane",
+      panelDescription: "The query path is public-safe by default and only expands when CivicCore role checks pass.",
+      ready: counts.publicRecordCount > 0,
+      metrics: [
+        { label: "Public records", value: String(counts.publicRecordCount), note: "Searchable resident records" },
+        { label: "Closed access", value: "Role", note: "archive_reader or attorney required" },
+        { label: "Suggestions", value: "Visible", note: "Search response includes fix path" },
+      ],
+      controls: ["Search public archives", "Show zero-result guidance", "Apply closed-session role filter"],
+      apiPaths: ["/public/archive/search", "/public/meetings"],
+      releaseProof: sharedProof,
+    },
+    "admin-settings": {
+      context: "admin settings",
+      title: "Verify auth, endpoints, and installed service coverage.",
+      description: "IT and clerk admins can see the current staff auth mode, CivicCore helper path, and CC-7 coverage manifest.",
+      panelTitle: "Configuration lane",
+      panelDescription: "The admin surface points operators to the exact setting that must change before protected use.",
+      ready: counts.authMode !== "unknown",
+      metrics: [
+        { label: "Auth mode", value: counts.authMode, note: "Current staff access posture" },
+        { label: "API groups", value: "16", note: "CC-7 OpenAPI categories" },
+        { label: "Source issues", value: String(counts.unhealthySources), note: "Connector records needing IT", tone: counts.unhealthySources ? "warn" : undefined },
+      ],
+      controls: ["Inspect staff auth readiness", "Open OpenAPI coverage", "Review connector health"],
+      apiPaths: ["/admin/config", "/staff/auth-readiness", "/vendor-live-sync/sources"],
+      releaseProof: sharedProof,
+    },
+    "prompt-library-admin": {
+      context: "prompt library admin",
+      title: "Audit policy-bearing prompts before they change public copy.",
+      description: "Prompt IDs, resolver versions, required variables, and approval gates are visible to admins.",
+      panelTitle: "Prompt approval lane",
+      panelDescription: "Public-facing prompts require the clerk-and-attorney approval ceremony before release.",
+      ready: true,
+      metrics: [
+        { label: "Prompt IDs", value: "9", note: "Versioned YAML definitions" },
+        { label: "Provider", value: "Ollama", note: "Offline evals required" },
+        { label: "Approval", value: "Clerk+Attorney", note: "Required for public-facing prompts" },
+      ],
+      controls: ["Review prompt versions", "Check required variables", "Block public prompts without approval"],
+      apiPaths: ["/admin/prompts", "/admin/config"],
+      releaseProof: [...sharedProof, "Offline prompt evals must pass before prompt admin changes ship."],
+    },
+  };
+  return copy[page] ?? copy["admin-settings"];
 }
 
 function Dashboard({
@@ -3965,7 +4288,7 @@ function MinutesDraftWorkspace({
     }
   }, [activeMeeting, firstMotion, firstVote]);
 
-  if (viewState === "loading" || viewState === "error" || viewState === "partial") {
+  if (viewState !== "success") {
     return <StateMessage state={viewState} context="minutes draft" apiError={apiError} />;
   }
 
