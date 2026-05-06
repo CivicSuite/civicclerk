@@ -5,7 +5,7 @@ Status: Accepted
 ## Context
 
 CivicClerk needs packet documents, minutes source material, archive search, and
-permission-aware public/staff access. CivicCore 0.22.1 ships search helpers but
+permission-aware public/staff access. CivicCore 1.0.0 ships search helpers but
 no document-table package, while `civiccore.ingest`, `civiccore.exports`, and
 `civiccore.provenance` cover cited source material and records-ready bundles.
 

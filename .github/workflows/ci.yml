@@ -19,7 +19,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: "frontend/package-lock.json"
       - name: Install CivicCore freeze release wheel
-        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/civiccore-m1-freeze/civiccore-0.22.1-py3-none-any.whl
+        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/v1.0/civiccore-1.0.0-py3-none-any.whl
       - name: Install package and test dependencies
         run: python -m pip install -e ".[dev]"
       - name: Install frontend dependencies

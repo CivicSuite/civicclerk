@@ -1,7 +1,7 @@
-﻿# CivicClerk User Manual
+# CivicClerk User Manual
 
-Status: CivicClerk v0.1.20 runtime foundation manual
-Version: `0.1.20`
+Status: CivicClerk v1.0.0 runtime foundation manual
+Version: `1.0.0`
 
 ## Part 1: Non-Technical Overview
 
@@ -52,8 +52,8 @@ minutes drafting, ordinance/resolution extraction, closed-session safe
 refusal, and public plain-language meeting explanation,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
-ledgering, accessibility/browser QA gates, CivicClerk v0.1.20 release
-artifacts, CivicCore 0.22.1 freeze-backed packet export bundles, a database-backed
+ledgering, accessibility/browser QA gates, CivicClerk v1.0.0 release
+artifacts, CivicCore 1.0.0 freeze-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
 with source/citation metadata, database-backed agenda item lifecycle records
@@ -323,7 +323,7 @@ release handoff. To verify the enterprise signing inputs without printing
 secrets, run:
 
 ```bash
-python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-0.1.20-Setup.exe
+python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-1.0.0-Setup.exe
 ```
 
 Uninstall stops the Compose stack and removes installed source files, but Docker volumes are preserved so meeting data is not
@@ -333,7 +333,7 @@ before shared deployment.
 
 ### Planned dependency
 
-The runtime foundation now pins to the published `civiccore` 0.22.1 wheel from the `civiccore-m1-freeze` release asset. Agenda intake uses
+The runtime foundation now pins to the published `civiccore` 1.0.0 wheel from the `v1.0` release asset. Agenda intake uses
 `CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; agenda item lifecycle records use
 `CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records, schedule fields, and
 schedule-edit audit entries use `CIVICCLERK_MEETING_DB_URL` when set; meeting body records use
@@ -352,14 +352,14 @@ is the Windows PowerShell path:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install dist/civicclerk-0.1.20-py3-none-any.whl
+python -m pip install dist/civicclerk-1.0.0-py3-none-any.whl
 $env:CIVICCLERK_STAFF_AUTH_MODE="open"
 python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776
 ```
 
 Then verify these first-run checks:
 
-- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"0.1.20","civiccore":"0.22.1"}`
+- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"1.0.0","civiccore":"1.0.0"}`
 - `GET /staff/auth-readiness` returns `mode: "open"` and explains how to move to OIDC, bearer, or trusted-header deployment
 - `GET /staff` renders the first workflow shell without console errors
 
@@ -410,7 +410,7 @@ wheel, source distribution, checksums, current docs, trusted-header reference,
 installer-readiness helper, enterprise signing-readiness helper, and install rehearsal helpers. After
 `bash scripts/verify-release.sh` has built `dist/`, rerun without `-PrintOnly`
 or `--print-only` to create
-`dist/civicclerk-0.1.20-release-handoff.zip`. If that zip already exists, the
+`dist/civicclerk-1.0.0-release-handoff.zip`. If that zip already exists, the
 helpers stop instead of overwriting it.
 
 After the handoff zip exists, verify the installer input contract:
@@ -612,14 +612,12 @@ built, run the pilot-readiness rollup:
 python scripts/check_pilot_readiness.py
 ```
 
-The report is intentionally honest: it can mark developer-owned readiness as
-ready only after release artifacts, the reusable vendor-interface contracts, the
-reusable municipal IdP contract suite, the reusable backup-retention/off-host
-contract suite, and unsigned-installer warning docs pass, while keeping
-code-signing certificate proof, real municipal IdP tenant proof, real vendor API
-proof, and city backup-retention/off-host storage approval as external proof
-slots. Use `--require-external-proof` only when those city or
-certificate artifacts have been attached to the handoff packet.
+The report is intentionally honest: it can mark release readiness as ready only
+after release artifacts, reusable vendor-interface contracts, hostile municipal
+IdP fixtures, protected-auth smoke checks, backup-retention/off-host mock
+validation, and unsigned-installer warning docs pass. No external deployment
+proofs are required; use `--require-adversarial-mocks` when the release gate
+should fail unless every adversarial mock validation check passes.
 
 Before IT trusts restore operations, rehearse the local backup/restore path:
 
@@ -745,11 +743,11 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v0.1.20.
+builds release artifacts and checksums, and publishes CivicClerk v1.0.0.
 CC-7 extends browser QA to every named spec page through
 `node scripts/capture-cc7-browser-qa.mjs`; the verification script requires the
 resulting 200-case ledger before browser-visible changes can merge.
-The current production-depth branch pairs CivicClerk with the published `civiccore` 0.22.1 wheel from the `civiccore-m1-freeze` release asset
+The current production-depth branch pairs CivicClerk with the published `civiccore` 1.0.0 wheel from the `v1.0` release asset
 so packet exports, packet assembly records, notice checklist records, and the
 browser QA release-evidence gate can use shared CivicCore manifests,
 provenance, checksums, audit primitives, and verification helpers.
@@ -779,7 +777,7 @@ filtering for anonymous and under-privileged users. Milestone 9 moves
 policy-bearing prompt text into YAML and adds an evaluation harness.
 Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
-records-ready packet export bundles using CivicCore 0.22.1 freeze provenance, export
+records-ready packet export bundles using CivicCore 1.0.0 freeze provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed agenda item lifecycle records with
 durable CivicCore-verifiable transition audit hashes and ready-intake promotion linkage; database-backed meeting records with lifecycle

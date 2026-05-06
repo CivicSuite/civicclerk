@@ -1,5 +1,5 @@
 param(
-    [string]$Version = "0.1.20",
+    [string]$Version = "1.0.0",
     [string]$OutputPath = "",
     [switch]$PrintOnly
 )

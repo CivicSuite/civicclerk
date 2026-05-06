@@ -4,6 +4,8 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-06
+
 ### Added
 - Added the CO-4 Tier 1 retrofit ledger for `v0.1.20`, marking the release as
   historical pre-gate/no-attestation/do-not-promote without changing public
@@ -54,8 +56,7 @@ All notable changes to CivicClerk are documented here.
 
 ### Changed
 - Updated the active CivicCore dependency and current install/provenance docs to
-  the first attested CivicCore freeze tag, `civiccore-m1-freeze`, while keeping
-  the package version at `0.22.1`.
+  the attested CivicCore `v1.0` release asset and package version `1.0.0`.
 - Wired CivicClerk release workflows to the new CivicCore Sigstore attestation
   provenance model. Future release builds run the canonical adversarial fixture
   suite first, verify the full release gate, generate and cosign
@@ -122,7 +123,7 @@ All notable changes to CivicClerk are documented here.
   reuse backup-readiness proof without contacting storage providers.
 - `scripts/check_pilot_readiness.py` now includes that backup-retention/off-host
   contract suite in developer-owned readiness while keeping real city retention
-  approval as an external proof slot.
+  approval as an adversarial mock validation slot.
 
 ## [0.1.15] - 2026-05-02
 

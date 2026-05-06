@@ -5,7 +5,7 @@ Status: Accepted
 ## Context
 
 CC-7 requires protected staff API enforcement to go through CivicCore-shipped
-helpers when those helpers exist. CivicCore v0.22.1 ships bearer-token,
+helpers when those helpers exist. CivicCore v1.0 ships bearer-token,
 trusted-header, trusted-proxy-source, optional bearer role, and trusted-header
 configuration helpers. It does not yet ship a browser authorization-code +
 PKCE session-cookie helper for CivicClerk's staff shell.
