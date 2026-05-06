@@ -48,7 +48,7 @@ endpoints, a prompt YAML library and offline evaluation harness,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
 ledgering, accessibility/browser QA gates, CivicClerk v0.1.20 release
-artifacts, CivicCore v0.22.1-backed packet export bundles, a database-backed
+artifacts, CivicCore 0.22.1 freeze-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
 with source/citation metadata, database-backed agenda item lifecycle records
@@ -283,7 +283,7 @@ before shared deployment.
 
 ### Planned dependency
 
-The runtime foundation now pins to the published `civiccore` v0.22.1 release wheel. Agenda intake uses
+The runtime foundation now pins to the published `civiccore` 0.22.1 wheel from the `civiccore-m1-freeze` release asset. Agenda intake uses
 `CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; agenda item lifecycle records use
 `CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records, schedule fields, and
 schedule-edit audit entries use `CIVICCLERK_MEETING_DB_URL` when set; meeting body records use
@@ -680,7 +680,7 @@ Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
 builds release artifacts and checksums, and publishes CivicClerk v0.1.20.
-The current production-depth branch pairs CivicClerk with the published `civiccore` v0.22.1 release wheel
+The current production-depth branch pairs CivicClerk with the published `civiccore` 0.22.1 wheel from the `civiccore-m1-freeze` release asset
 so packet exports, packet assembly records, notice checklist records, and the
 browser QA release-evidence gate can use shared CivicCore manifests,
 provenance, checksums, audit primitives, and verification helpers.
@@ -710,7 +710,7 @@ filtering for anonymous and under-privileged users. Milestone 9 moves
 policy-bearing prompt text into YAML and adds an evaluation harness.
 Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
-records-ready packet export bundles using CivicCore v0.22.1 provenance, export
+records-ready packet export bundles using CivicCore 0.22.1 freeze provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed agenda item lifecycle records with
 durable transition audit entries and ready-intake promotion linkage; database-backed meeting records with lifecycle

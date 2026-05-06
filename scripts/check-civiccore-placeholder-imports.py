@@ -9,11 +9,9 @@ from pathlib import Path
 
 
 PLACEHOLDERS = [
-    "rbac",
-    "ingestion",
-    "exemptions",
-    "onboarding",
     "catalog",
+    "exemptions",
+    "scaffold",
 ]
 
 SOURCE_ROOTS = [

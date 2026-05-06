@@ -1,0 +1,48 @@
+name: civicclerk cleanroom
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/cleanroom.yml"
+      - "cleanroom/**"
+      - "scripts/cleanroom/**"
+      - "scripts/run-civicclerk-cleanroom.sh"
+      - "scripts/check-civiccore-placeholder-imports.py"
+      - "pyproject.toml"
+      - "tests/test_cc1_cleanroom_harness.py"
+      - "docs/ops/cc-1-cleanroom-harness.md"
+      - "docs/evidence/cc1-civicclerk-cleanroom/**"
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Commit SHA to provision inside the cleanroom container
+        required: false
+        type: string
+
+jobs:
+  cleanroom:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    env:
+      CC1_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || inputs.commit || github.sha }}
+      CLEANROOM_RUN_COUNT: "2"
+      CIVICCORE_FREEZE_REF: civiccore-m1-freeze
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out harness
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - name: Verify Docker is available
+        run: docker version
+      - name: Run CivicClerk cleanroom harness
+        run: bash scripts/run-civicclerk-cleanroom.sh "$CC1_SHA" "docs/evidence/cc1-ci-${CC1_SHA}"
+      - name: Upload cleanroom evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: civicclerk-cc1-cleanroom-${{ env.CC1_SHA }}
+          path: docs/evidence/cc1-ci-${{ env.CC1_SHA }}/

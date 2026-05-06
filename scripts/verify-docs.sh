@@ -28,9 +28,14 @@ required=(
   docs/MILESTONES.md
   docs/roadmap/mvp-plan.md
   prompts/minutes_draft.yaml
+  cleanroom/civicclerk.Dockerfile
+  docs/evidence/cc1-civicclerk-cleanroom/README.md
+  docs/ops/cc-1-cleanroom-harness.md
   scripts/run-prompt-evals.py
   scripts/verify-release.sh
   scripts/verify-browser-qa.py
+  scripts/cleanroom/civicclerk-cleanroom-runner.sh
+  scripts/run-civicclerk-cleanroom.sh
   scripts/check_installer_readiness.py
   scripts/check_pilot_readiness.py
   scripts/check_connector_sync_readiness.py
