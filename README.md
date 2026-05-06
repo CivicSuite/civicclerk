@@ -238,8 +238,11 @@ Shipped in this foundation:
 - `scripts/run_mock_city_environment_suite.py` to run the reusable no-network
   City of Brookfield mock-city contract suite for Legistar, Granicus, PrimeGov,
   NovusAGENDA, the Brookfield Entra ID OIDC contract, and the Brookfield
-  backup-retention/off-host policy contract before module teams add their own
-  module-specific assertions
+  backup-retention/off-host policy contract, with optional `--hostile-mode`
+  fixtures for IdP expiry/refresh/JWKS/MFA/clock-skew/group-claim behavior,
+  agenda-vendor rate-limit/pagination/schema-drift/partial-outage/duplicate/stale-delta
+  cases, and backup-retention restore/manifest/legal-hold/checksum failures
+  before module teams add their own module-specific assertions
 - `scripts/check_vendor_live_sync_readiness.py` to preview the vendor live-sync
   source contract, auth method, credential placement, health status, and
   circuit-breaker behavior without contacting vendor systems
@@ -338,6 +341,7 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
    - Run `python scripts/check_installer_readiness.py` after creating the handoff bundle to verify installer input artifacts, checksums, docs, env examples, and rehearsal helpers before building or handing off the Windows setup package
    - Run `python scripts/check_connector_sync_readiness.py` before vendor-network live-sync design work to prove the supported local connector payload contracts and optional future URL/ODBC guard checks without making vendor network calls
    - Run `python scripts/run_mock_city_environment_suite.py --output mock-city-report.json` to prove the reusable City of Brookfield vendor-interface and municipal IdP contract suite before adding module-specific integration assertions; this does not contact vendor networks or expose mock secrets
+   - Run `python scripts/run_mock_city_environment_suite.py --hostile-mode --output mock-city-hostile-report.json` to prove the adversarial IdP, agenda-vendor, and backup-retention fixtures remain secret-free, no-network, and actionable before live city integration work begins
    - Run `python scripts/check_vendor_live_sync_readiness.py --connector legistar --source-url https://vendor.example.gov/api/meetings --auth-method bearer_token` to preview the vendor source contract, credential-placement guard, health status, and circuit-breaker behavior before any scheduled vendor pull is wired
    - Set `CIVICCLERK_VENDOR_SYNC_DB_URL`, then use `POST /vendor-live-sync/sources` and `POST /vendor-live-sync/sources/{id}/run-log` to persist proposed vendor source health and run outcomes without making vendor network calls
    - For a deliberately enabled one-time vendor pull, set `CIVICCLERK_VENDOR_NETWORK_SYNC_ENABLED=true`, store the credential in a deployment secret env var, then run `python scripts/run_vendor_live_sync.py --source-id <id> --db-url <ledger-url> --auth-secret-env <SECRET_ENV>`; the runner records success/failure in the same circuit-breaker ledger and refuses circuit-open sources

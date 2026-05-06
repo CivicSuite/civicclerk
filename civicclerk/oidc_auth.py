@@ -160,6 +160,18 @@ def authorize_oidc_staff_token(
             },
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
+    except jwt.ImmatureSignatureError as exc:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "message": "OIDC token is not valid yet.",
+                "fix": (
+                    "Check clock synchronization between CivicClerk and the municipal identity "
+                    "provider, then refresh the access token before retrying."
+                ),
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
     except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=401,
