@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from itertools import product
 from pathlib import Path
+from random import Random
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -37,6 +38,15 @@ SPECIAL_EDGES = {
 }
 
 
+def assert_persisted_audit_entry(entry: dict, expected: dict[str, str]) -> None:
+    for key, value in expected.items():
+        assert entry[key] == value
+    assert len(entry["timestamp"]) >= 20
+    assert len(entry["previous_hash"]) == 64
+    assert len(entry["entry_hash"]) == 64
+    assert entry["action"].startswith("meeting.")
+
+
 @pytest.mark.parametrize(("from_status", "to_status"), product(MEETING_LIFECYCLE, repeat=2))
 def test_meeting_lifecycle_matrix_allows_only_canonical_edges(
     from_status: str,
@@ -68,6 +78,92 @@ def test_meeting_lifecycle_matrix_allows_only_canonical_edges(
         assert result.audit_entry["from_status"] == from_status
         assert result.audit_entry["to_status"] == to_status
         assert "canonical next status" in result.message
+
+
+def test_meeting_lifecycle_generated_sequences_are_ordered_and_hash_chained() -> None:
+    from civicclerk.meeting_lifecycle import (
+        CANCELLED_STATUS,
+        VALID_TRANSITIONS,
+        verify_meeting_audit_entries,
+        validate_meeting_transition,
+    )
+
+    seed = 94155
+    rng = Random(seed)
+    meeting_types = ["regular", "special", "emergency", "closed_session"]
+    current_status = "SCHEDULED"
+    meeting_type = rng.choice(meeting_types)
+    entries: list[dict[str, object]] = []
+
+    for step in range(1400):
+        if current_status in {"ARCHIVED", CANCELLED_STATUS}:
+            current_status = "SCHEDULED"
+            meeting_type = rng.choice(meeting_types)
+            entries = []
+        canonical_next = VALID_TRANSITIONS.get(current_status)
+        valid_targets = []
+        if canonical_next is not None:
+            valid_targets.append(canonical_next)
+        if current_status == "RECESSED":
+            valid_targets.append("IN_PROGRESS")
+        if current_status in {"SCHEDULED", "NOTICED"}:
+            valid_targets.append(CANCELLED_STATUS)
+
+        if rng.random() < 0.62 and valid_targets:
+            target = rng.choice(valid_targets)
+        else:
+            invalid_targets = [
+                status
+                for status in [*MEETING_LIFECYCLE, CANCELLED_STATUS]
+                if status not in valid_targets and status != current_status
+            ]
+            target = rng.choice(invalid_targets)
+
+        statutory_basis = None
+        if meeting_type in {"special", "emergency"} and current_status == "SCHEDULED" and target == "NOTICED":
+            statutory_basis = "Synthetic statute for generated emergency or special notice."
+        if meeting_type == "closed_session" and current_status == "PACKET_POSTED" and target == "IN_PROGRESS":
+            statutory_basis = "Synthetic closed-session statute."
+
+        result = validate_meeting_transition(
+            meeting_id=f"meeting-sequence-{seed}",
+            from_status=current_status,
+            to_status=target,
+            actor=f"sequence-{seed}@example.gov",
+            meeting_type=meeting_type,
+            statutory_basis=statutory_basis,
+            previous_audit_hash=entries[-1]["entry_hash"] if entries else "0" * 64,
+        )
+        entries.append(result.audit_entry)
+
+        if target in valid_targets:
+            assert result.allowed is True
+            current_status = target
+        else:
+            assert result.allowed is False
+            assert result.fix
+
+        ok, checked, message = verify_meeting_audit_entries(entries)
+        assert ok, f"seed={seed} step={step} {message}"
+        assert checked == len(entries)
+
+
+def test_meeting_terminal_status_refusal_has_replacement_fix() -> None:
+    from civicclerk.meeting_lifecycle import validate_meeting_transition
+
+    result = validate_meeting_transition(
+        meeting_id="meeting-terminal",
+        from_status="ARCHIVED",
+        to_status="NOTICED",
+        actor="clerk@example.gov",
+        meeting_type="regular",
+        statutory_basis=None,
+    )
+
+    assert result.allowed is False
+    assert result.http_status == 409
+    assert "terminal" in result.fix
+    assert "replacement meeting" in result.fix
 
 
 @pytest.mark.parametrize("meeting_type", ["emergency", "special"])
@@ -201,15 +297,19 @@ async def test_api_valid_meeting_transition_returns_2xx_and_writes_audit_entry()
 
         audit = await client.get(f"/meetings/{meeting_id}/audit")
         assert audit.status_code == 200
-        assert audit.json()["entries"][-1] == {
-            "meeting_id": meeting_id,
-            "actor": "clerk@example.gov",
-            "from_status": "SCHEDULED",
-            "to_status": "NOTICED",
-            "meeting_type": "regular",
-            "outcome": "allowed",
-            "reason": "transition allowed",
-        }
+        entry = audit.json()["entries"][-1]
+        assert_persisted_audit_entry(
+            entry,
+            {
+                "meeting_id": meeting_id,
+                "actor": "clerk@example.gov",
+                "from_status": "SCHEDULED",
+                "to_status": "NOTICED",
+                "meeting_type": "regular",
+                "outcome": "allowed",
+                "reason": "transition allowed",
+            },
+        )
 
 
 @pytest.mark.asyncio
@@ -266,6 +366,9 @@ async def test_api_invalid_meeting_transition_returns_4xx_and_writes_audit_entry
         assert rejected.status_code == 409
         assert rejected.json()["detail"]["current_status"] == "SCHEDULED"
         assert rejected.json()["detail"]["requested_status"] == "IN_PROGRESS"
+        assert rejected.json()["detail"]["fix"] == (
+            "Move the meeting to NOTICED first, then retry the requested transition."
+        )
 
         audit = await client.get(f"/meetings/{meeting_id}/audit")
         assert audit.status_code == 200
@@ -310,6 +413,7 @@ async def test_api_closed_session_precondition_returns_actionable_422() -> None:
 
         assert rejected.status_code == 422
         assert "statutory basis" in rejected.json()["detail"]["message"].lower()
+        assert "closed-session statutory basis" in rejected.json()["detail"]["fix"]
         current = await client.get(f"/meetings/{meeting_id}")
         assert current.json()["status"] == "PACKET_POSTED"
 
@@ -407,6 +511,7 @@ def test_meeting_store_persists_meeting_records_and_audit_entries(tmp_path: Path
     assert persisted.scheduled_start == datetime(2026, 5, 5, 19, 0, tzinfo=UTC)
     assert persisted.audit_entries[-1]["outcome"] == "allowed"
     assert persisted.audit_entries[-1]["actor"] == "clerk@example.gov"
+    assert len(persisted.audit_entries[-1]["entry_hash"]) == 64
 
 
 @pytest.mark.asyncio
@@ -468,3 +573,18 @@ def test_docs_record_meeting_lifecycle_without_claiming_packet_or_minutes_behavi
         assert "meeting lifecycle" in lowered, path
         assert "packet assembly shipped" not in lowered, path
         assert "minutes drafting shipped" not in lowered, path
+
+
+def test_docs_record_generated_meeting_lifecycle_and_audit_hash_coverage() -> None:
+    docs = "\n".join(
+        [
+            (ROOT / "README.md").read_text(encoding="utf-8"),
+            (ROOT / "README.txt").read_text(encoding="utf-8"),
+            (ROOT / "USER-MANUAL.md").read_text(encoding="utf-8"),
+            (ROOT / "USER-MANUAL.txt").read_text(encoding="utf-8"),
+            (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"),
+        ]
+    )
+
+    assert "sequence coverage" in docs
+    assert "schedule-edit audit hashes" in docs

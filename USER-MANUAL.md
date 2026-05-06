@@ -669,11 +669,13 @@ python scripts/check-civiccore-placeholder-imports.py
 Runtime test gates now run in CI. Meeting-workflow tests are added in later milestones.
 Milestone 3 adds an agenda item lifecycle test matrix covering every pair
 of canonical states. Only direct forward transitions are accepted; invalid
-transitions return a 4xx response and record an audit entry.
+transitions return a 4xx response with a fix path and record a
+CivicCore-verifiable persisted audit hash.
 Milestone 4 adds a meeting lifecycle test matrix from `SCHEDULED` through
 `ARCHIVED`, plus emergency/special notice preconditions, closed/executive
-session statutory-basis preconditions, cancellation handling, and audit
-entries for allowed and rejected meeting transitions.
+session statutory-basis preconditions, cancellation handling, generated
+sequence coverage, and CivicCore-verifiable audit hashes for allowed and
+rejected meeting transitions.
 Milestone 5 adds packet snapshot versioning and notice compliance tests for
 deadline warnings, statutory-basis requirements, and public-posting human
 approval. Every warning includes a concrete fix path. Milestone 6 adds
@@ -727,8 +729,8 @@ Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
 records-ready packet export bundles using CivicCore 0.22.1 freeze provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed agenda item lifecycle records with
-durable transition audit entries and ready-intake promotion linkage; database-backed meeting records with lifecycle
-audit entries, meeting body ids, locations, and pre-lock schedule edit audit entries; database-backed packet assembly records with source references,
+durable CivicCore-verifiable transition audit hashes and ready-intake promotion linkage; database-backed meeting records with lifecycle
+and schedule-edit audit hashes, meeting body ids, and locations; database-backed packet assembly records with source references,
 citations, and packet snapshot linkage; database-backed notice checklist
 records with posting-proof metadata; live staff form actions for minutes
 draft creation; live staff form actions for public archive publishing; and

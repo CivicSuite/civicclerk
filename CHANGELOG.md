@@ -16,6 +16,10 @@ All notable changes to CivicClerk are documented here.
   secret-free IdP expiry/refresh/JWKS/MFA/clock-skew/group-claim cases,
   agenda-vendor rate-limit/pagination/schema-drift/partial-outage/duplicate/stale-delta
   cases, and backup-retention restore/manifest/legal-hold/checksum failures.
+- Added CC-3 lifecycle enforcement hardening: agenda item and meeting
+  lifecycle audit rows now carry CivicCore-verifiable persisted audit hashes,
+  invalid transition API responses include concrete fix paths, and generated
+  sequence tests exercise valid/invalid lifecycle paths beyond the edge matrix.
 
 ### Changed
 - Updated the active CivicCore dependency and current install/provenance docs to

@@ -9,9 +9,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 import sqlalchemy as sa
+from civiccore.audit import (
+    PersistedAuditLogEntry,
+    ZERO_HASH,
+    compute_persisted_audit_hash,
+    verify_persisted_audit_chain,
+)
 from sqlalchemy import Engine, create_engine
 
 MEETING_LIFECYCLE = (
@@ -40,6 +47,7 @@ KNOWN_STATUSES = (*MEETING_LIFECYCLE, CANCELLED_STATUS)
 EMERGENCY_NOTICE_TYPES = {"emergency", "special"}
 CLOSED_SESSION_TYPES = {"closed_session", "executive"}
 KNOWN_MEETING_TYPES = {"regular", *EMERGENCY_NOTICE_TYPES, *CLOSED_SESSION_TYPES}
+AUDIT_META_FIELDS = {"timestamp", "action", "previous_hash", "entry_hash"}
 
 metadata = sa.MetaData()
 
@@ -67,7 +75,8 @@ class TransitionResult:
     allowed: bool
     http_status: int
     message: str
-    audit_entry: dict[str, str]
+    fix: str
+    audit_entry: dict[str, object]
 
 
 @dataclass
@@ -79,7 +88,7 @@ class MeetingRecord:
     meeting_body_id: str | None = None
     location: str | None = None
     status: str = "SCHEDULED"
-    audit_entries: list[dict[str, str]] = field(default_factory=list)
+    audit_entries: list[dict[str, object]] = field(default_factory=list)
 
     def public_dict(self) -> dict[str, str | None]:
         payload = {
@@ -197,15 +206,20 @@ class MeetingStore:
 
         if changes:
             meeting.audit_entries.append(
-                {
-                    "meeting_id": meeting_id,
-                    "actor": actor,
-                    "from_status": meeting.status,
-                    "to_status": meeting.status,
-                    "outcome": "allowed",
-                    "reason": "meeting schedule updated",
-                    "changed_fields": ",".join(sorted(changes)),
-                }
+                _audit_entry(
+                    base_entry={
+                        "meeting_id": meeting_id,
+                        "actor": actor,
+                        "from_status": meeting.status,
+                        "to_status": meeting.status,
+                        "meeting_type": meeting.meeting_type,
+                        "changed_fields": ",".join(sorted(changes)),
+                    },
+                    outcome="allowed",
+                    reason="meeting schedule updated",
+                    previous_hash=_last_entry_hash(meeting.audit_entries),
+                    action="meeting.schedule.updated",
+                )
             )
         if self.engine is not None:
             with self.engine.begin() as connection:
@@ -274,6 +288,7 @@ class MeetingStore:
             actor=actor,
             meeting_type=meeting.meeting_type,
             statutory_basis=statutory_basis,
+            previous_audit_hash=_last_entry_hash(meeting.audit_entries),
         )
         meeting.audit_entries.append(result.audit_entry)
         if result.allowed:
@@ -302,6 +317,7 @@ def validate_meeting_transition(
     actor: str,
     meeting_type: str,
     statutory_basis: str | None,
+    previous_audit_hash: str = ZERO_HASH,
 ) -> TransitionResult:
     """Validate one meeting lifecycle transition and produce an audit entry."""
     normalized_meeting_type = normalize_meeting_type(meeting_type)
@@ -321,6 +337,8 @@ def validate_meeting_transition(
             422,
             f"Unknown current meeting status {from_status}. Use one of {', '.join(KNOWN_STATUSES)}.",
             "unknown current meeting status",
+            previous_audit_hash,
+            "Reload the meeting, choose one of the canonical statuses, then retry the transition.",
         )
 
     if to_status not in KNOWN_STATUSES:
@@ -329,6 +347,8 @@ def validate_meeting_transition(
             422,
             f"Unknown requested meeting status {to_status}. Use one of {', '.join(KNOWN_STATUSES)}.",
             "unknown requested meeting status",
+            previous_audit_hash,
+            "Choose one of the canonical meeting statuses and retry the transition.",
         )
 
     if normalized_meeting_type in EMERGENCY_NOTICE_TYPES and from_status == "SCHEDULED" and to_status == "NOTICED":
@@ -338,6 +358,8 @@ def validate_meeting_transition(
                 422,
                 f"{normalized_meeting_type.title()} meetings require a statutory basis before notice is posted.",
                 "missing statutory basis for emergency or special meeting notice",
+                previous_audit_hash,
+                "Add the emergency or special meeting statutory basis, then post notice again.",
             )
 
     if normalized_meeting_type in CLOSED_SESSION_TYPES and from_status == "PACKET_POSTED" and to_status == "IN_PROGRESS":
@@ -347,6 +369,8 @@ def validate_meeting_transition(
                 422,
                 "Closed or executive sessions require a statutory basis before moving in progress.",
                 "missing statutory basis for closed session",
+                previous_audit_hash,
+                "Add the closed-session statutory basis before moving the meeting in progress.",
             )
 
     if VALID_TRANSITIONS.get(from_status) == to_status or (from_status, to_status) in SPECIAL_TRANSITIONS:
@@ -354,14 +378,21 @@ def validate_meeting_transition(
             allowed=True,
             http_status=200,
             message="transition allowed",
-            audit_entry={
-                **base_entry,
-                "outcome": "allowed",
-                "reason": "transition allowed",
-            },
+            fix="No recovery needed.",
+            audit_entry=_audit_entry(
+                base_entry=base_entry,
+                outcome="allowed",
+                reason="transition allowed",
+                previous_hash=previous_audit_hash,
+            ),
         )
 
     next_status = VALID_TRANSITIONS.get(from_status, "no further status")
+    fix = (
+        f"Move the meeting to {next_status} first, then retry the requested transition."
+        if next_status != "no further status"
+        else "This meeting status is terminal; create a correction or replacement meeting instead of transitioning it."
+    )
     return _rejected(
         base_entry,
         409,
@@ -370,6 +401,8 @@ def validate_meeting_transition(
             f"from {from_status} is {next_status}. Next valid status is {next_status}."
         ),
         "invalid meeting lifecycle transition",
+        previous_audit_hash,
+        fix,
     )
 
 
@@ -383,16 +416,95 @@ def _rejected(
     http_status: int,
     message: str,
     reason: str,
+    previous_hash: str,
+    fix: str,
 ) -> TransitionResult:
     return TransitionResult(
         allowed=False,
         http_status=http_status,
         message=message,
-        audit_entry={
-            **base_entry,
-            "outcome": "rejected",
-            "reason": reason,
-        },
+        fix=fix,
+        audit_entry=_audit_entry(
+            base_entry=base_entry,
+            outcome="rejected",
+            reason=reason,
+            previous_hash=previous_hash,
+        ),
+    )
+
+
+def verify_meeting_audit_entries(entries: list[dict[str, object]]) -> tuple[bool, int, str]:
+    """Verify meeting lifecycle audit entries with CivicCore audit hashing."""
+
+    persisted_entries: list[PersistedAuditLogEntry] = []
+    for index, entry in enumerate(entries):
+        missing = [field for field in ("timestamp", "action", "previous_hash", "entry_hash") if field not in entry]
+        if missing:
+            return False, index, f"Entry {index}: missing persisted audit fields {', '.join(missing)}"
+        details = {key: value for key, value in entry.items() if key not in AUDIT_META_FIELDS}
+        persisted_entries.append(
+            PersistedAuditLogEntry(
+                previous_hash=entry["previous_hash"],
+                entry_hash=entry["entry_hash"],
+                timestamp=entry["timestamp"],
+                actor_id=entry.get("actor"),
+                action=entry["action"],
+                details=details,
+                entry_id=index,
+            )
+        )
+    return verify_persisted_audit_chain(persisted_entries)
+
+
+def _last_entry_hash(entries: list[dict[str, Any]]) -> str:
+    if not entries:
+        return ZERO_HASH
+    candidate = entries[-1].get("entry_hash")
+    return candidate if isinstance(candidate, str) and len(candidate) == 64 else ZERO_HASH
+
+
+def _build_persisted_audit_entry(
+    *,
+    previous_hash: str,
+    actor: str,
+    action: str,
+    details: dict[str, Any],
+) -> dict[str, Any]:
+    timestamp = datetime.now(UTC).isoformat()
+    entry_hash = compute_persisted_audit_hash(
+        previous_hash=previous_hash,
+        timestamp=timestamp,
+        actor_id=actor,
+        action=action,
+        details=details,
+    )
+    return {
+        **details,
+        "timestamp": timestamp,
+        "action": action,
+        "previous_hash": previous_hash,
+        "entry_hash": entry_hash,
+    }
+
+
+def _audit_entry(
+    *,
+    base_entry: dict[str, str],
+    outcome: str,
+    reason: str,
+    previous_hash: str,
+    action: str | None = None,
+) -> dict[str, object]:
+    details = {
+        **base_entry,
+        "outcome": outcome,
+        "reason": reason,
+    }
+    return _build_persisted_audit_entry(
+        previous_hash=previous_hash,
+        actor=base_entry["actor"],
+        action=action or f"meeting.lifecycle_transition.{outcome}",
+        details=details,
     )
 
 
@@ -448,4 +560,5 @@ __all__ = [
     "TransitionResult",
     "meeting_records",
     "validate_meeting_transition",
+    "verify_meeting_audit_entries",
 ]

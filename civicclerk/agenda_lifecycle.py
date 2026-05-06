@@ -4,9 +4,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 import sqlalchemy as sa
+from civiccore.audit import (
+    PersistedAuditLogEntry,
+    ZERO_HASH,
+    compute_persisted_audit_hash,
+    verify_persisted_audit_chain,
+)
 from sqlalchemy import Engine, create_engine
 
 
@@ -25,6 +32,7 @@ AGENDA_ITEM_LIFECYCLE = (
 )
 
 VALID_TRANSITIONS = dict(zip(AGENDA_ITEM_LIFECYCLE[:-1], AGENDA_ITEM_LIFECYCLE[1:], strict=True))
+AUDIT_META_FIELDS = {"timestamp", "action", "previous_hash", "entry_hash"}
 
 
 @dataclass(frozen=True)
@@ -32,7 +40,8 @@ class TransitionResult:
     allowed: bool
     http_status: int
     message: str
-    audit_entry: dict[str, str]
+    fix: str
+    audit_entry: dict[str, object]
 
 
 @dataclass
@@ -41,7 +50,7 @@ class AgendaItemRecord:
     title: str
     department_name: str
     status: str = "DRAFTED"
-    audit_entries: list[dict[str, str]] = field(default_factory=list)
+    audit_entries: list[dict[str, object]] = field(default_factory=list)
 
     def public_dict(self) -> dict[str, str]:
         return {
@@ -79,6 +88,7 @@ class AgendaItemStore:
             from_status=item.status,
             to_status=to_status,
             actor=actor,
+            previous_audit_hash=_last_entry_hash(item.audit_entries),
         )
         item.audit_entries.append(result.audit_entry)
         if result.allowed:
@@ -154,6 +164,7 @@ class AgendaItemRepository:
             from_status=item.status,
             to_status=to_status,
             actor=actor,
+            previous_audit_hash=_last_entry_hash(item.audit_entries),
         )
         audit_entries = [*item.audit_entries, result.audit_entry]
         status = to_status if result.allowed else item.status
@@ -176,6 +187,7 @@ def validate_agenda_item_transition(
     from_status: str,
     to_status: str,
     actor: str,
+    previous_audit_hash: str = ZERO_HASH,
 ) -> TransitionResult:
     """Validate one agenda item lifecycle transition and produce an audit entry."""
     base_entry = {
@@ -190,11 +202,13 @@ def validate_agenda_item_transition(
             allowed=False,
             http_status=422,
             message=f"Unknown current status {from_status}. Use one of {', '.join(AGENDA_ITEM_LIFECYCLE)}.",
-            audit_entry={
-                **base_entry,
-                "outcome": "rejected",
-                "reason": "unknown current agenda item status",
-            },
+            fix="Reload the agenda item, choose one of the canonical statuses, then retry the transition.",
+            audit_entry=_audit_entry(
+                base_entry=base_entry,
+                outcome="rejected",
+                reason="unknown current agenda item status",
+                previous_hash=previous_audit_hash,
+            ),
         )
 
     if to_status not in AGENDA_ITEM_LIFECYCLE:
@@ -202,11 +216,13 @@ def validate_agenda_item_transition(
             allowed=False,
             http_status=422,
             message=f"Unknown requested status {to_status}. Use one of {', '.join(AGENDA_ITEM_LIFECYCLE)}.",
-            audit_entry={
-                **base_entry,
-                "outcome": "rejected",
-                "reason": "unknown requested agenda item status",
-            },
+            fix="Choose one of the canonical agenda item statuses and retry the transition.",
+            audit_entry=_audit_entry(
+                base_entry=base_entry,
+                outcome="rejected",
+                reason="unknown requested agenda item status",
+                previous_hash=previous_audit_hash,
+            ),
         )
 
     expected = VALID_TRANSITIONS.get(from_status)
@@ -215,14 +231,21 @@ def validate_agenda_item_transition(
             allowed=True,
             http_status=200,
             message="transition allowed",
-            audit_entry={
-                **base_entry,
-                "outcome": "allowed",
-                "reason": "transition allowed",
-            },
+            fix="No recovery needed.",
+            audit_entry=_audit_entry(
+                base_entry=base_entry,
+                outcome="allowed",
+                reason="transition allowed",
+                previous_hash=previous_audit_hash,
+            ),
         )
 
     next_status = expected if expected is not None else "no further status"
+    fix = (
+        f"Move the agenda item to {next_status} first, then retry the requested transition."
+        if expected is not None
+        else "This agenda item status is terminal; create a correction record instead of transitioning it."
+    )
     return TransitionResult(
         allowed=False,
         http_status=409,
@@ -230,11 +253,87 @@ def validate_agenda_item_transition(
             f"Invalid agenda item lifecycle transition. The canonical next status "
             f"from {from_status} is {next_status}. Next valid status is {next_status}."
         ),
-        audit_entry={
-            **base_entry,
-            "outcome": "rejected",
-            "reason": "invalid agenda item lifecycle transition",
-        },
+        fix=fix,
+        audit_entry=_audit_entry(
+            base_entry=base_entry,
+            outcome="rejected",
+            reason="invalid agenda item lifecycle transition",
+            previous_hash=previous_audit_hash,
+        ),
+    )
+
+
+def verify_agenda_item_audit_entries(entries: list[dict[str, object]]) -> tuple[bool, int, str]:
+    """Verify agenda item lifecycle audit entries with CivicCore audit hashing."""
+
+    persisted_entries: list[PersistedAuditLogEntry] = []
+    for index, entry in enumerate(entries):
+        missing = [field for field in ("timestamp", "action", "previous_hash", "entry_hash") if field not in entry]
+        if missing:
+            return False, index, f"Entry {index}: missing persisted audit fields {', '.join(missing)}"
+        details = {key: value for key, value in entry.items() if key not in AUDIT_META_FIELDS}
+        persisted_entries.append(
+            PersistedAuditLogEntry(
+                previous_hash=entry["previous_hash"],
+                entry_hash=entry["entry_hash"],
+                timestamp=entry["timestamp"],
+                actor_id=entry.get("actor"),
+                action=entry["action"],
+                details=details,
+                entry_id=index,
+            )
+        )
+    return verify_persisted_audit_chain(persisted_entries)
+
+
+def _last_entry_hash(entries: list[dict[str, Any]]) -> str:
+    if not entries:
+        return ZERO_HASH
+    candidate = entries[-1].get("entry_hash")
+    return candidate if isinstance(candidate, str) and len(candidate) == 64 else ZERO_HASH
+
+
+def _build_persisted_audit_entry(
+    *,
+    previous_hash: str,
+    actor: str,
+    action: str,
+    details: dict[str, Any],
+) -> dict[str, Any]:
+    timestamp = datetime.now(UTC).isoformat()
+    entry_hash = compute_persisted_audit_hash(
+        previous_hash=previous_hash,
+        timestamp=timestamp,
+        actor_id=actor,
+        action=action,
+        details=details,
+    )
+    return {
+        **details,
+        "timestamp": timestamp,
+        "action": action,
+        "previous_hash": previous_hash,
+        "entry_hash": entry_hash,
+    }
+
+
+def _audit_entry(
+    *,
+    base_entry: dict[str, str],
+    outcome: str,
+    reason: str,
+    previous_hash: str,
+) -> dict[str, object]:
+    details = {
+        **base_entry,
+        "outcome": outcome,
+        "reason": reason,
+    }
+    return _build_persisted_audit_entry(
+        previous_hash=previous_hash,
+        actor=base_entry["actor"],
+        action=f"agenda_item.lifecycle_transition.{outcome}",
+        details=details,
     )
 
 
@@ -258,4 +357,5 @@ __all__ = [
     "TransitionResult",
     "agenda_item_lifecycle_records",
     "validate_agenda_item_transition",
+    "verify_agenda_item_audit_entries",
 ]
