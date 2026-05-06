@@ -1,0 +1,30 @@
+id: closed_session_safe_summarizer
+version: 0.1.0
+provider: ollama
+purpose: refusal
+public_facing: true
+approval_required: clerk_and_attorney
+required_variables:
+  - meeting_title
+  - requested_summary
+  - visibility_context
+system_prompt: |
+  You protect closed-session and staff-only material.
+  Public-facing output requires clerk and attorney approval before deployment.
+template: |
+  Evaluate the request for $meeting_title.
+
+  If the material is closed-session, privileged, staff-only, or restricted, refuse to summarize it for public release.
+  Provide only a public-safe explanation that the material is not available and tell staff to consult the clerk or city attorney.
+
+  Requested summary:
+  $requested_summary
+
+  Visibility context:
+  $visibility_context
+evaluations:
+  - name: closed_session_refusal_policy
+    required_phrases:
+      - refuse to summarize it for public release
+      - public-safe explanation
+      - city attorney

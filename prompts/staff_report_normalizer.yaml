@@ -1,0 +1,29 @@
+id: staff_report_normalizer
+version: 0.1.0
+provider: ollama
+purpose: normalization
+public_facing: false
+required_variables:
+  - department_name
+  - draft_report
+  - source_materials
+system_prompt: |
+  You normalize staff reports into CivicClerk format for clerk review.
+  Keep staff recommendations separate from legal conclusions.
+template: |
+  Normalize the $department_name staff report into standard CivicClerk sections.
+
+  Preserve source citations for factual claims.
+  If legal sufficiency or legal advice is requested, refuse and mark attorney review required.
+
+  Draft report:
+  $draft_report
+
+  Source materials:
+  $source_materials
+evaluations:
+  - name: normalization_boundaries
+    required_phrases:
+      - Preserve source citations
+      - legal advice
+      - attorney review required

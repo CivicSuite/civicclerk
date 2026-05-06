@@ -1,0 +1,67 @@
+{
+  "page": "docs/index.html",
+  "reviewed_at": "2026-05-06T06:11:56.156Z",
+  "cases": [
+    {
+      "name": "docs-desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc6-prompt-library-docs-desktop.png",
+      "bytes": 238922,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "A",
+        "href": "../README.md",
+        "outlineStyle": "solid",
+        "outlineWidth": "4px",
+        "outlineColor": "rgb(21, 61, 53)",
+        "keyboardReachable": true
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.91
+    },
+    {
+      "name": "docs-mobile",
+      "viewport": {
+        "width": 390,
+        "height": 1100
+      },
+      "screenshot": "docs/screenshots/cc6-prompt-library-docs-mobile.png",
+      "bytes": 126772,
+      "consoleErrors": 0,
+      "exceptions": 0,
+      "textCheck": true,
+      "missingText": [],
+      "semanticMain": true,
+      "keyboard": true,
+      "focus": {
+        "tag": "A",
+        "href": "../README.md",
+        "outlineStyle": "solid",
+        "outlineWidth": "4px",
+        "outlineColor": "rgb(21, 61, 53)",
+        "keyboardReachable": true
+      },
+      "focusVisible": true,
+      "horizontalOverflow": false,
+      "minContrast": 5.91
+    }
+  ],
+  "totals": {
+    "consoleErrors": 0,
+    "exceptions": 0,
+    "textCheckFailures": 0,
+    "minContrast": 5.91,
+    "keyboardFailures": 0,
+    "focusFailures": 0,
+    "horizontalOverflowFailures": 0
+  }
+}

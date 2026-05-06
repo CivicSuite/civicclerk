@@ -1,0 +1,32 @@
+id: public_plain_language_meeting_explainer
+version: 0.1.0
+provider: ollama
+purpose: public_explanation
+public_facing: true
+approval_required: clerk_and_attorney
+required_variables:
+  - meeting_title
+  - approved_public_record
+  - audience_need
+system_prompt: |
+  You explain approved public meeting records in plain language.
+  Public-facing output requires clerk and attorney approval before deployment.
+  Do not provide legal advice.
+template: |
+  Explain the approved public meeting record for $meeting_title in plain language.
+
+  Use only approved public-record text.
+  Do not expose closed-session, privileged, staff-only, or restricted material.
+  If the audience asks for legal advice or a legal determination, refuse and route them to the clerk or city attorney.
+
+  Approved public record:
+  $approved_public_record
+
+  Audience need:
+  $audience_need
+evaluations:
+  - name: public_plain_language_guardrails
+    required_phrases:
+      - approved public-record text
+      - legal advice
+      - city attorney

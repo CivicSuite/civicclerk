@@ -1,0 +1,29 @@
+id: motion_vote_summary
+version: 0.1.0
+provider: ollama
+purpose: summarization
+public_facing: false
+required_variables:
+  - meeting_title
+  - motion_records
+  - vote_records
+system_prompt: |
+  You summarize motions and roll-call votes for clerk review.
+  Preserve abstentions, recusals, absences, seconds, and correction history.
+template: |
+  Summarize motions and roll-call votes for $meeting_title.
+
+  Include motion text, seconded-by information, aye/nay/abstain/recusal/absent counts, and any correction references.
+  Do not infer intent for absent or recused members.
+
+  Motions:
+  $motion_records
+
+  Votes:
+  $vote_records
+evaluations:
+  - name: vote_detail_policy
+    required_phrases:
+      - seconded-by
+      - recusal
+      - correction references

@@ -19,10 +19,62 @@ PROMPT_POLICY_PHRASES = [
     "Every material sentence must include citations",
     "Never adopt or publicly post minutes automatically",
 ]
+EXPECTED_PROMPTS = {
+    "agenda_item_summary",
+    "staff_report_normalizer",
+    "packet_completeness_reviewer",
+    "notice_compliance_reviewer",
+    "motion_vote_summary",
+    "minutes_draft",
+    "ordinance_resolution_extractor",
+    "closed_session_safe_summarizer",
+    "public_plain_language_meeting_explainer",
+}
 
 
-def test_minutes_prompt_yaml_is_versioned_renderable_and_actionable() -> None:
-    from civicclerk.prompt_library import PromptLibraryError, load_prompt, render_prompt
+@pytest.mark.asyncio
+async def test_all_spec_prompts_are_versioned_and_resolve_through_civiccore() -> None:
+    from civicclerk.prompt_library import (
+        CONSUMER_APP,
+        PromptLibraryError,
+        list_prompt_ids,
+        list_prompts,
+        load_prompt,
+        render_prompt,
+        resolve_prompt_template,
+    )
+
+    assert set(list_prompt_ids()) == EXPECTED_PROMPTS
+    prompts = list_prompts()
+    assert {prompt.id for prompt in prompts} == EXPECTED_PROMPTS
+
+    for prompt in prompts:
+        resolved = await resolve_prompt_template(prompt.id)
+        assert resolved.consumer_app == CONSUMER_APP
+        assert resolved.template_name == prompt.id
+        assert resolved.is_override is True
+        assert resolved.user_prompt_template == prompt.template
+        assert resolved.system_prompt == prompt.system_prompt
+        assert resolved.version == prompt.resolver_version
+        assert prompt.version == "0.1.0"
+        assert prompt.provider == "ollama"
+        assert prompt.required_variables
+        assert prompt.evaluations
+
+    public_prompts = {prompt.id: prompt for prompt in prompts if prompt.public_facing}
+    assert set(public_prompts) == {
+        "closed_session_safe_summarizer",
+        "public_plain_language_meeting_explainer",
+    }
+    for prompt in public_prompts.values():
+        assert prompt.approval_required == "clerk_and_attorney"
+
+    with pytest.raises(PromptLibraryError, match="source_materials"):
+        render_prompt(load_prompt("minutes_draft"), {"meeting_title": "Budget Hearing"})
+
+
+def test_minutes_prompt_yaml_remains_renderable_and_actionable() -> None:
+    from civicclerk.prompt_library import load_prompt, render_prompt
 
     prompt = load_prompt("minutes_draft")
 
@@ -47,8 +99,14 @@ def test_minutes_prompt_yaml_is_versioned_renderable_and_actionable() -> None:
     assert "src-1" in rendered
     assert "Every material sentence must include citations" in rendered
 
-    with pytest.raises(PromptLibraryError, match="source_materials"):
-        render_prompt(prompt, {"meeting_title": "Budget Hearing"})
+
+def test_civiccore_prompt_resolver_import_does_not_pollute_civicclerk_metadata() -> None:
+    import civicclerk.prompt_library  # noqa: F401
+    from civicclerk import models
+
+    assert "prompt_templates" not in models.Base.metadata.tables
+    assert "model_registry" not in models.Base.metadata.tables
+    assert all(name.startswith("civicclerk.") for name in models.Base.metadata.tables)
 
 
 @pytest.mark.asyncio
@@ -113,9 +171,30 @@ def test_prompt_eval_harness_runs_offline_with_ollama_provider_selected() -> Non
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "PROMPT-EVALS: PASSED" in result.stdout
-    assert "minutes_draft@0.1.0" in result.stdout
+    for prompt_id in EXPECTED_PROMPTS:
+        assert f"{prompt_id}@0.1.0" in result.stdout
     assert "provider=ollama" in result.stdout
     assert "offline=true" in result.stdout
+    assert "resolver, policy phrases, approval gate, and mutation stability passed" in result.stdout
+
+
+def test_prompt_eval_module_cli_runs_the_same_offline_gate() -> None:
+    env = os.environ.copy()
+    env["CIVICCORE_LLM_PROVIDER"] = "ollama"
+    env["CIVICCLERK_EVAL_OFFLINE"] = "1"
+
+    result = subprocess.run(
+        [sys.executable, "-m", "civicclerk.prompt_evals"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "PROMPT-EVALS: PASSED" in result.stdout
+    assert "consumer_app" not in result.stderr
 
 
 def test_ci_runs_prompt_eval_harness_before_merge() -> None:
@@ -128,7 +207,7 @@ def test_ci_runs_prompt_eval_harness_before_merge() -> None:
 
 
 def test_policy_bearing_prompt_strings_live_only_in_yaml_not_runtime() -> None:
-    yaml_text = (ROOT / "prompts" / "minutes_draft.yaml").read_text(encoding="utf-8")
+    yaml_text = "\n".join(path.read_text(encoding="utf-8") for path in (ROOT / "prompts").glob("*.yaml"))
     runtime_text = "\n".join(
         path.read_text(encoding="utf-8")
         for path in (ROOT / "civicclerk").glob("*.py")
@@ -138,6 +217,15 @@ def test_policy_bearing_prompt_strings_live_only_in_yaml_not_runtime() -> None:
     for phrase in PROMPT_POLICY_PHRASES:
         assert phrase in yaml_text
         assert phrase not in runtime_text
+
+
+def test_prompt_eval_harness_uses_civiccore_resolver_not_standalone_rendering() -> None:
+    eval_text = (ROOT / "civicclerk" / "prompt_evals.py").read_text(encoding="utf-8")
+    library_text = (ROOT / "civicclerk" / "prompt_library.py").read_text(encoding="utf-8")
+
+    assert "resolve_prompt_template_sync" in eval_text
+    assert "resolve_template(" in library_text
+    assert 'consumer_app=CONSUMER_APP' in library_text
 
 
 def test_docs_record_prompt_yaml_eval_scope_without_claiming_connectors_or_ui() -> None:
@@ -153,5 +241,12 @@ def test_docs_record_prompt_yaml_eval_scope_without_claiming_connectors_or_ui() 
     assert "prompt yaml" in docs
     assert "evaluation harness" in docs
     assert "outbound network blocked" in docs
+    assert "civiccore.llm.resolve_template" in docs
+    assert 'consumer_app="civicclerk"' in docs
+    assert "clerk-and-attorney approval ceremony" in docs
+    assert "legal-determination refusal" in docs
+    normalized_docs = docs.replace("-", " ").replace("/", " ")
+    for prompt_id in EXPECTED_PROMPTS:
+        assert prompt_id.replace("_", " ") in normalized_docs or prompt_id in docs
     assert "connectors shipped" not in docs
     assert "full ui shipped" not in docs

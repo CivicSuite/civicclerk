@@ -59,6 +59,8 @@ def main() -> int:
         ROOT / "docs" / "screenshots" / "cc4-meeting-cancel-danger-desktop.png",
         ROOT / "docs" / "screenshots" / "cc5-data-model-docs-desktop.png",
         ROOT / "docs" / "screenshots" / "cc5-data-model-docs-mobile.png",
+        ROOT / "docs" / "screenshots" / "cc6-prompt-library-docs-desktop.png",
+        ROOT / "docs" / "screenshots" / "cc6-prompt-library-docs-mobile.png",
     ]
     milestone13_summary = ROOT / "docs" / "screenshots" / "milestone13-staff-ui-summary.md"
     public_portal_summary = ROOT / "docs" / "screenshots" / "public-portal-shell-summary.md"
@@ -66,6 +68,8 @@ def main() -> int:
     cc4_evidence = ROOT / "docs" / "browser-qa" / "cc4-workflow-surface-qa-2026-05-06.json"
     cc5_docs_summary = ROOT / "docs" / "screenshots" / "cc5-data-model-docs-summary.md"
     cc5_docs_evidence = ROOT / "docs" / "browser-qa" / "cc5-data-model-docs-qa-2026-05-06.json"
+    cc6_docs_summary = ROOT / "docs" / "screenshots" / "cc6-prompt-library-docs-summary.md"
+    cc6_docs_evidence = ROOT / "docs" / "browser-qa" / "cc6-prompt-library-docs-qa-2026-05-06.json"
 
     if not checklist.exists():
         failures.append("missing docs/browser-qa/milestone11-checklist.md")
@@ -237,6 +241,50 @@ def main() -> int:
         for required_case in ("docs-desktop", "docs-mobile"):
             if required_case not in case_names:
                 failures.append(f"CC-5 docs QA evidence missing case: {required_case}")
+
+    if not cc6_docs_summary.exists():
+        failures.append("missing CC-6 docs browser QA summary: docs/screenshots/cc6-prompt-library-docs-summary.md")
+    else:
+        cc6_docs_text = cc6_docs_summary.read_text(encoding="utf-8").lower()
+        for required_phrase in (
+            "cc-6 prompt library docs browser qa",
+            "docs/index.html",
+            "console errors: 0",
+            "exceptions: 0",
+            "text check failures: 0",
+            "keyboard failures: 0",
+            "focus failures: 0",
+            "horizontal overflow failures: 0",
+            "docs-desktop",
+            "docs-mobile",
+            "clerk-and-attorney approval ceremony",
+        ):
+            if required_phrase not in cc6_docs_text:
+                failures.append(f"CC-6 docs QA summary missing phrase: {required_phrase}")
+
+    if not cc6_docs_evidence.exists():
+        failures.append("missing CC-6 docs browser QA evidence: docs/browser-qa/cc6-prompt-library-docs-qa-2026-05-06.json")
+    else:
+        evidence = json.loads(cc6_docs_evidence.read_text(encoding="utf-8"))
+        totals = evidence.get("totals", {})
+        if totals.get("consoleErrors") != 0:
+            failures.append("CC-6 docs QA evidence reports console errors")
+        if totals.get("exceptions") != 0:
+            failures.append("CC-6 docs QA evidence reports runtime exceptions")
+        if totals.get("textCheckFailures") != 0:
+            failures.append("CC-6 docs QA evidence reports failed visible-text checks")
+        if totals.get("keyboardFailures") != 0:
+            failures.append("CC-6 docs QA evidence reports keyboard failures")
+        if totals.get("focusFailures") != 0:
+            failures.append("CC-6 docs QA evidence reports focus failures")
+        if totals.get("horizontalOverflowFailures") != 0:
+            failures.append("CC-6 docs QA evidence reports horizontal overflow")
+        if totals.get("minContrast", 0) < 4.5:
+            failures.append("CC-6 docs QA evidence reports sampled contrast below 4.5")
+        case_names = {case.get("name") for case in evidence.get("cases", [])}
+        for required_case in ("docs-desktop", "docs-mobile"):
+            if required_case not in case_names:
+                failures.append(f"CC-6 docs QA evidence missing case: {required_case}")
 
     try:
         release_result = validate_release_browser_evidence(

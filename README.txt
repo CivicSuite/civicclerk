@@ -107,8 +107,16 @@ Shipped in this foundation:
 - resident-facing React public portal at `/public` in the Docker/nginx product
   path, backed by public calendar, detail, and archive search APIs
 - closed-session leak prevention for anonymous public archive bodies, counts, suggestions, and not-found responses
-- YAML prompt library under `prompts/`
-- offline prompt evaluation harness that runs with `CIVICCORE_LLM_PROVIDER=ollama` and outbound network blocked
+- YAML prompt library under `prompts/` for agenda item summary, staff report
+  normalization, packet completeness review, notice compliance review,
+  motion/vote summary, minutes drafting, ordinance/resolution extraction,
+  closed-session safe refusal, and public plain-language meeting explanation
+- prompt registration through `civiccore.llm.resolve_template` as CivicCore
+  code-level overrides under `consumer_app="civicclerk"`
+- offline prompt evaluation harness that runs with `CIVICCORE_LLM_PROVIDER=ollama`
+  and outbound network blocked, covering citation requirements,
+  closed-session refusal, legal-determination refusal, public approval gates,
+  and input mutation stability
 - prompt-version provenance enforcement for minutes drafts
 - local-first Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports
 - source provenance on imported meetings and agenda items
@@ -200,6 +208,14 @@ Shipped in this foundation:
 | Packet snapshots are versioned per meeting by schema constraint. | `tests/test_milestone_2_schema_and_migrations.py::test_packet_versions_are_versioned_per_meeting_by_schema_contract` |
 | Motion and vote records carry append-only correction metadata that references the original record. | `tests/test_milestone_2_schema_and_migrations.py::test_motion_vote_canonical_tables_preserve_append_only_correction_contract`; `tests/test_milestone_6_motion_vote_action_capture.py::test_api_captured_motion_is_immutable_and_corrections_reference_original` |
 | Closed-session material has staff-only ACL fields, and archive search uses released CivicCore search helpers while document-table references remain ADR-bound until CivicCore ships document tables. | `tests/test_milestone_2_schema_and_migrations.py::test_closed_session_material_has_staff_only_acl_schema_contract`; `tests/test_milestone_2_schema_and_migrations.py::test_civiccore_document_and_search_extraction_boundary_is_documented`; `tests/test_milestone_8_public_archive.py::test_archive_search_requires_allowed_bearer_role_for_closed_session_visibility` |
+
+### CC-6 prompt claims registry
+
+| README prompt claim | Verification |
+| --- | --- |
+| Every spec-required CivicClerk prompt ships as versioned YAML and resolves through `civiccore.llm.resolve_template` under `consumer_app="civicclerk"`. | `tests/test_milestone_9_prompt_yaml_evals.py::test_all_spec_prompts_are_versioned_and_resolve_through_civiccore` |
+| The offline eval harness covers policy phrases, public approval gates, and input mutation stability without network calls. | `tests/test_milestone_9_prompt_yaml_evals.py::test_prompt_eval_harness_runs_offline_with_ollama_provider_selected` |
+| The eval harness uses the CivicCore resolver path instead of standalone prompt rendering. | `tests/test_milestone_9_prompt_yaml_evals.py::test_prompt_eval_harness_uses_civiccore_resolver_not_standalone_rendering` |
 - Docker Compose deployment stack with PostgreSQL 17 + pgvector, Redis 7.2,
   Ollama, FastAPI, Celery worker, Celery Beat, and nginx-served React frontend
   wired to the `/api` proxy path

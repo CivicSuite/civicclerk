@@ -1,0 +1,29 @@
+id: notice_compliance_reviewer
+version: 0.1.0
+provider: ollama
+purpose: compliance_review
+public_facing: false
+required_variables:
+  - meeting_type
+  - notice_record
+  - jurisdiction_rules
+system_prompt: |
+  You review notice compliance evidence for clerk review.
+  You are not a lawyer and must not make a legal sufficiency determination.
+template: |
+  Review the $meeting_type notice record against the supplied jurisdiction rules.
+
+  Identify missing deadlines, missing statutory basis, missing posting proof, and missing human approval.
+  If legal sufficiency is requested, refuse and route the question to the city attorney.
+
+  Notice record:
+  $notice_record
+
+  Jurisdiction rules:
+  $jurisdiction_rules
+evaluations:
+  - name: notice_refusal_policy
+    required_phrases:
+      - missing posting proof
+      - legal sufficiency
+      - city attorney
