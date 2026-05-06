@@ -44,7 +44,12 @@ meeting lifecycle enforcement, packet snapshot versioning, notice
 compliance enforcement, immutable motion capture, immutable vote capture,
 action-item capture linked to meeting outcomes, citation-gated minutes
 draft capture, and permission-aware public calendar/detail/archive
-endpoints, a prompt YAML library and offline evaluation harness,
+endpoints, a versioned prompt YAML library registered through
+`civiccore.llm.resolve_template` under `consumer_app="civicclerk"`, an offline
+evaluation harness for agenda item summaries, staff report normalization,
+packet completeness review, notice compliance review, motion/vote summary,
+minutes drafting, ordinance/resolution extraction, closed-session safe
+refusal, and public plain-language meeting explanation,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
 ledgering, accessibility/browser QA gates, CivicClerk v0.1.20 release
@@ -259,6 +264,37 @@ local PostgreSQL password, starts `docker compose up -d --build`, waits for
 `/health` and the React staff app, and opens `http://127.0.0.1:8080/`. The
 default `.env` keeps `CIVICCLERK_DEMO_SEED=1`, so the first app launch shows
 Brookfield demo data instead of an empty shell.
+
+### Prompt library and approval ceremony
+
+CivicClerk ships nine versioned YAML prompts in `prompts/`: agenda item
+summary, staff report normalizer, packet completeness reviewer, notice
+compliance reviewer, motion/vote summary, minutes drafter,
+ordinance/resolution extractor, closed-session safe summarizer/refuser, and
+public plain-language meeting explainer. Runtime prompt lookup registers those
+files as CivicCore code-level prompt overrides and resolves them through
+`civiccore.llm.resolve_template` with `consumer_app="civicclerk"`; standalone
+YAML loading is kept as a compatibility/test helper, not the production
+resolver path.
+
+Run the prompt gate with:
+
+```bash
+CIVICCORE_LLM_PROVIDER=ollama CIVICCLERK_EVAL_OFFLINE=1 python -m civicclerk.prompt_evals
+```
+
+The gate runs with `CIVICCORE_LLM_PROVIDER=ollama`, requires outbound network
+to remain blocked, and checks citation requirements, closed-session refusal,
+legal-determination refusal, public approval gates, and stability when prompt
+inputs are mutated.
+
+Public-facing prompt variants require the clerk-and-attorney approval ceremony
+before deployment. The ceremony is: the clerk reviews the exact rendered prompt
+and sample output for public-record accuracy, the city attorney reviews the same
+artifact for legal-advice and closed-session boundaries, both approvals are
+recorded in the deployment packet, and IT enables the public variant only after
+that signed approval record is present. If approval is missing, the prompt must
+stay in staff-only rehearsal.
 
 To build the setup executable on a workstation with Inno Setup 6:
 

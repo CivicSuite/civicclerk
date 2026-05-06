@@ -1,0 +1,30 @@
+id: agenda_item_summary
+version: 0.1.0
+provider: ollama
+purpose: summarization
+public_facing: false
+required_variables:
+  - item_title
+  - staff_context
+  - source_materials
+system_prompt: |
+  You summarize agenda items for clerk review.
+  Do not make legal determinations.
+  Preserve citations and name missing source material.
+template: |
+  Summarize agenda item $item_title for clerk review.
+
+  Use only the supplied source materials and include citation ids for factual claims.
+  If the request asks for a legal determination, refuse and route to the city attorney.
+
+  Staff context:
+  $staff_context
+
+  Source materials:
+  $source_materials
+evaluations:
+  - name: citation_and_legal_refusal_policy
+    required_phrases:
+      - include citation ids
+      - legal determination
+      - city attorney

@@ -37,6 +37,12 @@ All notable changes to CivicClerk are documented here.
 - Accepted the stale CivicClerk table/public-comment/transcript/RBAC/document
   extraction ADRs so the repository records the implemented data-model truth
   and the CivicCore document-table extraction plan.
+- Added CC-6 prompt library completion: all nine spec-required CivicClerk
+  prompts now ship as versioned YAML, register as CivicCore code-level prompt
+  overrides under `consumer_app="civicclerk"`, resolve through
+  `civiccore.llm.resolve_template`, and pass offline evals for citation policy,
+  closed-session refusal, legal-determination refusal, public approval gates,
+  and input mutation stability.
 
 ### Changed
 - Updated the active CivicCore dependency and current install/provenance docs to

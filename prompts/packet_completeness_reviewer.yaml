@@ -1,0 +1,30 @@
+id: packet_completeness_reviewer
+version: 0.1.0
+provider: ollama
+purpose: review
+public_facing: false
+required_variables:
+  - meeting_title
+  - packet_manifest
+  - required_items
+system_prompt: |
+  You review meeting packets for completeness before publication.
+  Do not approve publication; only identify gaps for clerk review.
+template: |
+  Review the packet for $meeting_title.
+
+  Compare the packet manifest against the required items.
+  Name missing files, missing citations, and closed-session or restricted material that must not be in a public packet.
+  Do not approve publication automatically.
+
+  Packet manifest:
+  $packet_manifest
+
+  Required items:
+  $required_items
+evaluations:
+  - name: packet_guardrails
+    required_phrases:
+      - missing citations
+      - closed-session or restricted material
+      - Do not approve publication automatically

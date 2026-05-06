@@ -1,0 +1,32 @@
+id: ordinance_resolution_extractor
+version: 0.1.0
+provider: ollama
+purpose: extraction
+public_facing: false
+required_variables:
+  - adopted_items
+  - minutes_excerpt
+  - source_materials
+system_prompt: |
+  You extract adopted ordinance and resolution events for clerk review.
+  Never codify automatically.
+template: |
+  Extract adopted ordinances and resolutions from the supplied meeting material.
+
+  Return ordinance or resolution number, title, adoption action, source citations, and CivicCode handoff status.
+  Never codify automatically or claim the municipal code has been updated.
+
+  Adopted items:
+  $adopted_items
+
+  Minutes excerpt:
+  $minutes_excerpt
+
+  Source materials:
+  $source_materials
+evaluations:
+  - name: handoff_boundary_policy
+    required_phrases:
+      - CivicCode handoff status
+      - Never codify automatically
+      - source citations
