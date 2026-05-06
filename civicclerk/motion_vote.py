@@ -13,6 +13,7 @@ class MotionRecord:
     text: str
     actor: str
     agenda_item_id: str | None = None
+    seconded_by: str | None = None
     correction_of_id: str | None = None
     correction_reason: str | None = None
     captured: bool = True
@@ -24,6 +25,7 @@ class MotionRecord:
             "agenda_item_id": self.agenda_item_id,
             "text": self.text,
             "actor": self.actor,
+            "seconded_by": self.seconded_by,
             "correction_of_id": self.correction_of_id,
             "correction_reason": self.correction_reason,
             "captured": self.captured,
@@ -105,6 +107,7 @@ class MotionVoteStore:
         text: str,
         actor: str,
         agenda_item_id: str | None = None,
+        seconded_by: str | None = None,
         correction_of_id: str | None = None,
         correction_reason: str | None = None,
     ) -> MotionRecord:
@@ -114,6 +117,7 @@ class MotionVoteStore:
             agenda_item_id=agenda_item_id,
             text=text,
             actor=actor,
+            seconded_by=_normalize_optional_text(seconded_by),
             correction_of_id=correction_of_id,
             correction_reason=correction_reason,
         )
@@ -146,6 +150,7 @@ class MotionVoteStore:
             agenda_item_id=original.agenda_item_id,
             text=text,
             actor=actor,
+            seconded_by=original.seconded_by,
             correction_of_id=original.id,
             correction_reason=reason,
         )
@@ -250,6 +255,13 @@ class MotionVoteStore:
             if len(summaries) >= limit:
                 break
         return summaries
+
+
+def _normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip()
+    return normalized or None
 
 
 __all__ = [

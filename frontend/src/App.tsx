@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 type ViewState = "success" | "loading" | "empty" | "error" | "partial";
-type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "outcomes" | "minutes" | "public" | "sync";
+type Page = "dashboard" | "meetings" | "meeting-detail" | "agenda" | "packet" | "notice" | "outcomes" | "minutes" | "member" | "public" | "sync";
 type LifecycleStage =
   | "Scheduled"
   | "Notice posted"
@@ -10,6 +10,7 @@ type LifecycleStage =
   | "Adjourned"
   | "Minutes drafted"
   | "Minutes approved"
+  | "Cancelled"
   | "Closed and archived";
 
 type Meeting = {
@@ -59,6 +60,12 @@ type MeetingSchedulePayload = {
   scheduled_start: string;
   location: string;
   actor?: string;
+};
+
+type MeetingTransitionPayload = {
+  to_status: string;
+  actor: string;
+  statutory_basis?: string;
 };
 
 type StaffSession = {
@@ -290,6 +297,7 @@ type MotionRecord = {
   agendaItemId?: string | null;
   text: string;
   actor: string;
+  secondedBy?: string | null;
   correctionOfId?: string | null;
   correctionReason?: string | null;
   captured: boolean;
@@ -301,6 +309,7 @@ type ApiMotionRecord = {
   agenda_item_id?: string | null;
   text: string;
   actor: string;
+  seconded_by?: string | null;
   correction_of_id?: string | null;
   correction_reason?: string | null;
   captured: boolean;
@@ -352,6 +361,7 @@ type MotionPayload = {
   text: string;
   actor: string;
   agenda_item_id?: string;
+  seconded_by?: string;
 };
 
 type VotePayload = {
@@ -440,6 +450,13 @@ type PublicMeetingRecord = {
   postedAgenda: string;
   postedPacket: string;
   approvedMinutes: string;
+  publicCommentEnabled: boolean;
+  plainLanguageSummary?: string | null;
+  agendaDownloadUrl?: string | null;
+  packetDownloadUrl?: string | null;
+  minutesDownloadUrl?: string | null;
+  minutesAdoptedAt?: string | null;
+  minutesSignedBy?: string | null;
 };
 
 type RunbookItem = {
@@ -465,6 +482,29 @@ type ApiPublicMeetingRecord = {
   posted_agenda: string;
   posted_packet: string;
   approved_minutes: string;
+  public_comment_enabled?: boolean;
+  plain_language_summary?: string | null;
+  agenda_download_url?: string | null;
+  packet_download_url?: string | null;
+  minutes_download_url?: string | null;
+  minutes_adopted_at?: string | null;
+  minutes_signed_by?: string | null;
+};
+
+type ApiPublicCommentRecord = {
+  id: string;
+  public_record_id: string;
+  commenter_name: string;
+  comment: string;
+  submitted_at: string;
+  status: string;
+  message?: string;
+  fix?: string;
+};
+
+type PublicCommentPayload = {
+  commenter_name: string;
+  comment: string;
 };
 
 const lifecycle: LifecycleStage[] = [
@@ -475,6 +515,7 @@ const lifecycle: LifecycleStage[] = [
   "Adjourned",
   "Minutes drafted",
   "Minutes approved",
+  "Cancelled",
   "Closed and archived",
 ];
 
@@ -633,6 +674,7 @@ const demoMotions: MotionRecord[] = [
     agendaItemId: "agenda-fee-schedule",
     text: "Move to adopt the annual fee schedule as presented in the packet.",
     actor: "clerk@example.gov",
+    secondedBy: "Council Member Patel",
     correctionOfId: null,
     correctionReason: null,
     captured: true,
@@ -643,6 +685,7 @@ const demoMotions: MotionRecord[] = [
     agendaItemId: null,
     text: "Move to direct Public Works to inspect sidewalk repair segments and report back.",
     actor: "clerk@example.gov",
+    secondedBy: "Council Member Owens",
     correctionOfId: null,
     correctionReason: null,
     captured: true,
@@ -653,6 +696,8 @@ const demoVotes: VoteRecord[] = [
   { id: "vote-demo-1", motionId: "motion-demo-1", voterName: "Council Member Rivera", vote: "aye", actor: "clerk@example.gov", captured: true },
   { id: "vote-demo-2", motionId: "motion-demo-1", voterName: "Council Member Patel", vote: "aye", actor: "clerk@example.gov", captured: true },
   { id: "vote-demo-3", motionId: "motion-demo-1", voterName: "Council Member Owens", vote: "abstain", actor: "clerk@example.gov", captured: true },
+  { id: "vote-demo-4", motionId: "motion-demo-1", voterName: "Council Member Chen", vote: "recusal", actor: "clerk@example.gov", captured: true },
+  { id: "vote-demo-5", motionId: "motion-demo-1", voterName: "Council Member Gomez", vote: "absent", actor: "clerk@example.gov", captured: true },
 ];
 
 const demoActionItems: ActionItemRecord[] = [
@@ -713,6 +758,13 @@ const demoPublicRecords: PublicMeetingRecord[] = [
     postedAgenda: "Agenda: consent calendar, downtown sidewalk repair award, and public comment.",
     postedPacket: "Packet: staff report, fiscal note, bid tabulation, and notice proof.",
     approvedMinutes: "Approved minutes: motion passed 5-0; packet and notice proof accepted into the public record.",
+    publicCommentEnabled: true,
+    plainLanguageSummary: "Council will review routine consent items, sidewalk repair award materials, and public comment before voting.",
+    agendaDownloadUrl: "/api/public/meetings/public-demo-1/agenda.txt",
+    packetDownloadUrl: "/api/public/meetings/public-demo-1/packet.txt",
+    minutesDownloadUrl: "/api/public/meetings/public-demo-1/minutes.txt",
+    minutesAdoptedAt: "2026-05-12T19:30:00Z",
+    minutesSignedBy: "City Clerk",
   },
   {
     id: "public-demo-2",
@@ -721,6 +773,13 @@ const demoPublicRecords: PublicMeetingRecord[] = [
     postedAgenda: "Agenda: trail grant update, summer program schedule, and resident comment.",
     postedPacket: "Packet: grant memo, program calendar, and accessibility checklist.",
     approvedMinutes: "Approved minutes: board recommended grant application submission.",
+    publicCommentEnabled: false,
+    plainLanguageSummary: "The board reviewed trail grants and summer program planning.",
+    agendaDownloadUrl: "/api/public/meetings/public-demo-2/agenda.txt",
+    packetDownloadUrl: "/api/public/meetings/public-demo-2/packet.txt",
+    minutesDownloadUrl: "/api/public/meetings/public-demo-2/minutes.txt",
+    minutesAdoptedAt: "2026-05-20T18:00:00Z",
+    minutesSignedBy: "Deputy Clerk",
   },
 ];
 
@@ -1217,6 +1276,9 @@ export function App() {
           <button className={page === "outcomes" ? "active" : ""} onClick={() => setPage("outcomes")}>
             <Icon label="Outcomes" /> Outcomes
           </button>
+          <button className={page === "member" ? "active" : ""} onClick={() => setPage("member")}>
+            <Icon label="Member" /> Member packet
+          </button>
           <button className={page === "public" ? "active" : ""} onClick={() => setPage("public")}>
             <Icon label="Public" /> Public posting
           </button>
@@ -1237,7 +1299,8 @@ export function App() {
         <button className="search" type="button">Search city work... <kbd>Ctrl K</kbd></button>
         <div className="surface-switch" aria-label="Surface switcher">
           <button className="on">Staff</button>
-          <button>Resident</button>
+          <button onClick={() => setPage("member")}>Member</button>
+          <button onClick={() => setPage("public")}>Resident</button>
           <button>IT/Admin</button>
         </div>
         <button className="audit-toggle" onClick={() => setAuditOpen((open) => !open)}>
@@ -1306,6 +1369,15 @@ export function App() {
               apiError={apiError}
               onUpdateMeeting={async (meetingId, payload) => {
                 const meeting = await updateMeeting(meetingId, payload);
+                const mapped = mapApiMeeting(meeting, visibleBodies);
+                setMeetings((current) => current.map((item) => item.id === mapped.id ? mapped : item).sort(sortMeetings));
+                setActiveMeetingId(mapped.id);
+              }}
+              onCancelMeeting={async (meetingId) => {
+                const meeting = await transitionMeeting(meetingId, {
+                  to_status: "CANCELLED",
+                  actor: "clerk@example.gov",
+                });
                 const mapped = mapApiMeeting(meeting, visibleBodies);
                 setMeetings((current) => current.map((item) => item.id === mapped.id ? mapped : item).sort(sortMeetings));
                 setActiveMeetingId(mapped.id);
@@ -1436,6 +1508,27 @@ export function App() {
               onPostDraft={async (draftId) => rejectAutomaticMinutesPosting(draftId)}
             />
           )}
+          {page === "member" && (
+            <MemberPacketWorkspace
+              viewState={viewState}
+              apiError={apiError}
+              meetings={visibleMeetings}
+              activeMeeting={activeMeeting}
+              agendaItems={visibleAgendaItems}
+              packetAssemblies={visiblePacketAssemblies.filter((record) => record.meetingId === activeMeeting.id)}
+              motions={visibleMotions.filter((record) => record.meetingId === activeMeeting.id)}
+              votes={visibleVotes}
+              staffSession={staffSession}
+              setActiveMeetingId={setActiveMeetingId}
+              onRecordVote={async (motionId, payload) => {
+                const record = await captureVote(motionId, payload);
+                const mapped = mapApiVoteRecord(record);
+                setVotes((current) => [...current.filter((item) => item.id !== mapped.id), mapped]);
+                setOutcomeState("success");
+                return mapped;
+              }}
+            />
+          )}
           {page === "public" && (
             <PublicPostedMeetingWorkspace
               viewState={qaState ?? publicState}
@@ -1458,6 +1551,21 @@ export function App() {
                   );
                 }
                 return (await searchPublicArchive(query)).map(mapApiPublicMeetingRecord);
+              }}
+              onSubmitComment={async (recordId, payload) => {
+                if (initial.source === "demo" || qaState !== null) {
+                  return {
+                    id: `comment-${Date.now()}`,
+                    public_record_id: recordId,
+                    commenter_name: payload.commenter_name,
+                    comment: payload.comment,
+                    submitted_at: new Date().toISOString(),
+                    status: "RECEIVED",
+                    message: "Public comment received for clerk review.",
+                    fix: "Keep the confirmation id and watch the meeting page for staff-reviewed comment handling.",
+                  };
+                }
+                return submitPublicComment(recordId, payload);
               }}
             />
           )}
@@ -1636,6 +1744,18 @@ async function searchPublicArchive(query: string): Promise<ApiPublicMeetingRecor
   return Array.isArray(payload.results) ? payload.results : [];
 }
 
+async function submitPublicComment(recordId: string, payload: PublicCommentPayload): Promise<ApiPublicCommentRecord> {
+  const response = await fetch(`/api/public/meetings/${recordId}/comments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Public comment intake"));
+  }
+  return response.json();
+}
+
 async function fetchVendorSyncSources(): Promise<ApiVendorSyncSource[]> {
   const response = await fetch("/api/vendor-live-sync/sources", {
     headers: { Accept: "application/json" },
@@ -1746,6 +1866,18 @@ async function updateMeeting(meetingId: string, payload: MeetingSchedulePayload)
   });
   if (!response.ok) {
     throw new Error(`Meeting schedule update returned ${response.status}.`);
+  }
+  return response.json();
+}
+
+async function transitionMeeting(meetingId: string, payload: MeetingTransitionPayload): Promise<ApiMeeting> {
+  const response = await fetch(`/api/meetings/${meetingId}/transitions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(await formatApiError(response, "Meeting lifecycle transition"));
   }
   return response.json();
 }
@@ -1926,7 +2058,7 @@ function mapApiMeeting(meeting: ApiMeeting, meetingBodies: MeetingBody[] = []): 
     stage: toLifecycleStage(meeting.status),
     agendaItems: 0,
     packetPages: 0,
-    noticeStatus: meeting.status === "SCHEDULED" ? "Blocked" : "Ready",
+    noticeStatus: meeting.status === "CANCELLED" ? "Warning" : meeting.status === "SCHEDULED" ? "Blocked" : "Ready",
   };
 }
 
@@ -2002,6 +2134,7 @@ function mapApiMotionRecord(record: ApiMotionRecord): MotionRecord {
     agendaItemId: record.agenda_item_id,
     text: record.text,
     actor: record.actor,
+    secondedBy: record.seconded_by,
     correctionOfId: record.correction_of_id,
     correctionReason: record.correction_reason,
     captured: record.captured,
@@ -2066,7 +2199,21 @@ function mapApiPublicMeetingRecord(record: ApiPublicMeetingRecord): PublicMeetin
     postedAgenda: record.posted_agenda,
     postedPacket: record.posted_packet,
     approvedMinutes: record.approved_minutes,
+    publicCommentEnabled: Boolean(record.public_comment_enabled),
+    plainLanguageSummary: record.plain_language_summary,
+    agendaDownloadUrl: publicApiPath(record.agenda_download_url),
+    packetDownloadUrl: publicApiPath(record.packet_download_url),
+    minutesDownloadUrl: publicApiPath(record.minutes_download_url),
+    minutesAdoptedAt: record.minutes_adopted_at,
+    minutesSignedBy: record.minutes_signed_by,
   };
+}
+
+function publicApiPath(value?: string | null): string | null | undefined {
+  if (!value) {
+    return value;
+  }
+  return value.startsWith("/public/") ? `/api${value}` : value;
 }
 
 function mapApiVendorSyncSource(record: ApiVendorSyncSource): VendorSyncSource {
@@ -2137,6 +2284,7 @@ function toLifecycleStage(status: string): LifecycleStage {
     MINUTES_POSTED: "Minutes drafted",
     MINUTES_ADOPTED: "Minutes approved",
     MINUTES_SIGNED: "Minutes approved",
+    CANCELLED: "Cancelled",
     ARCHIVED: "Closed and archived",
   };
   return map[status] ?? "Scheduled";
@@ -2149,7 +2297,7 @@ function getInitialView(): { page: Page; state: ViewState | null; audit: boolean
   const params = new URLSearchParams(window.location.search);
   const requestedPage = params.get("page");
   const requestedState = params.get("state");
-  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "minutes", "public", "sync"];
+  const pages: Page[] = ["dashboard", "meetings", "meeting-detail", "agenda", "packet", "notice", "outcomes", "minutes", "member", "public", "sync"];
   const states: ViewState[] = ["success", "loading", "empty", "error", "partial"];
   const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
   const routePage = normalizedPath === "/public" || normalizedPath.startsWith("/public/")
@@ -2901,6 +3049,21 @@ function AgendaIntakeWorkspace({
         <MetricCard label="Ready for packet" value={String(readyCount)} note="Can move into packet assembly" />
         <MetricCard label="Needs revision" value={String(revisionCount)} note="Waiting on department fixes" tone={revisionCount ? "warn" : undefined} />
       </div>
+      <section className="panel review-route-panel" aria-label="Staff report review routing">
+        <div className="panel-heading">
+          <div>
+            <h2>Staff report route</h2>
+            <p>Department draft, legal review, clerk normalization, and audit sign-off stay visible before packet assembly.</p>
+          </div>
+          <StatusBadge tone={readyCount ? "Ready" : "Warning"} label={readyCount ? "Sign-off ready" : "Review active"} />
+        </div>
+        <ol className="review-route">
+          <li><strong>Department</strong><span>Draft agenda item and attach staff report/supporting documents.</span></li>
+          <li><strong>Legal</strong><span>Review form, authority, fiscal note, and closed-session sensitivity.</span></li>
+          <li><strong>Clerk</strong><span>Normalize staff report format and route revisions without losing history.</span></li>
+          <li><strong>Audit sign-off</strong><span>Readiness review writes notes, reviewer, status, and audit hash.</span></li>
+        </ol>
+      </section>
       <div className="agenda-grid">
         <section className="panel">
           <div className="panel-heading">
@@ -3534,6 +3697,7 @@ function MeetingOutcomesWorkspace({
   onCreateActionItem: (meetingId: string, payload: ActionItemPayload) => Promise<ActionItemRecord>;
 }) {
   const [motionText, setMotionText] = useState("Move to adopt the annual fee schedule as presented.");
+  const [secondedBy, setSecondedBy] = useState("Council Member Patel");
   const [actor, setActor] = useState("clerk@example.gov");
   const [selectedMotionId, setSelectedMotionId] = useState(motions[0]?.id ?? "");
   const [voterName, setVoterName] = useState("Council Member Rivera");
@@ -3562,6 +3726,7 @@ function MeetingOutcomesWorkspace({
       const record = await onCaptureMotion(activeMeeting.id, {
         text: motionText.trim(),
         actor: actor.trim(),
+        seconded_by: secondedBy.trim(),
       });
       setSelectedMotionId(record.id);
       setMessage(`Motion ${record.id} captured as an immutable meeting outcome. To fix wording later, append a correction record instead of editing this entry.`);
@@ -3585,7 +3750,7 @@ function MeetingOutcomesWorkspace({
       });
       setMessage(`Vote ${record.id} captured for ${record.voterName}. The vote is immutable; use a correction record if the roll call is clarified.`);
     } catch (error) {
-      setMessage(`${error instanceof Error ? error.message : "Vote capture failed."} Confirm the selected motion still exists, choose aye/nay/abstain/absent, then retry.`);
+      setMessage(`${error instanceof Error ? error.message : "Vote capture failed."} Confirm the selected motion still exists, choose aye/nay/abstain/recusal/absent, then retry.`);
     }
   }
 
@@ -3651,6 +3816,10 @@ function MeetingOutcomesWorkspace({
               Motion text
               <textarea value={motionText} onChange={(event) => setMotionText(event.target.value)} required />
             </label>
+            <label>
+              Seconded by
+              <input value={secondedBy} onChange={(event) => setSecondedBy(event.target.value)} required />
+            </label>
             <button type="submit">Capture motion</button>
           </form>
           <form className="intake-form stacked-form" onSubmit={submitVote}>
@@ -3673,6 +3842,7 @@ function MeetingOutcomesWorkspace({
                 <option value="aye">aye</option>
                 <option value="nay">nay</option>
                 <option value="abstain">abstain</option>
+                <option value="recusal">recusal</option>
                 <option value="absent">absent</option>
               </select>
             </label>
@@ -3714,7 +3884,7 @@ function MeetingOutcomesWorkspace({
                       <StatusBadge tone={motion.correctionOfId ? "Warning" : "Ready"} label={motion.correctionOfId ? "Correction" : "Captured"} />
                     </div>
                     <p>{motionVotes.length} votes recorded. {linkedActions.length} action items linked.</p>
-                    <small>Actor: {motion.actor}. Motion ID: {motion.id}.</small>
+                    <small>Actor: {motion.actor}. Seconded by: {motion.secondedBy ?? "not recorded"}. Motion ID: {motion.id}.</small>
                     {motion.correctionOfId && <p className="legal-warning">Correction of {motion.correctionOfId}: {motion.correctionReason}</p>}
                     <div className="vote-strip" aria-label={`Votes for ${motion.text}`}>
                       {motionVotes.length === 0 && <span className="vote-pill missing">No votes recorded</span>}
@@ -4232,6 +4402,185 @@ function VendorSyncWorkspace({
   );
 }
 
+function MemberPacketWorkspace({
+  viewState,
+  apiError,
+  meetings,
+  activeMeeting,
+  agendaItems,
+  packetAssemblies,
+  motions,
+  votes,
+  staffSession,
+  setActiveMeetingId,
+  onRecordVote,
+}: {
+  viewState: ViewState;
+  apiError: string | null;
+  meetings: Meeting[];
+  activeMeeting: Meeting;
+  agendaItems: AgendaIntakeItem[];
+  packetAssemblies: PacketAssemblyRecord[];
+  motions: MotionRecord[];
+  votes: VoteRecord[];
+  staffSession: StaffSession | null;
+  setActiveMeetingId: (id: string) => void;
+  onRecordVote: (motionId: string, payload: VotePayload) => Promise<VoteRecord>;
+}) {
+  const firstMotion = motions[0];
+  const [memberName, setMemberName] = useState("Council Member Rivera");
+  const [selectedMotionId, setSelectedMotionId] = useState(firstMotion?.id ?? "");
+  const [memberVote, setMemberVote] = useState("aye");
+  const [conflictNote, setConflictNote] = useState("No financial conflict disclosed.");
+  const [message, setMessage] = useState<string | null>(null);
+  const canSeeStaffReports = Boolean(staffSession?.roles?.some((role) => ["clerk_admin", "meeting_editor", "archive_reader"].includes(role)));
+  const selectedMotion = motions.find((motion) => motion.id === selectedMotionId) ?? firstMotion;
+  const selectedPacket = packetAssemblies[0];
+  const visibleStaffReports = agendaItems.flatMap((item) =>
+    item.sourceReferences.map((source) => ({
+      item,
+      title: source.title ?? source.source_id ?? "Staff report",
+      kind: source.kind ?? "document",
+    })),
+  );
+
+  useEffect(() => {
+    setSelectedMotionId((current) => current && motions.some((motion) => motion.id === current) ? current : motions[0]?.id ?? "");
+    setMessage(null);
+  }, [activeMeeting, motions]);
+
+  if (viewState !== "success") {
+    return <StateMessage state={viewState} context="member packet" apiError={apiError} />;
+  }
+
+  async function submitMemberVote(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    if (!selectedMotion) {
+      setMessage("Member vote capture is blocked because no motion is available yet. Ask the clerk to capture the motion, then record the member vote or conflict.");
+      return;
+    }
+    try {
+      const record = await onRecordVote(selectedMotion.id, {
+        voter_name: memberName.trim(),
+        vote: memberVote.trim(),
+        actor: memberName.trim(),
+      });
+      const conflictText = memberVote === "recusal" ? ` Conflict note: ${conflictNote.trim() || "recusal recorded without extra note"}.` : "";
+      setMessage(`Member record ${record.id} captured for ${record.voterName}: ${record.vote}.${conflictText}`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Member vote capture failed."} Confirm the motion is still available, then retry or ask the clerk to record the conflict in the meeting outcome ledger.`);
+    }
+  }
+
+  return (
+    <div className="page-stack">
+      <PageHeader
+        eyebrow="Member packet"
+        title="Review packet history before voting."
+        description="Members can scan packet contents, item history, staff-report visibility, and conflict/vote capture without exposing restricted public material."
+      />
+      <div className="metric-grid">
+        <MetricCard label="Packet version" value={selectedPacket ? String(selectedPacket.packetVersion) : "0"} note={selectedPacket ? selectedPacket.status : "No packet assembled"} tone={selectedPacket ? undefined : "warn"} />
+        <MetricCard label="Item history" value={String(agendaItems.length)} note="Agenda intake and review records" />
+        <MetricCard label="Votes visible" value={String(votes.filter((vote) => motions.some((motion) => motion.id === vote.motionId)).length)} note="Includes abstentions, recusals, and absences" />
+      </div>
+      <div className="member-layout">
+        <section className="panel member-packet-panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Packet view</h2>
+              <p>{activeMeeting.body} - {activeMeeting.title}. Select a meeting to review its current packet and member actions.</p>
+            </div>
+            <StatusBadge tone={selectedPacket?.status === "FINALIZED" ? "Ready" : "Warning"} label={selectedPacket?.status ?? "No packet"} />
+          </div>
+          <label className="member-select">
+            Meeting
+            <select value={activeMeeting.id} onChange={(event) => setActiveMeetingId(event.target.value)} required>
+              {meetings.map((meeting) => (
+                <option key={meeting.id} value={meeting.id}>{meeting.body} - {meeting.title}</option>
+              ))}
+            </select>
+          </label>
+          {selectedPacket ? (
+            <div className="public-record-card">
+              <h3>{selectedPacket.title}</h3>
+              <p>Packet {selectedPacket.status.toLowerCase()} with audit hash {selectedPacket.auditHash.slice(0, 12)}...</p>
+              <small>Agenda item order: {selectedPacket.agendaItemIds.join(", ") || "not assigned"}</small>
+            </div>
+          ) : (
+            <p className="empty-inline">No packet is assembled for this meeting. Ask the clerk to finalize packet order before relying on member review.</p>
+          )}
+          <div className="agenda-list">
+            {agendaItems.map((item) => (
+              <article key={item.id} className="agenda-row member-history-row">
+                <div>
+                  <div className="row-title">
+                    <h3>{item.title}</h3>
+                    <StatusBadge tone={statusTone(item.readinessStatus)} label={readinessLabel(item.readinessStatus)} />
+                  </div>
+                  <p>{item.departmentName} submitted by {item.submittedBy}. {item.reviewNotes ?? "Review notes are not recorded yet."}</p>
+                  <small>Last audit hash: {item.lastAuditHash.slice(0, 12)}...</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="panel member-report-panel">
+          <div className="panel-heading">
+            <div>
+              <h2>Staff reports</h2>
+              <p>Role-aware visibility keeps restricted attachments out of the wrong audience while preserving item history.</p>
+            </div>
+            <StatusBadge tone={canSeeStaffReports ? "Ready" : "Warning"} label={canSeeStaffReports ? "Role visible" : "Limited"} />
+          </div>
+          <div className="agenda-list">
+            {visibleStaffReports.map((report) => (
+              <article key={`${report.item.id}-${report.title}`} className="agenda-row">
+                <div>
+                  <h3>{canSeeStaffReports ? report.title : "Restricted staff report"}</h3>
+                  <p>{canSeeStaffReports ? `${report.kind} attached to ${report.item.title}.` : "Ask the clerk for a role-approved packet link if you believe this material should be visible."}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <form className="intake-form stacked-form" onSubmit={submitMemberVote}>
+            <label>
+              Motion
+              <select value={selectedMotion?.id ?? ""} onChange={(event) => setSelectedMotionId(event.target.value)} required>
+                {motions.length === 0 && <option value="">Clerk must capture a motion first</option>}
+                {motions.map((motion) => (
+                  <option key={motion.id} value={motion.id}>{motion.text.slice(0, 72)}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Member
+              <input value={memberName} onChange={(event) => setMemberName(event.target.value)} required />
+            </label>
+            <label>
+              Vote or conflict
+              <select value={memberVote} onChange={(event) => setMemberVote(event.target.value)} required>
+                <option value="aye">aye</option>
+                <option value="nay">nay</option>
+                <option value="abstain">abstain</option>
+                <option value="recusal">recusal</option>
+                <option value="absent">absent</option>
+              </select>
+            </label>
+            <label className="wide">
+              Conflict note
+              <textarea value={conflictNote} onChange={(event) => setConflictNote(event.target.value)} />
+            </label>
+            <button type="submit">Record member vote</button>
+          </form>
+          {message && <p className="form-message" role="status">{message}</p>}
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function PublicPostedMeetingWorkspace({
   viewState,
   apiError,
@@ -4239,6 +4588,7 @@ function PublicPostedMeetingWorkspace({
   selectedRecord,
   onSelectRecord,
   onSearch,
+  onSubmitComment,
 }: {
   viewState: ViewState;
   apiError: string | null;
@@ -4246,10 +4596,14 @@ function PublicPostedMeetingWorkspace({
   selectedRecord: PublicMeetingRecord | null;
   onSelectRecord: (recordId: string) => Promise<void>;
   onSearch: (query: string) => Promise<PublicMeetingRecord[]>;
+  onSubmitComment: (recordId: string, payload: PublicCommentPayload) => Promise<ApiPublicCommentRecord>;
 }) {
   const [query, setQuery] = useState("sidewalk");
+  const [commenterName, setCommenterName] = useState("Jordan Resident");
+  const [commentText, setCommentText] = useState("Please include sidewalk repair phasing in the public discussion.");
   const [searchResults, setSearchResults] = useState<PublicMeetingRecord[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const [commentMessage, setCommentMessage] = useState<string | null>(null);
   const hasSearchResults = searchResults.length > 0;
 
   if (viewState !== "success") {
@@ -4267,6 +4621,28 @@ function PublicPostedMeetingWorkspace({
         : `${results.length} public record${results.length === 1 ? "" : "s"} matched. Restricted or closed-session records are not shown to anonymous visitors.`);
     } catch (error) {
       setMessage(`${error instanceof Error ? error.message : "Public archive search failed."} Confirm the public API is running, then retry or ask the clerk for the posted record link.`);
+    }
+  }
+
+  async function submitComment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setCommentMessage(null);
+    if (!selectedRecord) {
+      setCommentMessage("Choose a posted public meeting before submitting a comment.");
+      return;
+    }
+    if (!selectedRecord.publicCommentEnabled) {
+      setCommentMessage("Public comment intake is closed for this meeting. Check the posted agenda for the official comment method or contact the clerk.");
+      return;
+    }
+    try {
+      const record = await onSubmitComment(selectedRecord.id, {
+        commenter_name: commenterName.trim(),
+        comment: commentText.trim(),
+      });
+      setCommentMessage(`Comment ${record.id} received for clerk review. Keep this confirmation id and watch the public meeting page for staff-reviewed handling.`);
+    } catch (error) {
+      setCommentMessage(`${error instanceof Error ? error.message : "Public comment submission failed."} Confirm comment intake is enabled for this meeting and retry before the posted deadline.`);
     }
   }
 
@@ -4298,7 +4674,7 @@ function PublicPostedMeetingWorkspace({
       <div className="metric-grid">
         <MetricCard label="Posted meetings" value={String(records.length)} note="Visible to residents" />
         <MetricCard label="Open record" value={selectedRecord ? "1" : "0"} note={selectedRecord ? "Agenda, packet, and minutes ready" : "Pick a posted record"} tone={selectedRecord ? undefined : "warn"} />
-        <MetricCard label="Restricted material" value="0" note="Never shown here" />
+        <MetricCard label="Comment intake" value={selectedRecord?.publicCommentEnabled ? "Open" : "Closed"} note={selectedRecord?.publicCommentEnabled ? "Resident comment form enabled" : "Use posted clerk instructions"} tone={selectedRecord?.publicCommentEnabled ? undefined : "warn"} />
       </div>
       <div className="notice-legal-callout public-callout">
         <strong>Public-record boundary</strong>
@@ -4347,23 +4723,52 @@ function PublicPostedMeetingWorkspace({
           {selectedRecord ? (
             <div className="public-record-card">
               <h3>{selectedRecord.title}</h3>
+              {selectedRecord.plainLanguageSummary && (
+                <div className="plain-summary">
+                  <strong>Plain-language summary</strong>
+                  <p>{selectedRecord.plainLanguageSummary}</p>
+                </div>
+              )}
               <div className="public-document-grid">
                 <article>
                   <span>Before the meeting</span>
                   <h4>Posted agenda</h4>
                   <p>{selectedRecord.postedAgenda}</p>
+                  <a className="secondary ghost document-link" href={selectedRecord.agendaDownloadUrl ?? `/api/public/meetings/${selectedRecord.id}/agenda.txt`}>Download agenda</a>
                 </article>
                 <article>
                   <span>Supporting materials</span>
                   <h4>Posted packet</h4>
                   <p>{selectedRecord.postedPacket}</p>
+                  <a className="secondary ghost document-link" href={selectedRecord.packetDownloadUrl ?? `/api/public/meetings/${selectedRecord.id}/packet.txt`}>Download packet</a>
                 </article>
                 <article>
                   <span>After adoption</span>
                   <h4>Approved minutes</h4>
                   <p>{selectedRecord.approvedMinutes}</p>
+                  <small>Adopted: {selectedRecord.minutesAdoptedAt ? formatDateTime(selectedRecord.minutesAdoptedAt) : "pending"}. Signed by: {selectedRecord.minutesSignedBy ?? "pending"}.</small>
+                  <a className="secondary ghost document-link" href={selectedRecord.minutesDownloadUrl ?? `/api/public/meetings/${selectedRecord.id}/minutes.txt`}>Download minutes</a>
                 </article>
               </div>
+              <form className="comment-form" onSubmit={submitComment}>
+                <div className="panel-heading">
+                  <div>
+                    <h4>Public comment</h4>
+                    <p>{selectedRecord.publicCommentEnabled ? "Submit a comment for clerk review while intake is enabled." : "Comment intake is closed here; use the method listed on the posted agenda."}</p>
+                  </div>
+                  <StatusBadge tone={selectedRecord.publicCommentEnabled ? "Ready" : "Warning"} label={selectedRecord.publicCommentEnabled ? "Enabled" : "Closed"} />
+                </div>
+                <label>
+                  Name
+                  <input value={commenterName} onChange={(event) => setCommenterName(event.target.value)} disabled={!selectedRecord.publicCommentEnabled} required />
+                </label>
+                <label>
+                  Comment
+                  <textarea value={commentText} onChange={(event) => setCommentText(event.target.value)} disabled={!selectedRecord.publicCommentEnabled} required />
+                </label>
+                <button type="submit" disabled={!selectedRecord.publicCommentEnabled}>Submit public comment</button>
+                {commentMessage && <p className="form-message" role="status">{commentMessage}</p>}
+              </form>
               <div className="resident-next-steps">
                 <strong>If something looks missing</strong>
                 <span>Contact the clerk for the official posted record link. This portal does not reveal restricted-session existence, counts, or summaries.</span>
@@ -4518,12 +4923,14 @@ function MeetingDetail({
   viewState,
   apiError,
   onUpdateMeeting,
+  onCancelMeeting,
 }: {
   meeting: Meeting;
   meetingBodies: MeetingBody[];
   viewState: ViewState;
   apiError: string | null;
   onUpdateMeeting: (meetingId: string, payload: MeetingSchedulePayload) => Promise<void>;
+  onCancelMeeting: (meetingId: string) => Promise<void>;
 }) {
   const activeIndex = lifecycle.indexOf(meeting.stage);
   const tabs = useMemo(
@@ -4558,7 +4965,7 @@ function MeetingDetail({
           ))}
         </ol>
       </section>
-      <MeetingEditPanel meeting={meeting} meetingBodies={meetingBodies} onUpdateMeeting={onUpdateMeeting} />
+      <MeetingEditPanel meeting={meeting} meetingBodies={meetingBodies} onUpdateMeeting={onUpdateMeeting} onCancelMeeting={onCancelMeeting} />
       <section className="detail-grid">
         {tabs.map(([title, detail]) => (
           <article className="panel" key={title}>
@@ -4579,10 +4986,12 @@ function MeetingEditPanel({
   meeting,
   meetingBodies,
   onUpdateMeeting,
+  onCancelMeeting,
 }: {
   meeting: Meeting;
   meetingBodies: MeetingBody[];
   onUpdateMeeting: (meetingId: string, payload: MeetingSchedulePayload) => Promise<void>;
+  onCancelMeeting: (meetingId: string) => Promise<void>;
 }) {
   const [title, setTitle] = useState(meeting.title);
   const [bodyId, setBodyId] = useState(meeting.meetingBodyId ?? meetingBodies[0]?.id ?? "");
@@ -4621,6 +5030,19 @@ function MeetingEditPanel({
     }
     setMessage("Meeting schedule updated. The audit trail records who changed the scheduling fields.");
   }
+
+  async function cancelMeeting() {
+    setMessage(null);
+    try {
+      await onCancelMeeting(meeting.id);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "Meeting cancellation failed."} Only scheduled or noticed meetings can be cancelled directly; otherwise create a correction or replacement meeting.`);
+      return;
+    }
+    setMessage("Meeting cancelled. The lifecycle audit trail records the cancellation instead of deleting the meeting history.");
+  }
+
+  const canCancelDirectly = meeting.stage === "Scheduled" || meeting.stage === "Notice posted";
 
   return (
     <section className="panel schedule-admin" aria-label="Edit meeting schedule">
@@ -4663,6 +5085,19 @@ function MeetingEditPanel({
         </label>
         <button type="submit">Save schedule</button>
       </form>
+      <div className="danger-zone">
+        <div>
+          <strong>Cancel without deleting history</strong>
+          <p>
+            {canCancelDirectly
+              ? "Use cancellation for scheduled or noticed meetings. Published history remains available for audit and replacement scheduling."
+              : "Direct cancellation is only available before agenda publication. Record a correction or create a replacement meeting so published history stays intact."}
+          </p>
+        </div>
+        <button className="secondary danger-action" type="button" onClick={cancelMeeting} disabled={!canCancelDirectly}>
+          Cancel meeting
+        </button>
+      </div>
       {message && <p className="form-message">{message}</p>}
     </section>
   );
@@ -4772,6 +5207,19 @@ function StateMessage({ state, context, apiError }: { state: ViewState; context:
     copy.body = apiError
       ? `${apiError} Confirm the public API is running and retry; if the meeting is time-sensitive, ask the clerk for the official posted record link.`
       : "The public archive API did not respond. Confirm the public API is running and retry; if the meeting is time-sensitive, ask the clerk for the official posted record link.";
+  }
+  if (context === "member packet" && state === "empty") {
+    copy.body = "No member packet data is available yet. Ask the clerk to finalize packet assembly and capture the first motion before members record votes or conflicts.";
+    copy.action = "Ask clerk to finalize packet";
+  }
+  if (context === "member packet" && state === "partial") {
+    copy.body = "Member packet data is partially available. Do not rely on this view until packet version, item history, staff-report visibility, motion list, and vote/conflict capture are all visible.";
+    copy.action = "Check member packet source";
+  }
+  if (context === "member packet" && state === "error") {
+    copy.body = apiError
+      ? `${apiError} Confirm the meeting, packet, and outcomes APIs are reachable before using member packet review.`
+      : "The member packet workspace could not load. Confirm the meeting, packet, and outcomes APIs are reachable before using member packet review.";
   }
   if (context === "vendor sync" && state === "empty") {
     copy.body = "No vendor sync sources are registered yet. Add a source only after IT has an approved vendor endpoint and credentials stored in deployment secrets; use local export-drop ingestion until then.";
@@ -4926,7 +5374,7 @@ function voteSummary(votes: VoteRecord[]): string {
     current[record.vote] = (current[record.vote] ?? 0) + 1;
     return current;
   }, {});
-  return ["aye", "nay", "abstain", "absent"]
+  return ["aye", "nay", "abstain", "recusal", "absent"]
     .filter((key) => counts[key])
     .map((key) => `${counts[key]} ${key}`)
     .join(", ");

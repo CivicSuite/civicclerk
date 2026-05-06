@@ -108,7 +108,7 @@ button {
 }
 
 .rail nav button.active {
-  background: rgba(255, 255, 255, 0.12);
+  background: #23465f;
   box-shadow: inset 3px 0 0 var(--gold);
 }
 
@@ -123,7 +123,8 @@ button {
   border-radius: 9px;
   display: inline-grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.12);
+  background: #2b4f69;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 800;
 }
@@ -132,8 +133,8 @@ button {
   margin-top: auto;
   padding: 16px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #203b53;
+  border: 1px solid #5f778a;
 }
 
 .install-card span {
@@ -147,6 +148,7 @@ button {
 .install-card strong {
   display: block;
   margin-top: 6px;
+  color: #ffffff;
   line-height: 1.35;
 }
 
@@ -234,7 +236,7 @@ kbd {
 
 .eyebrow {
   display: block;
-  color: var(--gold);
+  color: #6f5813;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -621,7 +623,7 @@ h2 {
 
 .lifecycle-ribbon {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
   gap: 8px;
   margin: 18px 0 0;
   padding: 0;
@@ -710,7 +712,8 @@ h2 {
 
 .notice-legal-callout,
 .compliance-preview,
-.vendor-sync-callout {
+.vendor-sync-callout,
+.plain-summary {
   display: grid;
   gap: 6px;
   padding: 16px;
@@ -722,7 +725,8 @@ h2 {
 
 .notice-legal-callout strong,
 .compliance-preview strong,
-.vendor-sync-callout strong {
+.vendor-sync-callout strong,
+.plain-summary strong {
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1015,7 +1019,8 @@ h2 {
 }
 
 .public-record-card,
-.search-form {
+.search-form,
+.comment-form {
   display: grid;
   gap: 14px;
 }
@@ -1082,6 +1087,79 @@ h2 {
   background: rgba(255, 255, 255, 0.72);
 }
 
+.document-link {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+.comment-form,
+.danger-zone {
+  padding: 16px;
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  background: rgba(255, 250, 240, 0.82);
+}
+
+.comment-form label,
+.member-select {
+  display: grid;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.comment-form input,
+.comment-form textarea,
+.member-select select {
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fffaf0;
+  color: var(--ink);
+  font: inherit;
+}
+
+.comment-form textarea {
+  min-height: 118px;
+  resize: vertical;
+}
+
+.danger-zone {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  border-color: rgba(141, 61, 47, 0.28);
+  background: #fff5f3;
+}
+
+.danger-zone p {
+  margin-top: 4px;
+}
+
+.member-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(300px, 0.88fr);
+  gap: 18px;
+}
+
+.member-packet-panel,
+.member-report-panel {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.member-history-row {
+  background:
+    linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(238, 247, 241, 0.86)),
+    radial-gradient(circle at 100% 0%, rgba(45, 106, 79, 0.16), transparent 14rem);
+}
+
 .muted-warning {
   background: #eef2f5;
   color: #394855;
@@ -1141,6 +1219,39 @@ h2 {
   display: grid;
   grid-template-columns: minmax(320px, 0.86fr) minmax(0, 1.14fr);
   gap: 18px;
+}
+
+.review-route-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.review-route {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-route li {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  background: rgba(255, 250, 240, 0.78);
+}
+
+.review-route strong,
+.review-route span {
+  display: block;
+}
+
+.review-route span {
+  margin-top: 6px;
+  color: var(--ink-soft);
+  line-height: 1.45;
 }
 
 .review-controls {
@@ -1320,6 +1431,7 @@ h2 {
 }
 
 .vote-pill.abstain,
+.vote-pill.recusal,
 .vote-pill.absent,
 .vote-pill.missing {
   background: #eef2f5;
@@ -1516,6 +1628,7 @@ h2 {
   .metric-grid,
   .runbook-steps,
   .detail-grid,
+  .member-layout,
   .body-form,
   .schedule-form,
   .intake-form,
@@ -1523,6 +1636,7 @@ h2 {
   .public-portal-hero,
   .public-document-grid,
   .agenda-grid,
+  .review-route,
   .review-controls,
   .notice-blocker-panel,
   .notice-gate-list,
@@ -1597,6 +1711,11 @@ h2 {
   .task-list button,
   .meeting-list button {
     align-items: flex-start;
+  }
+
+  .danger-zone {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .task-list button strong,

@@ -104,6 +104,34 @@ describe("CivicClerk staff workspace", () => {
             }),
           });
         }
+        if (url === "/api/meetings/meeting-1/transitions" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "meeting-1",
+              title: "Regular Meeting",
+              meeting_type: "regular",
+              meeting_body_id: "body-1",
+              status: "CANCELLED",
+              scheduled_start: "2026-05-05T18:00:00Z",
+              location: "Council Chambers",
+            }),
+          });
+        }
+        if (url === "/api/meetings/meeting-2/transitions" && init?.method === "POST") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "meeting-2",
+              title: "Special Session",
+              meeting_type: "special",
+              meeting_body_id: "body-2",
+              status: "CANCELLED",
+              scheduled_start: "2026-05-07T18:00:00Z",
+              location: "Room 204",
+            }),
+          });
+        }
         if (url === "/api/meetings/meeting-1/packet-assemblies" && init?.method === "POST") {
           return Promise.resolve({
             ok: true,
@@ -235,6 +263,7 @@ describe("CivicClerk staff workspace", () => {
               agenda_item_id: null,
               text: "Move to adopt the annual fee schedule as presented.",
               actor: "clerk@example.gov",
+              seconded_by: "Council Member Patel",
               correction_of_id: null,
               correction_reason: null,
               captured: true,
@@ -252,6 +281,7 @@ describe("CivicClerk staff workspace", () => {
                   agenda_item_id: "agenda-99",
                   text: "Move to approve sidewalk repairs.",
                   actor: "clerk@example.gov",
+                  seconded_by: "Council Member Chen",
                   correction_of_id: null,
                   correction_reason: null,
                   captured: true,
@@ -261,14 +291,15 @@ describe("CivicClerk staff workspace", () => {
           });
         }
         if (url === "/api/motions/motion-existing/votes" && init?.method === "POST") {
+          const body = JSON.parse(String(init.body ?? "{}")) as { voter_name?: string; vote?: string; actor?: string };
           return Promise.resolve({
             ok: true,
             json: async () => ({
               id: "vote-2",
               motion_id: "motion-existing",
-              voter_name: "Council Member Rivera",
-              vote: "aye",
-              actor: "clerk@example.gov",
+              voter_name: body.voter_name ?? "Council Member Rivera",
+              vote: body.vote ?? "aye",
+              actor: body.actor ?? "clerk@example.gov",
               correction_of_id: null,
               correction_reason: null,
               captured: true,
@@ -276,14 +307,15 @@ describe("CivicClerk staff workspace", () => {
           });
         }
         if (url === "/api/motions/motion-1/votes" && init?.method === "POST") {
+          const body = JSON.parse(String(init.body ?? "{}")) as { voter_name?: string; vote?: string; actor?: string };
           return Promise.resolve({
             ok: true,
             json: async () => ({
               id: "vote-1",
               motion_id: "motion-1",
-              voter_name: "Council Member Rivera",
-              vote: "aye",
-              actor: "clerk@example.gov",
+              voter_name: body.voter_name ?? "Council Member Rivera",
+              vote: body.vote ?? "aye",
+              actor: body.actor ?? "clerk@example.gov",
               correction_of_id: null,
               correction_reason: null,
               captured: true,
@@ -417,6 +449,13 @@ describe("CivicClerk staff workspace", () => {
                   posted_agenda: "Agenda: approve sidewalk repairs.",
                   posted_packet: "Packet: staff report and fiscal note.",
                   approved_minutes: "Approved minutes: motion passed 5-0.",
+                  public_comment_enabled: true,
+                  plain_language_summary: "Council will decide whether to advance sidewalk repairs.",
+                  agenda_download_url: "/public/meetings/public-1/agenda.txt",
+                  packet_download_url: "/public/meetings/public-1/packet.txt",
+                  minutes_download_url: "/public/meetings/public-1/minutes.txt",
+                  minutes_adopted_at: "2026-05-12T19:30:00Z",
+                  minutes_signed_by: "City Clerk",
                 },
               ],
             }),
@@ -432,6 +471,29 @@ describe("CivicClerk staff workspace", () => {
               posted_agenda: "Agenda: approve sidewalk repairs.",
               posted_packet: "Packet: staff report and fiscal note.",
               approved_minutes: "Approved minutes: motion passed 5-0.",
+              public_comment_enabled: true,
+              plain_language_summary: "Council will decide whether to advance sidewalk repairs.",
+              agenda_download_url: "/public/meetings/public-1/agenda.txt",
+              packet_download_url: "/public/meetings/public-1/packet.txt",
+              minutes_download_url: "/public/meetings/public-1/minutes.txt",
+              minutes_adopted_at: "2026-05-12T19:30:00Z",
+              minutes_signed_by: "City Clerk",
+            }),
+          });
+        }
+        if (url === "/api/public/meetings/public-1/comments" && init?.method === "POST") {
+          const body = JSON.parse(String(init.body ?? "{}")) as { commenter_name?: string; comment?: string };
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              id: "comment-1",
+              public_record_id: "public-1",
+              commenter_name: body.commenter_name ?? "Jordan Resident",
+              comment: body.comment ?? "Please discuss sidewalk phasing.",
+              submitted_at: "2026-05-01T12:00:00Z",
+              status: "RECEIVED",
+              message: "Public comment received for clerk review.",
+              fix: "Keep the confirmation id and watch the meeting page for staff-reviewed comment handling.",
             }),
           });
         }
@@ -448,6 +510,13 @@ describe("CivicClerk staff workspace", () => {
                   posted_agenda: "Agenda: approve sidewalk repairs.",
                   posted_packet: "Packet: staff report and fiscal note.",
                   approved_minutes: "Approved minutes: motion passed 5-0.",
+                  public_comment_enabled: true,
+                  plain_language_summary: "Council will decide whether to advance sidewalk repairs.",
+                  agenda_download_url: "/public/meetings/public-1/agenda.txt",
+                  packet_download_url: "/public/meetings/public-1/packet.txt",
+                  minutes_download_url: "/public/meetings/public-1/minutes.txt",
+                  minutes_adopted_at: "2026-05-12T19:30:00Z",
+                  minutes_signed_by: "City Clerk",
                 },
               ],
               suggestions: [],
@@ -874,6 +943,9 @@ describe("CivicClerk staff workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: /Agenda intake/ }));
 
     expect(screen.getByRole("heading", { name: "Department requests, clerk decisions." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Staff report route" })).toBeInTheDocument();
+    expect(screen.getByText(/legal review/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/audit sign-off/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Approve zoning study")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Agenda title"), { target: { value: "Approve downtown zoning study" } });
@@ -999,6 +1071,43 @@ describe("CivicClerk staff workspace", () => {
     expect(await screen.findByText(/1 public record matched/)).toBeInTheDocument();
     expect(screen.getAllByText("Packet: staff report and fiscal note.")).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: "Open public record" }).length).toBeGreaterThan(0);
+  });
+
+  it("shows public downloads, summaries, and comment intake where enabled", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Public posting/ }));
+
+    expect(screen.getByText("Plain-language summary")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Download agenda" })).toHaveAttribute("href", "/api/public/meetings/public-1/agenda.txt");
+    expect(screen.getByRole("link", { name: "Download packet" })).toHaveAttribute("href", "/api/public/meetings/public-1/packet.txt");
+    expect(screen.getByRole("link", { name: "Download minutes" })).toHaveAttribute("href", "/api/public/meetings/public-1/minutes.txt");
+    expect(screen.getByText(/Signed by: City Clerk/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Submit public comment" }));
+    expect(await screen.findByText(/Comment comment-1 received for clerk review/)).toBeInTheDocument();
+  });
+
+  it("opens the member packet surface for item history, staff report visibility, and conflict recording", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Member packet/ }));
+
+    expect(screen.getByRole("heading", { name: "Review packet history before voting." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Packet view" })).toBeInTheDocument();
+    expect(screen.getAllByText(/Last audit hash:/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Staff reports" })).toBeInTheDocument();
+    expect(screen.getByText("Planning memo")).toBeInTheDocument();
+    expect(screen.getByText("Role visible")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Vote or conflict"), { target: { value: "recusal" } });
+    fireEvent.change(screen.getByLabelText("Conflict note"), { target: { value: "Employer has a contract on this agenda item." } });
+    fireEvent.click(screen.getByRole("button", { name: "Record member vote" }));
+
+    const voteStatus = await screen.findByText(/Member record vote-2 captured for Council Member Rivera: recusal/);
+    expect(voteStatus).toHaveTextContent("Conflict note: Employer has a contract on this agenda item.");
   });
 
   it("shows vendor sync health and records run outcomes without vendor network calls", async () => {
@@ -1150,6 +1259,19 @@ describe("CivicClerk staff workspace", () => {
     fireEvent.click(screen.getAllByRole("button", { name: /City Council/ })[0]);
     expect(await screen.findByRole("heading", { name: "Regular Meeting" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Meeting lifecycle stages" })).toBeInTheDocument();
+  });
+
+  it("cancels a scheduled meeting through the lifecycle audit path", async () => {
+    render(<App />);
+
+    await screen.findByRole("heading", { name: "Good morning, City Clerk." });
+    fireEvent.click(screen.getByRole("button", { name: /Meetings/ }));
+    const planningButtons = await screen.findAllByRole("button", { name: /Planning Commission/ });
+    fireEvent.click(planningButtons[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel meeting" }));
+
+    expect(await screen.findByText(/Meeting cancelled/)).toBeInTheDocument();
+    expect(screen.getAllByText("Cancelled").length).toBeGreaterThan(0);
   });
 
   it("shows actionable error and empty states for frontend QA", async () => {

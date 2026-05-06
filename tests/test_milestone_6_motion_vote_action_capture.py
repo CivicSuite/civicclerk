@@ -29,6 +29,7 @@ async def test_api_captured_motion_is_immutable_and_corrections_reference_origin
             json={
                 "text": "Move to approve the packet as presented.",
                 "actor": "clerk@example.gov",
+                "seconded_by": "Council Member Patel",
             },
         )
         motion_id = captured.json()["id"]
@@ -53,6 +54,7 @@ async def test_api_captured_motion_is_immutable_and_corrections_reference_origin
 
     assert captured.status_code == 201
     assert captured.json()["captured"] is True
+    assert captured.json()["seconded_by"] == "Council Member Patel"
     assert captured.json()["correction_of_id"] is None
     for response in (put_attempt, patch_attempt):
         assert response.status_code == 409
@@ -61,6 +63,7 @@ async def test_api_captured_motion_is_immutable_and_corrections_reference_origin
         assert "Use POST /motions/{motion_id}/corrections" in detail["fix"]
     assert correction.status_code == 201
     assert correction.json()["correction_of_id"] == motion_id
+    assert correction.json()["seconded_by"] == "Council Member Patel"
     assert correction.json()["text"] == "Move to approve the packet as amended."
     assert [motion["id"] for motion in listing.json()["motions"]] == [
         motion_id,

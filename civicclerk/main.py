@@ -10,7 +10,7 @@ import secrets
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from civiccore.auth import (
@@ -54,7 +54,7 @@ from civicclerk.packet_notice import (
     PacketStore,
     evaluate_notice_compliance,
 )
-from civicclerk.public_archive import PublicArchiveStore, can_view_closed_sessions
+from civicclerk.public_archive import PublicArchiveStore, PublicCommentStore, can_view_closed_sessions
 from civicclerk.public_ui import render_public_portal
 from civicclerk.staff_ui import build_staff_cockpit_items, render_staff_dashboard
 from civicclerk.vendor_live_sync import VendorSyncRunResult
@@ -74,6 +74,7 @@ notices = NoticeStore()
 motion_votes = MotionVoteStore()
 minutes_drafts = MinutesDraftStore()
 public_archive = PublicArchiveStore()
+public_comments = PublicCommentStore()
 _archive_search_bearer = HTTPBearer(auto_error=False)
 STAFF_AUTH_MODE_ENV_VAR = "CIVICCLERK_STAFF_AUTH_MODE"
 STAFF_AUTH_TOKEN_ROLES_ENV_VAR = "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES"
@@ -307,6 +308,7 @@ class MotionCreate(BaseModel):
     text: str = Field(min_length=1)
     actor: str = Field(min_length=1)
     agenda_item_id: str | None = Field(default=None, min_length=1)
+    seconded_by: str | None = Field(default=None, min_length=1)
 
 
 class MotionCorrectionCreate(BaseModel):
@@ -359,7 +361,16 @@ class PublicMeetingRecordCreate(BaseModel):
     posted_agenda: str = Field(min_length=1)
     posted_packet: str = Field(min_length=1)
     approved_minutes: str = Field(min_length=1)
+    public_comment_enabled: bool = False
+    plain_language_summary: str | None = Field(default=None, min_length=1)
+    minutes_adopted_at: str | None = Field(default=None, min_length=1)
+    minutes_signed_by: str | None = Field(default=None, min_length=1)
     closed_session_notes: str | None = Field(default=None, min_length=1)
+
+
+class PublicCommentCreate(BaseModel):
+    commenter_name: str = Field(min_length=1)
+    comment: str = Field(min_length=1)
 
 
 class VendorSyncSourceCreate(BaseModel):
@@ -1373,6 +1384,7 @@ async def capture_motion(meeting_id: str, payload: MotionCreate) -> dict:
         agenda_item_id=payload.agenda_item_id,
         text=payload.text,
         actor=payload.actor,
+        seconded_by=payload.seconded_by,
     ).public_dict()
 
 
@@ -1604,6 +1616,10 @@ async def publish_public_record(
         posted_agenda=payload.posted_agenda,
         posted_packet=payload.posted_packet,
         approved_minutes=payload.approved_minutes,
+        public_comment_enabled=payload.public_comment_enabled,
+        plain_language_summary=payload.plain_language_summary,
+        minutes_adopted_at=payload.minutes_adopted_at,
+        minutes_signed_by=payload.minutes_signed_by,
         closed_session_notes=payload.closed_session_notes,
     )
     return record.public_dict()
@@ -1763,6 +1779,70 @@ async def public_meeting_detail(record_id: str) -> dict:
     if record is None:
         raise HTTPException(status_code=404, detail="Public meeting record not found.")
     return record.public_dict()
+
+
+@app.get("/public/meetings/{record_id}/{document_kind}.txt")
+async def public_meeting_download(record_id: str, document_kind: str) -> Response:
+    """Download one public-safe agenda, packet, or adopted-minutes text file."""
+    record = public_archive.public_detail(record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Public meeting record not found.")
+    documents = {
+        "agenda": record.posted_agenda,
+        "packet": record.posted_packet,
+        "minutes": record.approved_minutes,
+    }
+    if document_kind not in documents:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Public meeting document not found.",
+                "fix": "Use agenda.txt, packet.txt, or minutes.txt from the public meeting detail response.",
+            },
+        )
+    filename = f"{record_id}-{document_kind}.txt"
+    return Response(
+        content=documents[document_kind],
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.post("/public/meetings/{record_id}/comments", status_code=201)
+async def submit_public_comment(record_id: str, payload: PublicCommentCreate) -> dict:
+    """Accept a resident comment only for public records with comment intake enabled."""
+    record = public_archive.public_detail(record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Public meeting record not found.")
+    comment = public_comments.submit(
+        public_record=record,
+        commenter_name=payload.commenter_name,
+        comment=payload.comment,
+        submitted_at=datetime.now(UTC).isoformat(),
+    )
+    if comment is None:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Public comment intake is closed for this meeting record.",
+                "fix": "Contact the clerk for the official comment method or check the posted agenda for comment instructions.",
+            },
+        )
+    return {
+        **comment.public_dict(),
+        "message": "Public comment received for clerk review.",
+        "fix": "Keep the confirmation id and watch the meeting page for staff-reviewed comment handling.",
+    }
+
+
+@app.get("/public/meetings/{record_id}/comments")
+async def list_public_comments(record_id: str) -> dict[str, int | list[dict]]:
+    """List resident comments collected for a public record."""
+    record = public_archive.public_detail(record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Public meeting record not found.")
+    comments = [comment.public_dict() for comment in public_comments.list_for_record(record.id)]
+    return {"total_count": len(comments), "comments": comments}
 
 
 @app.get("/public/archive/search")
