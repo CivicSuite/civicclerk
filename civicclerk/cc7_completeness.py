@@ -126,7 +126,7 @@ CC7_API_CATEGORIES: tuple[ApiCategory, ...] = (
         id="admin-prompt-config",
         label="Admin prompt and configuration surfaces",
         protected=True,
-        paths=("/admin/config", "/admin/prompts"),
+        paths=("/admin/config", "/admin/prompts", "/integrations/readiness"),
     ),
     ApiCategory(
         id="connector-import-admin",

@@ -1,6 +1,6 @@
 {
   "page": "frontend React CC-7 spec surfaces",
-  "reviewed_at": "2026-05-06T16:34:40.004Z",
+  "reviewed_at": "2026-05-06T22:01:32.559Z",
   "pages": [
     "staff-dashboard",
     "meeting-calendar",
@@ -156,7 +156,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-staff-dashboard-mobile.png",
-      "bytes": 150196,
+      "bytes": 150186,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -506,7 +506,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-meeting-calendar-mobile.png",
-      "bytes": 106634,
+      "bytes": 106628,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -856,7 +856,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-meeting-detail-mobile.png",
-      "bytes": 89695,
+      "bytes": 89720,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -1206,7 +1206,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-agenda-builder-mobile.png",
-      "bytes": 137621,
+      "bytes": 137629,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -2606,7 +2606,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-notice-checklist-mobile.png",
-      "bytes": 121443,
+      "bytes": 121444,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -2956,7 +2956,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-live-meeting-capture-mobile.png",
-      "bytes": 121025,
+      "bytes": 121036,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -3306,7 +3306,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-minutes-review-mobile.png",
-      "bytes": 126080,
+      "bytes": 126090,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -3656,7 +3656,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-motions-votes-actions-mobile.png",
-      "bytes": 121040,
+      "bytes": 121036,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -4356,7 +4356,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-public-comment-review-mobile.png",
-      "bytes": 140027,
+      "bytes": 140079,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -5056,7 +5056,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-archive-search-mobile.png",
-      "bytes": 142944,
+      "bytes": 142981,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -5406,7 +5406,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-public-calendar-mobile.png",
-      "bytes": 201850,
+      "bytes": 201856,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -5756,7 +5756,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-public-detail-mobile.png",
-      "bytes": 201856,
+      "bytes": 201850,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -6071,7 +6071,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-admin-settings-desktop.png",
-      "bytes": 550973,
+      "bytes": 581525,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -6106,7 +6106,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-admin-settings-mobile.png",
-      "bytes": 141173,
+      "bytes": 129119,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -6456,7 +6456,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-prompt-library-admin-mobile.png",
-      "bytes": 142103,
+      "bytes": 142023,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,

@@ -123,6 +123,7 @@ def test_new_cc7_api_surfaces_execute_with_actionable_payloads(tmp_path, monkeyp
 
     config = client.get("/admin/config").json()
     prompts = client.get("/admin/prompts").json()
+    integrations = client.get("/integrations/readiness").json()
     assert config["api_categories"]
     public_comments_category = next(
         category for category in config["api_categories"] if category["id"] == "public-comments"
@@ -130,6 +131,10 @@ def test_new_cc7_api_surfaces_execute_with_actionable_payloads(tmp_path, monkeyp
     assert "protected staff review queue" in public_comments_category["auth_scope"]
     assert len(prompts["prompts"]) == 9
     assert prompts["fix"].startswith("For public-facing prompt changes")
+    assert config["integration_depth"]["path"] == "/integrations/readiness"
+    assert integrations["readiness"] == "ready"
+    assert integrations["network_calls"] is False
+    assert integrations["dependent_modules_required"] is False
 
 
 def test_published_openapi_matches_runtime_schema() -> None:

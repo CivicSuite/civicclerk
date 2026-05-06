@@ -1950,6 +1950,27 @@
         "summary": "Import Connector Meeting"
       }
     },
+    "/integrations/readiness": {
+      "get": {
+        "description": "Report no-network integration contracts for absent CivicSuite dependencies.",
+        "operationId": "integrations_readiness_integrations_readiness_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Integrations Readiness Integrations Readiness Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Integrations Readiness"
+      }
+    },
     "/meeting-bodies": {
       "get": {
         "description": "List municipal meeting bodies for staff setup and scheduling clients.",
