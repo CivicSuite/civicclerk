@@ -744,7 +744,7 @@ def test_civiccore_document_and_search_extraction_boundary_is_documented() -> No
 
     assert "from civiccore.search import" in public_archive
     assert "status: accepted" in adr
-    assert "civiccore 0.22.1 ships search helpers" in adr
+    assert "civiccore 1.0.0 ships search helpers" in adr
     assert "no document-table package" in adr
     assert "document_ref" in adr
     assert "extraction plan" in adr

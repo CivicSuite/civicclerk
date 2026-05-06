@@ -29,4 +29,4 @@ Page SHA256: `b4a6f16e84f228cc590378fb01c8890cac57054e2fc0f79556e9bb9b39abe36b`
 - contrast: body text contrast is 15.19:1 against the page background approximation.
 - contrast: link text contrast is 5.91:1 against card white.
 - console: no browser console events or page exceptions were recorded in either viewport.
-- copy: the docs page now states that CivicClerk uses the published `civiccore` 0.22.1 wheel from the `civiccore-m1-freeze` release asset.
+- copy: the docs page now states that CivicClerk uses the published `civiccore` 1.0.0 wheel from the `v1.0` release asset.
