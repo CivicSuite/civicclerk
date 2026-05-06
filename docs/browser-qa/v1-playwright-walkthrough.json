@@ -1,0 +1,599 @@
+{
+  "product": "CivicClerk",
+  "version": "1.0.0",
+  "reviewed_at": "2026-05-06T16:37:53.933Z",
+  "tool": "playwright",
+  "baseURL": "http://127.0.0.1:4180",
+  "totals": {
+    "cases": 55,
+    "consoleErrors": 0,
+    "pageErrors": 0
+  },
+  "results": [
+    {
+      "route": "staff-dashboard",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "meeting-calendar",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "meeting-detail",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "agenda-builder",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "agenda-intake",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "staff-report-editor",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "packet-builder",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "notice-checklist",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "live-meeting-capture",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "minutes-review",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "motions-votes-actions",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "transcript-management",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "public-comment-review",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "closed-session-workspace",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "archive-search",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "public-calendar",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "public-detail",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "admin-settings",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "prompt-library-admin",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "connector-import-admin",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "staff-dashboard",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "meeting-calendar",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "meeting-detail",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "agenda-builder",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "agenda-intake",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "staff-report-editor",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "packet-builder",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "notice-checklist",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "live-meeting-capture",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "minutes-review",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "motions-votes-actions",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "transcript-management",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "public-comment-review",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "closed-session-workspace",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "archive-search",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "public-calendar",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "public-detail",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "admin-settings",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "prompt-library-admin",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "connector-import-admin",
+      "state": "success",
+      "viewport": "mobile",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "focus": {
+        "tag": "BUTTON",
+        "text": "D Dashboard",
+        "outline": "auto"
+      }
+    },
+    {
+      "route": "staff-dashboard",
+      "state": "loading",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "staff-dashboard",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "staff-dashboard",
+      "state": "empty",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "staff-dashboard",
+      "state": "error",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "staff-dashboard",
+      "state": "partial",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "notice-checklist",
+      "state": "loading",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "notice-checklist",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "notice-checklist",
+      "state": "empty",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "notice-checklist",
+      "state": "error",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "notice-checklist",
+      "state": "partial",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "public-calendar",
+      "state": "loading",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "public-calendar",
+      "state": "success",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "public-calendar",
+      "state": "empty",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "public-calendar",
+      "state": "error",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "route": "public-calendar",
+      "state": "partial",
+      "viewport": "desktop",
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  ]
+}

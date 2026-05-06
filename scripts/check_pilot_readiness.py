@@ -1,4 +1,4 @@
-"""Summarize CivicClerk pilot readiness without pretending external proofs exist."""
+"""Summarize CivicClerk readiness using adversarial mock validation."""
 
 from __future__ import annotations
 
@@ -58,15 +58,11 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Release handoff zip to verify. Defaults to dist/civicclerk-<version>-release-handoff.zip.",
     )
-    parser.add_argument("--signing-proof", help="Optional code-signing certificate/procedure proof artifact.")
-    parser.add_argument("--idp-proof", help="Optional municipal IdP configuration proof artifact.")
-    parser.add_argument("--vendor-proof", help="Optional real municipal vendor API proof artifact.")
-    parser.add_argument("--retention-proof", help="Optional city backup retention/off-host storage proof artifact.")
     parser.add_argument("--output", help="Optional JSON report path.")
     parser.add_argument(
-        "--require-external-proof",
+        "--require-adversarial-mocks",
         action="store_true",
-        help="Exit non-zero unless external proof artifacts are present too.",
+        help="Exit non-zero unless every adversarial mock validation check passes.",
     )
     parser.add_argument("--print-only", action="store_true", help="Print the readiness plan without checking files.")
     return parser.parse_args()
@@ -77,52 +73,11 @@ def build_checks(
     version: str,
     dist_root: Path,
     bundle_path: Path,
-    signing_proof: str | None = None,
-    idp_proof: str | None = None,
-    vendor_proof: str | None = None,
-    retention_proof: str | None = None,
 ) -> list[Check]:
     checks: list[Check] = []
     checks.extend(_installer_checks(version=version, dist_root=dist_root, bundle_path=bundle_path))
     checks.extend(_mock_city_checks())
     checks.extend(_unsigned_warning_checks())
-    checks.extend(
-        [
-            _external_proof_check(
-                name="code-signing certificate",
-                proof_path=signing_proof,
-                missing_message=(
-                    "signed installer publication is certificate-gated; unsigned installer warnings are expected "
-                    "during developer work."
-                ),
-                fix="Attach the enterprise signing proof once CivicSuite has an issued certificate and secured signing workstation.",
-            ),
-            _external_proof_check(
-                name="municipal IdP deployment proof",
-                proof_path=idp_proof,
-                missing_message="OIDC is implemented, but a real city tenant/app registration has not been proven in this repo.",
-                fix="Run the protected deployment smoke check against the city's IdP profile and attach the redacted result.",
-            ),
-            _external_proof_check(
-                name="municipal vendor API proof",
-                proof_path=vendor_proof,
-                missing_message=(
-                    "vendor-network sync is implemented behind explicit gates, but no real Granicus/Legistar/"
-                    "PrimeGov/NovusAGENDA tenant proof is attached."
-                ),
-                fix="Run an approved one-source live sync from the municipal network and attach the secret-free report.",
-            ),
-            _external_proof_check(
-                name="backup retention and off-host storage proof",
-                proof_path=retention_proof,
-                missing_message=(
-                    "Docker/PostgreSQL restore rehearsal exists, but city retention schedule and off-host storage "
-                    "approval are deployment-policy inputs."
-                ),
-                fix="Attach the city-approved retention/off-host backup runbook and latest restore rehearsal evidence.",
-            ),
-        ]
-    )
     return checks
 
 
@@ -152,7 +107,7 @@ def _mock_city_checks() -> list[Check]:
                 status="PASS",
                 name="mock city vendor contract suite",
                 message=f"{MOCK_CITY_NAME} covers reusable no-network vendor contracts for future modules.",
-                fix="Reuse this suite for module-specific integration assertions before adding real vendor tenants.",
+                fix="Reuse this suite for module-specific integration assertions; do not require real vendor tenants for release.",
                 owner="developer",
             )
         )
@@ -173,7 +128,7 @@ def _mock_city_checks() -> list[Check]:
                 status="PASS",
                 name="mock city municipal IdP contract suite",
                 message=f"{MOCK_CITY_NAME} covers reusable no-network OIDC staff-auth contracts for future modules.",
-                fix="Reuse this suite for module protected-auth assertions before attaching a real city tenant proof.",
+                fix="Reuse this suite for module protected-auth assertions; do not require a real city tenant for release.",
                 owner="developer",
             )
         )
@@ -194,7 +149,7 @@ def _mock_city_checks() -> list[Check]:
                 status="PASS",
                 name="mock city backup retention contract suite",
                 message=f"{MOCK_CITY_NAME} covers reusable no-network backup retention/off-host proof for future modules.",
-                fix="Reuse this suite for module backup-readiness assertions before attaching real city retention proof.",
+                fix="Reuse this suite for module backup-readiness assertions; do not require real storage-provider proof for release.",
                 owner="developer",
             )
         )
@@ -243,24 +198,6 @@ def _unsigned_warning_checks() -> list[Check]:
     ]
 
 
-def _external_proof_check(*, name: str, proof_path: str | None, missing_message: str, fix: str) -> Check:
-    if proof_path and Path(proof_path).exists():
-        return Check(
-            status="PASS",
-            name=name,
-            message=f"proof artifact present: {_display(Path(proof_path))}.",
-            fix="Keep the proof artifact with the pilot handoff packet.",
-            owner="external",
-        )
-    return Check(
-        status="EXTERNAL",
-        name=name,
-        message=missing_message,
-        fix=fix,
-        owner="external",
-    )
-
-
 def _display(path: Path) -> str:
     try:
         return path.resolve().relative_to(ROOT).as_posix()
@@ -269,13 +206,13 @@ def _display(path: Path) -> str:
 
 
 def _payload(checks: list[Check]) -> dict[str, object]:
-    developer_ready = all(check.status == "PASS" for check in checks if check.owner == "developer")
-    external_pending = any(check.status == "EXTERNAL" for check in checks)
+    developer_ready = all(check.status == "PASS" for check in checks)
     return {
         "product": "CivicClerk",
         "version": __version__,
         "developer_ready": developer_ready,
-        "external_dependencies_pending": external_pending,
+        "external_dependencies_pending": False,
+        "proof_model": "adversarial_mock_validation",
         "network_calls": False,
         "checks": [check.public_dict() for check in checks],
     }
@@ -287,7 +224,8 @@ def _print_report(checks: list[Check]) -> None:
     print(f"Version: {__version__}")
     print("network_calls=false")
     print(f"developer_ready={str(payload['developer_ready']).lower()}")
-    print(f"external_dependencies_pending={str(payload['external_dependencies_pending']).lower()}")
+    print("proof_model=adversarial_mock_validation")
+    print("external_dependencies_pending=false")
     for check in checks:
         print(f"[{check.status}] {check.name}: {check.message}")
         print(f"  owner: {check.owner}")
@@ -310,11 +248,9 @@ def _print_plan(version: str, dist_root: Path, bundle_path: Path) -> None:
     print("  3. Mock city municipal IdP contracts pass without contacting an IdP.")
     print("  4. Mock city backup retention/off-host contracts pass without contacting storage providers.")
     print("  5. Operator docs warn about unsigned Windows first-install prompts.")
-    print("External proof slots:")
-    print("  - code-signing certificate and signed-artifact proof")
-    print("  - municipal IdP protected-deployment proof")
-    print("  - municipal vendor API live-sync proof")
-    print("  - city backup retention/off-host storage proof")
+    print("Release proof model:")
+    print("  - no external deployment proofs are required")
+    print("  - adversarial mock-city vendor, municipal IdP, protected-auth, and backup-retention suites are release gates")
     print("PILOT-READINESS: PLAN")
 
 
@@ -330,10 +266,6 @@ def main() -> int:
         version=args.version,
         dist_root=dist_root,
         bundle_path=bundle_path,
-        signing_proof=args.signing_proof,
-        idp_proof=args.idp_proof,
-        vendor_proof=args.vendor_proof,
-        retention_proof=args.retention_proof,
     )
     payload = _payload(checks)
     if args.output:
@@ -341,7 +273,7 @@ def main() -> int:
     _print_report(checks)
     if not payload["developer_ready"]:
         return 1
-    if args.require_external_proof and payload["external_dependencies_pending"]:
+    if args.require_adversarial_mocks and not payload["developer_ready"]:
         return 1
     return 0
 

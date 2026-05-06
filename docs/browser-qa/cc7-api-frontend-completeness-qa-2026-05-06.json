@@ -1,6 +1,6 @@
 {
   "page": "frontend React CC-7 spec surfaces",
-  "reviewed_at": "2026-05-06T06:50:42.369Z",
+  "reviewed_at": "2026-05-06T16:34:40.004Z",
   "pages": [
     "staff-dashboard",
     "meeting-calendar",
@@ -156,7 +156,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-staff-dashboard-mobile.png",
-      "bytes": 150184,
+      "bytes": 150196,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -506,7 +506,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-meeting-calendar-mobile.png",
-      "bytes": 106628,
+      "bytes": 106634,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -1556,7 +1556,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-agenda-intake-mobile.png",
-      "bytes": 120854,
+      "bytes": 120816,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -2256,7 +2256,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-packet-builder-mobile.png",
-      "bytes": 129775,
+      "bytes": 129822,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -2606,7 +2606,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-notice-checklist-mobile.png",
-      "bytes": 121444,
+      "bytes": 121443,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -2956,7 +2956,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-live-meeting-capture-mobile.png",
-      "bytes": 121036,
+      "bytes": 121025,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -3656,7 +3656,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-motions-votes-actions-mobile.png",
-      "bytes": 121065,
+      "bytes": 121040,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -4356,7 +4356,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-public-comment-review-mobile.png",
-      "bytes": 140084,
+      "bytes": 140027,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -4706,7 +4706,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-closed-session-workspace-mobile.png",
-      "bytes": 139112,
+      "bytes": 139164,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -5056,7 +5056,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-archive-search-mobile.png",
-      "bytes": 142981,
+      "bytes": 142944,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -6106,7 +6106,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-admin-settings-mobile.png",
-      "bytes": 141066,
+      "bytes": 141173,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,
@@ -6456,7 +6456,7 @@
         "height": 1100
       },
       "screenshot": "docs/screenshots/cc7-prompt-library-admin-mobile.png",
-      "bytes": 142023,
+      "bytes": 142103,
       "consoleErrors": 0,
       "exceptions": 0,
       "textCheck": true,

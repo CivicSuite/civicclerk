@@ -10,19 +10,19 @@ Sprint: CC-1.
 
 CC-1 proves CivicClerk can be built and verified from a clean container while
 pinning the upstream platform to the CO-7 CivicCore freeze tag,
-`civiccore-m1-freeze`, rather than moving CivicCore `main`.
+`v1.0`, rather than moving CivicCore `main`.
 
 The harness is intentionally stricter than a normal CI run:
 
 - the container base image is digest-pinned,
 - Docker builds use `--no-cache --pull`,
 - the target CivicClerk commit is fetched by SHA,
-- CivicCore is installed from the `civiccore-m1-freeze` release asset,
+- CivicCore is installed from the `v1.0` release asset,
 - CivicCore freeze release assets are downloaded and checked with
   `sha256sum -c SHA256SUMS.txt`,
 - `release-attestation.json` is verified with cosign against the exact
   CivicCore release workflow identity,
-- `scripts/verify-release-provenance.py civiccore-m1-freeze ...` verifies the
+- `scripts/verify-release-provenance.py v1.0 ...` verifies the
   release provenance contract,
 - `scripts/check-civiccore-placeholder-imports.py` rejects imports of
   `civiccore.catalog`, `civiccore.exemptions`, and `civiccore.scaffold`,
@@ -92,11 +92,11 @@ desktop state.
 
 The CivicCore freeze release is:
 
-- tag: `civiccore-m1-freeze`,
-- package asset: `civiccore-0.22.1-py3-none-any.whl`,
+- tag: `v1.0`,
+- package asset: `civiccore-1.0.0-py3-none-any.whl`,
 - Sigstore identity:
-  `https://github.com/CivicSuite/civiccore/.github/workflows/release.yml@refs/tags/civiccore-m1-freeze`,
+  `https://github.com/CivicSuite/civiccore/.github/workflows/release.yml@refs/tags/v1.0`,
 - OIDC issuer: `https://token.actions.githubusercontent.com`.
 
-The package version remains `0.22.1`; the trust anchor is the freeze tag and its
+The package version remains `1.0.0`; the trust anchor is the freeze tag and its
 release attestation.

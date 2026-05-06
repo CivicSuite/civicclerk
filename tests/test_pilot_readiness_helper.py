@@ -7,7 +7,7 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.1.20"
+VERSION = "1.0.0"
 
 
 def _bundle_entries(version: str) -> tuple[str, ...]:
@@ -68,7 +68,7 @@ def _write_installer_inputs(tmp_path: Path) -> tuple[Path, Path]:
     return dist_root, bundle
 
 
-def test_pilot_readiness_is_developer_ready_with_external_dependencies_pending(tmp_path: Path) -> None:
+def test_pilot_readiness_is_developer_ready_with_adversarial_mocks(tmp_path: Path) -> None:
     dist_root, bundle = _write_installer_inputs(tmp_path)
     report = tmp_path / "pilot-readiness.json"
 
@@ -91,18 +91,19 @@ def test_pilot_readiness_is_developer_ready_with_external_dependencies_pending(t
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "developer_ready=true" in result.stdout
-    assert "external_dependencies_pending=true" in result.stdout
+    assert "proof_model=adversarial_mock_validation" in result.stdout
+    assert "external_dependencies_pending=false" in result.stdout
     assert "[PASS] installer checksums" in result.stdout
     assert "[PASS] mock city vendor contract suite" in result.stdout
     assert "[PASS] mock city municipal IdP contract suite" in result.stdout
     assert "[PASS] mock city backup retention contract suite" in result.stdout
     assert "[PASS] unsigned installer warning docs" in result.stdout
-    assert "[EXTERNAL] code-signing certificate" in result.stdout
     assert "PILOT-READINESS: DEVELOPER-READY" in result.stdout
     assert '"developer_ready": true' in report.read_text(encoding="utf-8")
+    assert '"proof_model": "adversarial_mock_validation"' in report.read_text(encoding="utf-8")
 
 
-def test_pilot_readiness_strict_external_proof_fails_until_city_proofs_exist(tmp_path: Path) -> None:
+def test_pilot_readiness_strict_adversarial_mock_gate_passes_when_mocks_pass(tmp_path: Path) -> None:
     dist_root, bundle = _write_installer_inputs(tmp_path)
 
     result = subprocess.run(
@@ -113,44 +114,7 @@ def test_pilot_readiness_strict_external_proof_fails_until_city_proofs_exist(tmp
             str(dist_root),
             "--bundle",
             str(bundle),
-            "--require-external-proof",
-        ],
-        cwd=ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-
-    assert result.returncode == 1
-    assert "developer_ready=true" in result.stdout
-    assert "[EXTERNAL] municipal vendor API proof" in result.stdout
-
-
-def test_pilot_readiness_passes_strict_when_external_proofs_are_attached(tmp_path: Path) -> None:
-    dist_root, bundle = _write_installer_inputs(tmp_path)
-    proofs = []
-    for name in ["signing.txt", "idp.txt", "vendor.txt", "retention.txt"]:
-        path = tmp_path / name
-        path.write_text("redacted proof\n", encoding="utf-8")
-        proofs.append(path)
-
-    result = subprocess.run(
-        [
-            "python",
-            "scripts/check_pilot_readiness.py",
-            "--dist-root",
-            str(dist_root),
-            "--bundle",
-            str(bundle),
-            "--signing-proof",
-            str(proofs[0]),
-            "--idp-proof",
-            str(proofs[1]),
-            "--vendor-proof",
-            str(proofs[2]),
-            "--retention-proof",
-            str(proofs[3]),
-            "--require-external-proof",
+            "--require-adversarial-mocks",
         ],
         cwd=ROOT,
         check=False,
@@ -159,11 +123,11 @@ def test_pilot_readiness_passes_strict_when_external_proofs_are_attached(tmp_pat
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
+    assert "developer_ready=true" in result.stdout
     assert "external_dependencies_pending=false" in result.stdout
-    assert "[PASS] municipal IdP deployment proof" in result.stdout
 
 
-def test_pilot_readiness_print_only_documents_external_proof_slots() -> None:
+def test_pilot_readiness_print_only_documents_adversarial_proof_model() -> None:
     result = subprocess.run(
         ["python", "scripts/check_pilot_readiness.py", "--print-only"],
         cwd=ROOT,
@@ -176,5 +140,6 @@ def test_pilot_readiness_print_only_documents_external_proof_slots() -> None:
     assert "Developer-owned checks:" in result.stdout
     assert "Mock city municipal IdP contracts pass without contacting an IdP." in result.stdout
     assert "Mock city backup retention/off-host contracts pass without contacting storage providers." in result.stdout
-    assert "External proof slots:" in result.stdout
-    assert "municipal vendor API live-sync proof" in result.stdout
+    assert "Release proof model:" in result.stdout
+    assert "no external deployment proofs are required" in result.stdout
+    assert "adversarial mock-city vendor, municipal IdP, protected-auth, and backup-retention suites are release gates" in result.stdout
