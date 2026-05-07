@@ -5,6 +5,11 @@ All notable changes to CivicClerk are documented here.
 ## [Unreleased]
 
 ### Added
+- Added release-recovery gates that freeze public product-ready promotion,
+  treat the current `v1.0.0` label as provisional, require tracked Playwright
+  user-flow tests, enforce docs-source parity, run a secret/prompt-injection
+  scan, and require explicit mock-validation versus production-deployment
+  labeling before CivicClerk can re-earn release status.
 - Added final integration-depth contracts for CivicRecords search, CivicCode
   handoff, codification-system fallback export, city CMS posting, and vendor
   live API adapters. The new `/integrations/readiness` admin endpoint and React

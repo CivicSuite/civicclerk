@@ -1,7 +1,18 @@
 # CivicClerk User Manual
 
-Status: CivicClerk v1.0.0 runtime foundation manual
+Status: CivicClerk v1.0.0 runtime foundation label is provisional during release recovery
 Version: `1.0.0`
+
+## Release Recovery Notice
+
+CivicClerk is not product-ready for public promotion while the CivicSuite
+release recovery is active. The current `v1.0.0` label remains provisional
+until the repo passes the recovery gates: full backend tests, frontend tests,
+tracked Playwright user-flow tests, WSL runtime install proof, consistency
+gates, security scans, docs-source parity, and explicit separation between
+mock validation and production deployment. Mock validation is the required
+local proof model for integrations; it does not claim that a city production
+deployment has occurred.
 
 ## Part 1: Non-Technical Overview
 
@@ -38,7 +49,7 @@ draft language, but staff remain in control.
 
 ### Current status
 
-CivicClerk currently ships a runtime foundation, canonical schema
+CivicClerk currently contains a runtime foundation, canonical schema
 metadata, Alembic migration scaffolding, agenda item lifecycle enforcement,
 meeting lifecycle enforcement, packet snapshot versioning, notice
 compliance enforcement, immutable motion capture, immutable vote capture,
@@ -52,7 +63,7 @@ minutes drafting, ordinance/resolution extraction, closed-session safe
 refusal, and public plain-language meeting explanation,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
-ledgering, accessibility/browser QA gates, CivicClerk v1.0.0 release
+ledgering, accessibility/browser QA gates, provisional CivicClerk v1.0.0 release
 artifacts, CivicCore 1.0.0 freeze-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
