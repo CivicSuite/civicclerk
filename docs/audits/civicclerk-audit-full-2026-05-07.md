@@ -102,7 +102,7 @@ Checked architecture, runtime entry points, scripts, CI, dependencies, release g
 
 ## 7. Security And Authorization Deep Dive
 
-Checked staff auth tests, OIDC/bearer/trusted-header paths, public archive restrictions, credential docs, vendor URL guards, and release scripts. Added `scripts/verify-secret-scan.py`, including a check for prompt-injection sentinels such as `stop claude`, while allowing mock values explicitly labeled as mock/not-reported and env-var pass-throughs.
+Checked staff auth tests, OIDC/bearer/trusted-header paths, public archive restrictions, credential docs, vendor URL guards, and release scripts. Added `scripts/verify-secret-scan.py`, including a check for known prompt-injection sentinel phrases, while allowing mock values explicitly labeled as mock/not-reported and env-var pass-throughs.
 
 ## 8. UI/UX Deep Dive
 
