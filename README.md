@@ -2,10 +2,22 @@
 
 **CivicClerk is the CivicSuite module for municipal meetings, agendas, packets, minutes, votes, notices, and public meeting archives.**
 
-Status: CivicClerk v1.0.0 runtime foundation release
+Status: CivicClerk v1.0.0 runtime foundation label is provisional during the CivicSuite release recovery.
 Current version: `1.0.0`
 Repository: <https://github.com/CivicSuite/civicclerk>  
 Depends on: published, Sigstore-attested `civiccore` 1.0.0 wheel from the `v1.0` release asset
+
+## Release Recovery Notice
+
+CivicClerk is not product-ready for public promotion while the CivicSuite
+release recovery is active. Treat the current `v1.0.0` tag and package version
+as provisional until this repo re-earns release status through the recovery
+gates: full local backend tests, frontend unit tests, real Playwright user-flow
+tests, WSL runtime install proof, release consistency checks, secret/security
+scans, docs-source parity enforcement, and explicit mock-validation versus
+production-deployment labeling. Adversarial mock validation is the required
+proof model for integration behavior; it is not a substitute for claiming a
+live production deployment.
 
 ## Release Provenance
 
@@ -39,7 +51,7 @@ AI may draft or extract. Humans approve every consequential action.
 
 ## What exists today
 
-CivicClerk v1.0.0 ships the runtime and schema foundation plus database-backed agenda item lifecycle records, meeting lifecycle, packet snapshot, shared CivicCore-backed notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA, accessibility/browser QA gates, CivicCore v1.0.0-backed records export bundles, database-backed agenda intake readiness, database-backed packet assembly records, database-backed notice checklist/posting-proof records, database-backed meeting records, and first staff workflow screens for intake, packet assembly/export, notice checklist, meeting outcome, minutes draft, public archive, connector import, and vendor sync work. The staff screens now submit agenda intake, record readiness review, create/finalize packet assembly records, create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture motions/votes/action items, create citation-gated minutes drafts, publish public-safe archive records, normalize local connector exports through the shared CivicCore connector import contract, surface vendor sync source health and no-network run logging, expose the shared CivicCore connector runtime validation helpers that future live-sync work can adopt without bespoke security plumbing, expose the first vendor live-sync readiness and circuit-breaker contract for future scheduled pulls, consume the shared CivicCore trusted-header config and proxy-source enforcement helpers, and expose `/staff/auth-readiness` so operators can verify whether OIDC, bearer, or trusted-header staff auth is deployment-ready before testing a live session. When OIDC, bearer, or trusted-header mode is ready, the readiness contract now includes a concrete protected-session probe and a protected-write probe instead of only env-var reminders, and trusted-header readiness now carries a loopback-only local proxy rehearsal contract that points operators to `scripts/local_trusted_header_proxy.py` with `127.0.0.1/32` as the safe starter allowlist.
+CivicClerk currently contains the runtime and schema foundation plus database-backed agenda item lifecycle records, meeting lifecycle, packet snapshot, shared CivicCore-backed notice compliance, immutable motion capture, immutable vote capture, action-item capture, citation-gated minutes draft capture, permission-aware public calendar/detail/archive endpoints, a prompt YAML library with an offline evaluation harness, local-first connector imports for Granicus, Legistar, PrimeGov, and NovusAGENDA, accessibility/browser QA gates, CivicCore v1.0.0-backed records export bundles, database-backed agenda intake readiness, database-backed packet assembly records, database-backed notice checklist/posting-proof records, database-backed meeting records, and first staff workflow screens for intake, packet assembly/export, notice checklist, meeting outcome, minutes draft, public archive, connector import, and vendor sync work. These capabilities remain under recovery validation and must not be promoted as product-ready until the recovery gates pass. The staff screens submit agenda intake, record readiness review, create/finalize packet assembly records, create records-ready packet export bundles, persist notice checklist records, attach posting proof, capture motions/votes/action items, create citation-gated minutes drafts, publish public-safe archive records, normalize local connector exports through the shared CivicCore connector import contract, surface vendor sync source health and no-network run logging, expose the shared CivicCore connector runtime validation helpers that future live-sync work can adopt without bespoke security plumbing, expose the first vendor live-sync readiness and circuit-breaker contract for future scheduled pulls, consume the shared CivicCore trusted-header config and proxy-source enforcement helpers, and expose `/staff/auth-readiness` so operators can verify whether OIDC, bearer, or trusted-header staff auth is deployment-ready before testing a live session. When OIDC, bearer, or trusted-header mode is ready, the readiness contract now includes a concrete protected-session probe and a protected-write probe instead of only env-var reminders, and trusted-header readiness now carries a loopback-only local proxy rehearsal contract that points operators to `scripts/local_trusted_header_proxy.py` with `127.0.0.1/32` as the safe starter allowlist.
 
 Shipped in this foundation:
 

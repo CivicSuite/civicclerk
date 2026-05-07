@@ -41,6 +41,12 @@ echo "==> pytest"
 echo "==> docs"
 bash scripts/verify-docs.sh
 
+echo "==> recovery gates"
+"$PYTHON" scripts/verify-recovery-gates.py
+
+echo "==> secret scan"
+"$PYTHON" scripts/verify-secret-scan.py
+
 echo "==> placeholder imports"
 "$PYTHON" scripts/check-civiccore-placeholder-imports.py
 
@@ -76,6 +82,10 @@ if [[ -f "frontend/package-lock.json" ]]; then
 
   echo "==> frontend tests"
   npm --prefix frontend test
+
+  echo "==> frontend Playwright user flows"
+  npx --prefix frontend playwright install chromium
+  npm --prefix frontend run test:e2e
 fi
 
 echo "==> build dependencies"
@@ -111,6 +121,37 @@ for artifact in artifacts:
     lines.append(f"{sha256(artifact.read_bytes()).hexdigest()}  {artifact.name}")
 (dist / "SHA256SUMS.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
 print("SHA256SUMS.txt")
+PY
+
+echo "==> runtime install proof"
+version=$("$PYTHON" - <<'PY'
+import tomllib
+from pathlib import Path
+print(tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"])
+PY
+)
+proof_dir=$(mktemp -d)
+trap 'rm -rf "$proof_dir"' EXIT
+"$PYTHON" -m venv "$proof_dir/venv"
+proof_python="$proof_dir/venv/bin/python"
+if [[ ! -x "$proof_python" ]]; then
+  proof_python="$proof_dir/venv/Scripts/python.exe"
+fi
+"$proof_python" -m pip install --quiet --upgrade pip
+"$proof_python" -m pip install --quiet "dist/civicclerk-${version}-py3-none-any.whl"
+"$proof_python" - <<'PY'
+from fastapi.testclient import TestClient
+from civicclerk.main import app
+
+client = TestClient(app)
+health = client.get("/health")
+assert health.status_code == 200, health.text
+payload = health.json()
+assert payload["status"] == "ok", payload
+assert payload["version"] == "1.0.0", payload
+staff = client.get("/staff")
+assert staff.status_code == 200, staff.text[:300]
+print("RUNTIME-INSTALL-PROOF: PASSED")
 PY
 
 echo "==> release contract"
