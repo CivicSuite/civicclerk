@@ -44,8 +44,9 @@ def test_pyproject_targets_published_civiccore_freeze_release_wheel() -> None:
     dependencies = data["project"]["dependencies"]
 
     assert (
-        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v1.0/"
-        "civiccore-1.0.0-py3-none-any.whl"
+        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v1.0.1/"
+        "civiccore-1.0.1-py3-none-any.whl"
+        "#sha256=561d7a8f73260d50de79351d330876d2cb3488c0e046a2888e82fe09d1e03969"
     ) in dependencies
     assert not any(
         "civiccore>=" in dep or "civiccore~=" in dep or dep == "civiccore==0.12.0"
@@ -137,7 +138,7 @@ async def test_health_endpoint_is_actionable_for_it_staff() -> None:
         "status": "ok",
         "service": "civicclerk",
         "version": VERSION,
-        "civiccore": "1.0.0",
+        "civiccore": "1.0.1",
     }
 
 

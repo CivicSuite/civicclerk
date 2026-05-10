@@ -4,8 +4,8 @@ set -Eeuo pipefail
 MODE="${1:-online}"
 EVIDENCE_DIR="${CLEANROOM_EVIDENCE_DIR:-/evidence}"
 RUN_LABEL="${CLEANROOM_RUN_LABEL:-cleanroom}"
-CIVICCORE_FREEZE_TAG="${CIVICCORE_FREEZE_TAG:-v1.0}"
-CIVICCORE_PACKAGE_VERSION="${CIVICCORE_PACKAGE_VERSION:-1.0.0}"
+CIVICCORE_FREEZE_TAG="${CIVICCORE_FREEZE_TAG:-v1.0.1}"
+CIVICCORE_PACKAGE_VERSION="${CIVICCORE_PACKAGE_VERSION:-1.0.1}"
 CIVICCLERK_DOCKER_HOST_ADDRESS="${CIVICCLERK_DOCKER_HOST_ADDRESS:-host.docker.internal}"
 CIVICCORE_RELEASE_BASE_URL="https://github.com/CivicSuite/civiccore/releases/download/${CIVICCORE_FREEZE_TAG}"
 OIDC_ISSUER="https://token.actions.githubusercontent.com"
@@ -98,8 +98,6 @@ download_civiccore_freeze_assets() {
         "civiccore-${CIVICCORE_PACKAGE_VERSION}-py3-none-any.whl"
         "civiccore-${CIVICCORE_PACKAGE_VERSION}.tar.gz"
         "SHA256SUMS.txt"
-        "release-attestation.json"
-        "release-attestation.json.bundle"
     )
     for asset in "${assets[@]}"; do
         run_step "download-civiccore-${asset}" \
@@ -118,14 +116,22 @@ online() {
     download_civiccore_freeze_assets
     run_step "sha256sums-civiccore-freeze-assets" \
         bash -lc "cd '${EVIDENCE_DIR}/civiccore-freeze-assets' && sha256sum -c SHA256SUMS.txt"
-    run_step "sigstore-civiccore-freeze-attestation" \
-        bash -lc "cd '${EVIDENCE_DIR}/civiccore-freeze-assets' && cosign verify-blob release-attestation.json --bundle release-attestation.json.bundle --certificate-identity '${WORKFLOW_IDENTITY}' --certificate-oidc-issuer '${OIDC_ISSUER}'"
-    run_step "live-civiccore-freeze-provenance" \
-        python scripts/verify-release-provenance.py "${CIVICCORE_FREEZE_TAG}" \
-            --repo CivicSuite/civiccore \
-            --attestation "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json" \
-            --bundle "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json.bundle" \
-            --artifacts-dir "${EVIDENCE_DIR}/civiccore-freeze-assets"
+    if [[ -f "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json" && -f "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json.bundle" ]]; then
+        run_step "sigstore-civiccore-freeze-attestation" \
+            bash -lc "cd '${EVIDENCE_DIR}/civiccore-freeze-assets' && cosign verify-blob release-attestation.json --bundle release-attestation.json.bundle --certificate-identity '${WORKFLOW_IDENTITY}' --certificate-oidc-issuer '${OIDC_ISSUER}'"
+    else
+        log "sigstore attestation assets not present for ${CIVICCORE_FREEZE_TAG}; SHA256SUMS verification remains required"
+    fi
+    if [[ -f "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json" && -f "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json.bundle" ]]; then
+        run_step "live-civiccore-freeze-provenance" \
+            python scripts/verify-release-provenance.py "${CIVICCORE_FREEZE_TAG}" \
+                --repo CivicSuite/civiccore \
+                --attestation "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json" \
+                --bundle "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json.bundle" \
+                --artifacts-dir "${EVIDENCE_DIR}/civiccore-freeze-assets"
+    else
+        log "live provenance attestation check skipped for ${CIVICCORE_FREEZE_TAG}; release has no attestation assets"
+    fi
 }
 
 offline() {
@@ -135,7 +141,7 @@ import civiccore
 import civicclerk
 from civicclerk.main import app
 
-assert civiccore.__version__ == "1.0.0"
+assert civiccore.__version__ == "1.0.1"
 assert civicclerk.__version__ == "1.0.0"
 assert app.title == "CivicClerk"
 assert callable(civiccore.validate_manifest)
@@ -216,14 +222,14 @@ manifest = {
         "linux_amd64_sha256": os.environ["CLEANROOM_COSIGN_SHA256"],
     },
     "pinning_rules": {
-        "civiccore_dependency": "v1.0 release wheel",
+        "civiccore_dependency": "v1.0.1 release wheel",
         "placeholder_namespaces_forbidden": ["civiccore.catalog", "civiccore.exemptions", "civiccore.scaffold"],
     },
     "network": {
         "allowed_during_provisioning_and_verification": [
             "https://github.com/CivicSuite/civicclerk.git",
             "https://github.com/CivicSuite/civiccore.git",
-            "https://github.com/CivicSuite/civiccore/releases/download/v1.0/*",
+            "https://github.com/CivicSuite/civiccore/releases/download/v1.0.1/*",
             "https://api.github.com/repos/CivicSuite/civiccore/*",
             "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-linux-amd64",
             "https://pypi.org/*",

@@ -5,7 +5,7 @@ FROM --platform=linux/amd64 node:24-bookworm-slim@sha256:03eae3ef7e88a9de535496f
 ARG CIVICCLERK_REPO_URL=https://github.com/CivicSuite/civicclerk.git
 ARG CIVICCLERK_COMMIT
 ARG CIVICCORE_REPO_URL=https://github.com/CivicSuite/civiccore.git
-ARG CIVICCORE_FREEZE_REF=v1.0
+ARG CIVICCORE_FREEZE_REF=v1.0.1
 ARG COSIGN_VERSION=v3.0.6
 ARG COSIGN_SHA256=c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74
 
@@ -58,7 +58,8 @@ RUN git clone --filter=blob:none "${CIVICCLERK_REPO_URL}" /workspace/civicclerk 
 WORKDIR /workspace/civicclerk
 
 RUN python -m pip install -e ".[dev]" \
-    && npm --prefix frontend ci
+    && npm --prefix frontend ci \
+    && npx --prefix frontend playwright install --with-deps chromium
 
 RUN install -m 0755 scripts/cleanroom/civicclerk-cleanroom-runner.sh /usr/local/bin/civicclerk-cleanroom-runner
 

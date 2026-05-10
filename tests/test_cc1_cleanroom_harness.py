@@ -7,7 +7,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FREEZE_WHEEL_URL = (
     "https://github.com/CivicSuite/civiccore/releases/download/"
-    "v1.0/civiccore-1.0.0-py3-none-any.whl"
+    "v1.0.1/civiccore-1.0.1-py3-none-any.whl"
+)
+FREEZE_WHEEL_DEPENDENCY = (
+    f"civiccore @ {FREEZE_WHEEL_URL}"
+    "#sha256=561d7a8f73260d50de79351d330876d2cb3488c0e046a2888e82fe09d1e03969"
 )
 
 
@@ -19,7 +23,7 @@ def test_civiccore_dependency_is_pinned_to_freeze_release_asset() -> None:
     pyproject = tomllib.loads(read("pyproject.toml"))
     dependencies = pyproject["project"]["dependencies"]
 
-    assert f"civiccore @ {FREEZE_WHEEL_URL}" in dependencies
+    assert FREEZE_WHEEL_DEPENDENCY in dependencies
     assert not any("civiccore.git@main" in dep for dep in dependencies)
 
     for path in (
@@ -48,7 +52,7 @@ def test_cleanroom_dockerfile_pins_base_image_cosign_and_target_commit() -> None
     assert "node:24-bookworm-slim@sha256:03eae3ef7e88a9de535496fb488d67e02b9d96a063a8967bae657744ecd513f2" in dockerfile
     assert "ARG COSIGN_VERSION=v3.0.6" in dockerfile
     assert "ARG COSIGN_SHA256=c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74" in dockerfile
-    assert "ARG CIVICCORE_FREEZE_REF=v1.0" in dockerfile
+    assert "ARG CIVICCORE_FREEZE_REF=v1.0.1" in dockerfile
     assert "docker.io" in dockerfile
     assert "git fetch --depth 1 origin \"${CIVICCLERK_COMMIT}\"" in dockerfile
     assert 'test "$(git rev-parse HEAD)" = "${CIVICCLERK_COMMIT}"' in dockerfile
