@@ -4,6 +4,9 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Changed
+- feat(deps): bump civiccore pin to v1.0.1 (security hardening recovery patch).
+
 ### Added
 - Added release-recovery gates that freeze public product-ready promotion,
   treat the current `v1.0.0` label as provisional, require tracked Playwright

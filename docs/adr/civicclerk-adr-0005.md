@@ -5,7 +5,7 @@ Status: Accepted
 ## Context
 
 CivicClerk needs staff roles, approval records, closed-session access control,
-and permission-aware archive search. CivicCore 1.0.0 does not ship a document
+and permission-aware archive search. CivicCore 1.0.1 does not ship a document
 or RBAC table package that CivicClerk can foreign-key into.
 
 ## Decision

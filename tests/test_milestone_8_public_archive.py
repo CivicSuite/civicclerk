@@ -319,7 +319,6 @@ async def test_archive_search_requires_allowed_bearer_role_for_closed_session_vi
         "city_attorney",
         "clerk_admin",
     ]
-    assert underprivileged.json()["detail"]["token_roles"] == ["meeting_editor"]
     assert permitted.status_code == 200
     assert permitted.json()["total_count"] >= 1
     assert any(result["id"] == closed_record["id"] for result in permitted.json()["results"])

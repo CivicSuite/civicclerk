@@ -129,7 +129,6 @@ async def test_bearer_mode_rejects_underprivileged_staff_token(monkeypatch: pyte
         "clerk_editor",
         "meeting_editor",
     ]
-    assert response.json()["detail"]["token_roles"] == ["archive_reader"]
 
 
 @pytest.mark.asyncio
@@ -263,7 +262,6 @@ async def test_oidc_mode_rejects_underprivileged_identity(
 
     assert response.status_code == 403
     assert response.json()["detail"]["message"] == "OIDC identity lacks an allowed staff role."
-    assert response.json()["detail"]["principal_roles"] == ["archive_reader"]
     assert response.json()["detail"]["required_roles"] == [
         "city_attorney",
         "clerk_admin",
@@ -607,8 +605,6 @@ async def test_trusted_header_mode_rejects_underprivileged_identity(
         "clerk_editor",
         "meeting_editor",
     ]
-    assert response.json()["detail"]["principal_roles"] == ["archive_reader"]
-    assert response.json()["detail"]["principal"] == "records@example.gov"
 
 
 @pytest.mark.asyncio
@@ -715,8 +711,6 @@ async def test_trusted_header_mode_rejects_untrusted_proxy_source(
         response.json()["detail"]["message"]
         == "Trusted staff headers were not received from an approved proxy."
     )
-    assert response.json()["detail"]["client_host"] == "203.0.113.22"
-    assert response.json()["detail"]["trusted_proxy_cidrs"] == ["10.20.30.0/24"]
     assert STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR in response.json()["detail"]["fix"]
 
 

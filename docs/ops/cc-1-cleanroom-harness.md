@@ -93,7 +93,7 @@ desktop state.
 The CivicCore freeze release is:
 
 - tag: `v1.0`,
-- package asset: `civiccore-1.0.0-py3-none-any.whl`,
+- package asset: `civiccore-1.0.1-py3-none-any.whl`,
 - Sigstore identity:
   `https://github.com/CivicSuite/civiccore/.github/workflows/release.yml@refs/tags/v1.0`,
 - OIDC issuer: `https://token.actions.githubusercontent.com`.
