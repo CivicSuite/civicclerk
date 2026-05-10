@@ -1,12 +1,12 @@
 # CivicClerk User Manual
 
-Status: CivicClerk v1.0.0 runtime foundation label is provisional during release recovery
-Version: `1.0.0`
+Status: CivicClerk v1.0.1 runtime foundation label is provisional during release recovery
+Version: `1.0.1`
 
 ## Release Recovery Notice
 
 CivicClerk is not product-ready for public promotion while the CivicSuite
-release recovery is active. The current `v1.0.0` label remains provisional
+release recovery is active. The current `v1.0.1` recovery patch is the supported release
 until the repo passes the recovery gates: full backend tests, frontend tests,
 tracked Playwright user-flow tests, WSL runtime install proof, consistency
 gates, security scans, docs-source parity, and explicit separation between
@@ -63,7 +63,7 @@ minutes drafting, ordinance/resolution extraction, closed-session safe
 refusal, and public plain-language meeting explanation,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
-ledgering, accessibility/browser QA gates, provisional CivicClerk v1.0.0 release
+ledgering, accessibility/browser QA gates, provisional CivicClerk v1.0.1 release
 artifacts, CivicCore 1.0.1 freeze-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
@@ -121,7 +121,7 @@ register an approved source, see healthy/degraded/circuit-open status, record a
 controlled run outcome, see the persisted delta cursor, reset that cursor for a
 full reconciliation with a reason, and read the exact fix path before scheduled
 vendor pulls are enabled. The staff shell now checks `/staff/session` so IT staff and clerks can
-see whether the service is in local open mode, OIDC-protected staff mode,
+see whether the service is in protected default mode, local open mode, OIDC-protected staff mode,
 OIDC browser-session mode, bearer-protected staff mode, or trusted-header staff
 mode.
 `/staff/auth-readiness` now reports whether the configured OIDC,
@@ -140,7 +140,7 @@ provider with authorization-code + PKCE parameters, `/staff/oidc/callback`
 validates the returned token, and CivicClerk stores a signed HttpOnly staff
 session cookie rather than the raw OIDC token.
 The React dashboard now makes that session state visible in a Staff Access
-panel. A clerk sees whether the browser is in local open mode, signed in with
+panel. A clerk sees whether the browser is in protected default mode, local open mode, signed in with
 municipal SSO, using bearer access, or behind a trusted-header bridge. When a
 session is missing or expired, the panel gives the clerk a direct sign-in path
 and tells IT to inspect `/staff/auth-readiness` for the exact missing OIDC
@@ -259,7 +259,7 @@ Open `http://127.0.0.1:8080` for the nginx-served React app. The API is exposed
 at `http://127.0.0.1:8776`, and nginx proxies React `/api/*` requests to the
 FastAPI service. The Windows installer package now wraps this same Compose
 profile; Docker Desktop is still required.
-If IT changes `.env` from local open mode to OIDC, bearer, or trusted-header
+Fresh `.env` files start in protected mode. If IT changes `.env` from protected mode to OIDC, bearer, or trusted-header
 staff auth, Compose forwards the corresponding staff-auth variables into the
 API, worker, and beat containers so `/staff/session`, `/staff/login`, and
 `/staff/auth-readiness` report the same protected profile the operator set.
@@ -343,13 +343,11 @@ release handoff. To verify the enterprise signing inputs without printing
 secrets, run:
 
 ```bash
-python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-1.0.0-Setup.exe
+python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-1.0.1-Setup.exe
 ```
 
 Uninstall stops the Compose stack and removes installed source files, but Docker volumes are preserved so meeting data is not
-destroyed accidentally. `CIVICCLERK_STAFF_AUTH_MODE=open` is only for a
-single-workstation rehearsal; switch to OIDC, bearer, or trusted-header mode
-before shared deployment.
+destroyed accidentally. `CIVICCLERK_STAFF_AUTH_MODE=protected` is the default and denies anonymous staff writes. Use `CIVICCLERK_STAFF_AUTH_MODE=open` only for a single-workstation rehearsal; switch to OIDC, bearer, or trusted-header mode before shared deployment.
 
 ### Planned dependency
 
@@ -372,15 +370,15 @@ is the Windows PowerShell path:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install dist/civicclerk-1.0.0-py3-none-any.whl
-$env:CIVICCLERK_STAFF_AUTH_MODE="open"
+python -m pip install dist/civicclerk-1.0.1-py3-none-any.whl
+$env:CIVICCLERK_STAFF_AUTH_MODE="protected"
 python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776
 ```
 
 Then verify these first-run checks:
 
-- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"1.0.0","civiccore":"1.0.1"}`
-- `GET /staff/auth-readiness` returns `mode: "open"` and explains how to move to OIDC, bearer, or trusted-header deployment
+- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"1.0.1","civiccore":"1.0.1"}`
+- `GET /staff/auth-readiness` returns `mode: "protected"` and explains that anonymous staff writes are denied until OIDC, bearer, or trusted-header deployment is configured
 - `GET /staff` renders the first workflow shell without console errors
 
 To rehearse that Windows-first path without hand-copying each command, run:
@@ -430,7 +428,7 @@ wheel, source distribution, checksums, current docs, trusted-header reference,
 installer-readiness helper, enterprise signing-readiness helper, and install rehearsal helpers. After
 `bash scripts/verify-release.sh` has built `dist/`, rerun without `-PrintOnly`
 or `--print-only` to create
-`dist/civicclerk-1.0.0-release-handoff.zip`. If that zip already exists, the
+`dist/civicclerk-1.0.1-release-handoff.zip`. If that zip already exists, the
 helpers stop instead of overwriting it.
 
 After the handoff zip exists, verify the installer input contract:
@@ -686,8 +684,7 @@ database unless `--keep-restore-database` is supplied. It does not drop, clean,
 or overwrite the source CivicClerk database.
 
 If staff access will stay local for a demo or rehearsal, keep
-`CIVICCLERK_STAFF_AUTH_MODE=open`. If the deployment must protect staff
-workflows, move to `oidc`, `bearer`, or `trusted_header` before user testing and use
+`CIVICCLERK_STAFF_AUTH_MODE=protected`. If a local rehearsal must stay open, explicitly opt into `CIVICCLERK_STAFF_AUTH_MODE=open`; otherwise move to `oidc`, `bearer`, or `trusted_header` before user testing and use
 `/staff/auth-readiness` to confirm the service reports a deployment-ready
 contract instead of a local-only rehearsal mode. In protected modes, use the
 returned `session_probe` first and the returned `write_probe` second so the
@@ -763,7 +760,7 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v1.0.0.
+builds release artifacts and checksums, and publishes CivicClerk v1.0.1.
 CC-7 extends browser QA to every named spec page through
 `node scripts/capture-cc7-browser-qa.mjs`; the verification script requires the
 resulting 200-case ledger before browser-visible changes can merge.
@@ -812,7 +809,7 @@ staff workspace now covers meeting body setup, scheduling, calendar viewing,
 detail viewing, pre-lock schedule editing, agenda intake, packet building,
 notice checklist/posting-proof work, public posting, meeting outcomes, and
 minutes draft work, plus vendor sync source-health/run logging, against live API-backed data, and the dashboard now surfaces
-staff access/session status for local open mode, OIDC browser sessions, bearer
+staff access/session status for protected default mode, local open mode, OIDC browser sessions, bearer
 mode, and trusted-header mode. Production municipal use still requires a signed
 installer and actual vendor-network adapters/scheduled pulls before IT should
 treat it as a shared deployment; scheduled local connector export-drop

@@ -130,12 +130,34 @@ from pathlib import Path
 print(tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"])
 PY
 )
-proof_dir=$(mktemp -d)
+version="${version//$'\r'/}"
+proof_dir="$PWD/.tmp-runtime-install-proof"
+rm -rf "$proof_dir"
+mkdir -p "$proof_dir"
 trap 'rm -rf "$proof_dir"' EXIT
-"$PYTHON" -m venv "$proof_dir/venv"
-proof_python="$proof_dir/venv/bin/python"
+proof_venv="$proof_dir/venv"
+if command -v cygpath >/dev/null 2>&1; then
+  proof_venv_win="$(cygpath -w "$proof_venv")"
+  "$PYTHON" -m venv "$proof_venv_win"
+  proof_venv="$(cygpath -u "$proof_venv_win")"
+elif command -v wslpath >/dev/null 2>&1 && [[ "$PYTHON" == *".exe" ]]; then
+  proof_venv_win="$(wslpath -w "$proof_venv")"
+  "$PYTHON" -m venv "$proof_venv_win"
+  proof_venv="$(wslpath -u "$proof_venv_win")"
+else
+  "$PYTHON" -m venv "$proof_venv"
+fi
+proof_python="$proof_venv/bin/python"
 if [[ ! -x "$proof_python" ]]; then
-  proof_python="$proof_dir/venv/Scripts/python.exe"
+  proof_python="$proof_venv/Scripts/python.exe"
+fi
+if [[ ! -x "$proof_python" ]]; then
+  proof_python="$(find "$proof_venv" -type f \( -name python -o -name python.exe \) | head -n 1)"
+fi
+if [[ -z "$proof_python" || ! -x "$proof_python" ]]; then
+  echo "RUNTIME-INSTALL-PROOF: FAILED to locate venv python under $proof_venv" >&2
+  find "$proof_venv" -maxdepth 3 -type f | sort >&2
+  exit 1
 fi
 "$proof_python" -m pip install --quiet --upgrade pip
 "$proof_python" -m pip install --quiet "dist/civicclerk-${version}-py3-none-any.whl"
@@ -148,7 +170,7 @@ health = client.get("/health")
 assert health.status_code == 200, health.text
 payload = health.json()
 assert payload["status"] == "ok", payload
-assert payload["version"] == "1.0.0", payload
+assert payload["version"] == "1.0.1", payload
 staff = client.get("/staff")
 assert staff.status_code == 200, staff.text[:300]
 print("RUNTIME-INSTALL-PROOF: PASSED")

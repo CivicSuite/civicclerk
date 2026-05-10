@@ -3119,8 +3119,9 @@ function StaffAccessPanel({
           <span className="eyebrow">Staff access</span>
           <h2 id="staff-access-title">Staff sign-in needed</h2>
           <p>
-            {error ?? "CivicClerk could not verify the current staff session."} Use municipal SSO to sign in, or ask IT to open
-            <code>/staff/auth-readiness</code> and fix the listed OIDC browser-login settings.
+            {error ?? "CivicClerk could not verify the current staff session."} Use municipal SSO to sign in, ask IT to
+            configure bearer or trusted-header staff access, or open <code>/staff/auth-readiness</code> and follow the
+            protected-mode fix steps before writing clerk records.
           </p>
         </div>
         <div className="access-actions">

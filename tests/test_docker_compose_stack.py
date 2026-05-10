@@ -57,7 +57,7 @@ def test_docker_env_example_is_safe_for_local_rehearsal_only() -> None:
     example = (ROOT / "docs" / "examples" / "docker.env.example").read_text(encoding="utf-8")
 
     assert "CIVICCLERK_POSTGRES_PASSWORD=change-this-before-shared-use" in example
-    assert "CIVICCLERK_STAFF_AUTH_MODE=open" in example
+    assert "CIVICCLERK_STAFF_AUTH_MODE=protected" in example
     assert "Do not commit a real .env file" in example
 
 

@@ -95,11 +95,13 @@ if (-not (Test-Path $EnvPath)) {
 $apiPort = Read-EnvValue -Name "CIVICCLERK_API_PORT" -Default "8776"
 $webPort = Read-EnvValue -Name "CIVICCLERK_WEB_PORT" -Default "8080"
 $seedMode = Read-EnvValue -Name "CIVICCLERK_DEMO_SEED" -Default "1"
-$authMode = Read-EnvValue -Name "CIVICCLERK_STAFF_AUTH_MODE" -Default "open"
+$authMode = Read-EnvValue -Name "CIVICCLERK_STAFF_AUTH_MODE" -Default "protected"
 
 Write-Host "Staff auth mode: $authMode"
 if ($authMode -eq "open") {
-    Write-Host "Open staff auth is only for a single-workstation rehearsal. Use bearer or trusted_header before shared deployment." -ForegroundColor Yellow
+    Write-Host "WARNING: Open staff auth allows anonymous writes and is only for a single-workstation rehearsal. Use protected, bearer, oidc, or trusted_header before shared deployment." -ForegroundColor Red
+} elseif ($authMode -eq "protected") {
+    Write-Host "Protected staff auth is the default. Anonymous staff writes are denied until IT configures bearer, OIDC, or trusted-header access." -ForegroundColor Green
 }
 Write-Host "Demo seed mode: $seedMode"
 

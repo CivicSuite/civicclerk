@@ -4,6 +4,12 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-05-10
+
+### Security
+- Default `staff_mode` changed from `open` to `protected`. Anonymous writes to `/meeting-bodies`, `/meetings`, `/motions`, and `/votes` now return 401 by default. The `open` mode remains available but requires explicit opt-in via `CIVICCLERK_STAFF_AUTH_MODE=open` or installer open-mode selection and prints a warning banner.
+- Closes audit finding QA-001 (`audit-civicsuite-2026-05-09`).
+
 ### Changed
 - feat(deps): bump civiccore pin to v1.0.1 (security hardening recovery patch).
 

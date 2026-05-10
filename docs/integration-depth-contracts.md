@@ -1,6 +1,6 @@
 # CivicClerk Integration Depth Contracts
 
-CivicClerk v1.0.0 proves its external integration depth with no-network,
+CivicClerk v1.0.1 proves its external integration depth with no-network,
 adversarial mock contracts. These contracts let the product finish its side of
 the Unified Spec integrations before CivicRecords, CivicCode, city CMS adapters,
 codification adapters, or live agenda-vendor tenants are available.

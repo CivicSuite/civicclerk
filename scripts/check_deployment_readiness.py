@@ -138,6 +138,15 @@ def _auth_checks() -> list[Check]:
                 fix=fix,
             )
         ]
+    if mode == "protected":
+        return [
+            Check(
+                status="WARN",
+                name="staff auth",
+                message="protected mode denies anonymous staff writes but still needs bearer, OIDC, or trusted-header auth before deployment.",
+                fix=fix,
+            )
+        ]
     return [
         Check(
             status="FAIL",
