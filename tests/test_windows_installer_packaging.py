@@ -34,7 +34,7 @@ def test_install_script_creates_env_from_docker_template_and_starts_stack() -> N
     assert "http://127.0.0.1:$webPort/" in script
     assert "$response.StatusCode -ge 200 -and $response.StatusCode -lt 400" in script
     assert "CIVICCLERK_DEMO_SEED" in script
-    assert "Open staff auth is only for a single-workstation rehearsal" in script
+    assert "WARNING: Open staff auth allows anonymous writes" in script
 
 
 def test_launcher_scripts_have_actionable_failure_paths() -> None:
@@ -113,8 +113,8 @@ def test_installer_docs_do_not_overclaim_production_auth_or_data_deletion() -> N
     assert "Windows SmartScreen" in docs
     assert "unknown publisher" in docs.lower()
     assert "trusted CivicSuite release source" in docs
-    assert "CIVICCLERK_STAFF_AUTH_MODE=open" in docs
+    assert "CIVICCLERK_STAFF_AUTH_MODE=protected" in docs
     assert "single-workstation rehearsal" in docs
-    assert "bearer or trusted-header" in docs
+    assert "bearer, OIDC, or trusted-header" in docs
     assert "Docker volumes are preserved" in docs
     assert "CIVICCLERK_DEMO_SEED=1" in docs

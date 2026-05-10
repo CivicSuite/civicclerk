@@ -20,7 +20,7 @@ From Git Bash, WSL, or another Bash shell with Inno Setup available:
 bash installer/windows/build-installer.sh
 ```
 
-Set `CIVICCLERK_VERSION=1.0.0` to override the version read from `pyproject.toml`, or set `ISCC=/path/to/ISCC.exe` if the compiler is installed outside the default locations.
+Set `CIVICCLERK_VERSION=1.0.1` to override the version read from `pyproject.toml`, or set `ISCC=/path/to/ISCC.exe` if the compiler is installed outside the default locations.
 
 ## Enterprise Signing
 
@@ -33,7 +33,7 @@ export CIVICCLERK_SIGNING_CERT_SHA1="<certificate-thumbprint>"
 export CIVICCLERK_SIGNING_TIMESTAMP_URL="<enterprise RFC 3161 timestamp URL>"
 ```
 
-For PFX-based signing, use `CIVICCLERK_SIGNING_PFX=/secure/path/cert.pfx` and set `CIVICCLERK_SIGNING_PFX_PASSWORD_ENV` to the name of a populated password environment variable. Do not commit certificates or passwords. Run `python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-1.0.0-Setup.exe` to verify the signing contract without printing secrets.
+For PFX-based signing, use `CIVICCLERK_SIGNING_PFX=/secure/path/cert.pfx` and set `CIVICCLERK_SIGNING_PFX_PASSWORD_ENV` to the name of a populated password environment variable. Do not commit certificates or passwords. Run `python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-1.0.1-Setup.exe` to verify the signing contract without printing secrets.
 
 ## Install Behavior
 
@@ -41,6 +41,6 @@ The installer is unsigned unless the enterprise signing profile above is used. W
 
 The first install or repair creates `.env` from `docs/examples/docker.env.example`, generates a local PostgreSQL password, starts the Docker Compose stack, and keeps `CIVICCLERK_DEMO_SEED=1` unless an operator changes it. That seed creates Brookfield demo meetings, agenda intake, packets, notices, outcomes, minutes, and public archive data so a clerk can see a real workflow immediately.
 
-`CIVICCLERK_STAFF_AUTH_MODE=open` is suitable only for a single-workstation rehearsal. Change to bearer or trusted-header mode before any shared municipal deployment.
+`CIVICCLERK_STAFF_AUTH_MODE=protected` is the default and denies anonymous staff writes. Use `CIVICCLERK_STAFF_AUTH_MODE=open` only for a single-workstation rehearsal; change to bearer, OIDC, or trusted-header mode before any shared municipal deployment.
 
 Uninstalling the Windows application stops the Docker Compose stack and removes the installed source files. Docker volumes are preserved so meeting data is not destroyed accidentally. Operators who intentionally want to erase local rehearsal data must run `docker compose down -v` from the install directory before or after uninstall.

@@ -87,6 +87,7 @@ STAFF_AUTH_SSO_PROVIDER_ENV_VAR = "CIVICCLERK_STAFF_SSO_PROVIDER"
 STAFF_AUTH_SSO_PRINCIPAL_HEADER_ENV_VAR = "CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER"
 STAFF_AUTH_SSO_ROLES_HEADER_ENV_VAR = "CIVICCLERK_STAFF_SSO_ROLES_HEADER"
 STAFF_AUTH_SSO_TRUSTED_PROXIES_ENV_VAR = "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES"
+STAFF_PROTECTED_MODE = "protected"
 STAFF_OPEN_MODE = "open"
 STAFF_BEARER_MODE = "bearer"
 STAFF_TRUSTED_HEADER_MODE = "trusted_header"
@@ -169,7 +170,7 @@ app.router.on_startup.append(seed_demo_data_when_requested)
 
 @app.middleware("http")
 async def enforce_staff_api_access(request: Request, call_next):
-    """Protect internal staff APIs when bearer mode is enabled."""
+    """Protect internal staff APIs unless local open mode is explicitly enabled."""
 
     try:
         mode = _get_staff_auth_mode()
@@ -563,6 +564,19 @@ async def staff_session(request: Request) -> dict[str, object]:
                 f"or use {STAFF_AUTH_MODE_ENV_VAR}={STAFF_OIDC_MODE} with municipal OIDC settings."
             ),
         }
+    if mode == STAFF_PROTECTED_MODE:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "message": "Staff authentication is required.",
+                "fix": (
+                    f"The default {STAFF_AUTH_MODE_ENV_VAR}={STAFF_PROTECTED_MODE} denies anonymous "
+                    "staff writes. Configure bearer, trusted-header, or OIDC staff auth, or explicitly "
+                    f"set {STAFF_AUTH_MODE_ENV_VAR}={STAFF_OPEN_MODE} only for local rehearsal."
+                ),
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     principal = getattr(request.state, "staff_principal", None)
     if principal is None:
@@ -808,6 +822,31 @@ async def staff_auth_readiness() -> dict[str, object]:
                 f"{STAFF_AUTH_TOKEN_ROLES_ENV_VAR}, switch to "
                 f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_TRUSTED_HEADER_MODE} behind a trusted reverse proxy, "
                 f"or use {STAFF_AUTH_MODE_ENV_VAR}={STAFF_OIDC_MODE} with municipal OIDC settings."
+            ),
+        }
+    if mode == STAFF_PROTECTED_MODE:
+        return {
+            "mode": STAFF_PROTECTED_MODE,
+            "ready": True,
+            "deployment_ready": False,
+            "checks": [
+                {
+                    "name": "staff auth mode",
+                    "status": "configured",
+                    "value": STAFF_PROTECTED_MODE,
+                },
+                {
+                    "name": "anonymous staff writes",
+                    "status": "blocked",
+                    "value": "POST /meeting-bodies, /meetings, /motions, and /votes require staff auth",
+                },
+            ],
+            "message": "Protected staff mode is active by default; anonymous staff writes are denied.",
+            "fix": (
+                f"Configure {STAFF_AUTH_MODE_ENV_VAR}={STAFF_BEARER_MODE}, "
+                f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_TRUSTED_HEADER_MODE}, or "
+                f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_OIDC_MODE} before shared deployment. "
+                f"Use {STAFF_AUTH_MODE_ENV_VAR}={STAFF_OPEN_MODE} only for local rehearsal."
             ),
         }
     if mode == STAFF_BEARER_MODE:
@@ -2145,6 +2184,19 @@ def _resolve_archive_search_principal(
 
 def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
     mode = _get_staff_auth_mode()
+    if mode == STAFF_PROTECTED_MODE:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "message": "Staff authentication is required.",
+                "fix": (
+                    f"The default {STAFF_AUTH_MODE_ENV_VAR}={STAFF_PROTECTED_MODE} blocks anonymous "
+                    "staff API access. Configure bearer, trusted-header, or OIDC staff auth before "
+                    "using staff write endpoints, or explicitly opt into open mode for local rehearsal."
+                ),
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     if mode == STAFF_BEARER_MODE:
         authorization = request.headers.get("authorization", "").strip()
         credentials: HTTPAuthorizationCredentials | None = None
@@ -2211,15 +2263,22 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
 
 
 def _get_staff_auth_mode() -> str:
-    raw_mode = os.environ.get(STAFF_AUTH_MODE_ENV_VAR, STAFF_OPEN_MODE).strip().lower()
-    if raw_mode in {STAFF_OPEN_MODE, STAFF_BEARER_MODE, STAFF_TRUSTED_HEADER_MODE, STAFF_OIDC_MODE}:
+    raw_mode = os.environ.get(STAFF_AUTH_MODE_ENV_VAR, STAFF_PROTECTED_MODE).strip().lower()
+    if raw_mode in {
+        STAFF_PROTECTED_MODE,
+        STAFF_OPEN_MODE,
+        STAFF_BEARER_MODE,
+        STAFF_TRUSTED_HEADER_MODE,
+        STAFF_OIDC_MODE,
+    }:
         return raw_mode
     raise HTTPException(
         status_code=503,
         detail={
             "message": "CivicClerk staff auth mode is invalid.",
             "fix": (
-                f"Set {STAFF_AUTH_MODE_ENV_VAR} to '{STAFF_OPEN_MODE}' for local rehearsal "
+                f"Set {STAFF_AUTH_MODE_ENV_VAR} to '{STAFF_PROTECTED_MODE}' to deny anonymous writes, "
+                f"'{STAFF_OPEN_MODE}' for local rehearsal, "
                 f"or '{STAFF_BEARER_MODE}' for bearer-protected staff APIs, "
                 f"or '{STAFF_TRUSTED_HEADER_MODE}' for trusted reverse-proxy SSO headers, "
                 f"or '{STAFF_OIDC_MODE}' for municipal OIDC access tokens."

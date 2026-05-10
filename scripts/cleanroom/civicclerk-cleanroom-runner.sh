@@ -142,7 +142,7 @@ import civicclerk
 from civicclerk.main import app
 
 assert civiccore.__version__ == "1.0.1"
-assert civicclerk.__version__ == "1.0.0"
+assert civicclerk.__version__ == "1.0.1"
 assert app.title == "CivicClerk"
 assert callable(civiccore.validate_manifest)
 assert callable(civiccore.import_meeting_payload)

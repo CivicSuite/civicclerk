@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 DEPLOYMENT_ENV_VARS = (
     "CIVICCLERK_STAFF_AUTH_MODE",
     "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES",
@@ -42,7 +42,7 @@ def test_deployment_readiness_helper_reports_local_rehearsal_as_not_deployment_r
     output = result.stdout
     assert "CivicClerk deployment readiness preflight" in output
     assert "deployment_ready=false" in output
-    assert "[WARN] staff auth: open mode is ready for local rehearsal but not real staff deployment." in output
+    assert "[WARN] staff auth: protected mode denies anonymous staff writes but still needs bearer, OIDC, or trusted-header auth before deployment." in output
     assert "CIVICCLERK_STAFF_AUTH_MODE=bearer" in output
     assert "missing deployment database URLs" in output
     assert "values are intentionally not printed" not in output

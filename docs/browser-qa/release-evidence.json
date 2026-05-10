@@ -1,10 +1,10 @@
 {
   "page": "docs/index.html",
-  "page_sha256": "4745393c9ca9ca182a60133571c47375f9bdcd9f537f03798fa8e75a7eec8a82",
-  "reviewed_at": "2026-05-07T18:55:48.542727Z",
+  "page_sha256": "43b5f51b2c6d49a4f12f918a27903efbc3ccd65ae69831c1a6a78f018995d976",
+  "reviewed_at": "2026-05-10T16:09:42.062818Z",
   "screenshots": {
     "desktop": "docs/screenshots/cc7-docs-index-desktop.png",
     "mobile": "docs/screenshots/cc7-docs-index-mobile.png"
   },
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

@@ -1,5 +1,5 @@
 param(
-    [string]$WheelPath = "dist/civicclerk-1.0.0-py3-none-any.whl",
+    [string]$WheelPath = "dist/civicclerk-1.0.1-py3-none-any.whl",
     [string]$RehearsalRoot = ".fresh-install-rehearsal",
     [int]$AppPort = 8776,
     [switch]$KeepServer,
@@ -42,12 +42,13 @@ function Write-FreshInstallPlan {
     Write-Output "Create venv: python -m venv $ResolvedRehearsalRoot\.venv"
     Write-Output "Upgrade pip: $PythonPath -m pip install --upgrade pip"
     Write-Output "Install wheel: $PythonPath -m pip install $ResolvedWheelPath"
-    Write-Output "Set CIVICCLERK_STAFF_AUTH_MODE=open"
+    Write-Output "Set CIVICCLERK_STAFF_AUTH_MODE=protected"
     Write-Output "App command: $PythonPath -m uvicorn civicclerk.main:app --host 127.0.0.1 --port $AppPort"
     Write-Output "Smoke check: GET $AppUrl/health"
     Write-Output "Readiness check: GET $AppUrl/staff/auth-readiness"
     Write-Output "Browser check: open $AppUrl/staff"
-    Write-Output "Expected health: {`"status`":`"ok`",`"service`":`"civicclerk`",`"version`":`"1.0.0`",`"civiccore`":`"1.0.1`"}"
+    Write-Output "Expected health: {`"status`":`"ok`",`"service`":`"civicclerk`",`"version`":`"1.0.1`",`"civiccore`":`"1.0.1`"}"
+    Write-Output "Expected auth readiness: mode=protected and anonymous staff writes denied"
     Write-Output "If the wheel is missing, build it first with: python -m build"
     Write-Output "If port $AppPort is already in use, stop the existing process or rerun with -AppPort set to an available port."
     Write-Output "By default this helper stops the app after smoke checks; pass -KeepServer to keep it running."
@@ -112,7 +113,7 @@ python -m venv $venvPath
 & $pythonPath -m pip install --upgrade pip
 & $pythonPath -m pip install $resolvedWheelPath
 
-$env:CIVICCLERK_STAFF_AUTH_MODE = "open"
+$env:CIVICCLERK_STAFF_AUTH_MODE = "protected"
 $appProcess = Start-Process $pythonPath `
     -ArgumentList "-m", "uvicorn", "civicclerk.main:app", "--host", "127.0.0.1", "--port", "$AppPort" `
     -WorkingDirectory $resolvedRehearsalRoot `
@@ -134,13 +135,13 @@ try {
         throw "The installed CivicClerk app did not answer $appUrl/health within 20 seconds. Check the app process output and whether port $AppPort is already in use."
     }
 
-    if ($health.status -ne "ok" -or $health.service -ne "civicclerk" -or $health.version -ne "1.0.0" -or $health.civiccore -ne "1.0.1") {
-        throw "Unexpected /health response: $($health | ConvertTo-Json -Compress). Expected CivicClerk 1.0.0 with CivicCore 1.0.1."
+    if ($health.status -ne "ok" -or $health.service -ne "civicclerk" -or $health.version -ne "1.0.1" -or $health.civiccore -ne "1.0.1") {
+        throw "Unexpected /health response: $($health | ConvertTo-Json -Compress). Expected CivicClerk 1.0.1 with CivicCore 1.0.1."
     }
 
     $readiness = Invoke-JsonGet -Url "$appUrl/staff/auth-readiness"
-    if ($readiness.mode -ne "open") {
-        throw "Unexpected /staff/auth-readiness mode '$($readiness.mode)'. Expected 'open' for the fresh install rehearsal."
+    if ($readiness.mode -ne "protected") {
+        throw "Unexpected /staff/auth-readiness mode '$($readiness.mode)'. Expected 'protected' for the fresh install rehearsal."
     }
 
     $staffResponse = Invoke-WebRequest -Uri "$appUrl/staff" -UseBasicParsing -TimeoutSec 10

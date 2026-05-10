@@ -35,13 +35,28 @@ from civicclerk.main import (
     STAFF_OIDC_MODE,
     STAFF_OIDC_SESSION_COOKIE_NAME,
     STAFF_OIDC_STATE_COOKIE_NAME,
+    STAFF_OPEN_MODE,
+    STAFF_PROTECTED_MODE,
     STAFF_TRUSTED_HEADER_MODE,
     app,
 )
 
 
 @pytest.mark.asyncio
-async def test_staff_session_reports_open_mode_by_default() -> None:
+@pytest.mark.uses_civicclerk_default_staff_mode
+async def test_default_staff_mode_is_protected() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/session")
+
+    assert response.status_code == 401
+    detail = response.json()["detail"]
+    assert detail["message"] == "Staff authentication is required."
+    assert f"{STAFF_AUTH_MODE_ENV_VAR}={STAFF_PROTECTED_MODE}" in detail["fix"]
+
+
+@pytest.mark.asyncio
+async def test_open_mode_still_reports_local_rehearsal_access(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_OPEN_MODE)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/staff/session")
 
@@ -61,7 +76,50 @@ async def test_staff_session_reports_open_mode_by_default() -> None:
 
 
 @pytest.mark.asyncio
-async def test_staff_auth_readiness_reports_open_mode_as_rehearsal_only() -> None:
+@pytest.mark.uses_civicclerk_default_staff_mode
+async def test_staff_auth_readiness_reports_protected_mode_by_default() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff/auth-readiness")
+
+    assert response.status_code == 200
+    assert response.json()["mode"] == "protected"
+    assert response.json()["ready"] is True
+    assert response.json()["deployment_ready"] is False
+    assert response.json()["message"] == "Protected staff mode is active by default; anonymous staff writes are denied."
+    assert STAFF_AUTH_MODE_ENV_VAR in response.json()["fix"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.uses_civicclerk_default_staff_mode
+async def test_default_staff_mode_denies_anonymous_write_endpoints() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        responses = [
+            await client.post(
+                "/meeting-bodies",
+                json={"name": "City Council", "body_type": "city_council"},
+            ),
+            await client.post(
+                "/meetings",
+                json={"title": "Council Meeting", "meeting_type": "regular"},
+            ),
+            await client.post(
+                "/meetings/not-a-meeting/motions",
+                json={"text": "Move to approve.", "actor": "clerk@example.gov"},
+            ),
+            await client.post(
+                "/motions/not-a-motion/votes",
+                json={"voter_name": "Council Member Rivera", "vote": "aye", "actor": "clerk@example.gov"},
+            ),
+        ]
+
+    for response in responses:
+        assert response.status_code == 401
+        assert response.json()["detail"]["message"] == "Staff authentication is required."
+
+
+@pytest.mark.asyncio
+async def test_staff_auth_readiness_reports_open_mode_as_rehearsal_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_OPEN_MODE)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/staff/auth-readiness")
 
@@ -76,12 +134,13 @@ async def test_staff_auth_readiness_reports_open_mode_as_rehearsal_only() -> Non
 
 
 @pytest.mark.asyncio
-async def test_staff_page_discloses_open_and_bearer_modes_without_claiming_sso() -> None:
+async def test_staff_page_discloses_protected_open_and_bearer_modes_without_claiming_sso() -> None:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/staff")
 
     assert response.status_code == 200
     lowered = response.text.lower()
+    assert "protected" in lowered
     assert "local open mode" in lowered
     assert "bearer-protected staff mode" in lowered
     assert "trusted-header staff mode" in lowered
