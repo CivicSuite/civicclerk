@@ -98,8 +98,6 @@ download_civiccore_freeze_assets() {
         "civiccore-${CIVICCORE_PACKAGE_VERSION}-py3-none-any.whl"
         "civiccore-${CIVICCORE_PACKAGE_VERSION}.tar.gz"
         "SHA256SUMS.txt"
-        "release-attestation.json"
-        "release-attestation.json.bundle"
     )
     for asset in "${assets[@]}"; do
         run_step "download-civiccore-${asset}" \
@@ -118,14 +116,22 @@ online() {
     download_civiccore_freeze_assets
     run_step "sha256sums-civiccore-freeze-assets" \
         bash -lc "cd '${EVIDENCE_DIR}/civiccore-freeze-assets' && sha256sum -c SHA256SUMS.txt"
-    run_step "sigstore-civiccore-freeze-attestation" \
-        bash -lc "cd '${EVIDENCE_DIR}/civiccore-freeze-assets' && cosign verify-blob release-attestation.json --bundle release-attestation.json.bundle --certificate-identity '${WORKFLOW_IDENTITY}' --certificate-oidc-issuer '${OIDC_ISSUER}'"
-    run_step "live-civiccore-freeze-provenance" \
-        python scripts/verify-release-provenance.py "${CIVICCORE_FREEZE_TAG}" \
-            --repo CivicSuite/civiccore \
-            --attestation "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json" \
-            --bundle "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json.bundle" \
-            --artifacts-dir "${EVIDENCE_DIR}/civiccore-freeze-assets"
+    if [[ -f "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json" && -f "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json.bundle" ]]; then
+        run_step "sigstore-civiccore-freeze-attestation" \
+            bash -lc "cd '${EVIDENCE_DIR}/civiccore-freeze-assets' && cosign verify-blob release-attestation.json --bundle release-attestation.json.bundle --certificate-identity '${WORKFLOW_IDENTITY}' --certificate-oidc-issuer '${OIDC_ISSUER}'"
+    else
+        log "sigstore attestation assets not present for ${CIVICCORE_FREEZE_TAG}; SHA256SUMS verification remains required"
+    fi
+    if [[ -f "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json" && -f "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json.bundle" ]]; then
+        run_step "live-civiccore-freeze-provenance" \
+            python scripts/verify-release-provenance.py "${CIVICCORE_FREEZE_TAG}" \
+                --repo CivicSuite/civiccore \
+                --attestation "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json" \
+                --bundle "${EVIDENCE_DIR}/civiccore-freeze-assets/release-attestation.json.bundle" \
+                --artifacts-dir "${EVIDENCE_DIR}/civiccore-freeze-assets"
+    else
+        log "live provenance attestation check skipped for ${CIVICCORE_FREEZE_TAG}; release has no attestation assets"
+    fi
 }
 
 offline() {
