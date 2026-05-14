@@ -12,7 +12,7 @@ permissions:
 jobs:
   preflight:
     name: Preflight release provenance fixtures
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -32,7 +32,7 @@ jobs:
         run: python scripts/verify-release-provenance.py --fixtures-dir .tmp-civiccore/tests/fixtures/release_provenance
 
   verify-build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs: preflight
     steps:
       - uses: actions/checkout@v6
