@@ -54,7 +54,10 @@ ISCC="${ISCC:-}"
 if [[ -z "$ISCC" ]]; then
   for candidate in \
     "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" \
-    "/c/Program Files/Inno Setup 6/ISCC.exe"; do
+    "/c/Program Files/Inno Setup 6/ISCC.exe" \
+    "/mnt/c/Program Files (x86)/Inno Setup 6/ISCC.exe" \
+    "/mnt/c/Program Files/Inno Setup 6/ISCC.exe" \
+    "/mnt/c/Users/${USER:-scott}/AppData/Local/Programs/Inno Setup 6/ISCC.exe"; do
     if [[ -x "$candidate" ]]; then
       ISCC="$candidate"
       break
@@ -68,7 +71,11 @@ if [[ -z "$ISCC" || ! -x "$ISCC" ]]; then
 fi
 
 rm -rf "$OUTPUT_DIR"
-"$ISCC" "$ISS" "/DMyAppVersion=$APP_VERSION"
+ISS_ARG="$ISS"
+if command -v wslpath >/dev/null 2>&1 && [[ "$ISS" == /mnt/* ]]; then
+  ISS_ARG="$(wslpath -w "$ISS")"
+fi
+"$ISCC" "$ISS_ARG" "/DMyAppVersion=$APP_VERSION"
 
 artifact="$OUTPUT_DIR/CivicClerk-$APP_VERSION-Setup.exe"
 if [[ ! -f "$artifact" ]]; then
@@ -83,6 +90,16 @@ normalized_sign_requested="$(printf '%s' "$sign_requested" | tr '[:upper:]' '[:l
 case "$normalized_sign_requested" in
   1|true|yes|on)
     SIGNTOOL_PATH="${CIVICCLERK_SIGNTOOL_PATH:-${SIGNTOOL:-signtool}}"
+    if ! command -v "$SIGNTOOL_PATH" >/dev/null 2>&1 && [[ ! -x "$SIGNTOOL_PATH" ]]; then
+      for candidate in \
+        "/mnt/c/Program Files (x86)/Windows Kits/10/bin/"*/x64/signtool.exe \
+        "/c/Program Files (x86)/Windows Kits/10/bin/"*/x64/signtool.exe; do
+        if [[ -x "$candidate" ]]; then
+          SIGNTOOL_PATH="$candidate"
+          break
+        fi
+      done
+    fi
     if ! command -v "$SIGNTOOL_PATH" >/dev/null 2>&1 && [[ ! -x "$SIGNTOOL_PATH" ]]; then
       echo "Installer signing was requested, but SignTool was not found. Set CIVICCLERK_SIGNTOOL_PATH=/path/to/signtool.exe." >&2
       exit 1
@@ -111,7 +128,7 @@ case "$normalized_sign_requested" in
     echo "Signed $artifact"
     ;;
   *)
-    echo "Installer signing skipped. Set CIVICCLERK_SIGN_INSTALLER=true after configuring SignTool, a certificate identity, and timestamp URL."
+    echo "Installer signing skipped. CivicSuite public Windows installers are unsigned; downstream organizations may set CIVICCLERK_SIGN_INSTALLER=true after configuring SignTool, a certificate identity, and timestamp URL for an internal build."
     ;;
 esac
 

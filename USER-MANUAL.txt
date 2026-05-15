@@ -331,20 +331,14 @@ bash installer/windows/build-installer.sh
 ```
 
 The resulting setup package installs Start and Install or Repair shortcuts.
-It is unsigned unless the secured release-signing workstation sets
-`CIVICCLERK_SIGN_INSTALLER=true` plus Microsoft SignTool, a code-signing
-certificate identity, and an RFC 3161 timestamp URL. Without that signing
-profile, Windows SmartScreen may show "Unknown Publisher" or "Windows protected
-your PC" because Windows cannot verify a publisher certificate yet. That is
-expected until CivicSuite has an issued organization code-signing certificate
-and secured signing workstation; continue only when the installer came from a
-trusted CivicSuite release source or your IT team built it from the verified
-release handoff. To verify the enterprise signing inputs without printing
-secrets, run:
-
-```bash
-python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-1.0.1-Setup.exe
-```
+It is unsigned because CivicSuite is a small free open-source project and does
+not ship a paid publisher-certificate-signed Windows installer. Windows
+SmartScreen may show "Unknown Publisher" or "Windows protected your PC" because
+Windows cannot verify a publisher certificate. That warning is expected. It is
+OK to choose "More info" and "Run anyway" only when the installer came from the
+official CivicSuite GitHub release source or your IT team built it from verified
+CivicSuite source. Do not bypass SmartScreen for installers from email
+attachments, chat links, mirrors, or any source you cannot verify.
 
 Uninstall stops the Compose stack and removes installed source files, but Docker volumes are preserved so meeting data is not
 destroyed accidentally. `CIVICCLERK_STAFF_AUTH_MODE=protected` is the default and denies anonymous staff writes. Use `CIVICCLERK_STAFF_AUTH_MODE=open` only for a single-workstation rehearsal; switch to OIDC, bearer, or trusted-header mode before shared deployment.

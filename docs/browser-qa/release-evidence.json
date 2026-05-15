@@ -1,7 +1,7 @@
 {
   "page": "docs/index.html",
-  "page_sha256": "43b5f51b2c6d49a4f12f918a27903efbc3ccd65ae69831c1a6a78f018995d976",
-  "reviewed_at": "2026-05-10T16:09:42.062818Z",
+  "page_sha256": "747e3cf7e95259f342c233e25b21fff4178973a649e1d46225740c3b8824bd38",
+  "reviewed_at": "2026-05-15T00:00:00Z",
   "screenshots": {
     "desktop": "docs/screenshots/cc7-docs-index-desktop.png",
     "mobile": "docs/screenshots/cc7-docs-index-mobile.png"

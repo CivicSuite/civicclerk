@@ -37,12 +37,12 @@ Source: "..\..\CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\LICENSE-CODE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\LICENSE-DOCS"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\civicclerk\*"; DestDir: "{app}\civicclerk"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "__pycache__\*,*.pyc"
-Source: "..\..\prompts\*"; DestDir: "{app}\prompts"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\..\docker\*"; DestDir: "{app}\docker"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\..\docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "__pycache__\*,*.pyc"
-Source: "..\..\frontend\*"; DestDir: "{app}\frontend"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "node_modules\*,dist\*,.vite\*"
+Source: "..\..\civicclerk\*"; DestDir: "{app}\civicclerk"; Flags: ignoreversion recursesubdirs; Excludes: "__pycache__\*,*.pyc"
+Source: "..\..\prompts\*"; DestDir: "{app}\prompts"; Flags: ignoreversion recursesubdirs
+Source: "..\..\docker\*"; DestDir: "{app}\docker"; Flags: ignoreversion recursesubdirs
+Source: "..\..\docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion recursesubdirs; Excludes: "playwright-report\*"
+Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs; Excludes: "__pycache__\*,*.pyc,policy\*"
+Source: "..\..\frontend\*"; DestDir: "{app}\frontend"; Flags: ignoreversion recursesubdirs; Excludes: "node_modules\*,dist\*,.vite\*,test-results\*,playwright-report\*"
 Source: "README.md"; DestDir: "{app}\installer\windows"; Flags: ignoreversion
 Source: "prereq-check.ps1"; DestDir: "{app}\installer\windows"; Flags: ignoreversion
 Source: "launch-install.ps1"; DestDir: "{app}\installer\windows"; Flags: ignoreversion
@@ -69,8 +69,13 @@ Filename: "docker"; Parameters: "compose down"; WorkingDir: "{app}"; Flags: runh
 [Code]
 function InitializeSetup(): Boolean;
 begin
+  if WizardSilent then
+  begin
+    Result := True;
+    Exit;
+  end;
   Result := MsgBox(
-    'CivicClerk setup may be unsigned until your organization has a code-signing certificate and release-signing workstation. Windows may show "Unknown Publisher" or "Windows protected your PC" because it cannot verify a publisher certificate yet. Continue only if this installer came from a trusted CivicSuite release source or your IT team built it from the verified release handoff.',
+    'CivicClerk is a small free open-source project, so this Windows installer is unsigned. Windows SmartScreen may show "Unknown Publisher" or "Windows protected your PC" because Windows cannot verify a paid publisher certificate. This warning is expected. It is OK to choose "More info" and "Run anyway" when this installer came from the official CivicSuite release source or your IT team built it from verified CivicSuite source.',
     mbInformation,
     MB_OKCANCEL
   ) = IDOK;

@@ -29,7 +29,10 @@ def test_install_script_creates_env_from_docker_template_and_starts_stack() -> N
     assert "docs\\examples\\docker.env.example" in script
     assert "CIVICCLERK_POSTGRES_PASSWORD=change-this-before-shared-use" in script
     assert "RandomNumberGenerator" in script
+    assert ".GetBytes($bytes)" in script
     assert "docker compose up -d --build" in script
+    assert "$LASTEXITCODE -ne 0" in script
+    assert "docker compose ps --status running --services" in script
     assert "http://127.0.0.1:$apiPort/health" in script
     assert "http://127.0.0.1:$webPort/" in script
     assert "$response.StatusCode -ge 200 -and $response.StatusCode -lt 400" in script
@@ -57,7 +60,10 @@ def test_inno_setup_requires_version_and_bundles_product_sources() -> None:
     assert "InitializeSetup" in iss
     assert "Unknown Publisher" in iss
     assert "Windows protected your PC" in iss
-    assert "trusted CivicSuite release source" in iss
+    assert "small free open-source project" in iss
+    assert "More info" in iss
+    assert "Run anyway" in iss
+    assert "official CivicSuite release source" in iss
     assert "OutputBaseFilename=CivicClerk-{#MyAppVersion}-Setup" in iss
     assert "PrivilegesRequired=lowest" in iss
     assert "Install or Repair CivicClerk" in iss
@@ -65,6 +71,9 @@ def test_inno_setup_requires_version_and_bundles_product_sources() -> None:
     assert "docker-compose.yml" in iss
     assert "Dockerfile.backend" in iss
     assert "frontend\\*" in iss
+    assert "WizardSilent" in iss
+    assert "test-results\\*" in iss
+    assert "policy\\*" in iss
     assert "Docker volumes are preserved" in iss
 
 
@@ -79,7 +88,10 @@ def test_build_script_resolves_version_and_checks_required_sources() -> None:
     assert "Python 3 was not found" in build
     assert "docs/examples/docker.env.example" in build
     assert "Inno Setup compiler was not found" in build
+    assert "/mnt/c/Users/${USER:-scott}/AppData/Local/Programs/Inno Setup 6/ISCC.exe" in build
+    assert "wslpath -w" in build
     assert "CivicClerk-$APP_VERSION-Setup.exe" in build
+    assert "public Windows installers are unsigned" in build
     assert "CIVICCLERK_SIGN_INSTALLER" in build
     assert "CIVICCLERK_SIGNTOOL_PATH" in build
     assert "CIVICCLERK_SIGNING_CERT_SHA1" in build
@@ -90,7 +102,9 @@ def test_build_script_resolves_version_and_checks_required_sources() -> None:
 def test_enterprise_installer_signing_readiness_helper_documents_non_secret_contract() -> None:
     script = _read("scripts/check_enterprise_installer_signing.py")
 
-    assert "CivicClerk enterprise installer signing readiness" in script
+    assert "CivicClerk downstream installer signing readiness" in script
+    assert "optional downstream" in script
+    assert "public CivicSuite installer" in script
     assert "CIVICCLERK_SIGNTOOL_PATH" in script
     assert "CIVICCLERK_SIGNING_CERT_SHA1" in script
     assert "CIVICCLERK_SIGNING_PFX" in script
@@ -112,7 +126,10 @@ def test_installer_docs_do_not_overclaim_production_auth_or_data_deletion() -> N
     assert "unsigned" in docs.lower()
     assert "Windows SmartScreen" in docs
     assert "unknown publisher" in docs.lower()
-    assert "trusted CivicSuite release source" in docs
+    assert "small free open-source project" in docs
+    assert "More info" in docs
+    assert "Run anyway" in docs
+    assert "official CivicSuite" in docs
     assert "CIVICCLERK_STAFF_AUTH_MODE=protected" in docs
     assert "single-workstation rehearsal" in docs
     assert "bearer, OIDC, or trusted-header" in docs

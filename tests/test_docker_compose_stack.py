@@ -39,6 +39,7 @@ def test_docker_compose_stack_declares_real_runtime_services() -> None:
     assert "uvicorn\", \"civicclerk.main:app\"" in (ROOT / "Dockerfile.backend").read_text(encoding="utf-8")
     assert "celery -A civicclerk.worker worker" in compose
     assert "celery -A civicclerk.worker beat" in compose
+    assert "wget -qO- http://127.0.0.1/" in compose
     worker_service = compose.split("  worker:", 1)[1].split("  beat:", 1)[0]
     beat_service = compose.split("  beat:", 1)[1].split("  frontend:", 1)[0]
     assert "./connector-imports}:/data/connector-imports:ro" in worker_service
