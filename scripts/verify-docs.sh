@@ -31,12 +31,14 @@ required=(
   cleanroom/civicclerk.Dockerfile
   docs/evidence/cc1-civicclerk-cleanroom/README.md
   docs/ops/cc-1-cleanroom-harness.md
+  docs/ops/starter-set-integration.md
   scripts/run-prompt-evals.py
   scripts/verify-release.sh
   scripts/verify-browser-qa.py
   scripts/cleanroom/civicclerk-cleanroom-runner.sh
   scripts/run-civicclerk-cleanroom.sh
   scripts/check_installer_readiness.py
+  scripts/check_starter_set_integration.py
   scripts/check_pilot_readiness.py
   scripts/check_connector_sync_readiness.py
   scripts/run_mock_city_environment_suite.py
@@ -96,6 +98,13 @@ done
 for file in README.md README.txt USER-MANUAL.md USER-MANUAL.txt docs/index.html; do
   if ! grep -q "run_mock_city_environment_suite.py" "$file"; then
     echo "  MISSING MOCK CITY SUITE DOC: $file"
+    fail=1
+  fi
+done
+
+for file in README.md README.txt; do
+  if ! grep -q "check_starter_set_integration.py" "$file"; then
+    echo "  MISSING STARTER SET INTEGRATION CHECK DOC: $file"
     fail=1
   fi
 done
