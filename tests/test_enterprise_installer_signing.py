@@ -20,11 +20,12 @@ def test_enterprise_installer_signing_print_only_explains_inputs() -> None:
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "CivicClerk enterprise installer signing readiness" in result.stdout
+    assert "CivicClerk downstream installer signing readiness" in result.stdout
     assert "CIVICCLERK_SIGNTOOL_PATH" in result.stdout
     assert "CIVICCLERK_SIGNING_CERT_SHA1" in result.stdout
     assert "CIVICCLERK_SIGNING_PFX_PASSWORD_ENV" in result.stdout
     assert "No secrets are printed" in result.stdout
+    assert "does not sign the public CivicSuite installer" in result.stdout
 
 
 def test_enterprise_installer_signing_fails_actionably_without_cert_inputs(tmp_path: Path) -> None:
@@ -45,7 +46,7 @@ def test_enterprise_installer_signing_fails_actionably_without_cert_inputs(tmp_p
     assert result.returncode == 1
     assert "signing_ready=false" in result.stdout
     assert "setup executable exists" in result.stdout
-    assert "Microsoft SignTool was not found" in result.stdout
+    assert "signtool" in result.stdout.lower()
     assert "no code-signing certificate identity is configured" in result.stdout
     assert "no timestamp authority URL is configured" in result.stdout
     assert "ENTERPRISE-INSTALLER-SIGNING: FAILED" in result.stdout

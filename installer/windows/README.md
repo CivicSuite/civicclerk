@@ -22,22 +22,15 @@ bash installer/windows/build-installer.sh
 
 Set `CIVICCLERK_VERSION=1.0.1` to override the version read from `pyproject.toml`, or set `ISCC=/path/to/ISCC.exe` if the compiler is installed outside the default locations.
 
-## Enterprise Signing
+## Unsigned Installer Warning
 
-By default, the build helper produces an unsigned setup executable. On a secured release-signing workstation, IT can opt into signing by setting:
+CivicClerk is a small free open-source project. The Windows installer is unsigned, and that is the supported path for this project. Windows SmartScreen may show "Unknown Publisher" or "Windows protected your PC" because Windows cannot verify a paid publisher certificate.
 
-```bash
-export CIVICCLERK_SIGN_INSTALLER=true
-export CIVICCLERK_SIGNTOOL_PATH="/c/Program Files (x86)/Windows Kits/10/bin/x64/signtool.exe"
-export CIVICCLERK_SIGNING_CERT_SHA1="<certificate-thumbprint>"
-export CIVICCLERK_SIGNING_TIMESTAMP_URL="<enterprise RFC 3161 timestamp URL>"
-```
-
-For PFX-based signing, use `CIVICCLERK_SIGNING_PFX=/secure/path/cert.pfx` and set `CIVICCLERK_SIGNING_PFX_PASSWORD_ENV` to the name of a populated password environment variable. Do not commit certificates or passwords. Run `python scripts/check_enterprise_installer_signing.py --artifact installer/windows/build/CivicClerk-1.0.1-Setup.exe` to verify the signing contract without printing secrets.
+That warning is expected. It is OK to choose "More info" and then "Run anyway" when the installer came from the official CivicSuite GitHub release source or your IT team built it from verified CivicSuite source. Do not bypass the warning for installers from email attachments, chat links, mirrors, or any source you cannot verify.
 
 ## Install Behavior
 
-The installer is unsigned unless the enterprise signing profile above is used. Windows SmartScreen may show "Unknown Publisher" or "Windows protected your PC" on first install because Windows cannot verify a publisher certificate yet. Code-signing certificates require organizational validation and a secured release-signing process; they are not something the project can safely assume before product completion and certificate issuance. Choose "More info" and "Run anyway" only when the installer came from a trusted CivicSuite release source or your IT team built it from the verified release handoff.
+The installer shows an in-wizard warning before interactive installs. Silent installs skip the dialog so IT can automate verified deployments, but the same rule applies: install only from official CivicSuite release artifacts or from source your organization verified and built.
 
 The first install or repair creates `.env` from `docs/examples/docker.env.example`, generates a local PostgreSQL password, starts the Docker Compose stack, and keeps `CIVICCLERK_DEMO_SEED=1` unless an operator changes it. That seed creates Brookfield demo meetings, agenda intake, packets, notices, outcomes, minutes, and public archive data so a clerk can see a real workflow immediately.
 

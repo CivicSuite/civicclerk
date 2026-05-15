@@ -45,13 +45,12 @@ pgvector, Redis 7.2, Ollama, FastAPI, Celery worker/beat, and nginx-served
 React. Compose now seeds a Brookfield demo dataset by default so staff can open
 the React app against live API-backed data immediately. Unsigned Windows
 installer source packaging is now present for the same Docker stack, including
-install/repair and daily-start launchers, and the enterprise signing-readiness
-contract now verifies SignTool, certificate identity, timestamp URL, and setup
-artifact inputs without printing secrets. Remaining MVP work now centers on
+install/repair and daily-start launchers, with explicit SmartScreen/Unknown
+Publisher guidance for the supported unsigned public installer path. Remaining MVP work now centers on
 municipal IdP deployment proof, real vendor API deployment proof,
 city-approved retention/off-host backup proof, and deployment hardening. Signed
-installer publication is certificate-gated and not expected during the
-developer process. The Docker/PostgreSQL backup and restore
+installer publication is not planned for CivicSuite's public free open-source
+release path. The Docker/PostgreSQL backup and restore
 rehearsal for the Compose product path is now present; real deployments still
 need an approved retention schedule and off-host storage target. The connector
 path now has a local import-sync runner that produces normalized ledgers from
@@ -95,10 +94,11 @@ or printing mock secrets, and it now validates a Brookfield
 backup-retention/off-host policy contract with seven-year retention, monthly
 restore-test cadence, encrypted immutable mock off-host storage, legal-hold
 support, and restore-manifest fields without contacting storage providers or
-printing secrets. Unsigned Windows install remains expected until an enterprise
-code-signing certificate is issued and the secured signing workstation is ready;
+printing secrets. Unsigned Windows install remains expected and supported;
 installer and docs warnings now name the "Unknown Publisher" / "Windows
-protected your PC" first-install experience directly. The pilot-readiness
+protected your PC" first-install experience directly and tell users it is OK to
+choose "More info" and "Run anyway" only for official CivicSuite artifacts or
+verified local builds. The pilot-readiness
 rollup now separates developer-owned readiness from external proofs for code
 signing, municipal IdP deployment, real vendor API access, and city
 backup-retention/off-host storage approval.

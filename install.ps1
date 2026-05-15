@@ -26,7 +26,12 @@ function Require-Command {
 
 function New-HexSecret {
     $bytes = New-Object byte[] 24
-    [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    try {
+        $rng.GetBytes($bytes)
+    } finally {
+        $rng.Dispose()
+    }
     return ($bytes | ForEach-Object { $_.ToString("x2") }) -join ""
 }
 
@@ -107,6 +112,19 @@ Write-Host "Demo seed mode: $seedMode"
 
 Write-Step "Building and starting CivicClerk"
 docker compose up -d --build
+if ($LASTEXITCODE -ne 0) {
+    throw "Docker Compose did not start every CivicClerk service. Check for port conflicts, then run 'docker compose ps' and 'docker compose logs api frontend' from $Root."
+}
+
+$runningServices = docker compose ps --status running --services
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not verify running Docker Compose services. Run 'docker compose ps' from $Root for details."
+}
+foreach ($requiredService in @("api", "frontend")) {
+    if ($runningServices -notcontains $requiredService) {
+        throw "Docker Compose service '$requiredService' is not running. Check for port conflicts, then run 'docker compose ps' and 'docker compose logs $requiredService' from $Root."
+    }
+}
 
 Write-Step "Checking health endpoints"
 Wait-Http -Url "http://127.0.0.1:$apiPort/health" -Name "CivicClerk API"
