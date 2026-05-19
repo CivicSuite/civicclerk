@@ -961,6 +961,7 @@ function isSpecCompletenessPage(page: Page) {
 
 export function App() {
   const initial = getInitialView();
+  const initialPublicRoute = isPage(initial.page, "public", "public-calendar", "public-detail");
   const [page, setPage] = useState<Page>(initial.page);
   const [qaState, setQaState] = useState<ViewState | null>(initial.state);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -1137,6 +1138,24 @@ export function App() {
     }
   }
 
+  async function loadPublicData(cancelled: () => boolean) {
+    setPublicState("loading");
+    setPublicError(null);
+    const apiPublicRecords = await fetchPublicMeetings();
+    if (cancelled()) return;
+    const mappedPublicRecords = apiPublicRecords.map(mapApiPublicMeetingRecord);
+    setPublicRecords(mappedPublicRecords);
+    setPublicRecordDetail(mappedPublicRecords[0] ?? null);
+    setPublicState(mappedPublicRecords.length === 0 ? "empty" : "success");
+    setApiState("success");
+    setBodyState("success");
+    setPacketState("success");
+    setNoticeState("success");
+    setOutcomeState("success");
+    setMinutesState("success");
+    setVendorSyncState("success");
+  }
+
   useEffect(() => {
     if (initial.source === "demo") {
       setMeetings(demoMeetings);
@@ -1167,30 +1186,33 @@ export function App() {
       return;
     }
     let cancelled = false;
-    loadWorkspaceData(() => cancelled)
+    const loader = initialPublicRoute ? loadPublicData : loadWorkspaceData;
+    loader(() => cancelled)
       .catch((error: Error) => {
         if (cancelled) return;
-        setBodyError(error.message);
-        setApiError(error.message);
-        setPacketError(error.message);
-        setNoticeError(error.message);
-        setOutcomeError(error.message);
-        setMinutesError(error.message);
         setPublicError(error.message);
-        setApiState("error");
-        setBodyState("error");
-        setPacketState("error");
-        setNoticeState("error");
-        setOutcomeState("error");
-        setMinutesState("error");
         setPublicState("error");
-        setVendorSyncState("error");
-        setVendorSyncError("Vendor sync health was not checked because the core staff API did not load.");
+        if (!initialPublicRoute) {
+          setBodyError(error.message);
+          setApiError(error.message);
+          setPacketError(error.message);
+          setNoticeError(error.message);
+          setOutcomeError(error.message);
+          setMinutesError(error.message);
+          setApiState("error");
+          setBodyState("error");
+          setPacketState("error");
+          setNoticeState("error");
+          setOutcomeState("error");
+          setMinutesState("error");
+          setVendorSyncState("error");
+          setVendorSyncError("Vendor sync health was not checked because the core staff API did not load.");
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [initial.source]);
+  }, [initial.source, initialPublicRoute]);
 
   useEffect(() => {
     if (initial.source === "demo" || qaState !== null || isPage(page, "public", "public-calendar", "public-detail")) {

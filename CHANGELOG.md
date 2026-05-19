@@ -4,6 +4,17 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- Fixed the Docker/nginx product path so React `/api/...` workflow calls are
+  forwarded to the FastAPI backend without the browser-only `/api` prefix.
+- Fixed direct `/public` browser loads so the resident portal loads only public
+  meeting archive APIs instead of firing protected staff workspace requests.
+- Updated the health endpoint regression so it verifies the CivicCore version
+  actually loaded by the runtime while the package dependency pin remains
+  checked separately.
+- Made the Bash backup/restore wrapper regression skip when Windows exposes
+  `bash.exe` but the WSL service itself is unavailable.
+
 ## [1.0.1] - 2026-05-10
 
 ### Security

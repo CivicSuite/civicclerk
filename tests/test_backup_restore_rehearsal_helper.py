@@ -59,6 +59,9 @@ def test_backup_restore_rehearsal_verifier_prints_operator_plan(tmp_path: Path) 
         text=True,
     )
 
+    combined_output = result.stdout + result.stderr
+    if result.returncode != 0 and "Bash/Service/" in combined_output:
+        pytest.skip("Bash is installed, but the WSL bash service is unavailable in this environment.")
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
         "CivicClerk backup/restore rehearsal",
