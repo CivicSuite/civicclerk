@@ -1186,6 +1186,27 @@ export function App() {
       return;
     }
     let cancelled = false;
+    if (!initialPublicRoute && staffSessionState !== "success") {
+      const waitingForStaffSession = staffSessionState !== "error";
+      const message =
+        staffSessionError ??
+        "CivicClerk is confirming staff access before loading protected meeting work.";
+      setApiError(message);
+      setBodyError(message);
+      setPacketError(message);
+      setNoticeError(message);
+      setOutcomeError(message);
+      setMinutesError(message);
+      setVendorSyncError(message);
+      setApiState(waitingForStaffSession ? "loading" : "success");
+      setBodyState(waitingForStaffSession ? "loading" : "success");
+      setPacketState(waitingForStaffSession ? "loading" : "success");
+      setNoticeState(waitingForStaffSession ? "loading" : "success");
+      setOutcomeState(waitingForStaffSession ? "loading" : "success");
+      setMinutesState(waitingForStaffSession ? "loading" : "success");
+      setVendorSyncState(waitingForStaffSession ? "loading" : "success");
+      return;
+    }
     const loader = initialPublicRoute ? loadPublicData : loadWorkspaceData;
     loader(() => cancelled)
       .catch((error: Error) => {
@@ -1212,10 +1233,16 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [initial.source, initialPublicRoute]);
+  }, [initial.source, initialPublicRoute, staffSessionError, staffSessionState]);
 
   useEffect(() => {
     if (initial.source === "demo" || qaState !== null || isPage(page, "public", "public-calendar", "public-detail")) {
+      return;
+    }
+    if (staffSessionState !== "success") {
+      setVendorSyncSources([]);
+      setVendorSyncState(staffSessionState === "error" ? "success" : "loading");
+      setVendorSyncError(staffSessionError);
       return;
     }
     let cancelled = false;
@@ -1237,10 +1264,10 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [initial.source, page, qaState]);
+  }, [initial.source, page, qaState, staffSessionError, staffSessionState]);
 
   useEffect(() => {
-    if (initial.source === "demo" || qaState !== null || isPage(page, "public", "public-calendar", "public-detail")) {
+    if (initial.source === "demo" || qaState !== null || initialPublicRoute) {
       setStaffSession({
         mode: "open",
         authenticated: true,
@@ -1273,13 +1300,19 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [initial.source, page, qaState]);
+  }, [initial.source, initialPublicRoute, qaState]);
 
   useEffect(() => {
     if (initial.source === "demo" || qaState !== null || isPage(page, "public", "public-calendar", "public-detail")) {
       setIntegrationReadiness(demoIntegrationReadiness);
       setIntegrationState("success");
       setIntegrationError(null);
+      return;
+    }
+    if (staffSessionState !== "success") {
+      setIntegrationReadiness(null);
+      setIntegrationState(staffSessionState === "error" ? "success" : "loading");
+      setIntegrationError(staffSessionError);
       return;
     }
     let cancelled = false;
@@ -1300,7 +1333,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [initial.source, page, qaState]);
+  }, [initial.source, page, qaState, staffSessionError, staffSessionState]);
 
   useEffect(() => {
     if (initial.source === "demo" || qaState !== null || meetings.length === 0 || !activeMeetingId) {

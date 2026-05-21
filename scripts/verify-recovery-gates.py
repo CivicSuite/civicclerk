@@ -65,7 +65,7 @@ def main() -> int:
     for phrase in (
         "scripts/verify-recovery-gates.py",
         "scripts/verify-secret-scan.py",
-        "npm --prefix frontend run test:e2e",
+        "npm run test:e2e",
         "RUNTIME-INSTALL-PROOF: PASSED",
     ):
         if phrase not in release_gate:

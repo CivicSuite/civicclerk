@@ -912,6 +912,7 @@ describe("CivicClerk staff workspace", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Sign in again or ask IT to verify OIDC browser login configuration");
     expect(screen.getByRole("alert")).toHaveTextContent("/staff/auth-readiness");
     expect(screen.getByRole("link", { name: "Sign in with municipal SSO" })).toHaveAttribute("href", "/staff/login");
+    expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).startsWith("/api/"))).toBe(false);
   });
 
   it("routes clerks from the meeting runbook into the next safe workspace", async () => {
@@ -1388,9 +1389,26 @@ describe("CivicClerk staff workspace", () => {
   it("shows an actionable API error when live meeting loading fails", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 503,
+      vi.fn().mockImplementation((url: string) => {
+        if (url === "/staff/session") {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              mode: "oidc",
+              authenticated: true,
+              auth_method: "oidc_browser_session",
+              subject: "clerk@example.gov",
+              provider: "Brookfield Entra ID",
+              roles: ["clerk_admin", "meeting_editor"],
+              message: "Staff browser session is active.",
+              fix: "Continue with clerk workflow actions.",
+            }),
+          });
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 503,
+        });
       }),
     );
 

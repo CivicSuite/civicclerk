@@ -84,8 +84,11 @@ if [[ -f "frontend/package-lock.json" ]]; then
   npm --prefix frontend test
 
   echo "==> frontend Playwright user flows"
-  npx --prefix frontend playwright install chromium
-  npm --prefix frontend run test:e2e
+  (
+    cd frontend
+    npx playwright install chromium
+    npm run test:e2e
+  )
 fi
 
 echo "==> build dependencies"
