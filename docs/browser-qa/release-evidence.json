@@ -1,10 +1,10 @@
 {
   "page": "docs/index.html",
-  "page_sha256": "304e828c09a03d79a0746d2ffcad34f590c4fe3a5d71752685da74469e0e7306",
-  "reviewed_at": "2026-05-23T03:42:03Z",
+  "page_sha256": "91d96099a35f32ce5e8fcf0b11c83de5ef42e0ad247a3c6e65279096c05bdbb4",
+  "reviewed_at": "2026-05-23T07:51:41Z",
   "screenshots": {
-    "desktop": "docs/browser-qa-v1.0.2-release-desktop.png",
-    "mobile": "docs/browser-qa-v1.0.2-release-mobile.png"
+    "desktop": "docs/browser-qa-v1.0.3-release-desktop.png",
+    "mobile": "docs/browser-qa-v1.0.3-release-mobile.png"
   },
-  "version": "1.0.2"
+  "version": "1.0.3"
 }

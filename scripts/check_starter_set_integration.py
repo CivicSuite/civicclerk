@@ -164,7 +164,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         required_phrases = (
             "CivicCore installs first",
             "CivicRecords AI and CivicClerk are selectable",
-            "CivicClerk reports v1.0.2 with CivicCore v1.2.0",
+            "CivicClerk reports v1.0.3 with CivicCore v1.2.0",
             "--staff-mode bearer --workflow-proof",
             "Package Cleanroom Contract",
             "workflow_proof_requested=true",

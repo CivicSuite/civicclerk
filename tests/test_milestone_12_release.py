@@ -1,4 +1,4 @@
-"""Milestone 12+ v1.0.2 release contract."""
+"""Milestone 12+ v1.0.3 release contract."""
 
 from __future__ import annotations
 
@@ -31,13 +31,13 @@ def test_version_surfaces_are_synchronized_to_v101() -> None:
     )
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
 
-    assert pyproject["project"]["version"] == "1.0.2"
-    assert __version__ == "1.0.2"
-    assert "Current version: `1.0.2`" in current_docs
-    assert "Version: `1.0.2`" in current_docs
-    assert "v1.0.2" in current_docs
+    assert pyproject["project"]["version"] == "1.0.3"
+    assert __version__ == "1.0.3"
+    assert "Current version: `1.0.3`" in current_docs
+    assert "Version: `1.0.3`" in current_docs
+    assert "v1.0.3" in current_docs
     assert "0.1.0.dev0" not in current_docs
-    assert "## [1.0.2] - 2026-05-22" in changelog
+    assert "## [1.0.3] - 2026-05-23" in changelog
     assert "## [1.0.0] - 2026-05-06" in changelog
 
 
@@ -46,7 +46,7 @@ async def test_health_endpoint_reports_release_version() -> None:
         response = await client.get("/health")
 
     assert response.status_code == 200
-    assert response.json()["version"] == "1.0.2"
+    assert response.json()["version"] == "1.0.3"
 
 
 def test_verify_release_script_exists_and_mentions_all_release_gates() -> None:
@@ -91,7 +91,7 @@ def test_release_workflow_and_docs_reference_v101_release() -> None:
     assert "gh release create" in workflow
     assert "dist/*" in workflow
     assert "civiccore/releases/download/v1.2.0/civiccore-1.2.0-py3-none-any.whl" in workflow
-    assert "civicclerk v1.0.2" in docs
+    assert "civicclerk v1.0.3" in docs
     assert "published `civiccore` 1.2.0 wheel from the `v1.2.0` release asset" in docs
 
 
@@ -110,7 +110,7 @@ def test_docs_include_fresh_machine_install_and_smoke_check_contract() -> None:
     for expected in [
         "python -m venv .venv",
         ".\\.venv\\Scripts\\Activate.ps1",
-        "python -m pip install dist/civicclerk-1.0.2-py3-none-any.whl",
+        "python -m pip install dist/civicclerk-1.0.3-py3-none-any.whl",
         "python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776",
         "http://127.0.0.1:8776/health",
         "/staff/auth-readiness",
@@ -228,7 +228,7 @@ def test_fresh_install_rehearsal_script_prints_expected_plan() -> None:
         "Smoke check: GET http://127.0.0.1:8776/health",
         "Readiness check: GET http://127.0.0.1:8776/staff/auth-readiness",
         "Browser check: open http://127.0.0.1:8776/staff",
-        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"1.0.2\",\"civiccore\":\"1.2.0\"}",
+        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"1.0.3\",\"civiccore\":\"1.2.0\"}",
         "If the wheel is missing, build it first with: python -m build",
         "If port 8776 is already in use, stop the existing process or rerun with -AppPort set to an available port.",
         "pass -KeepServer to keep it running",
@@ -282,7 +282,7 @@ def test_fresh_install_rehearsal_bash_script_prints_expected_plan() -> None:
         "Smoke check: GET http://127.0.0.1:8776/health",
         "Readiness check: GET http://127.0.0.1:8776/staff/auth-readiness",
         "Browser check: open http://127.0.0.1:8776/staff",
-        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"1.0.2\",\"civiccore\":\"1.2.0\"}",
+        "Expected health: {\"status\":\"ok\",\"service\":\"civicclerk\",\"version\":\"1.0.3\",\"civiccore\":\"1.2.0\"}",
         "If the wheel is missing, build it first with: python -m build",
         "If port 8776 is already in use, stop the existing process or rerun with --app-port set to an available port.",
         "pass --keep-server to keep it running",
@@ -321,10 +321,10 @@ def test_release_handoff_bundle_script_prints_expected_plan() -> None:
     output = result.stdout
     for expected in [
         "CivicClerk release handoff bundle",
-        "Version: 1.0.2",
-        "civicclerk-1.0.2-release-handoff.zip",
-        "dist/civicclerk-1.0.2-py3-none-any.whl",
-        "dist/civicclerk-1.0.2.tar.gz",
+        "Version: 1.0.3",
+        "civicclerk-1.0.3-release-handoff.zip",
+        "dist/civicclerk-1.0.3-py3-none-any.whl",
+        "dist/civicclerk-1.0.3.tar.gz",
         "dist/SHA256SUMS.txt",
         "scripts/check_installer_readiness.py",
         "scripts/check_enterprise_installer_signing.py",
@@ -381,10 +381,10 @@ def test_release_handoff_bundle_bash_script_prints_expected_plan() -> None:
     output = result.stdout
     for expected in [
         "CivicClerk release handoff bundle",
-        "Version: 1.0.2",
-        "civicclerk-1.0.2-release-handoff.zip",
-        "dist/civicclerk-1.0.2-py3-none-any.whl",
-        "dist/civicclerk-1.0.2.tar.gz",
+        "Version: 1.0.3",
+        "civicclerk-1.0.3-release-handoff.zip",
+        "dist/civicclerk-1.0.3-py3-none-any.whl",
+        "dist/civicclerk-1.0.3.tar.gz",
         "dist/SHA256SUMS.txt",
         "scripts/check_installer_readiness.py",
         "scripts/check_enterprise_installer_signing.py",

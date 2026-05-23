@@ -13,6 +13,10 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _wsl_bash_service_unavailable(output: str) -> bool:
+    return "Bash/Service/" in output.replace("\x00", "")
+
+
 def test_backup_restore_rehearsal_verifier_creates_and_verifies_restored_stores(tmp_path: Path) -> None:
     result = subprocess.run(
         [
@@ -60,7 +64,7 @@ def test_backup_restore_rehearsal_verifier_prints_operator_plan(tmp_path: Path) 
     )
 
     combined_output = result.stdout + result.stderr
-    if result.returncode != 0 and "Bash/Service/" in combined_output:
+    if result.returncode != 0 and _wsl_bash_service_unavailable(combined_output):
         pytest.skip("Bash is installed, but the WSL bash service is unavailable in this environment.")
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
@@ -99,6 +103,9 @@ def test_backup_restore_rehearsal_powershell_wrapper_prints_expected_plan() -> N
         text=True,
     )
 
+    combined_output = result.stdout + result.stderr
+    if result.returncode != 0 and _wsl_bash_service_unavailable(combined_output):
+        pytest.skip("Bash exists but the WSL/Bash service is unavailable in this environment.")
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
         "CivicClerk backup/restore rehearsal profile",

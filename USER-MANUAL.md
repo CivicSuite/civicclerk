@@ -1,12 +1,12 @@
 # CivicClerk User Manual
 
-Status: CivicClerk v1.0.2 runtime foundation label is provisional during release recovery
-Version: `1.0.2`
+Status: CivicClerk v1.0.3 runtime foundation label is provisional during release recovery
+Version: `1.0.3`
 
 ## Release Recovery Notice
 
 CivicClerk is not product-ready for public promotion while the CivicSuite
-release recovery is active. The current `v1.0.2` recovery patch is the supported release
+release recovery is active. The current `v1.0.3` recovery patch is the supported release
 until the repo passes the recovery gates: full backend tests, frontend tests,
 tracked Playwright user-flow tests, WSL runtime install proof, consistency
 gates, security scans, docs-source parity, and explicit separation between
@@ -63,7 +63,7 @@ minutes drafting, ordinance/resolution extraction, closed-session safe
 refusal, and public plain-language meeting explanation,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
-ledgering, accessibility/browser QA gates, provisional CivicClerk v1.0.2 release
+ledgering, accessibility/browser QA gates, provisional CivicClerk v1.0.3 release
 artifacts, CivicCore 1.2.0 freeze-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
@@ -364,14 +364,14 @@ is the Windows PowerShell path:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install dist/civicclerk-1.0.2-py3-none-any.whl
+python -m pip install dist/civicclerk-1.0.3-py3-none-any.whl
 $env:CIVICCLERK_STAFF_AUTH_MODE="protected"
 python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776
 ```
 
 Then verify these first-run checks:
 
-- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"1.0.2","civiccore":"1.2.0"}`
+- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"1.0.3","civiccore":"1.2.0"}`
 - `GET /staff/auth-readiness` returns `mode: "protected"` and explains that anonymous staff writes are denied until OIDC, bearer, or trusted-header deployment is configured
 - `GET /staff` renders the first workflow shell without console errors
 
@@ -422,7 +422,7 @@ wheel, source distribution, checksums, current docs, trusted-header reference,
 installer-readiness helper, enterprise signing-readiness helper, and install rehearsal helpers. After
 `bash scripts/verify-release.sh` has built `dist/`, rerun without `-PrintOnly`
 or `--print-only` to create
-`dist/civicclerk-1.0.2-release-handoff.zip`. If that zip already exists, the
+`dist/civicclerk-1.0.3-release-handoff.zip`. If that zip already exists, the
 helpers stop instead of overwriting it.
 
 After the handoff zip exists, verify the installer input contract:
@@ -754,7 +754,7 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v1.0.2.
+builds release artifacts and checksums, and publishes CivicClerk v1.0.3.
 CC-7 extends browser QA to every named spec page through
 `node scripts/capture-cc7-browser-qa.mjs`; the verification script requires the
 resulting 200-case ledger before browser-visible changes can merge.
