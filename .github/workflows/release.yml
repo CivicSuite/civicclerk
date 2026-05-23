@@ -13,10 +13,15 @@ jobs:
   preflight:
     name: Preflight release provenance fixtures
     runs-on: [self-hosted, linux, x64]
+    defaults:
+      run:
+        working-directory: civicclerk-release-${{ github.run_id }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          clean: false
+          path: civicclerk-release-${{ github.run_id }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -27,17 +32,22 @@ jobs:
         with:
           repository: CivicSuite/civiccore
           ref: v1.2.0
-          path: .tmp-civiccore
+          path: civicclerk-release-${{ github.run_id }}/.tmp-civiccore
       - name: Verify adversarial release provenance fixtures
         run: python scripts/verify-release-provenance.py --fixtures-dir .tmp-civiccore/tests/fixtures/release_provenance
 
   verify-build:
     runs-on: [self-hosted, linux, x64]
     needs: preflight
+    defaults:
+      run:
+        working-directory: civicclerk-release-${{ github.run_id }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          clean: false
+          path: civicclerk-release-${{ github.run_id }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
@@ -102,9 +112,9 @@ jobs:
         with:
           name: civicclerk-release-dist
           path: |
-            dist/*
-            release-attestation.json
-            release-attestation.json.bundle
+            civicclerk-release-${{ github.run_id }}/dist/*
+            civicclerk-release-${{ github.run_id }}/release-attestation.json
+            civicclerk-release-${{ github.run_id }}/release-attestation.json.bundle
       - name: Publish GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
