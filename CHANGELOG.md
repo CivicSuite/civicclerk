@@ -4,13 +4,16 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
-## [1.0.2] - 2026-05-22
+## [1.0.3] - 2026-05-23
 
 ### Changed
 - Bumped the CivicCore dependency to the published v1.2.0 release wheel for the city-core release train.
-- Carried forward the post-v1.0.1 staff-session and browser-path fixes into the v1.0.2 release surface.
+- Carried forward the post-v1.0.1 staff-session and browser-path fixes into the v1.0.3 release surface.
+- Supersedes the failed, unpublished v1.0.2 tag attempt without rewriting the v1.0.2 tag.
 
 ### Fixed
+- Isolated release workflow checkouts into per-run workspaces so self-hosted
+  runner leftovers cannot block release asset publication.
 - Fixed the Docker/nginx product path so React `/api/...` workflow calls are
   forwarded to the FastAPI backend without the browser-only `/api` prefix.
 - Fixed direct `/public` browser loads so the resident portal loads only public
