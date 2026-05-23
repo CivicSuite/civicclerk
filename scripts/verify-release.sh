@@ -173,7 +173,7 @@ health = client.get("/health")
 assert health.status_code == 200, health.text
 payload = health.json()
 assert payload["status"] == "ok", payload
-assert payload["version"] == "1.0.1", payload
+assert payload["version"] == "1.0.2", payload
 staff = client.get("/staff")
 assert staff.status_code == 200, staff.text[:300]
 print("RUNTIME-INSTALL-PROOF: PASSED")

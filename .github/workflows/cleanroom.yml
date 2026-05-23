@@ -26,10 +26,13 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: read
+    defaults:
+      run:
+        working-directory: civicclerk-cleanroom-${{ github.run_id }}
     env:
       CC1_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || inputs.commit || github.sha }}
       CLEANROOM_RUN_COUNT: "2"
-      CIVICCORE_FREEZE_REF: v1.0.1
+      CIVICCORE_FREEZE_REF: v1.2.0
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Check out harness
@@ -37,6 +40,8 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+          clean: false
+          path: civicclerk-cleanroom-${{ github.run_id }}
       - name: Verify Docker is available
         run: docker version
       - name: Run CivicClerk cleanroom harness
@@ -45,4 +50,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: civicclerk-cc1-cleanroom-${{ env.CC1_SHA }}
-          path: docs/evidence/cc1-ci-${{ env.CC1_SHA }}/
+          path: civicclerk-cleanroom-${{ github.run_id }}/docs/evidence/cc1-ci-${{ env.CC1_SHA }}/

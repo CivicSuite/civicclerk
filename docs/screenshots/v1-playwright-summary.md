@@ -1,7 +1,7 @@
 # CivicClerk v1.0 Playwright Walkthrough
 
 - Tool: Playwright
-- Version: 1.0.1
+- Version: 1.0.2
 - Routes: 20
 - Success route cases: 40
 - State cases: 15

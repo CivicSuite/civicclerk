@@ -1,6 +1,6 @@
 {
   "product": "CivicClerk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "reviewed_at": "2026-05-06T16:37:53.933Z",
   "tool": "playwright",
   "baseURL": "http://127.0.0.1:4180",

@@ -5,7 +5,7 @@ FROM --platform=linux/amd64 node:24-bookworm-slim@sha256:03eae3ef7e88a9de535496f
 ARG CIVICCLERK_REPO_URL=https://github.com/CivicSuite/civicclerk.git
 ARG CIVICCLERK_COMMIT
 ARG CIVICCORE_REPO_URL=https://github.com/CivicSuite/civiccore.git
-ARG CIVICCORE_FREEZE_REF=v1.0.1
+ARG CIVICCORE_FREEZE_REF=v1.2.0
 ARG COSIGN_VERSION=v3.0.6
 ARG COSIGN_SHA256=c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74
 
@@ -22,9 +22,9 @@ RUN apt-get update \
         build-essential \
         ca-certificates \
         curl \
-        docker.io \
         git \
         gzip \
+        gnupg \
         openssl \
         python3 \
         python3-venv \
@@ -34,6 +34,15 @@ RUN apt-get update \
 RUN python3 -m venv /opt/civicclerk-venv \
     && /opt/civicclerk-venv/bin/python -m pip install --upgrade pip
 ENV PATH="/opt/civicclerk-venv/bin:${PATH}"
+
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg \
+        -o /etc/apt/keyrings/docker.asc \
+    && chmod a+r /etc/apt/keyrings/docker.asc \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable" \
+        > /etc/apt/sources.list.d/docker.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends docker-ce-cli
 
 RUN docker --version
 

@@ -32,8 +32,8 @@ Required stable comparison surface:
 
 Upstream trust anchor:
 
-- CivicCore release tag: `v1.0`,
+- CivicCore release tag: `v1.2.0`,
 - CivicCore package asset: `civiccore-1.0.0-py3-none-any.whl`,
 - expected Sigstore identity:
-  `https://github.com/CivicSuite/civiccore/.github/workflows/release.yml@refs/tags/v1.0`,
+  `https://github.com/CivicSuite/civiccore/.github/workflows/release.yml@refs/tags/v1.2.0`,
 - expected issuer: `https://token.actions.githubusercontent.com`.

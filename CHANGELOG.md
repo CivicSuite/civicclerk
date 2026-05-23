@@ -4,6 +4,12 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-05-22
+
+### Changed
+- Bumped the CivicCore dependency to the published v1.2.0 release wheel for the city-core release train.
+- Carried forward the post-v1.0.1 staff-session and browser-path fixes into the v1.0.2 release surface.
+
 ### Fixed
 - Fixed the Docker/nginx product path so React `/api/...` workflow calls are
   forwarded to the FastAPI backend without the browser-only `/api` prefix.

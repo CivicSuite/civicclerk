@@ -5,9 +5,12 @@ Status: Accepted
 ## Context
 
 CivicClerk needs packet documents, minutes source material, archive search, and
-permission-aware public/staff access. CivicCore 1.0.1 ships search helpers but
-no document-table package, while `civiccore.ingest`, `civiccore.exports`, and
+permission-aware public/staff access. CivicCore 1.2.0 ships search helpers and
+shared ingestion/document-chunk primitives, while `civiccore.exports` and
 `civiccore.provenance` cover cited source material and records-ready bundles.
+CivicClerk v1.0.2 keeps meeting packet and archive document references
+module-local until its own release train migrates those records to shared
+document foreign keys.
 
 ## Decision
 
