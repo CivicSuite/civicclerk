@@ -53,7 +53,8 @@ def test_cleanroom_dockerfile_pins_base_image_cosign_and_target_commit() -> None
     assert "ARG COSIGN_VERSION=v3.0.6" in dockerfile
     assert "ARG COSIGN_SHA256=c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74" in dockerfile
     assert "ARG CIVICCORE_FREEZE_REF=v1.2.0" in dockerfile
-    assert "docker.io" in dockerfile
+    assert "download.docker.com/linux/debian" in dockerfile
+    assert "docker-ce-cli" in dockerfile
     assert "git fetch --depth 1 origin \"${CIVICCLERK_COMMIT}\"" in dockerfile
     assert 'test "$(git rev-parse HEAD)" = "${CIVICCLERK_COMMIT}"' in dockerfile
     assert "install -m 0755 scripts/cleanroom/civicclerk-cleanroom-runner.sh" in dockerfile

@@ -22,9 +22,9 @@ RUN apt-get update \
         build-essential \
         ca-certificates \
         curl \
-        docker.io \
         git \
         gzip \
+        gnupg \
         openssl \
         python3 \
         python3-venv \
@@ -34,6 +34,15 @@ RUN apt-get update \
 RUN python3 -m venv /opt/civicclerk-venv \
     && /opt/civicclerk-venv/bin/python -m pip install --upgrade pip
 ENV PATH="/opt/civicclerk-venv/bin:${PATH}"
+
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg \
+        -o /etc/apt/keyrings/docker.asc \
+    && chmod a+r /etc/apt/keyrings/docker.asc \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable" \
+        > /etc/apt/sources.list.d/docker.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends docker-ce-cli
 
 RUN docker --version
 
