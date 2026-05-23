@@ -16,7 +16,7 @@ The check verifies that:
 
 - the umbrella `clerk-core` profile installs CivicCore first, then CivicRecords
   AI, then CivicClerk;
-- CivicClerk is selectable at v1.0.1 and records the CivicCore 1.0.1 runtime
+- CivicClerk is selectable at v1.0.2 and records the CivicCore 1.2.0 runtime
   dependency used by the current module release;
 - CivicRecords AI is paired at v1.6.1;
 - the umbrella release contract requires package workflow proof with

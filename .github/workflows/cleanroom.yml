@@ -29,7 +29,7 @@ jobs:
     env:
       CC1_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || inputs.commit || github.sha }}
       CLEANROOM_RUN_COUNT: "2"
-      CIVICCORE_FREEZE_REF: v1.0.1
+      CIVICCORE_FREEZE_REF: v1.2.0
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Check out harness

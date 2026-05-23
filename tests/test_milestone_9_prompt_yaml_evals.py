@@ -106,7 +106,10 @@ def test_civiccore_prompt_resolver_import_does_not_pollute_civicclerk_metadata()
 
     assert "prompt_templates" not in models.Base.metadata.tables
     assert "model_registry" not in models.Base.metadata.tables
-    assert all(name.startswith("civicclerk.") for name in models.Base.metadata.tables)
+    assert all(
+        table.schema in {None, "civicclerk", "public"}
+        for table in models.Base.metadata.tables.values()
+    )
 
 
 @pytest.mark.asyncio

@@ -33,9 +33,9 @@ def _write_umbrella_fixture(root: Path) -> None:
                     },
                     {
                         "id": "civicclerk",
-                        "current_version": "1.0.1",
+                        "current_version": "1.0.2",
                         "selectable": True,
-                        "civiccore_requirement": "1.0.1",
+                        "civiccore_requirement": "1.2.0",
                         "dependencies": ["civiccore"],
                     },
                 ],
@@ -48,7 +48,7 @@ def _write_umbrella_fixture(root: Path) -> None:
             [
                 "CivicCore installs first",
                 "CivicRecords AI and CivicClerk are selectable",
-                "CivicClerk reports v1.0.1 with CivicCore v1.0.1",
+                "CivicClerk reports v1.0.2 with CivicCore v1.2.0",
                 "--staff-mode bearer --workflow-proof",
                 "Package Cleanroom Contract",
                 "workflow_proof_requested=true",

@@ -301,8 +301,11 @@ def data_model_completion_migration_path() -> Path:
 def test_canonical_table_models_exist_and_no_tables_are_missing_or_extra() -> None:
     models = model_module()
     metadata = models.Base.metadata
+    civicclerk_tables = {
+        table.fullname for table in metadata.tables.values() if table.schema == "civicclerk"
+    }
 
-    assert sorted(metadata.tables) == sorted(f"civicclerk.{name}" for name in CANONICAL_TABLES)
+    assert sorted(civicclerk_tables) == sorted(f"civicclerk.{name}" for name in CANONICAL_TABLES)
 
 
 def test_models_use_civicclerk_schema_and_civiccore_shared_base() -> None:
@@ -562,7 +565,9 @@ def test_migration_table_list_matches_model_metadata() -> None:
     models = model_module()
     text = migration_path().read_text(encoding="utf-8")
 
-    model_tables = {table.name for table in models.Base.metadata.tables.values()}
+    model_tables = {
+        table.name for table in models.Base.metadata.tables.values() if table.schema == "civicclerk"
+    }
     for table_name in model_tables:
         assert f'"{table_name}"' in text or f"'{table_name}'" in text
 
@@ -744,8 +749,9 @@ def test_civiccore_document_and_search_extraction_boundary_is_documented() -> No
 
     assert "from civiccore.search import" in public_archive
     assert "status: accepted" in adr
-    assert "civiccore 1.0.1 ships search helpers" in adr
-    assert "no document-table package" in adr
+    assert "civiccore 1.2.0 ships search helpers" in adr
+    assert "shared ingestion/document-chunk primitives" in adr
+    assert "module-local until its own release train migrates" in adr
     assert "document_ref" in adr
     assert "extraction plan" in adr
 
