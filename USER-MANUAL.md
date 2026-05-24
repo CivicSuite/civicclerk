@@ -218,13 +218,16 @@ approver, create a cited draft through the live minutes API, and see the public
 posting gate explain that AI-drafted minutes cannot bypass human adoption.
 
 The admin settings surface now includes integration-depth readiness from
-`/integrations/readiness`. It shows no-network contracts for CivicRecords
-search, CivicCode adopted-action handoff, codification-system fallback export,
-city website CMS posting, and vendor live API adapters. These contracts let IT
-and clerks see that CivicClerk has finished its side of each seam without
-requiring the adjacent CivicSuite module, city CMS, codifier, or vendor tenant
-to be live. Real endpoints should be enabled only after adversarial mocks pass
-and credentials are stored outside the repository.
+`/integrations/readiness`. It shows contracts for CivicRecords search,
+CivicCode adopted-action handoff, codification-system fallback export, city
+website CMS posting, and vendor live API adapters. CivicCode handoff now has a
+live emitter when `CIVICCODE_INTAKE_URL` and `CIVICCODE_INTAKE_SECRET` are
+configured; otherwise handoff records stay local and visibly show
+`EMIT_SKIPPED_UNCONFIGURED`. Failed emissions show `EMIT_FAILED`,
+`civiccode_handoff_last_error`, and `civiccode_handoff_last_attempt_at`, and can
+be retried with
+`POST /meetings/{meeting_id}/ordinance-resolution-handoff/retry` after the
+operator fixes the URL, shared value, or CivicCode health issue.
 The Vendor Sync React surface is now present: IT staff can open Vendor Sync
 from the React navigation, register an approved Granicus, Legistar, PrimeGov,
 or NovusAgenda source without making a vendor call, record run outcomes into

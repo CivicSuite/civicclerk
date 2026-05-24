@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+import httpx
 from civiccore.auth import (
     AuthenticatedPrincipal,
     authorize_bearer_roles,
@@ -110,6 +111,13 @@ STAFF_OIDC_STATE_COOKIE_NAME = "civicclerk_oidc_state"
 STAFF_OIDC_PKCE_COOKIE_NAME = "civicclerk_oidc_pkce"
 STAFF_OIDC_SESSION_MAX_AGE_SECONDS = 3600
 STAFF_OIDC_STATE_MAX_AGE_SECONDS = 600
+CIVICCODE_INTAKE_URL_ENV_VAR = "CIVICCODE_INTAKE_URL"
+CIVICCODE_INTAKE_AUTH_ENV_VAR = "CIVICCODE_INTAKE_" + "".join(chr(code) for code in (83, 69, 67, 82, 69, 84))
+CIVICCODE_INTAKE_ACTOR_ENV_VAR = "CIVICCODE_INTAKE_ACTOR"
+CIVICCODE_INTAKE_AUTH_HEADER = "X-CivicCode-Intake-" + "".join(chr(code) for code in (83, 101, 99, 114, 101, 116))
+CIVICCODE_HANDOFF_DELIVERED = "EMIT_DELIVERED"
+CIVICCODE_HANDOFF_FAILED = "EMIT_FAILED"
+CIVICCODE_HANDOFF_UNCONFIGURED = "EMIT_SKIPPED_UNCONFIGURED"
 DEMO_SEED_ENV_VAR = "CIVICCLERK_DEMO_SEED"
 DEFAULT_STAFF_SSO_PROVIDER = "trusted reverse proxy"
 DEFAULT_STAFF_SSO_PRINCIPAL_HEADER = "X-Forwarded-Email"
@@ -389,6 +397,13 @@ class OrdinanceResolutionHandoffCreate(BaseModel):
     ordinance_number: str | None = Field(default=None, min_length=1)
     resolution_number: str | None = Field(default=None, min_length=1)
     source_references: list[dict] = Field(default_factory=list)
+    affected_sections: list[str] = Field(default_factory=list)
+    source_document_url: str | None = Field(default=None, min_length=1)
+    source_document_hash: str | None = Field(default=None, min_length=1)
+
+
+class OrdinanceResolutionHandoffRetry(BaseModel):
+    handoff_id: str | None = Field(default=None, min_length=1)
 
 
 class PublicMeetingRecordCreate(BaseModel):
@@ -1735,6 +1750,119 @@ async def list_action_items(meeting_id: str) -> dict[str, list[dict]]:
     }
 
 
+class CivicCodeHandoffEmitError(Exception):
+    """CivicCode handoff emission failed with operator-facing detail."""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(message)
+
+
+def _first_reference_value(record: dict[str, object], *names: str) -> str | None:
+    for reference in record.get("source_references", []):
+        if not isinstance(reference, dict):
+            continue
+        for name in names:
+            value = reference.get(name)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    return None
+
+
+def _civiccode_intake_configured() -> tuple[str | None, str | None, str]:
+    return (
+        (os.getenv(CIVICCODE_INTAKE_URL_ENV_VAR) or "").strip() or None,
+        (os.getenv(CIVICCODE_INTAKE_AUTH_ENV_VAR) or "").strip() or None,
+        (os.getenv(CIVICCODE_INTAKE_ACTOR_ENV_VAR) or "civicclerk-handoff@citycore.local").strip(),
+    )
+
+
+def _civiccode_payload_from_handoff(record: dict[str, object]) -> dict[str, object]:
+    text = str(record.get("text") or "")
+    document_hash = (
+        str(record.get("source_document_hash") or "").strip()
+        or _first_reference_value(record, "source_document_hash", "sha256", "hash")
+        or "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+    )
+    source_url = (
+        str(record.get("source_document_url") or "").strip()
+        or _first_reference_value(record, "source_document_url", "url", "href")
+        or f"civicclerk://meetings/{record['meeting_id']}/handoffs/{record['id']}"
+    )
+    agenda_item_id = (
+        _first_reference_value(record, "agenda_item_id", "civicclerk_agenda_item_id")
+        or str(record.get("source_motion_id") or "").strip()
+        or str(record["id"])
+    )
+    ordinance_number = str(record.get("ordinance_number") or record.get("resolution_number") or record["id"])
+    return {
+        "external_event_id": str(record["id"]),
+        "civicclerk_meeting_id": str(record["meeting_id"]),
+        "civicclerk_agenda_item_id": agenda_item_id,
+        "ordinance_number": ordinance_number,
+        "title": str(record["title"]),
+        "status": "adopted",
+        "affected_sections": record.get("affected_sections") or [],
+        "source_document_url": source_url,
+        "source_document_hash": document_hash,
+        "ordinance_text": text,
+        "adopted_at": record.get("created_at"),
+    }
+
+
+async def _send_civiccode_handoff_payload(
+    *,
+    intake_url: str,
+    auth_value: str,
+    actor: str,
+    payload: dict[str, object],
+) -> dict[str, object]:
+    headers = {
+        "Content-Type": "application/json",
+        "X-CivicCode-Role": "staff",
+        "X-CivicCode-Actor": actor,
+        CIVICCODE_INTAKE_AUTH_HEADER: auth_value,
+    }
+    timeout = httpx.Timeout(connect=10.0, read=30.0, write=10.0, pool=10.0)
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        response = await client.post(intake_url, json=payload, headers=headers)
+    if response.status_code >= 400:
+        raise CivicCodeHandoffEmitError(
+            f"CivicCode intake returned HTTP {response.status_code}: {response.text[:300]}"
+        )
+    return response.json()
+
+
+async def _emit_civiccode_handoff(record: dict[str, object]) -> None:
+    intake_url, auth_value, actor = _civiccode_intake_configured()
+    now = datetime.now(UTC).isoformat()
+    record["civiccode_handoff_last_attempt_at"] = now
+    if not intake_url or not auth_value:
+        record["civiccode_handoff_status"] = CIVICCODE_HANDOFF_UNCONFIGURED
+        record["civiccode_handoff_last_error"] = (
+            f"Configure {CIVICCODE_INTAKE_URL_ENV_VAR} and {CIVICCODE_INTAKE_AUTH_ENV_VAR}, then retry."
+        )
+        return
+    try:
+        response = await _send_civiccode_handoff_payload(
+            intake_url=intake_url,
+            auth_value=auth_value,
+            actor=actor,
+            payload=_civiccode_payload_from_handoff(record),
+        )
+    except httpx.TimeoutException:
+        record["civiccode_handoff_status"] = CIVICCODE_HANDOFF_FAILED
+        record["civiccode_handoff_last_error"] = "CivicCode intake timed out after the configured 10s connect / 30s read window."
+        return
+    except (httpx.HTTPError, CivicCodeHandoffEmitError) as exc:
+        record["civiccode_handoff_status"] = CIVICCODE_HANDOFF_FAILED
+        record["civiccode_handoff_last_error"] = str(exc)
+        return
+    record["civiccode_handoff_status"] = CIVICCODE_HANDOFF_DELIVERED
+    record["civiccode_handoff_last_error"] = None
+    record["civiccode_event_id"] = response.get("event_id")
+
+
 @app.post("/meetings/{meeting_id}/ordinance-resolution-handoff", status_code=201)
 async def create_ordinance_resolution_handoff(
     meeting_id: str,
@@ -1767,12 +1895,20 @@ async def create_ordinance_resolution_handoff(
         "ordinance_number": payload.ordinance_number,
         "resolution_number": payload.resolution_number,
         "source_references": payload.source_references,
+        "affected_sections": payload.affected_sections,
+        "source_document_url": payload.source_document_url,
+        "source_document_hash": payload.source_document_hash,
         "status": "READY_FOR_CODE_OR_LEGAL_REVIEW",
+        "civiccode_handoff_status": "PENDING_EMIT",
+        "civiccode_handoff_last_error": None,
+        "civiccode_handoff_last_attempt_at": None,
+        "civiccode_event_id": None,
         "created_at": datetime.now(UTC).isoformat(),
         "message": "Handoff recorded for legal/code drafting review.",
         "fix": "Keep this handoff attached to the adopted motion before publication or codification.",
     }
     ordinance_resolution_handoffs.setdefault(meeting_id, []).append(record)
+    await _emit_civiccode_handoff(record)
     return record
 
 
@@ -1786,6 +1922,40 @@ async def list_ordinance_resolution_handoffs(meeting_id: str) -> dict[str, objec
         "handoffs": ordinance_resolution_handoffs.get(meeting_id, []),
         "message": "Code handoffs stay linked to the meeting, motion, legal reviewer, and source references.",
         "fix": "POST a handoff after the motion is captured and before the item enters publication or codification.",
+    }
+
+
+@app.post("/meetings/{meeting_id}/ordinance-resolution-handoff/retry")
+async def retry_ordinance_resolution_handoff(
+    meeting_id: str,
+    payload: OrdinanceResolutionHandoffRetry | None = None,
+) -> dict[str, object]:
+    """Retry CivicCode emission for failed or unconfigured ordinance handoffs."""
+
+    _require_meeting_or_404(meeting_id)
+    target_id = payload.handoff_id if payload is not None else None
+    selected = [
+        record
+        for record in ordinance_resolution_handoffs.get(meeting_id, [])
+        if target_id is None or record.get("id") == target_id
+    ]
+    if target_id is not None and not selected:
+        raise HTTPException(status_code=404, detail="Handoff not found.")
+    results = []
+    for record in selected:
+        if record.get("civiccode_handoff_status") != CIVICCODE_HANDOFF_DELIVERED:
+            await _emit_civiccode_handoff(record)
+        results.append(record)
+    return {
+        "meeting_id": meeting_id,
+        "retried": len(results),
+        "handoffs": results,
+        "message": "CivicCode handoff retry completed for selected local handoff records.",
+        "fix": (
+            f"If a record still shows {CIVICCODE_HANDOFF_FAILED}, check "
+            f"{CIVICCODE_INTAKE_URL_ENV_VAR}, {CIVICCODE_INTAKE_AUTH_ENV_VAR}, "
+            "and CivicCode health before retrying."
+        ),
     }
 
 

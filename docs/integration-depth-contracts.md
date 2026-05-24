@@ -10,7 +10,8 @@ is required for release.
 
 ## CivicRecords Search Bridge
 
-Status: ready by contract and mock.
+Status: live emitter available when configured; local queue remains available
+when CivicCode is absent or unreachable.
 
 Supported operations:
 
@@ -32,7 +33,7 @@ Status: ready by contract and mock.
 
 Supported operations:
 
-- ordinance/resolution payload export
+- ordinance/resolution payload export to CivicCode
 - legal reviewer and motion provenance
 - idempotency key generation
 - retry/audit ledger shape
@@ -41,9 +42,12 @@ If CivicCode is absent, CivicClerk stores handoffs locally as
 `READY_FOR_CODE_OR_LEGAL_REVIEW` and keeps a file-export path available until
 CivicCode is reachable.
 
-Operator path: after CivicCode is deployed, point the handoff client at the
-CivicCode intake endpoint and replay pending handoff records with their stable
-idempotency keys.
+Operator path: configure `CIVICCODE_INTAKE_URL` and the matching
+`CIVICCODE_INTAKE_SECRET` value that CivicCode expects. New
+ordinance/resolution handoffs emit immediately to the configured CivicCode
+intake endpoint. Failed or unconfigured handoffs remain visible on the local
+record as `EMIT_FAILED` or `EMIT_SKIPPED_UNCONFIGURED`; operators can retry
+with `POST /meetings/{meeting_id}/ordinance-resolution-handoff/retry`.
 
 ## Codification-System Fallback Export
 

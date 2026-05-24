@@ -679,6 +679,13 @@
             "title": "Actor",
             "type": "string"
           },
+          "affected_sections": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Affected Sections",
+            "type": "array"
+          },
           "item_type": {
             "pattern": "^(ordinance|resolution)$",
             "title": "Item Type",
@@ -712,6 +719,30 @@
               }
             ],
             "title": "Resolution Number"
+          },
+          "source_document_hash": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Document Hash"
+          },
+          "source_document_url": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Document Url"
           },
           "source_motion_id": {
             "anyOf": [
@@ -752,6 +783,24 @@
           "text"
         ],
         "title": "OrdinanceResolutionHandoffCreate",
+        "type": "object"
+      },
+      "OrdinanceResolutionHandoffRetry": {
+        "properties": {
+          "handoff_id": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Handoff Id"
+          }
+        },
+        "title": "OrdinanceResolutionHandoffRetry",
         "type": "object"
       },
       "PacketAssemblyCreate": {
@@ -3109,6 +3158,65 @@
           }
         },
         "summary": "Create Ordinance Resolution Handoff"
+      }
+    },
+    "/meetings/{meeting_id}/ordinance-resolution-handoff/retry": {
+      "post": {
+        "description": "Retry CivicCode emission for failed or unconfigured ordinance handoffs.",
+        "operationId": "retry_ordinance_resolution_handoff_meetings__meeting_id__ordinance_resolution_handoff_retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/OrdinanceResolutionHandoffRetry"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Retry Ordinance Resolution Handoff Meetings  Meeting Id  Ordinance Resolution Handoff Retry Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retry Ordinance Resolution Handoff"
       }
     },
     "/meetings/{meeting_id}/packet-assemblies": {

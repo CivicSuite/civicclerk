@@ -4,6 +4,18 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Added
+- Added the live CivicCode handoff emitter for adopted ordinance/resolution
+  handoffs. When `CIVICCODE_INTAKE_URL` and `CIVICCODE_INTAKE_SECRET` are
+  configured, successful local handoff creation posts the existing CivicCode
+  intake contract, records delivered/failed/unconfigured status on the local
+  handoff record, and exposes a manual retry endpoint for operator-controlled
+  recovery.
+
+### Fixed
+- Isolated the static staff workflow UI test from process-local meeting outcome
+  records so the full release gate verifies the empty-state contract reliably.
+
 ## [1.0.3] - 2026-05-23
 
 ### Changed
