@@ -6,6 +6,7 @@ from pathlib import Path
 
 from httpx import ASGITransport, AsyncClient
 
+import civicclerk.main as main_module
 from civicclerk.main import app
 
 
@@ -14,6 +15,8 @@ VERSION = "1.0.3"
 
 
 async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> None:
+    main_module.motion_votes = main_module.MotionVoteStore()
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/staff")
 
