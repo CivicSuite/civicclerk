@@ -11,8 +11,8 @@ connector-imports/
 *.log
 *.tmp
 .tmp-edge-*/
-.tmp-browser-qa-scheduling/
-.tmp-browser-qa-agenda/
-.tmp-browser-qa-promotion/
+.tmp-browser-qa-*/
+docs/playwright-report/
+frontend/test-results/
 
 .agent-runs/
