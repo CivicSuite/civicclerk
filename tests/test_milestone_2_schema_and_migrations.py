@@ -4,6 +4,7 @@ import ast
 import importlib
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import time
 import uuid
@@ -32,6 +33,11 @@ CANONICAL_TABLES = [
     "ordinances_adopted",
     "closed_sessions",
 ]
+
+
+def docker_command(*args: str) -> list[str]:
+    configured = os.environ.get("CIVICCLERK_DOCKER_COMMAND", "docker")
+    return [*shlex.split(configured), *args]
 
 REQUIRED_COLUMNS = {
     "meeting_bodies": {"id", "name", "body_type", "is_active", "created_at", "updated_at"},
@@ -397,8 +403,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
     name = f"civicclerk-m2-{uuid.uuid4().hex[:12]}"
     docker_host = os.environ.get("CIVICCLERK_DOCKER_HOST_ADDRESS", "127.0.0.1")
     subprocess.run(
-        [
-            "docker",
+        docker_command(
             "run",
             "--name",
             name,
@@ -412,7 +417,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
             "5432",
             "-d",
             "pgvector/pgvector:pg17",
-        ],
+        ),
         check=True,
         capture_output=True,
         text=True,
@@ -420,7 +425,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
 
     try:
         mapped = subprocess.run(
-            ["docker", "port", name, "5432/tcp"],
+            docker_command("port", name, "5432/tcp"),
             check=True,
             capture_output=True,
             text=True,
@@ -544,7 +549,12 @@ def test_alembic_command_upgrades_real_pgvector_database(
         assert reupgraded_revision == "civicclerk_0011_data_model"
         assert {"agenda_item_ids", "snapshot_hash", "actor"} <= reupgraded_packet_columns
     finally:
-        subprocess.run(["docker", "rm", "-f", name], check=False, capture_output=True, text=True)
+        subprocess.run(
+            docker_command("rm", "-f", name),
+            check=False,
+            capture_output=True,
+            text=True,
+        )
 
 
 def test_first_migration_declares_revision_and_creates_all_canonical_tables_idempotently() -> None:
