@@ -7,7 +7,6 @@ import hashlib
 import json
 import os
 import secrets
-import sys
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -31,19 +30,10 @@ try:
         validate_suite_session_token,
     )
 except ModuleNotFoundError:
-    from civicclerk import suite_session_compat as _suite_session_compat
     from civicclerk.suite_session_compat import (
         SuiteSessionConfigError,
         validate_suite_session_token,
     )
-
-    sys.modules.setdefault("civiccore.auth.suite_session", _suite_session_compat)
-    try:
-        import civiccore.auth as _civiccore_auth
-
-        setattr(_civiccore_auth, "suite_session", _suite_session_compat)
-    except Exception:
-        pass
 from civiccore.security import normalize_trusted_proxy_cidrs
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -2457,7 +2447,7 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
 def _try_authorize_suite_session(
     credentials: HTTPAuthorizationCredentials,
 ) -> AuthenticatedPrincipal | None:
-    if credentials.scheme.lower() != "bearer" or not credentials.credentials:
+    if credentials.scheme.lower() != STAFF_BEARER_MODE or not credentials.credentials:
         return None
     try:
         principal = validate_suite_session_token(
