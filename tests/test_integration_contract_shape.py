@@ -30,7 +30,7 @@ def test_integration_contracts_cover_unified_spec_depth_boundaries() -> None:
         assert contract.adversarial_scenarios
 
 
-def test_integration_adversarial_checks_are_actionable_and_no_network() -> None:
+def test_supplemental_regression_checks_are_actionable_and_skip_network() -> None:
     checks = run_integration_adversarial_checks()
 
     assert checks

@@ -64,11 +64,16 @@ def validate_suite_session_token(
     """Validate a suite bearer token and enforce at least one required role."""
 
     try:
+        header = jwt.get_unverified_header(token)
+        if header != {"alg": SUITE_SESSION_ALGORITHM, "typ": "JWT"}:
+            raise PermissionError("suite session token has an unsupported header")
         claims = jwt.decode(
             token,
             _suite_session_signing_value(),
             algorithms=[SUITE_SESSION_ALGORITHM],
         )
+    except PermissionError:
+        raise
     except jwt.ExpiredSignatureError as exc:
         raise PermissionError("suite session token expired") from exc
     except jwt.InvalidSignatureError as exc:

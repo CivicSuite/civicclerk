@@ -26,11 +26,13 @@ from civiccore.auth import (
 )
 try:
     from civiccore.auth.suite_session import (
+        revoke_suite_session,
         SuiteSessionConfigError,
         validate_suite_session_token,
     )
 except ModuleNotFoundError:
     from civicclerk.suite_session_compat import (
+        revoke_suite_session,
         SuiteSessionConfigError,
         validate_suite_session_token,
     )
@@ -122,7 +124,7 @@ STAFF_OIDC_PKCE_COOKIE_NAME = "civicclerk_oidc_pkce"
 STAFF_OIDC_SESSION_MAX_AGE_SECONDS = 3600
 STAFF_OIDC_STATE_MAX_AGE_SECONDS = 600
 CIVICCODE_INTAKE_URL_ENV_VAR = "CIVICCODE_INTAKE_URL"
-CIVICCODE_INTAKE_AUTH_ENV_VAR = "CIVICCODE_INTAKE_" + "".join(chr(code) for code in (83, 69, 67, 82, 69, 84))
+CIVICCODE_INTAKE_AUTH_ENV_VAR = "CIVICCODE_INTAKE_SECRET"
 CIVICCODE_INTAKE_ACTOR_ENV_VAR = "CIVICCODE_INTAKE_ACTOR"
 CIVICCODE_INTAKE_ACTOR_HEADER = "X-CivicSuite-Session-Actor"
 CIVICCODE_HANDOFF_DELIVERED = "EMIT_DELIVERED"
@@ -809,9 +811,11 @@ async def staff_oidc_callback(request: Request) -> RedirectResponse:
 
 
 @app.get("/staff/logout")
-async def staff_logout() -> RedirectResponse:
+@app.post("/staff/logout")
+async def staff_logout(request: Request) -> RedirectResponse:
     """Clear the local CivicClerk staff browser session."""
 
+    _revoke_suite_session_from_request(request)
     response = RedirectResponse("/staff", status_code=302)
     response.delete_cookie(STAFF_OIDC_SESSION_COOKIE_NAME)
     response.delete_cookie(STAFF_OIDC_STATE_COOKIE_NAME)
@@ -2465,6 +2469,25 @@ def _try_authorize_suite_session(
         subject=principal.subject,
         provider="CivicCore suite session",
     )
+
+
+def _revoke_suite_session_from_request(request: Request) -> None:
+    authorization = request.headers.get("authorization", "").strip()
+    if not authorization:
+        return
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != STAFF_BEARER_MODE or not token.strip():
+        return
+    try:
+        principal = validate_suite_session_token(
+            token.strip(),
+            required_roles=STAFF_ALLOWED_ROLES,
+        )
+    except SuiteSessionConfigError:
+        return
+    except PermissionError:
+        return
+    revoke_suite_session(principal.session_id)
 
 
 def _get_staff_auth_mode() -> str:

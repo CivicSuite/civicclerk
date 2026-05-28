@@ -4471,6 +4471,21 @@
           }
         },
         "summary": "Staff Logout"
+      },
+      "post": {
+        "description": "Clear the local CivicClerk staff browser session.",
+        "operationId": "staff_logout_staff_logout_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff Logout"
       }
     },
     "/staff/oidc/callback": {
