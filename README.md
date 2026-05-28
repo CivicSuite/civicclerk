@@ -14,8 +14,8 @@ release recovery is active. Treat the current `v1.0.3` recovery patch
 as provisional until this repo re-earns release status through the recovery
 gates: full local backend tests, frontend unit tests, real Playwright user-flow
 tests, WSL runtime install proof, release consistency checks, secret/security
-scans, docs-source parity enforcement, and explicit mock-validation versus
-production-deployment labeling. Integration release depth now requires live-wire
+scans, docs-source parity enforcement, and explicit mock validation versus
+production deployment labeling. Integration release depth now requires live-wire
 or in-process boundary validation; adversarial mock checks are supplemental
 regression coverage and are not a substitute for claiming a live production
 deployment.
