@@ -64,6 +64,9 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
+      - name: Accessibility gate (axe critical/serious)
+        run: npm run a11y:ci
+        working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
       - name: Test frontend
         run: npm test
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
