@@ -108,6 +108,7 @@ type IntegrationContract = {
   label: string;
   status: "ready" | "degraded" | "blocked";
   mode: string;
+  proof_model?: string;
   dependent_module_required: boolean;
   network_calls: boolean;
   supported_operations: string[];
@@ -870,41 +871,44 @@ const demoVendorSyncSources: VendorSyncSource[] = [
 
 const demoIntegrationReadiness: ApiIntegrationReadiness = {
   readiness: "ready",
-  proof_model: "adversarial_mock_validation",
-  network_calls: false,
-  dependent_modules_required: false,
-  message: "Integration contracts are mock-proven without requiring adjacent CivicSuite modules or live vendor tenants.",
-  fix: "Enable real dependencies only after their contract suite passes and credentials are stored outside the repo.",
+  proof_model: "live_or_in_process_boundary_validation",
+  network_calls: true,
+  dependent_modules_required: true,
+  message: "Integration depth requires live-wire or in-process boundary validation; mock checks remain regression coverage.",
+  fix: "Use the listed boundary proof before claiming integration release depth.",
   contracts: [
     {
       id: "civicrecords-search",
       label: "CivicRecords search bridge",
       status: "ready",
-      mode: "contract-and-mock",
-      dependent_module_required: false,
-      network_calls: false,
+      mode: "suite-module-live-wire",
+      proof_model: "live_wire_validation",
+      dependent_module_required: true,
+      network_calls: true,
       supported_operations: ["permission-aware meeting archive query", "closed-session refusal parity", "unavailable-service fallback"],
       absent_dependency_behavior: "Local public archive search remains authoritative while CivicRecords is absent.",
-      operator_fix: "Configure CivicRecords, run adversarial mocks, then enable cross-module search.",
+      operator_fix: "Configure CivicRecords, validate the boundary, then keep adversarial checks as regression coverage.",
     },
     {
       id: "civiccode-handoff",
       label: "CivicCode adopted-action handoff",
       status: "ready",
       mode: "live-when-configured",
+      proof_model: "live_wire_validation",
       dependent_module_required: true,
       network_calls: true,
       supported_operations: ["ordinance/resolution payload export", "idempotent replay", "emit status visibility", "manual retry"],
       absent_dependency_behavior: "Adopted-action handoffs remain local with EMIT_SKIPPED_UNCONFIGURED until CivicCode intake is configured.",
-      operator_fix: "Set CIVICCODE_INTAKE_URL and CIVICCODE_INTAKE_SECRET, verify CivicCode health, then retry failed or unconfigured handoffs.",
+      operator_fix: "Set CIVICCODE_INTAKE_URL and the suite bearer handoff value, verify CivicCode health, then retry failed or unconfigured handoffs.",
     },
     {
       id: "cms-posting",
       label: "City website CMS posting",
       status: "ready",
-      mode: "preview-contract-and-mock",
-      dependent_module_required: false,
-      network_calls: false,
+      mode: "external-cms-live-wire",
+      proof_model: "live_wire_validation",
+      dependent_module_required: true,
+      network_calls: true,
       supported_operations: ["posting preview", "clerk confirmation gate", "withdrawal ledger shape"],
       absent_dependency_behavior: "The resident portal stays live and a CMS-ready preview is available.",
       operator_fix: "Select a CMS adapter, store credentials outside the app, and require clerk confirmation.",
@@ -1862,14 +1866,25 @@ async function fetchAgendaIntakeItems(): Promise<ApiAgendaIntakeItem[]> {
   return Array.isArray(payload.items) ? payload.items : [];
 }
 
+let staffSessionProbe: Promise<StaffSession> | null = null;
+
 async function fetchStaffSession(): Promise<StaffSession> {
-  const response = await fetch("/staff/session", {
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) {
-    throw new Error(await formatApiError(response, "Staff session"));
+  if (!staffSessionProbe) {
+    staffSessionProbe = fetch("/staff/session", {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(await formatApiError(response, "Staff session"));
+        }
+        return response.json() as Promise<StaffSession>;
+      })
+      .finally(() => {
+        staffSessionProbe = null;
+      });
   }
-  return response.json();
+  return staffSessionProbe;
 }
 
 async function fetchIntegrationReadiness(): Promise<ApiIntegrationReadiness> {
@@ -2809,11 +2824,11 @@ function SpecCompletenessWorkspace({
           <div className="panel-heading">
             <div>
               <h2>Integration contract depth</h2>
-              <p>CivicClerk proves external-module and vendor seams with no-network adversarial mocks before any city-specific endpoint is enabled.</p>
+              <p>CivicClerk separates live-wire or in-process boundary validation from supplemental adversarial regression checks before any city-specific endpoint is enabled.</p>
             </div>
             <StatusBadge
               tone={integrationState === "error" ? "Blocked" : integrationReadiness?.readiness === "ready" ? "Ready" : "Warning"}
-              label={integrationReadiness?.readiness === "ready" ? "Mock-proven" : integrationState}
+              label={integrationReadiness?.readiness === "ready" ? "Boundary-ready" : integrationState}
             />
           </div>
           {integrationState === "error" ? (
@@ -2823,11 +2838,11 @@ function SpecCompletenessWorkspace({
           ) : (
             <>
               <div className="vendor-sync-callout" role="status">
-                <strong>{integrationReadiness?.proof_model?.replace(/_/g, " ") ?? "adversarial mock validation"}</strong>
+                <strong>{integrationReadiness?.proof_model?.replace(/_/g, " ") ?? "boundary validation pending"}</strong>
                 <span>
                   {integrationReadiness?.message ?? "Integration readiness is being checked."}
                   {" "}
-                  {integrationReadiness?.fix ?? "Run adversarial mocks before enabling real dependencies."}
+                  {integrationReadiness?.fix ?? "Validate live or in-process boundaries before claiming integration depth."}
                 </span>
               </div>
               <div className="agenda-list">
@@ -2984,18 +2999,18 @@ function getSpecWorkspaceCopy(
     "admin-settings": {
       context: "admin settings",
       title: "Verify auth, endpoints, and installed service coverage.",
-      description: "IT and clerk admins can see staff auth, CC-7 coverage, and no-network integration contracts for absent dependencies.",
+      description: "IT and clerk admins can see staff auth, CC-7 coverage, and boundary validation contracts for absent dependencies.",
       panelTitle: "Configuration and integration lane",
       panelDescription: "The admin surface points operators to the exact setting or contract that must pass before protected or external use.",
       ready: counts.authMode !== "unknown",
       metrics: [
         { label: "Auth mode", value: counts.authMode, note: "Current staff access posture" },
-        { label: "Integrations", value: `${counts.readyIntegrationContracts}/${counts.integrationContractCount}`, note: "Mock-proven contracts" },
+        { label: "Integrations", value: `${counts.readyIntegrationContracts}/${counts.integrationContractCount}`, note: "Boundary validation contracts" },
         { label: "Source issues", value: String(counts.unhealthySources), note: "Connector records needing IT", tone: counts.unhealthySources ? "warn" : undefined },
       ],
       controls: ["Inspect staff auth readiness", "Open integration readiness", "Review connector health"],
       apiPaths: ["/admin/config", "/staff/auth-readiness", "/integrations/readiness", "/vendor-live-sync/sources"],
-      releaseProof: [...sharedProof, "Integration contracts use adversarial mocks and make no external network calls."],
+      releaseProof: [...sharedProof, "Integration depth claims require live-wire or in-process boundary validation."],
     },
     "prompt-library-admin": {
       context: "prompt library admin",

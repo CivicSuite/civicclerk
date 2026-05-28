@@ -2001,7 +2001,7 @@
     },
     "/integrations/readiness": {
       "get": {
-        "description": "Report no-network integration contracts for absent CivicSuite dependencies.",
+        "description": "Report live or in-process integration boundary contracts.",
         "operationId": "integrations_readiness_integrations_readiness_get",
         "responses": {
           "200": {

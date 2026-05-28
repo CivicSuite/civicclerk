@@ -1,4 +1,4 @@
-"""Contract-backed integration readiness for absent CivicSuite dependencies."""
+"""Contract-backed integration readiness for CivicSuite dependency boundaries."""
 
 from __future__ import annotations
 
@@ -41,6 +41,7 @@ class IntegrationContract:
     label: str
     status: IntegrationStatus
     mode: str
+    proof_model: Literal["live_wire_validation", "in_process_boundary_validation"]
     dependent_module_required: bool
     network_calls: bool
     contract_artifact: str
@@ -55,6 +56,7 @@ class IntegrationContract:
             "label": self.label,
             "status": self.status,
             "mode": self.mode,
+            "proof_model": self.proof_model,
             "dependent_module_required": self.dependent_module_required,
             "network_calls": self.network_calls,
             "contract_artifact": self.contract_artifact,
@@ -66,16 +68,17 @@ class IntegrationContract:
 
 
 def integration_contracts() -> list[IntegrationContract]:
-    """Return the final-sprint integration contract set without contacting dependencies."""
+    """Return the final-sprint integration contract set for real boundaries."""
 
     return [
         IntegrationContract(
             id="civicrecords-search",
             label="CivicRecords search bridge",
             status="ready",
-            mode="contract-and-mock",
-            dependent_module_required=False,
-            network_calls=False,
+            mode="suite-module-live-wire",
+            proof_model="live_wire_validation",
+            dependent_module_required=True,
+            network_calls=True,
             contract_artifact="docs/integration-depth-contracts.md#civicrecords-search-bridge",
             supported_operations=(
                 "permission-aware meeting archive query",
@@ -101,9 +104,10 @@ def integration_contracts() -> list[IntegrationContract]:
             id="civiccode-handoff",
             label="CivicCode adopted-action handoff",
             status="ready",
-            mode="contract-and-mock",
-            dependent_module_required=False,
-            network_calls=False,
+            mode="suite-module-live-wire",
+            proof_model="live_wire_validation",
+            dependent_module_required=True,
+            network_calls=True,
             contract_artifact="docs/integration-depth-contracts.md#civiccode-adopted-action-handoff",
             supported_operations=(
                 "ordinance/resolution payload export",
@@ -129,8 +133,9 @@ def integration_contracts() -> list[IntegrationContract]:
             id="codification-export",
             label="Codification-system fallback export",
             status="ready",
-            mode="file-contract-and-mock",
-            dependent_module_required=False,
+            mode="local-export-boundary",
+            proof_model="in_process_boundary_validation",
+            dependent_module_required=True,
             network_calls=False,
             contract_artifact="docs/integration-depth-contracts.md#codification-system-fallback-export",
             supported_operations=(
@@ -157,9 +162,10 @@ def integration_contracts() -> list[IntegrationContract]:
             id="cms-posting",
             label="City website CMS posting",
             status="ready",
-            mode="preview-contract-and-mock",
-            dependent_module_required=False,
-            network_calls=False,
+            mode="external-cms-live-wire",
+            proof_model="live_wire_validation",
+            dependent_module_required=True,
+            network_calls=True,
             contract_artifact="docs/integration-depth-contracts.md#city-website-cms-posting",
             supported_operations=(
                 "posting preview",
@@ -186,8 +192,9 @@ def integration_contracts() -> list[IntegrationContract]:
             label="Vendor live API adapters",
             status="ready",
             mode="guarded-adapter-contracts",
-            dependent_module_required=False,
-            network_calls=False,
+            proof_model="live_wire_validation",
+            dependent_module_required=True,
+            network_calls=True,
             contract_artifact="docs/integration-depth-contracts.md#vendor-live-api-adapters",
             supported_operations=(
                 "Granicus delta contract",
@@ -249,18 +256,18 @@ def integration_readiness_payload() -> dict[str, object]:
     return {
         "service": "civicclerk",
         "readiness": "ready" if ready else "blocked",
-        "proof_model": "adversarial_mock_validation",
-        "network_calls": False,
-        "dependent_modules_required": False,
+        "proof_model": "live_or_in_process_boundary_validation",
+        "network_calls": any(contract.network_calls for contract in contracts),
+        "dependent_modules_required": any(contract.dependent_module_required for contract in contracts),
         "contracts": [contract.public_dict() for contract in contracts],
         "checks": [check.public_dict() for check in checks],
         "message": (
-            "CivicClerk integration depth is contract-backed without requiring CivicRecords, "
-            "CivicCode, city CMS, codifier, or vendor live tenants to be deployed."
+            "CivicClerk integration depth is framed as live-wire or in-process boundary validation; "
+            "mock adversarial checks remain regression coverage, not release-depth proof."
         ),
         "fix": (
-            "Keep using adversarial mocks as the release proof. When a real dependency appears, "
-            "enable it only after its contract suite passes and credentials are stored outside the repo."
+            "Use the listed live or in-process boundary proof before claiming integration release depth; "
+            "keep adversarial mocks as supplemental regression checks."
         ),
     }
 

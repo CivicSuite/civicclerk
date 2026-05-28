@@ -15,9 +15,10 @@ as provisional until this repo re-earns release status through the recovery
 gates: full local backend tests, frontend unit tests, real Playwright user-flow
 tests, WSL runtime install proof, release consistency checks, secret/security
 scans, docs-source parity enforcement, and explicit mock-validation versus
-production-deployment labeling. Adversarial mock validation is the required
-proof model for integration behavior; it is not a substitute for claiming a
-live production deployment.
+production-deployment labeling. Integration release depth now requires live-wire
+or in-process boundary validation; adversarial mock checks are supplemental
+regression coverage and are not a substitute for claiming a live production
+deployment.
 
 ## Release Provenance
 
@@ -159,7 +160,7 @@ Shipped in this foundation:
   CivicCode handoff, codification export, city CMS posting, and vendor live API
   adapters, plus a live CivicCode handoff emitter that sends adopted
   ordinance/resolution records to `CIVICCODE_INTAKE_URL` when
-  `CIVICCODE_INTAKE_SECRET` is configured
+  the suite bearer handoff value is configured
 - local-first Granicus, Legistar, PrimeGov, and NovusAGENDA meeting imports
 - source provenance on imported meetings and agenda items
 - records-ready packet export bundles with CivicCore v1.2.0 manifests, SHA256 checksums, provenance, and hash-chained audit events
@@ -373,9 +374,9 @@ Not shipped yet:
 
 - city-specific live endpoint enablement for CivicRecords, CivicCode, CMS,
   codifier, or municipal Granicus/Legistar/PrimeGov/NovusAGENDA tenants. The
-  CivicClerk side now ships contract-backed, adversarial-mock-proven readiness
-  for those seams, but real credentials and endpoint activation remain a
-  deployment task.
+  CivicClerk side now distinguishes live-wire or in-process boundary validation
+  from supplemental adversarial mock regression checks, and real credentials
+  plus endpoint activation remain a deployment task.
 
 ## New user experience today
 
@@ -432,7 +433,7 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
    - Run `python scripts/check_protected_deployment_smoke.py --env-file path\to\deployment.env` after strict readiness passes to execute `/health`, `/staff/auth-readiness`, the protected session probe, and the protected write probe without printing bearer tokens
    - Run `python scripts/check_pilot_readiness.py` after `verify-release.sh`
      and the release handoff bundle to prove developer-owned pilot readiness;
-     the report uses adversarial mock city vendor, municipal IdP, protected-auth, and backup-retention suites as the release proof model with no external deployment proofs required
+     the report uses adversarial mock city vendor, municipal IdP, protected-auth, and backup-retention suites as supplemental regression evidence while integration release-depth claims require live-wire or in-process boundary validation
      instead of marking them as unbuilt product code; the developer-owned side
      now includes the reusable vendor-interface, municipal IdP, and backup
      retention/off-host mock-city contract suites
@@ -451,7 +452,7 @@ A new user can inspect and run the foundation, open staff workflow screens at `/
 16. For the React staff workspace slice, run the frontend package from
    `frontend/` with `npm ci`, `npm audit --audit-level=moderate`,
    `npm run dev`, `npm run test`, and `npm run build`.
-17. Follow GitHub issues and discussions for future hardening, but do not block release on external deployment proofs; adversarial mock validation is the release gate.
+17. Follow GitHub issues and discussions for future hardening; do not label mock-only evidence as integration release depth.
 
 ## Architecture direction
 
@@ -505,8 +506,8 @@ For deployment hardening, `scripts/check_deployment_readiness.py` now prints a n
 ### CivicCode live handoff emitter
 
 CivicClerk emits ordinance/resolution handoff records to CivicCode when the
-city-core installer or operator configures `CIVICCODE_INTAKE_URL` and
-`CIVICCODE_INTAKE_SECRET`. On successful
+city-core installer or operator configures `CIVICCODE_INTAKE_URL` and the suite
+bearer handoff value. On successful
 `POST /meetings/{meeting_id}/ordinance-resolution-handoff`, CivicClerk maps the
 meeting, motion/agenda provenance, affected sections, source document reference,
 and adopted text into CivicCode's existing

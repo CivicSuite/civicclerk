@@ -10,9 +10,10 @@ release recovery is active. The current `v1.0.3` recovery patch is the supported
 until the repo passes the recovery gates: full backend tests, frontend tests,
 tracked Playwright user-flow tests, WSL runtime install proof, consistency
 gates, security scans, docs-source parity, and explicit separation between
-mock validation and production deployment. Mock validation is the required
-local proof model for integrations; it does not claim that a city production
-deployment has occurred.
+mock validation and production deployment. Integration release depth requires
+live-wire or in-process boundary validation; mock validation remains local
+regression evidence and does not claim that a city production deployment has
+occurred.
 
 ## Part 1: Non-Technical Overview
 
@@ -221,7 +222,7 @@ The admin settings surface now includes integration-depth readiness from
 `/integrations/readiness`. It shows contracts for CivicRecords search,
 CivicCode adopted-action handoff, codification-system fallback export, city
 website CMS posting, and vendor live API adapters. CivicCode handoff now has a
-live emitter when `CIVICCODE_INTAKE_URL` and `CIVICCODE_INTAKE_SECRET` are
+live emitter when `CIVICCODE_INTAKE_URL` and the suite bearer handoff value are
 configured; otherwise handoff records stay local and visibly show
 `EMIT_SKIPPED_UNCONFIGURED`. Failed emissions show `EMIT_FAILED`,
 `civiccode_handoff_last_error`, and `civiccode_handoff_last_attempt_at`, and can
@@ -629,10 +630,10 @@ python scripts/check_pilot_readiness.py
 
 The report is intentionally honest: it can mark release readiness as ready only
 after release artifacts, reusable vendor-interface contracts, hostile municipal
-IdP fixtures, protected-auth smoke checks, backup-retention/off-host mock
-validation, and unsigned-installer warning docs pass. No external deployment
-proofs are required; use `--require-adversarial-mocks` when the release gate
-should fail unless every adversarial mock validation check passes.
+IdP fixtures, protected-auth smoke checks, backup-retention/off-host regression
+checks, and unsigned-installer warning docs pass. Use
+`--require-adversarial-mocks` when the release gate should fail unless every
+adversarial mock validation check passes.
 
 Before IT trusts restore operations, rehearse the local backup/restore path:
 

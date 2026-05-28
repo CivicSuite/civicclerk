@@ -40,8 +40,77 @@ jobs:
       - name: Test frontend
         run: npm test
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
+      - name: Collect pytest count
+        run: |
+          set -o pipefail
+          python -m pytest --collect-only -q 2>&1 | tee pytest-collect.log
       - name: Run tests
-        run: python -m pytest
+        run: |
+          set -o pipefail
+          python -m pytest 2>&1 | tee pytest-run.log
+      - name: Verify collected == passed or reported skips
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import re
+          import sys
+          from pathlib import Path
+
+          collect_log = Path("pytest-collect.log").read_text(encoding="utf-8", errors="replace")
+          run_log = Path("pytest-run.log").read_text(encoding="utf-8", errors="replace")
+
+          collected_matches = re.findall(r"(\d+)\s+tests?\s+collected", collect_log)
+          if not collected_matches:
+              print("::error::Could not parse pytest collection count from pytest-collect.log.")
+              sys.exit(1)
+          collected = int(collected_matches[-1])
+
+          summary_matches = re.findall(
+              r"=+\s*([^=\n]*\b(?:passed|failed|error|skipped|xfailed|xpassed|deselected)\b[^=\n]*)\s*=+",
+              run_log,
+          )
+          if not summary_matches:
+              print("::error::Could not parse pytest result summary from pytest-run.log.")
+              sys.exit(1)
+          summary = summary_matches[-1]
+
+          def count(label: str) -> int:
+              match = re.search(rf"(\d+)\s+{label}", summary)
+              return int(match.group(1)) if match else 0
+
+          passed = count("passed")
+          skipped = count("skipped")
+          deselected = count("deselected")
+          failed = count("failed")
+          errors = count("errors?")
+          xfailed = count("xfailed")
+          xpassed = count("xpassed")
+          accounted = passed + skipped + deselected
+
+          print(f"collected={collected}")
+          print(f"passed={passed}")
+          print(f"skipped={skipped}")
+          print(f"deselected={deselected}")
+          if failed or errors or xfailed or xpassed:
+              print(
+                  f"::error::Unexpected pytest non-pass outcomes: failed={failed} "
+                  f"errors={errors} xfailed={xfailed} xpassed={xpassed}."
+              )
+              sys.exit(1)
+          if collected != accounted:
+              print(
+                  f"::error::Collection/run mismatch: collected={collected} "
+                  f"accounted={accounted} passed={passed} skipped={skipped} deselected={deselected}."
+              )
+              print("::error::Investigate silent test loss, early exit, or unreported pytest outcomes.")
+              sys.exit(1)
+          if collected != passed:
+              print(
+                  f"::notice::Collected count differs from passed only by reported skips/deselections "
+                  f"(skipped={skipped}, deselected={deselected})."
+              )
+          PY
       - name: Verify docs baseline
         run: bash scripts/verify-docs.sh
       - name: Verify recovery gates

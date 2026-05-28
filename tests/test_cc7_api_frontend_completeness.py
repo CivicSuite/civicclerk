@@ -133,8 +133,9 @@ def test_new_cc7_api_surfaces_execute_with_actionable_payloads(tmp_path, monkeyp
     assert prompts["fix"].startswith("For public-facing prompt changes")
     assert config["integration_depth"]["path"] == "/integrations/readiness"
     assert integrations["readiness"] == "ready"
-    assert integrations["network_calls"] is False
-    assert integrations["dependent_modules_required"] is False
+    assert integrations["proof_model"] == "live_or_in_process_boundary_validation"
+    assert integrations["network_calls"] is True
+    assert integrations["dependent_modules_required"] is True
 
 
 def test_published_openapi_matches_runtime_schema() -> None:

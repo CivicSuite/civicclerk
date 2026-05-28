@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
@@ -703,30 +704,32 @@ describe("CivicClerk staff workspace", () => {
             ok: true,
             json: async () => ({
               readiness: "ready",
-              proof_model: "adversarial_mock_validation",
-              network_calls: false,
-              dependent_modules_required: false,
-              message: "CivicClerk integration contracts are mock-proven without live dependencies.",
-              fix: "Run adversarial mocks before enabling real dependencies.",
+              proof_model: "live_or_in_process_boundary_validation",
+              network_calls: true,
+              dependent_modules_required: true,
+              message: "CivicClerk integration depth requires live-wire or in-process boundary validation.",
+              fix: "Keep adversarial mocks as regression coverage.",
               contracts: [
                 {
                   id: "civicrecords-search",
                   label: "CivicRecords search bridge",
                   status: "ready",
-                  mode: "contract-and-mock",
-                  dependent_module_required: false,
-                  network_calls: false,
+                  mode: "suite-module-live-wire",
+                  proof_model: "live_wire_validation",
+                  dependent_module_required: true,
+                  network_calls: true,
                   supported_operations: ["permission-aware meeting archive query"],
                   absent_dependency_behavior: "Local public archive search remains authoritative while CivicRecords is absent.",
-                  operator_fix: "Configure CivicRecords and rerun adversarial mocks before enabling cross-module search.",
+                  operator_fix: "Configure CivicRecords, validate the boundary, then keep adversarial checks as regression coverage.",
                 },
                 {
                   id: "cms-posting",
                   label: "City website CMS posting",
                   status: "ready",
-                  mode: "preview-contract-and-mock",
-                  dependent_module_required: false,
-                  network_calls: false,
+                  mode: "external-cms-live-wire",
+                  proof_model: "live_wire_validation",
+                  dependent_module_required: true,
+                  network_calls: true,
                   supported_operations: ["posting preview"],
                   absent_dependency_behavior: "The resident portal stays live and a CMS-ready preview is available.",
                   operator_fix: "Select a CMS adapter and require clerk confirmation before publishing.",
@@ -905,13 +908,18 @@ describe("CivicClerk staff workspace", () => {
       }),
     );
 
-    render(<App />);
+    render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    );
 
     expect(await screen.findByRole("heading", { name: "Staff sign-in needed" })).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent("Staff browser session is missing or expired");
     expect(screen.getByRole("alert")).toHaveTextContent("Sign in again or ask IT to verify OIDC browser login configuration");
     expect(screen.getByRole("alert")).toHaveTextContent("/staff/auth-readiness");
     expect(screen.getByRole("link", { name: "Sign in with municipal SSO" })).toHaveAttribute("href", "/staff/login");
+    expect(vi.mocked(fetch).mock.calls.filter(([url]) => url === "/staff/session")).toHaveLength(1);
     expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).startsWith("/api/"))).toBe(false);
   });
 
@@ -1183,9 +1191,9 @@ describe("CivicClerk staff workspace", () => {
     expect(await screen.findByRole("heading", { name: "Integration contract depth" })).toBeInTheDocument();
     expect(screen.getByText("CivicRecords search bridge")).toBeInTheDocument();
     expect(screen.getByText("City website CMS posting")).toBeInTheDocument();
-    expect(screen.getAllByText(/Network calls: no/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Dependency required now: no/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Run adversarial mocks before enabling real dependencies/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Network calls: yes/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Dependency required now: yes/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Keep adversarial mocks as regression coverage/)).toBeInTheDocument();
   });
 
   it("shows actionable vendor sync QA empty, error, and partial states", async () => {
