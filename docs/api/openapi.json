@@ -2001,7 +2001,7 @@
     },
     "/integrations/readiness": {
       "get": {
-        "description": "Report no-network integration contracts for absent CivicSuite dependencies.",
+        "description": "Report live or in-process integration boundary contracts.",
         "operationId": "integrations_readiness_integrations_readiness_get",
         "responses": {
           "200": {
@@ -4460,6 +4460,21 @@
       "get": {
         "description": "Clear the local CivicClerk staff browser session.",
         "operationId": "staff_logout_staff_logout_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Staff Logout"
+      },
+      "post": {
+        "description": "Clear the local CivicClerk staff browser session.",
+        "operationId": "staff_logout_staff_logout_post",
         "responses": {
           "200": {
             "content": {

@@ -24,6 +24,18 @@ from civiccore.auth import (
     load_trusted_header_auth_config,
     resolve_optional_bearer_roles,
 )
+try:
+    from civiccore.auth.suite_session import (
+        revoke_suite_session,
+        SuiteSessionConfigError,
+        validate_suite_session_token,
+    )
+except ModuleNotFoundError:
+    from civicclerk.suite_session_compat import (
+        revoke_suite_session,
+        SuiteSessionConfigError,
+        validate_suite_session_token,
+    )
 from civiccore.security import normalize_trusted_proxy_cidrs
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -112,9 +124,9 @@ STAFF_OIDC_PKCE_COOKIE_NAME = "civicclerk_oidc_pkce"
 STAFF_OIDC_SESSION_MAX_AGE_SECONDS = 3600
 STAFF_OIDC_STATE_MAX_AGE_SECONDS = 600
 CIVICCODE_INTAKE_URL_ENV_VAR = "CIVICCODE_INTAKE_URL"
-CIVICCODE_INTAKE_AUTH_ENV_VAR = "CIVICCODE_INTAKE_" + "".join(chr(code) for code in (83, 69, 67, 82, 69, 84))
+CIVICCODE_INTAKE_AUTH_ENV_VAR = "CIVICCODE_INTAKE_SECRET"
 CIVICCODE_INTAKE_ACTOR_ENV_VAR = "CIVICCODE_INTAKE_ACTOR"
-CIVICCODE_INTAKE_AUTH_HEADER = "X-CivicCode-Intake-" + "".join(chr(code) for code in (83, 101, 99, 114, 101, 116))
+CIVICCODE_INTAKE_ACTOR_HEADER = "X-CivicSuite-Session-Actor"
 CIVICCODE_HANDOFF_DELIVERED = "EMIT_DELIVERED"
 CIVICCODE_HANDOFF_FAILED = "EMIT_FAILED"
 CIVICCODE_HANDOFF_UNCONFIGURED = "EMIT_SKIPPED_UNCONFIGURED"
@@ -799,9 +811,11 @@ async def staff_oidc_callback(request: Request) -> RedirectResponse:
 
 
 @app.get("/staff/logout")
-async def staff_logout() -> RedirectResponse:
+@app.post("/staff/logout")
+async def staff_logout(request: Request) -> RedirectResponse:
     """Clear the local CivicClerk staff browser session."""
 
+    _revoke_suite_session_from_request(request)
     response = RedirectResponse("/staff", status_code=302)
     response.delete_cookie(STAFF_OIDC_SESSION_COOKIE_NAME)
     response.delete_cookie(STAFF_OIDC_STATE_COOKIE_NAME)
@@ -892,9 +906,9 @@ async def admin_config() -> dict[str, object]:
         "frontend_pages": cc7_frontend_page_payload(),
         "integration_depth": {
             "path": "/integrations/readiness",
-            "proof_model": "adversarial_mock_validation",
-            "network_calls": False,
-            "dependent_modules_required": False,
+            "proof_model": "live_or_in_process_boundary_validation",
+            "network_calls": True,
+            "dependent_modules_required": True,
         },
         "message": "CC-7 API, frontend, and integration-depth coverage is published for clerk, public, and admin surfaces.",
         "fix": (
@@ -906,7 +920,7 @@ async def admin_config() -> dict[str, object]:
 
 @app.get("/integrations/readiness")
 async def integrations_readiness() -> dict[str, object]:
-    """Report no-network integration contracts for absent CivicSuite dependencies."""
+    """Report live or in-process integration boundary contracts."""
 
     return integration_readiness_payload()
 
@@ -1819,9 +1833,8 @@ async def _send_civiccode_handoff_payload(
 ) -> dict[str, object]:
     headers = {
         "Content-Type": "application/json",
-        "X-CivicCode-Role": "staff",
-        "X-CivicCode-Actor": actor,
-        CIVICCODE_INTAKE_AUTH_HEADER: auth_value,
+        "Authorization": f"Bearer {auth_value}",
+        CIVICCODE_INTAKE_ACTOR_HEADER: actor,
     }
     timeout = httpx.Timeout(connect=10.0, read=30.0, write=10.0, pool=10.0)
     async with httpx.AsyncClient(timeout=timeout) as client:
@@ -2376,6 +2389,9 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
                 scheme=scheme,
                 credentials=token.strip(),
             )
+            suite_principal = _try_authorize_suite_session(credentials)
+            if suite_principal is not None:
+                return suite_principal
         return authorize_bearer_roles(
             credentials,
             service_name="CivicClerk",
@@ -2430,6 +2446,48 @@ def _authorize_staff_principal(request: Request) -> AuthenticatedPrincipal:
             "fix": f"Set {STAFF_AUTH_MODE_ENV_VAR} to a supported value and retry.",
         },
     )
+
+
+def _try_authorize_suite_session(
+    credentials: HTTPAuthorizationCredentials,
+) -> AuthenticatedPrincipal | None:
+    if credentials.scheme.lower() != STAFF_BEARER_MODE or not credentials.credentials:
+        return None
+    try:
+        principal = validate_suite_session_token(
+            credentials.credentials,
+            required_roles=STAFF_ALLOWED_ROLES,
+        )
+    except SuiteSessionConfigError:
+        return None
+    except PermissionError:
+        return None
+    return AuthenticatedPrincipal(
+        token_fingerprint=hashlib.sha256(credentials.credentials.encode("utf-8")).hexdigest()[:12],
+        roles=principal.roles,
+        auth_method="civiccore_suite_session",
+        subject=principal.subject,
+        provider="CivicCore suite session",
+    )
+
+
+def _revoke_suite_session_from_request(request: Request) -> None:
+    authorization = request.headers.get("authorization", "").strip()
+    if not authorization:
+        return
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != STAFF_BEARER_MODE or not token.strip():
+        return
+    try:
+        principal = validate_suite_session_token(
+            token.strip(),
+            required_roles=STAFF_ALLOWED_ROLES,
+        )
+    except SuiteSessionConfigError:
+        return
+    except PermissionError:
+        return
+    revoke_suite_session(principal.session_id)
 
 
 def _get_staff_auth_mode() -> str:

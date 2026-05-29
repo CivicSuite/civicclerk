@@ -36,6 +36,8 @@ if ! PYTHON=$(choose_python); then
 fi
 
 echo "==> pytest"
+# Milestone 12 release-contract tests assert artifacts produced later in this
+# script, so they are ignored here and run explicitly after build/checksums.
 "$PYTHON" -m pytest --ignore=tests/test_milestone_12_release.py
 
 echo "==> docs"

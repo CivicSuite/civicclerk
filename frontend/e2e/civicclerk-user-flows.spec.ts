@@ -251,11 +251,11 @@ async function installCivicClerkApiMocks(page: Page) {
     if (path === "/api/integrations/readiness") {
       return fulfillJson(route, {
         readiness: "ready",
-        proof_model: "adversarial_mock_validation",
-        network_calls: false,
-        dependent_modules_required: false,
-        message: "CivicClerk integration contracts are mock-proven without live dependencies.",
-        fix: "Run adversarial mocks before enabling real dependencies.",
+        proof_model: "live_or_in_process_boundary_validation",
+        network_calls: true,
+        dependent_modules_required: true,
+        message: "CivicClerk integration depth requires live-wire or in-process boundary validation.",
+        fix: "Keep adversarial mocks as regression coverage.",
         contracts: [],
       });
     }
@@ -289,6 +289,49 @@ test("clerk proves public notice from dashboard to posting proof", async ({ page
   await expect(page.getByText("Proceed allowed")).toBeVisible();
   await expect(page.locator("main")).toHaveAttribute("data-current-page", "notice-checklist");
   expect(consoleErrors).toEqual([]);
+});
+
+test("unauthenticated first-run staff shell gates protected APIs without repeated 401 noise", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  let staffSessionRequests = 0;
+  let protectedApiRequests = 0;
+
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      consoleErrors.push(message.text());
+    }
+  });
+  await page.route("**/*", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname === "/staff/session") {
+      staffSessionRequests += 1;
+      return fulfillJson(route, {
+        detail: {
+          message: "Staff browser session is missing or expired.",
+          fix: "Sign in again or ask IT to verify OIDC browser login configuration.",
+        },
+      }, 401);
+    }
+    if (url.pathname.startsWith("/api/")) {
+      protectedApiRequests += 1;
+      return fulfillJson(route, {
+        detail: {
+          message: "Protected API should stay behind the staff session gate.",
+          fix: "Sign in before loading protected clerk data.",
+        },
+      }, 500);
+    }
+    return route.fallback();
+  });
+
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "Staff sign-in needed" })).toBeVisible();
+  await expect(page.getByRole("alert")).toContainText("Staff browser session is missing or expired");
+  await expect(page.getByRole("link", { name: "Sign in with municipal SSO" })).toHaveAttribute("href", "/staff/login");
+  expect(staffSessionRequests).toBe(1);
+  expect(protectedApiRequests).toBe(0);
+  expect(consoleErrors.filter((text) => text.includes("401") || text.includes("/staff/session")).length).toBeLessThanOrEqual(1);
 });
 
 test("resident public posting stays public and avoids closed-session leakage", async ({ page }) => {

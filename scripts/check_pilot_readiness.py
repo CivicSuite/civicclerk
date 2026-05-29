@@ -212,7 +212,7 @@ def _payload(checks: list[Check]) -> dict[str, object]:
         "version": __version__,
         "developer_ready": developer_ready,
         "external_dependencies_pending": False,
-        "proof_model": "adversarial_mock_validation",
+        "proof_model": "local_regression_plus_boundary_validation",
         "network_calls": False,
         "checks": [check.public_dict() for check in checks],
     }
@@ -224,7 +224,7 @@ def _print_report(checks: list[Check]) -> None:
     print(f"Version: {__version__}")
     print("network_calls=false")
     print(f"developer_ready={str(payload['developer_ready']).lower()}")
-    print("proof_model=adversarial_mock_validation")
+    print("proof_model=local_regression_plus_boundary_validation")
     print("external_dependencies_pending=false")
     for check in checks:
         print(f"[{check.status}] {check.name}: {check.message}")
@@ -248,9 +248,9 @@ def _print_plan(version: str, dist_root: Path, bundle_path: Path) -> None:
     print("  3. Mock city municipal IdP contracts pass without contacting an IdP.")
     print("  4. Mock city backup retention/off-host contracts pass without contacting storage providers.")
     print("  5. Operator docs warn about unsigned Windows first-install prompts.")
-    print("Release proof model:")
-    print("  - no external deployment proofs are required")
-    print("  - adversarial mock-city vendor, municipal IdP, protected-auth, and backup-retention suites are release gates")
+    print("Integration release-depth proof:")
+    print("  - live-wire or in-process boundary validation is required for integration depth claims")
+    print("  - adversarial mock-city vendor, municipal IdP, protected-auth, and backup-retention suites are regression gates")
     print("PILOT-READINESS: PLAN")
 
 

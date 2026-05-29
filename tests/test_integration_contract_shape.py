@@ -10,7 +10,7 @@ from civicclerk.integration_contracts import (
 from civicclerk.main import app
 
 
-def test_integration_contracts_cover_unfinished_unified_spec_depth_without_dependencies() -> None:
+def test_integration_contracts_cover_unified_spec_depth_boundaries() -> None:
     contracts = {contract.id: contract for contract in integration_contracts()}
 
     assert set(contracts) == {
@@ -22,15 +22,15 @@ def test_integration_contracts_cover_unfinished_unified_spec_depth_without_depen
     }
     for contract in contracts.values():
         assert contract.status == "ready"
-        assert contract.network_calls is False
-        assert contract.dependent_module_required is False
+        assert contract.network_calls is True or contract.dependent_module_required is True
+        assert contract.proof_model in {"live_wire_validation", "in_process_boundary_validation"}
         assert contract.absent_dependency_behavior
         assert contract.operator_fix
         assert contract.supported_operations
         assert contract.adversarial_scenarios
 
 
-def test_integration_adversarial_checks_are_actionable_and_no_network() -> None:
+def test_supplemental_regression_checks_are_actionable_and_skip_network() -> None:
     checks = run_integration_adversarial_checks()
 
     assert checks
@@ -49,13 +49,13 @@ def test_integration_adversarial_checks_are_actionable_and_no_network() -> None:
         assert check.fix
 
 
-def test_integration_readiness_payload_is_release_proof_ready() -> None:
+def test_integration_readiness_payload_is_boundary_proof_ready() -> None:
     payload = integration_readiness_payload()
 
     assert payload["readiness"] == "ready"
-    assert payload["proof_model"] == "adversarial_mock_validation"
-    assert payload["network_calls"] is False
-    assert payload["dependent_modules_required"] is False
+    assert payload["proof_model"] == "live_or_in_process_boundary_validation"
+    assert payload["network_calls"] is True
+    assert payload["dependent_modules_required"] is True
     assert len(payload["contracts"]) == 5
     assert len(payload["checks"]) >= 10
 
@@ -66,6 +66,6 @@ def test_integration_readiness_endpoint_is_published_and_actionable() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["readiness"] == "ready"
-    assert payload["network_calls"] is False
-    assert "CivicRecords" in payload["message"]
-    assert "adversarial mocks" in payload["fix"]
+    assert payload["network_calls"] is True
+    assert "live-wire or in-process boundary validation" in payload["message"]
+    assert "supplemental regression checks" in payload["fix"]

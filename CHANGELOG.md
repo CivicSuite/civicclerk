@@ -6,11 +6,17 @@ All notable changes to CivicClerk are documented here.
 
 ### Added
 - Added the live CivicCode handoff emitter for adopted ordinance/resolution
-  handoffs. When `CIVICCODE_INTAKE_URL` and `CIVICCODE_INTAKE_SECRET` are
+  handoffs. When `CIVICCODE_INTAKE_URL` and the suite bearer handoff value are
   configured, successful local handoff creation posts the existing CivicCode
-  intake contract, records delivered/failed/unconfigured status on the local
-  handoff record, and exposes a manual retry endpoint for operator-controlled
-  recovery.
+  intake contract with bearer authorization, records delivered/failed/
+  unconfigured status on the local handoff record, and exposes a manual retry
+  endpoint for operator-controlled recovery.
+
+### Changed
+- Staff bearer mode now accepts CivicCore suite session bearer tokens for
+  `/staff/session` while preserving the legacy configured-token path.
+- Integration-depth readiness metadata now distinguishes live-wire or
+  in-process boundary validation from supplemental adversarial mock checks.
 
 ### Fixed
 - Isolated the static staff workflow UI test from process-local meeting outcome

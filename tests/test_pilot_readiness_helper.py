@@ -91,7 +91,7 @@ def test_pilot_readiness_is_developer_ready_with_adversarial_mocks(tmp_path: Pat
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert "developer_ready=true" in result.stdout
-    assert "proof_model=adversarial_mock_validation" in result.stdout
+    assert "proof_model=local_regression_plus_boundary_validation" in result.stdout
     assert "external_dependencies_pending=false" in result.stdout
     assert "[PASS] installer checksums" in result.stdout
     assert "[PASS] mock city vendor contract suite" in result.stdout
@@ -100,7 +100,7 @@ def test_pilot_readiness_is_developer_ready_with_adversarial_mocks(tmp_path: Pat
     assert "[PASS] unsigned installer warning docs" in result.stdout
     assert "PILOT-READINESS: DEVELOPER-READY" in result.stdout
     assert '"developer_ready": true' in report.read_text(encoding="utf-8")
-    assert '"proof_model": "adversarial_mock_validation"' in report.read_text(encoding="utf-8")
+    assert '"proof_model": "local_regression_plus_boundary_validation"' in report.read_text(encoding="utf-8")
 
 
 def test_pilot_readiness_strict_adversarial_mock_gate_passes_when_mocks_pass(tmp_path: Path) -> None:
@@ -127,7 +127,7 @@ def test_pilot_readiness_strict_adversarial_mock_gate_passes_when_mocks_pass(tmp
     assert "external_dependencies_pending=false" in result.stdout
 
 
-def test_pilot_readiness_print_only_documents_adversarial_proof_model() -> None:
+def test_pilot_readiness_print_only_documents_boundary_proof_model() -> None:
     result = subprocess.run(
         ["python", "scripts/check_pilot_readiness.py", "--print-only"],
         cwd=ROOT,
@@ -140,6 +140,6 @@ def test_pilot_readiness_print_only_documents_adversarial_proof_model() -> None:
     assert "Developer-owned checks:" in result.stdout
     assert "Mock city municipal IdP contracts pass without contacting an IdP." in result.stdout
     assert "Mock city backup retention/off-host contracts pass without contacting storage providers." in result.stdout
-    assert "Release proof model:" in result.stdout
-    assert "no external deployment proofs are required" in result.stdout
-    assert "adversarial mock-city vendor, municipal IdP, protected-auth, and backup-retention suites are release gates" in result.stdout
+    assert "Integration release-depth proof:" in result.stdout
+    assert "live-wire or in-process boundary validation is required" in result.stdout
+    assert "adversarial mock-city vendor, municipal IdP, protected-auth, and backup-retention suites are regression gates" in result.stdout
