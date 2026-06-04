@@ -42,6 +42,11 @@ def test_docker_compose_stack_declares_real_runtime_services() -> None:
     assert "wget -qO- http://127.0.0.1/" in compose
     worker_service = compose.split("  worker:", 1)[1].split("  beat:", 1)[0]
     beat_service = compose.split("  beat:", 1)[1].split("  frontend:", 1)[0]
+    api_service = compose.split("  api:", 1)[1].split("  worker:", 1)[0]
+    api_depends_on = api_service.split("depends_on:", 1)[1].split("healthcheck:", 1)[0]
+    worker_depends_on = worker_service.split("depends_on:", 1)[1].split("healthcheck:", 1)[0]
+    assert "ollama:" not in api_depends_on
+    assert "ollama:" not in worker_depends_on
     assert "./connector-imports}:/data/connector-imports:ro" in worker_service
     assert "/data/connector-imports:ro" not in beat_service
     nginx = (ROOT / "docker" / "nginx.conf").read_text(encoding="utf-8")

@@ -95,8 +95,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      ollama:
-        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8776/health || exit 1"]
       interval: 15s
@@ -117,8 +115,6 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_healthy
-      ollama:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "celery -A civicclerk.worker inspect ping --destination celery@$$(hostname) >/dev/null 2>&1 || exit 1"]
