@@ -410,6 +410,47 @@
         "title": "MeetingUpdate",
         "type": "object"
       },
+      "MinutesAiAssistCreate": {
+        "properties": {
+          "human_approver": {
+            "minLength": 1,
+            "title": "Human Approver",
+            "type": "string"
+          },
+          "instruction": {
+            "default": "Draft concise meeting minutes from the cited source material.",
+            "minLength": 1,
+            "title": "Instruction",
+            "type": "string"
+          },
+          "model": {
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "prompt_version": {
+            "minLength": 1,
+            "title": "Prompt Version",
+            "type": "string"
+          },
+          "source_materials": {
+            "items": {
+              "$ref": "#/components/schemas/SourceMaterialCreate"
+            },
+            "minItems": 1,
+            "title": "Source Materials",
+            "type": "array"
+          }
+        },
+        "required": [
+          "model",
+          "prompt_version",
+          "human_approver",
+          "source_materials"
+        ],
+        "title": "MinutesAiAssistCreate",
+        "type": "object"
+      },
       "MinutesDraftCreate": {
         "properties": {
           "human_approver": {
@@ -2670,6 +2711,58 @@
         "summary": "Create Packet Export Bundle"
       }
     },
+    "/meetings/{meeting_id}/minutes/ai-assist": {
+      "post": {
+        "description": "Generate an optional Ollama-assisted cited minutes draft.",
+        "operationId": "create_minutes_ai_assist_meetings__meeting_id__minutes_ai_assist_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MinutesAiAssistCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Minutes Ai Assist Meetings  Meeting Id  Minutes Ai Assist Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Minutes Ai Assist"
+      }
+    },
     "/meetings/{meeting_id}/minutes/drafts": {
       "get": {
         "description": "List citation-gated minutes drafts for a meeting.",
@@ -2718,7 +2811,7 @@
         "summary": "List Minutes Drafts"
       },
       "post": {
-        "description": "Create an AI-assisted minutes draft only when every sentence is cited.",
+        "description": "Create a cited minutes draft from staff-provided sentence text.",
         "operationId": "create_minutes_draft_meetings__meeting_id__minutes_drafts_post",
         "parameters": [
           {

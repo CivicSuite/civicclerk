@@ -130,6 +130,8 @@ CIVICCODE_INTAKE_ACTOR_HEADER = "X-CivicSuite-Session-Actor"
 CIVICCODE_HANDOFF_DELIVERED = "EMIT_DELIVERED"
 CIVICCODE_HANDOFF_FAILED = "EMIT_FAILED"
 CIVICCODE_HANDOFF_UNCONFIGURED = "EMIT_SKIPPED_UNCONFIGURED"
+CIVICCLERK_OLLAMA_BASE_URL_ENV_VAR = "CIVICCLERK_OLLAMA_BASE_URL"
+CIVICCORE_LLM_PROVIDER_ENV_VAR = "CIVICCORE_LLM_PROVIDER"
 DEMO_SEED_ENV_VAR = "CIVICCLERK_DEMO_SEED"
 DEFAULT_STAFF_SSO_PROVIDER = "trusted reverse proxy"
 DEFAULT_STAFF_SSO_PRINCIPAL_HEADER = "X-Forwarded-Email"
@@ -389,6 +391,17 @@ class MinutesDraftCreate(BaseModel):
     human_approver: str = Field(min_length=1)
     source_materials: list[SourceMaterialCreate] = Field(min_length=1)
     sentences: list[MinutesSentenceCreate] = Field(min_length=1)
+
+
+class MinutesAiAssistCreate(BaseModel):
+    model: str = Field(min_length=1)
+    prompt_version: str = Field(min_length=1)
+    human_approver: str = Field(min_length=1)
+    source_materials: list[SourceMaterialCreate] = Field(min_length=1)
+    instruction: str = Field(
+        default="Draft concise meeting minutes from the cited source material.",
+        min_length=1,
+    )
 
 
 class TranscriptCreate(BaseModel):
@@ -1772,6 +1785,10 @@ class CivicCodeHandoffEmitError(Exception):
         super().__init__(message)
 
 
+class MinutesAssistUnavailableError(Exception):
+    """Optional Ollama-backed minutes assist is unavailable."""
+
+
 def _first_reference_value(record: dict[str, object], *names: str) -> str | None:
     for reference in record.get("source_references", []):
         if not isinstance(reference, dict):
@@ -1876,6 +1893,65 @@ async def _emit_civiccode_handoff(record: dict[str, object]) -> None:
     record["civiccode_event_id"] = response.get("event_id")
 
 
+def _minutes_ai_unavailable_detail(reason: str) -> dict[str, str]:
+    return {
+        "message": "AI assist unavailable; CivicClerk core workflow is still available.",
+        "fix": (
+            f"Start Ollama, confirm {CIVICCLERK_OLLAMA_BASE_URL_ENV_VAR}, and retry the minutes-AI assist. "
+            "Manual cited minutes drafting remains available through /meetings/{meeting_id}/minutes/drafts."
+        ),
+        "reason": reason,
+    }
+
+
+def _minutes_assist_prompt(payload: MinutesAiAssistCreate) -> str:
+    source_text = "\n\n".join(
+        f"[{source.source_id}] {source.label}: {source.text}"
+        for source in payload.source_materials
+    )
+    return (
+        f"{payload.instruction}\n\n"
+        "Every material sentence must be grounded in the provided source material. "
+        "Return concise clerk minutes text only; do not adopt or post minutes.\n\n"
+        f"Source material:\n{source_text}"
+    )
+
+
+async def _request_ollama_minutes_text(payload: MinutesAiAssistCreate) -> str:
+    provider = (os.getenv(CIVICCORE_LLM_PROVIDER_ENV_VAR) or "ollama").strip().lower()
+    if provider != "ollama":
+        raise MinutesAssistUnavailableError(
+            f"{CIVICCORE_LLM_PROVIDER_ENV_VAR} is '{provider}', not 'ollama'."
+        )
+    base_url = (os.getenv(CIVICCLERK_OLLAMA_BASE_URL_ENV_VAR) or "http://ollama:11434").strip().rstrip("/")
+    timeout = httpx.Timeout(connect=3.0, read=20.0, write=5.0, pool=3.0)
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post(
+                f"{base_url}/api/generate",
+                json={
+                    "model": payload.model,
+                    "prompt": _minutes_assist_prompt(payload),
+                    "stream": False,
+                },
+            )
+    except httpx.TimeoutException as exc:
+        raise MinutesAssistUnavailableError("Ollama request timed out.") from exc
+    except httpx.HTTPError as exc:
+        raise MinutesAssistUnavailableError(str(exc)) from exc
+    if response.status_code >= 400:
+        raise MinutesAssistUnavailableError(
+            f"Ollama returned HTTP {response.status_code}: {response.text[:200]}"
+        )
+    try:
+        generated = str(response.json().get("response", "")).strip()
+    except ValueError as exc:
+        raise MinutesAssistUnavailableError("Ollama returned invalid JSON.") from exc
+    if not generated:
+        raise MinutesAssistUnavailableError("Ollama returned an empty minutes draft.")
+    return generated
+
+
 @app.post("/meetings/{meeting_id}/ordinance-resolution-handoff", status_code=201)
 async def create_ordinance_resolution_handoff(
     meeting_id: str,
@@ -1974,7 +2050,7 @@ async def retry_ordinance_resolution_handoff(
 
 @app.post("/meetings/{meeting_id}/minutes/drafts", status_code=201)
 async def create_minutes_draft(meeting_id: str, payload: MinutesDraftCreate) -> dict:
-    """Create an AI-assisted minutes draft only when every sentence is cited."""
+    """Create a cited minutes draft from staff-provided sentence text."""
     meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
@@ -1997,6 +2073,52 @@ async def create_minutes_draft(meeting_id: str, payload: MinutesDraftCreate) -> 
                 citations=tuple(sentence.citations),
             )
             for sentence in payload.sentences
+        ],
+    )
+    if not hasattr(result, "public_dict"):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": result.message,
+                "fix": result.fix,
+            },
+        )
+    return result.public_dict()
+
+
+@app.post("/meetings/{meeting_id}/minutes/ai-assist", status_code=201)
+async def create_minutes_ai_assist(meeting_id: str, payload: MinutesAiAssistCreate) -> dict:
+    """Generate an optional Ollama-assisted cited minutes draft."""
+
+    meeting = _get_meeting_store().get(meeting_id)
+    if meeting is None:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    try:
+        generated_text = await _request_ollama_minutes_text(payload)
+    except MinutesAssistUnavailableError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=_minutes_ai_unavailable_detail(str(exc)),
+        ) from exc
+    source_ids = [source.source_id for source in payload.source_materials]
+    result = minutes_drafts.create_draft(
+        meeting_id=meeting_id,
+        model=payload.model,
+        prompt_version=payload.prompt_version,
+        human_approver=payload.human_approver,
+        source_materials=[
+            SourceMaterial(
+                source_id=source.source_id,
+                label=source.label,
+                text=source.text,
+            )
+            for source in payload.source_materials
+        ],
+        sentences=[
+            MinutesSentence(
+                text=generated_text,
+                citations=tuple(source_ids),
+            )
         ],
     )
     if not hasattr(result, "public_dict"):
