@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
-from uuid import uuid4
+from datetime import UTC, datetime
+from uuid import UUID, uuid4
 
+import sqlalchemy as sa
+from sqlalchemy import Engine, create_engine
+
+from civiccore.audit import AuditActor, AuditHashChain, AuditSubject, record_event
 from civiccore.ingest import (
     CitedSentence as MinutesSentence,
     SourceMaterial,
@@ -60,6 +66,30 @@ class MinutesDraft:
 class MinutesValidationError:
     message: str
     fix: str
+
+
+metadata = sa.MetaData()
+
+minutes_table = sa.Table(
+    "minutes",
+    metadata,
+    sa.Column("id", sa.Uuid(as_uuid=False), primary_key=True),
+    sa.Column("meeting_id", sa.Uuid(as_uuid=False), nullable=False),
+    sa.Column("status", sa.String(80), nullable=False),
+    sa.Column("body", sa.Text(), nullable=False),
+    sa.Column("source_materials", sa.JSON(), nullable=True),
+    sa.Column("sentence_citations", sa.JSON(), nullable=True),
+    sa.Column("prompt_version", sa.String(120), nullable=True),
+    sa.Column("human_approver", sa.String(255), nullable=True),
+    sa.Column("model", sa.String(255), nullable=True),
+    sa.Column("adopted_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("posted_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("signed_by", sa.String(255), nullable=True),
+    sa.Column("document_ref", sa.Text(), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+    schema="civicclerk",
+)
 
 
 class MinutesDraftStore:
@@ -126,6 +156,130 @@ class MinutesDraftStore:
         return list(reversed(list(self._drafts.values())))[:limit]
 
 
+class MinutesDraftRepository:
+    """SQLAlchemy-backed minutes draft store on the canonical minutes table.
+
+    Sentences persist to the sentence_citations JSON column, source materials
+    to the source_materials JSON column, and provenance decomposes into the
+    model / prompt_version / human_approver columns. data_sources is derived
+    from source_materials on read; adopted/posted derive from adopted_at /
+    posted_at being non-NULL. The NOT NULL body column stores the joined
+    sentence text so the canonical schema contract stays satisfied.
+    """
+
+    def __init__(self, *, db_url: str | None = None, engine: Engine | None = None) -> None:
+        base_engine = engine or create_engine(db_url or "sqlite+pysqlite:///:memory:", future=True)
+        if base_engine.dialect.name == "sqlite":
+            self.engine = base_engine.execution_options(schema_translate_map={"civicclerk": None})
+        else:
+            self.engine = base_engine
+            with self.engine.begin() as connection:
+                connection.execute(sa.text("CREATE SCHEMA IF NOT EXISTS civicclerk"))
+        metadata.create_all(self.engine)
+        self.audit_chain = AuditHashChain()
+        # Serializes seal+insert+append so concurrent draft creations cannot
+        # fork the hash chain or leave sealed events for writes that never
+        # landed.
+        self._chain_lock = threading.Lock()
+
+    def create_draft(
+        self,
+        *,
+        meeting_id: str,
+        model: str,
+        prompt_version: str,
+        human_approver: str,
+        source_materials: list[SourceMaterial],
+        sentences: list[MinutesSentence],
+    ) -> MinutesDraft | MinutesValidationError:
+        if not is_known_prompt_version(prompt_version):
+            expected = expected_prompt_version_hint()
+            return MinutesValidationError(
+                message="Minutes drafts must use a prompt version from the CivicClerk YAML prompt library.",
+                fix=f"Use prompt_version '{expected}' or another version returned by the prompt library.",
+            )
+
+        validation_error = validate_minutes_draft(
+            source_materials=source_materials,
+            sentences=sentences,
+        )
+        if validation_error is not None:
+            return validation_error
+
+        now = datetime.now(UTC)
+        draft_id = str(uuid4())
+        with self._chain_lock:
+            event = record_event(
+                self.audit_chain.events,
+                actor=AuditActor(actor_id=human_approver, actor_type="clerk"),
+                action="minutes.draft_created",
+                subject=AuditSubject(subject_id=draft_id, subject_type="minutes_draft"),
+                source_module="civicclerk",
+                metadata={
+                    "meeting_id": meeting_id,
+                    "sentence_count": len(sentences),
+                },
+            )
+            values = {
+                "id": draft_id,
+                "meeting_id": meeting_id,
+                "status": "DRAFT",
+                "body": "\n".join(sentence.text for sentence in sentences),
+                "source_materials": [source.public_dict() for source in source_materials],
+                "sentence_citations": [sentence.public_dict() for sentence in sentences],
+                "prompt_version": prompt_version,
+                "human_approver": human_approver,
+                "model": model,
+                "adopted_at": None,
+                "posted_at": None,
+                "signed_by": None,
+                "document_ref": None,
+                "created_at": now,
+                "updated_at": now,
+            }
+            with self.engine.begin() as connection:
+                connection.execute(minutes_table.insert().values(**values))
+            # Append only after the transaction commits so a failed insert
+            # never leaves a phantom sealed event on the chain.
+            self.audit_chain.events.append(event)
+        return self.get_draft(draft_id) or _minutes_row_to_draft(values)
+
+    def get_draft(self, draft_id: str) -> MinutesDraft | None:
+        parsed = _minutes_uuid_text_or_none(draft_id)
+        if parsed is None:
+            return None
+        with self.engine.begin() as connection:
+            row = connection.execute(
+                sa.select(minutes_table).where(minutes_table.c.id == parsed)
+            ).mappings().first()
+        return _minutes_row_to_draft(row) if row is not None else None
+
+    def list_drafts(self, meeting_id: str) -> list[MinutesDraft]:
+        parsed = _minutes_uuid_text_or_none(meeting_id)
+        if parsed is None:
+            return []
+        statement = (
+            sa.select(minutes_table)
+            .where(minutes_table.c.meeting_id == parsed)
+            .order_by(minutes_table.c.created_at.asc(), minutes_table.c.id.asc())
+        )
+        with self.engine.begin() as connection:
+            rows = connection.execute(statement).mappings().all()
+        return [_minutes_row_to_draft(row) for row in rows]
+
+    def list_recent(self, *, limit: int = 5) -> list[MinutesDraft]:
+        """Return recent citation-gated drafts for the staff dashboard."""
+
+        statement = (
+            sa.select(minutes_table)
+            .order_by(minutes_table.c.created_at.desc(), minutes_table.c.id.desc())
+            .limit(limit)
+        )
+        with self.engine.begin() as connection:
+            rows = connection.execute(statement).mappings().all()
+        return [_minutes_row_to_draft(row) for row in rows]
+
+
 def validate_minutes_draft(
     *,
     source_materials: list[SourceMaterial],
@@ -150,8 +304,52 @@ def validate_minutes_draft(
     return MinutesValidationError(message=error.message, fix=error.fix)
 
 
+def _minutes_uuid_text_or_none(value: str | None) -> str | None:
+    if value is None:
+        return None
+    try:
+        return str(UUID(str(value)))
+    except (AttributeError, TypeError, ValueError):
+        return None
+
+
+def _minutes_row_to_draft(row) -> MinutesDraft:
+    data = dict(row)
+    source_materials = tuple(
+        SourceMaterial(
+            source_id=source["source_id"],
+            label=source["label"],
+            text=source["text"],
+        )
+        for source in (data.get("source_materials") or [])
+    )
+    sentences = tuple(
+        MinutesSentence(
+            text=sentence["text"],
+            citations=tuple(sentence["citations"]),
+        )
+        for sentence in (data.get("sentence_citations") or [])
+    )
+    return MinutesDraft(
+        id=str(data["id"]),
+        meeting_id=str(data["meeting_id"]),
+        status=data["status"],
+        sentences=sentences,
+        source_materials=source_materials,
+        provenance=MinutesProvenance(
+            model=data.get("model") or "",
+            prompt_version=data.get("prompt_version") or "",
+            data_sources=tuple(source.source_id for source in source_materials),
+            human_approver=data.get("human_approver") or "",
+        ),
+        adopted=data.get("adopted_at") is not None,
+        posted=data.get("posted_at") is not None,
+    )
+
+
 __all__ = [
     "MinutesDraft",
+    "MinutesDraftRepository",
     "MinutesDraftStore",
     "MinutesProvenance",
     "MinutesSentence",
