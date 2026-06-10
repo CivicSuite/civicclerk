@@ -490,7 +490,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
             )
 
         assert civiccore_revision == "civiccore_0002_llm"
-        assert civicclerk_revision == "civicclerk_0015_capture_seq"
+        assert civicclerk_revision == "civicclerk_0016_archive_indexes"
         assert {"agenda_item_ids", "snapshot_hash", "actor"} <= packet_version_columns
         assert "uq_packet_versions_meeting_version" in packet_version_constraints
         assert civicclerk_tables == set(CANONICAL_TABLES) | {
@@ -542,7 +542,7 @@ def test_alembic_command_upgrades_real_pgvector_database(
                     )
                 ).scalars()
             )
-        assert reupgraded_revision == "civicclerk_0015_capture_seq"
+        assert reupgraded_revision == "civicclerk_0016_archive_indexes"
         assert {"agenda_item_ids", "snapshot_hash", "actor"} <= reupgraded_packet_columns
     finally:
         subprocess.run(["docker", "rm", "-f", name], check=False, capture_output=True, text=True)

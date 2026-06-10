@@ -128,6 +128,18 @@ public_comments_table = sa.Table(
     schema="civicclerk",
 )
 
+# Existence-check mirror of canonical civicclerk.meetings (civicclerk/models.py).
+# publish() pre-checks the meetings FK referent declared by migration 0014, so
+# missing parents yield None instead of dialect-dependent orphans (SQLite) or
+# raw IntegrityError (PostgreSQL). Only the id column is mirrored; migrated
+# databases already have the full table and create_all() skips existing tables.
+meetings_table = sa.Table(
+    "meetings",
+    metadata,
+    sa.Column("id", sa.Uuid(as_uuid=False), primary_key=True),
+    schema="civicclerk",
+)
+
 
 class PublicArchiveStore:
     """In-memory public archive store until DB-backed archive persistence lands."""
@@ -214,11 +226,17 @@ class PublicCommentStore:
     ) -> PublicCommentRecord | None:
         if public_record.visibility != PUBLIC_VISIBILITY or not public_record.public_comment_enabled:
             return None
+        name = commenter_name.strip()
+        body = comment.strip()
+        if not name or not body or len(name) > 255:
+            # Same input guard as PublicCommentRepository.submit: blank or
+            # schema-overflowing resident input never produces a record.
+            return None
         record = PublicCommentRecord(
             id=str(uuid4()),
             public_record_id=public_record.id,
-            commenter_name=commenter_name.strip(),
-            comment=comment.strip(),
+            commenter_name=name,
+            comment=body,
             submitted_at=submitted_at,
         )
         self._comments[record.id] = record
@@ -272,7 +290,14 @@ class PublicArchiveRepository:
         minutes_adopted_at: str | None = None,
         minutes_signed_by: str | None = None,
         closed_session_notes: str | None = None,
-    ) -> PublicMeetingRecord:
+    ) -> PublicMeetingRecord | None:
+        parsed_meeting_id = self._meeting_exists(meeting_id)
+        if parsed_meeting_id is None:
+            # Match referent semantics across repositories: a meetings parent
+            # missing from this database yields None instead of
+            # dialect-dependent orphans (SQLite) or raw IntegrityError
+            # (PostgreSQL, where migration 0014 enforces the FK).
+            return None
         now = datetime.now(UTC)
         record_id = str(uuid4())
         with self._chain_lock:
@@ -283,13 +308,13 @@ class PublicArchiveRepository:
                 subject=AuditSubject(subject_id=record_id, subject_type="public_meeting_record"),
                 source_module="civicclerk",
                 metadata={
-                    "meeting_id": meeting_id,
+                    "meeting_id": parsed_meeting_id,
                     "visibility": normalize_visibility(visibility),
                 },
             )
             values = {
                 "id": record_id,
-                "meeting_id": meeting_id,
+                "meeting_id": parsed_meeting_id,
                 "title": title,
                 "visibility": normalize_visibility(visibility),
                 "posted_agenda": posted_agenda,
@@ -367,6 +392,16 @@ class PublicArchiveRepository:
                 results.append(record)
         return results
 
+    def _meeting_exists(self, meeting_id: str) -> str | None:
+        parsed = _archive_uuid_text_or_none(meeting_id)
+        if parsed is None:
+            return None
+        with self.engine.begin() as connection:
+            row = connection.execute(
+                sa.select(meetings_table.c.id).where(meetings_table.c.id == parsed)
+            ).first()
+        return parsed if row is not None else None
+
 
 class PublicCommentRepository:
     """SQLAlchemy-backed resident comment intake on the public_comments table.
@@ -398,32 +433,41 @@ class PublicCommentRepository:
         comment: str,
         submitted_at: str,
     ) -> PublicCommentRecord | None:
-        if public_record.visibility != PUBLIC_VISIBILITY or not public_record.public_comment_enabled:
+        name = commenter_name.strip()
+        body = comment.strip()
+        if not name or not body or len(name) > 255:
+            # Reject blank or schema-overflowing resident input before the
+            # lock/transaction so no chain event or row is ever attempted.
             return None
-        if self._record_exists(public_record.id) is None:
+        row = self._load_record_row(public_record.id)
+        if row is None:
             # Match referent semantics across repositories: a parent record
             # missing from this database yields None instead of
             # dialect-dependent orphans (SQLite) or raw IntegrityError
             # (PostgreSQL).
+            return None
+        if row["visibility"] != PUBLIC_VISIBILITY or not row["public_comment_enabled"]:
+            # Gate on the database row, never the caller-supplied snapshot:
+            # same semantics as PublicCommentStore's gate, but against truth.
             return None
         now = datetime.now(UTC)
         comment_id = str(uuid4())
         with self._chain_lock:
             event = record_event(
                 self.audit_chain.events,
-                actor=AuditActor(actor_id=commenter_name.strip(), actor_type="resident"),
+                actor=AuditActor(actor_id=name, actor_type="resident"),
                 action="public_archive.comment_received",
                 subject=AuditSubject(subject_id=comment_id, subject_type="public_comment"),
                 source_module="civicclerk",
-                metadata={"public_record_id": public_record.id},
+                metadata={"public_record_id": str(row["id"])},
             )
             values = {
                 "id": comment_id,
-                "meeting_id": public_record.meeting_id,
+                "meeting_id": str(row["meeting_id"]),
                 "agenda_item_id": None,
-                "public_record_id": public_record.id,
-                "commenter_name": commenter_name.strip(),
-                "body": comment.strip(),
+                "public_record_id": str(row["id"]),
+                "commenter_name": name,
+                "body": body,
                 "visibility": PUBLIC_VISIBILITY,
                 "status": "RECEIVED",
                 "submitted_at": _parse_submitted_at(submitted_at),
@@ -466,17 +510,21 @@ class PublicCommentRepository:
             rows = connection.execute(statement).mappings().all()
         return [_comment_row_to_record(row) for row in rows]
 
-    def _record_exists(self, public_record_id: str) -> str | None:
+    def _load_record_row(self, public_record_id: str) -> sa.RowMapping | None:
+        """Load the gating columns of the parent record from database truth."""
+
         parsed = _archive_uuid_text_or_none(public_record_id)
         if parsed is None:
             return None
         with self.engine.begin() as connection:
-            row = connection.execute(
-                sa.select(public_meeting_records_table.c.id).where(
-                    public_meeting_records_table.c.id == parsed
-                )
-            ).first()
-        return parsed if row is not None else None
+            return connection.execute(
+                sa.select(
+                    public_meeting_records_table.c.id,
+                    public_meeting_records_table.c.meeting_id,
+                    public_meeting_records_table.c.visibility,
+                    public_meeting_records_table.c.public_comment_enabled,
+                ).where(public_meeting_records_table.c.id == parsed)
+            ).mappings().first()
 
 
 def normalize_visibility(visibility: str) -> str:

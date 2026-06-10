@@ -445,7 +445,7 @@ class PublicMeetingRecordCreate(BaseModel):
 
 
 class PublicCommentCreate(BaseModel):
-    commenter_name: str = Field(min_length=1)
+    commenter_name: str = Field(min_length=1, max_length=255)
     comment: str = Field(min_length=1)
 
 
