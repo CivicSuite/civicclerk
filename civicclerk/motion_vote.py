@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
@@ -9,7 +10,7 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 from sqlalchemy import Engine, create_engine
 
-from civiccore.audit import AuditActor, AuditHashChain, AuditSubject
+from civiccore.audit import AuditActor, AuditHashChain, AuditSubject, record_event
 
 
 @dataclass(frozen=True)
@@ -334,6 +335,9 @@ class MotionVoteRepository:
                 connection.execute(sa.text("CREATE SCHEMA IF NOT EXISTS civicclerk"))
         metadata.create_all(self.engine)
         self.audit_chain = AuditHashChain()
+        # Serializes seal+insert+append so concurrent captures cannot fork the
+        # hash chain or leave sealed events for writes that never landed.
+        self._chain_lock = threading.Lock()
 
     def capture_motion(
         self,
@@ -348,31 +352,36 @@ class MotionVoteRepository:
     ) -> MotionRecord:
         now = datetime.now(UTC)
         motion_id = str(uuid4())
-        event = self.audit_chain.record_event(
-            actor=AuditActor(actor_id=actor, actor_type="clerk"),
-            action="motion_vote.motion_captured",
-            subject=AuditSubject(subject_id=motion_id, subject_type="motion"),
-            source_module="civicclerk",
-            metadata={
+        with self._chain_lock:
+            event = record_event(
+                self.audit_chain.events,
+                actor=AuditActor(actor_id=actor, actor_type="clerk"),
+                action="motion_vote.motion_captured",
+                subject=AuditSubject(subject_id=motion_id, subject_type="motion"),
+                source_module="civicclerk",
+                metadata={
+                    "meeting_id": meeting_id,
+                    "correction_of_id": correction_of_id,
+                },
+            )
+            values = {
+                "id": motion_id,
                 "meeting_id": meeting_id,
+                "agenda_item_id": _uuid_text_or_none(agenda_item_id),
+                "text": text,
+                "seconded_by": _normalize_optional_text(seconded_by),
+                "captured_by": actor,
                 "correction_of_id": correction_of_id,
-            },
-        )
-        values = {
-            "id": motion_id,
-            "meeting_id": meeting_id,
-            "agenda_item_id": _uuid_text_or_none(agenda_item_id),
-            "text": text,
-            "seconded_by": _normalize_optional_text(seconded_by),
-            "captured_by": actor,
-            "correction_of_id": correction_of_id,
-            "correction_reason": correction_reason,
-            "immutable_hash": event.current_hash or "",
-            "created_at": now,
-            "updated_at": now,
-        }
-        with self.engine.begin() as connection:
-            connection.execute(motions_table.insert().values(**values))
+                "correction_reason": correction_reason,
+                "immutable_hash": event.current_hash or "",
+                "created_at": now,
+                "updated_at": now,
+            }
+            with self.engine.begin() as connection:
+                connection.execute(motions_table.insert().values(**values))
+            # Append only after the transaction commits so a failed insert
+            # never leaves a phantom sealed event on the chain.
+            self.audit_chain.events.append(event)
         return self.get_motion(motion_id) or _motion_row_to_record(values)
 
     def get_motion(self, motion_id: str) -> MotionRecord | None:
@@ -428,33 +437,43 @@ class MotionVoteRepository:
         actor: str,
         correction_of_id: str | None = None,
         correction_reason: str | None = None,
-    ) -> VoteRecord:
+    ) -> VoteRecord | None:
+        if self.get_motion(motion_id) is None:
+            # Match correct_* semantics: missing referents yield None instead
+            # of dialect-dependent orphans (SQLite) or raw IntegrityError
+            # (PostgreSQL).
+            return None
         now = datetime.now(UTC)
         vote_id = str(uuid4())
-        event = self.audit_chain.record_event(
-            actor=AuditActor(actor_id=actor, actor_type="clerk"),
-            action="motion_vote.vote_captured",
-            subject=AuditSubject(subject_id=vote_id, subject_type="vote"),
-            source_module="civicclerk",
-            metadata={
+        with self._chain_lock:
+            event = record_event(
+                self.audit_chain.events,
+                actor=AuditActor(actor_id=actor, actor_type="clerk"),
+                action="motion_vote.vote_captured",
+                subject=AuditSubject(subject_id=vote_id, subject_type="vote"),
+                source_module="civicclerk",
+                metadata={
+                    "motion_id": motion_id,
+                    "correction_of_id": correction_of_id,
+                },
+            )
+            values = {
+                "id": vote_id,
                 "motion_id": motion_id,
+                "voter_name": voter_name,
+                "vote": vote.strip().lower(),
+                "actor": actor,
                 "correction_of_id": correction_of_id,
-            },
-        )
-        values = {
-            "id": vote_id,
-            "motion_id": motion_id,
-            "voter_name": voter_name,
-            "vote": vote.strip().lower(),
-            "actor": actor,
-            "correction_of_id": correction_of_id,
-            "correction_reason": correction_reason,
-            "immutable_hash": event.current_hash or "",
-            "created_at": now,
-            "updated_at": now,
-        }
-        with self.engine.begin() as connection:
-            connection.execute(votes_table.insert().values(**values))
+                "correction_reason": correction_reason,
+                "immutable_hash": event.current_hash or "",
+                "created_at": now,
+                "updated_at": now,
+            }
+            with self.engine.begin() as connection:
+                connection.execute(votes_table.insert().values(**values))
+            # Append only after the transaction commits so a failed insert
+            # never leaves a phantom sealed event on the chain.
+            self.audit_chain.events.append(event)
         return self.get_vote(vote_id) or _vote_row_to_record(values)
 
     def get_vote(self, vote_id: str) -> VoteRecord | None:
@@ -508,33 +527,43 @@ class MotionVoteRepository:
         actor: str,
         assigned_to: str | None = None,
         source_motion_id: str | None = None,
-    ) -> ActionItemRecord:
+    ) -> ActionItemRecord | None:
+        if source_motion_id is not None and self.get_motion(source_motion_id) is None:
+            # Match correct_* semantics: missing referents yield None instead
+            # of dialect-dependent orphans (SQLite) or raw IntegrityError
+            # (PostgreSQL).
+            return None
         now = datetime.now(UTC)
         action_item_id = str(uuid4())
-        event = self.audit_chain.record_event(
-            actor=AuditActor(actor_id=actor, actor_type="clerk"),
-            action="motion_vote.action_item_created",
-            subject=AuditSubject(subject_id=action_item_id, subject_type="action_item"),
-            source_module="civicclerk",
-            metadata={
+        with self._chain_lock:
+            event = record_event(
+                self.audit_chain.events,
+                actor=AuditActor(actor_id=actor, actor_type="clerk"),
+                action="motion_vote.action_item_created",
+                subject=AuditSubject(subject_id=action_item_id, subject_type="action_item"),
+                source_module="civicclerk",
+                metadata={
+                    "meeting_id": meeting_id,
+                    "source_motion_id": source_motion_id,
+                },
+            )
+            values = {
+                "id": action_item_id,
                 "meeting_id": meeting_id,
+                "description": description,
+                "status": "OPEN",
+                "assigned_to": assigned_to,
                 "source_motion_id": source_motion_id,
-            },
-        )
-        del event  # action_items has no immutable_hash column; chain still records the write.
-        values = {
-            "id": action_item_id,
-            "meeting_id": meeting_id,
-            "description": description,
-            "status": "OPEN",
-            "assigned_to": assigned_to,
-            "source_motion_id": source_motion_id,
-            "actor": actor,
-            "created_at": now,
-            "updated_at": now,
-        }
-        with self.engine.begin() as connection:
-            connection.execute(action_items_table.insert().values(**values))
+                "actor": actor,
+                "created_at": now,
+                "updated_at": now,
+            }
+            with self.engine.begin() as connection:
+                connection.execute(action_items_table.insert().values(**values))
+            # action_items has no immutable_hash column; the chain still records
+            # the write, appended only after the transaction commits so a failed
+            # insert never leaves a phantom sealed event.
+            self.audit_chain.events.append(event)
         with self.engine.begin() as connection:
             row = connection.execute(
                 sa.select(action_items_table).where(action_items_table.c.id == action_item_id)

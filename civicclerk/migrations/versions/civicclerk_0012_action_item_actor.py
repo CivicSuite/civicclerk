@@ -29,4 +29,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_column("action_items", "actor", schema=SCHEMA)
+    inspector = sa.inspect(op.get_bind())
+    columns = {
+        column["name"]
+        for column in inspector.get_columns("action_items", schema=SCHEMA)
+    }
+    if "actor" in columns:
+        op.drop_column("action_items", "actor", schema=SCHEMA)

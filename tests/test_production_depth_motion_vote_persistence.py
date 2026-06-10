@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+import importlib.util
+import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from uuid import uuid4
+
+import pytest
+import sqlalchemy as sa
 
 from civicclerk.motion_vote import MotionVoteRepository
 
@@ -145,6 +151,98 @@ def test_repository_lists_recent_outcome_summaries(tmp_path) -> None:
     assert recent[0].status == "CAPTURED"
 
 
+def test_concurrent_motion_capture_keeps_audit_chain_intact(tmp_path) -> None:
+    repo = MotionVoteRepository(db_url=f"sqlite:///{tmp_path / 'concurrent.db'}")
+    meeting_id = str(uuid4())
+
+    def capture_batch(worker_index: int) -> None:
+        for sequence in range(25):
+            repo.capture_motion(
+                meeting_id=meeting_id,
+                text=f"Motion from worker {worker_index} #{sequence}.",
+                actor="clerk@example.gov",
+            )
+
+    # Force frequent thread switches so unsynchronized read-last-hash-then-append
+    # interleavings surface deterministically instead of once a month in production.
+    original_interval = sys.getswitchinterval()
+    sys.setswitchinterval(1e-6)
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(capture_batch, range(8)))
+    finally:
+        sys.setswitchinterval(original_interval)
+
+    assert len(repo.list_motions(meeting_id)) == 200
+    assert len(repo.audit_chain.events) == 200
+    assert repo.audit_chain.verify()
+
+
+def test_capture_vote_with_unknown_motion_returns_none_without_orphan_row(tmp_path) -> None:
+    repo = MotionVoteRepository(db_url=f"sqlite:///{tmp_path / 'fk-votes.db'}")
+    missing_motion_id = str(uuid4())
+
+    result = repo.capture_vote(
+        motion_id=missing_motion_id,
+        voter_name="Council Member Rivera",
+        vote="aye",
+        actor="clerk@example.gov",
+    )
+
+    assert result is None
+    assert repo.list_votes(missing_motion_id) == []
+    assert repo.audit_chain.events == []
+    assert repo.audit_chain.verify()
+
+
+def test_create_action_item_with_unknown_source_motion_returns_none(tmp_path) -> None:
+    repo = MotionVoteRepository(db_url=f"sqlite:///{tmp_path / 'fk-actions.db'}")
+    meeting_id = str(uuid4())
+
+    result = repo.create_action_item(
+        meeting_id=meeting_id,
+        description="Publish signed contract award notice.",
+        actor="clerk@example.gov",
+        source_motion_id=str(uuid4()),
+    )
+
+    assert result is None
+    assert repo.list_action_items(meeting_id) == []
+    assert repo.audit_chain.events == []
+    assert repo.audit_chain.verify()
+
+
+def test_capture_motion_narrows_invalid_agenda_item_id_to_none(tmp_path) -> None:
+    repo = MotionVoteRepository(db_url=f"sqlite:///{tmp_path / 'narrowing.db'}")
+    meeting_id = str(uuid4())
+
+    motion = repo.capture_motion(
+        meeting_id=meeting_id,
+        agenda_item_id="not-a-uuid",
+        text="Move to approve the packet as presented.",
+        actor="clerk@example.gov",
+    )
+
+    assert motion.agenda_item_id is None
+    persisted = repo.get_motion(motion.id)
+    assert persisted is not None
+    assert persisted.agenda_item_id is None
+
+
+def test_failed_insert_leaves_no_phantom_audit_event(tmp_path) -> None:
+    repo = MotionVoteRepository(db_url=f"sqlite:///{tmp_path / 'phantom.db'}")
+
+    with pytest.raises(sa.exc.IntegrityError):
+        repo.capture_motion(
+            meeting_id=str(uuid4()),
+            text=None,  # type: ignore[arg-type]  # violates NOT NULL on motions.text
+            actor="clerk@example.gov",
+        )
+
+    assert repo.audit_chain.events == []
+    assert repo.audit_chain.verify()
+
+
 def test_migration_0012_adds_action_item_actor_and_extends_chain() -> None:
     path = (
         ROOT
@@ -154,7 +252,11 @@ def test_migration_0012_adds_action_item_actor_and_extends_chain() -> None:
         / "civicclerk_0012_action_item_actor.py"
     )
     assert path.exists(), "Missing migration: civicclerk_0012_action_item_actor.py"
-    text = path.read_text(encoding="utf-8")
-    assert 'revision = "civicclerk_0012_action_actor"' in text
-    assert 'down_revision = "civicclerk_0011_data_model"' in text
-    assert '"actor"' in text and '"action_items"' in text
+    spec = importlib.util.spec_from_file_location("civicclerk_0012_action_item_actor", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.revision == "civicclerk_0012_action_actor"
+    assert module.down_revision == "civicclerk_0011_data_model"
+    assert callable(module.upgrade)
+    assert callable(module.downgrade)
