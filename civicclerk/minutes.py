@@ -93,7 +93,10 @@ minutes_table = sa.Table(
 
 
 class MinutesDraftStore:
-    """In-memory minutes draft store until DB-backed persistence lands."""
+    """In-memory minutes draft store until DB-backed persistence lands.
+
+    No adoption/posting writers exist yet by design; see MinutesDraftRepository.
+    """
 
     def __init__(self) -> None:
         self._drafts: dict[str, MinutesDraft] = {}
@@ -109,17 +112,7 @@ class MinutesDraftStore:
         source_materials: list[SourceMaterial],
         sentences: list[MinutesSentence],
     ) -> MinutesDraft | MinutesValidationError:
-        if not is_known_prompt_version(prompt_version):
-            expected = expected_prompt_version_hint()
-            return MinutesValidationError(
-                message="Minutes drafts must use a prompt version from the CivicClerk YAML prompt library.",
-                fix=f"Use prompt_version '{expected}' or another version returned by the prompt library.",
-            )
-
-        validation_error = validate_minutes_draft(
-            source_materials=source_materials,
-            sentences=sentences,
-        )
+        validation_error = _validate_create_inputs(prompt_version, source_materials, sentences)
         if validation_error is not None:
             return validation_error
 
@@ -165,6 +158,10 @@ class MinutesDraftRepository:
     from source_materials on read; adopted/posted derive from adopted_at /
     posted_at being non-NULL. The NOT NULL body column stores the joined
     sentence text so the canonical schema contract stays satisfied.
+
+    Intentional gap: adopted_at / posted_at currently have no writer. Phase 1
+    targets restart-survival parity with the in-memory store; the adoption and
+    posting write paths (mark_adopted / mark_posted) are deferred to Phase 1b.
     """
 
     def __init__(self, *, db_url: str | None = None, engine: Engine | None = None) -> None:
@@ -192,17 +189,7 @@ class MinutesDraftRepository:
         source_materials: list[SourceMaterial],
         sentences: list[MinutesSentence],
     ) -> MinutesDraft | MinutesValidationError:
-        if not is_known_prompt_version(prompt_version):
-            expected = expected_prompt_version_hint()
-            return MinutesValidationError(
-                message="Minutes drafts must use a prompt version from the CivicClerk YAML prompt library.",
-                fix=f"Use prompt_version '{expected}' or another version returned by the prompt library.",
-            )
-
-        validation_error = validate_minutes_draft(
-            source_materials=source_materials,
-            sentences=sentences,
-        )
+        validation_error = _validate_create_inputs(prompt_version, source_materials, sentences)
         if validation_error is not None:
             return validation_error
 
@@ -302,6 +289,25 @@ def validate_minutes_draft(
             fix=error.fix,
         )
     return MinutesValidationError(message=error.message, fix=error.fix)
+
+
+def _validate_create_inputs(
+    prompt_version: str,
+    source_materials: list[SourceMaterial],
+    sentences: list[MinutesSentence],
+) -> MinutesValidationError | None:
+    """Shared create_draft input gates: prompt-library version, then citations."""
+
+    if not is_known_prompt_version(prompt_version):
+        expected = expected_prompt_version_hint()
+        return MinutesValidationError(
+            message="Minutes drafts must use a prompt version from the CivicClerk YAML prompt library.",
+            fix=f"Use prompt_version '{expected}' or another version returned by the prompt library.",
+        )
+    return validate_minutes_draft(
+        source_materials=source_materials,
+        sentences=sentences,
+    )
 
 
 def _minutes_uuid_text_or_none(value: str | None) -> str | None:

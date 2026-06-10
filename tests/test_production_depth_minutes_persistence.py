@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from uuid import uuid4
 
@@ -101,6 +103,42 @@ def test_repository_enforces_prompt_library_and_citation_gates(tmp_path) -> None
     assert "prompt library" in bad_prompt.message.lower() or "prompt version" in bad_prompt.fix.lower()
     assert isinstance(uncited, MinutesValidationError)
     assert "citation" in uncited.message.lower()
+
+
+def test_concurrent_draft_creation_keeps_audit_chain_intact(tmp_path) -> None:
+    repo = MinutesDraftRepository(db_url=f"sqlite:///{tmp_path / 'concurrent.db'}")
+    meeting_id = str(uuid4())
+
+    def create_batch(worker_index: int) -> None:
+        for sequence in range(25):
+            draft = repo.create_draft(
+                meeting_id=meeting_id,
+                model="ollama/gemma4",
+                prompt_version="minutes_draft@0.1.0",
+                human_approver="clerk@example.gov",
+                source_materials=[_source()],
+                sentences=[
+                    MinutesSentence(
+                        text="Council approved the sidewalk repair contract by a 3-1 vote.",
+                        citations=("motion-sidewalk-contract",),
+                    )
+                ],
+            )
+            assert hasattr(draft, "public_dict"), getattr(draft, "message", draft)
+
+    # Force frequent thread switches so unsynchronized read-last-hash-then-append
+    # interleavings surface deterministically instead of once a month in production.
+    original_interval = sys.getswitchinterval()
+    try:
+        sys.setswitchinterval(1e-6)
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(create_batch, range(8)))
+    finally:
+        sys.setswitchinterval(original_interval)
+
+    assert len(repo.list_drafts(meeting_id)) == 200
+    assert len(repo.audit_chain.events) == 200
+    assert repo.audit_chain.verify()
 
 
 def test_migration_0013_adds_model_and_posted_at_and_extends_chain() -> None:
