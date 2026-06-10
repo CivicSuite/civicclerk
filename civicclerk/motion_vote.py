@@ -110,6 +110,7 @@ motions_table = sa.Table(
     sa.Column("correction_of_id", sa.Uuid(as_uuid=False), nullable=True),
     sa.Column("correction_reason", sa.Text(), nullable=True),
     sa.Column("immutable_hash", sa.String(128), nullable=True),
+    sa.Column("capture_seq", sa.BigInteger(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     schema="civicclerk",
@@ -126,6 +127,7 @@ votes_table = sa.Table(
     sa.Column("correction_of_id", sa.Uuid(as_uuid=False), nullable=True),
     sa.Column("correction_reason", sa.Text(), nullable=True),
     sa.Column("immutable_hash", sa.String(128), nullable=True),
+    sa.Column("capture_seq", sa.BigInteger(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     schema="civicclerk",
@@ -141,6 +143,7 @@ action_items_table = sa.Table(
     sa.Column("assigned_to", sa.String(255), nullable=True),
     sa.Column("source_motion_id", sa.Uuid(as_uuid=False), nullable=True),
     sa.Column("actor", sa.String(255), nullable=True),
+    sa.Column("capture_seq", sa.BigInteger(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     schema="civicclerk",
@@ -378,6 +381,7 @@ class MotionVoteRepository:
                 "updated_at": now,
             }
             with self.engine.begin() as connection:
+                values["capture_seq"] = _next_capture_seq(connection, motions_table)
                 connection.execute(motions_table.insert().values(**values))
             # Append only after the transaction commits so a failed insert
             # never leaves a phantom sealed event on the chain.
@@ -401,7 +405,7 @@ class MotionVoteRepository:
         statement = (
             sa.select(motions_table)
             .where(motions_table.c.meeting_id == parsed)
-            .order_by(motions_table.c.created_at.asc(), motions_table.c.id.asc())
+            .order_by(motions_table.c.capture_seq.asc())
         )
         with self.engine.begin() as connection:
             rows = connection.execute(statement).mappings().all()
@@ -470,6 +474,7 @@ class MotionVoteRepository:
                 "updated_at": now,
             }
             with self.engine.begin() as connection:
+                values["capture_seq"] = _next_capture_seq(connection, votes_table)
                 connection.execute(votes_table.insert().values(**values))
             # Append only after the transaction commits so a failed insert
             # never leaves a phantom sealed event on the chain.
@@ -493,7 +498,7 @@ class MotionVoteRepository:
         statement = (
             sa.select(votes_table)
             .where(votes_table.c.motion_id == parsed)
-            .order_by(votes_table.c.created_at.asc(), votes_table.c.id.asc())
+            .order_by(votes_table.c.capture_seq.asc())
         )
         with self.engine.begin() as connection:
             rows = connection.execute(statement).mappings().all()
@@ -559,6 +564,7 @@ class MotionVoteRepository:
                 "updated_at": now,
             }
             with self.engine.begin() as connection:
+                values["capture_seq"] = _next_capture_seq(connection, action_items_table)
                 connection.execute(action_items_table.insert().values(**values))
             # action_items has no immutable_hash column; the chain still records
             # the write, appended only after the transaction commits so a failed
@@ -577,7 +583,7 @@ class MotionVoteRepository:
         statement = (
             sa.select(action_items_table)
             .where(action_items_table.c.meeting_id == parsed)
-            .order_by(action_items_table.c.created_at.asc(), action_items_table.c.id.asc())
+            .order_by(action_items_table.c.capture_seq.asc())
         )
         with self.engine.begin() as connection:
             rows = connection.execute(statement).mappings().all()
@@ -590,7 +596,7 @@ class MotionVoteRepository:
         with self.engine.begin() as connection:
             motion_rows = connection.execute(
                 sa.select(motions_table)
-                .order_by(motions_table.c.created_at.desc(), motions_table.c.id.desc())
+                .order_by(motions_table.c.capture_seq.desc())
                 .limit(limit)
             ).mappings().all()
             for row in motion_rows:
@@ -624,6 +630,22 @@ def _normalize_optional_text(value: str | None) -> str | None:
         return None
     normalized = value.strip()
     return normalized or None
+
+
+def _next_capture_seq(connection: sa.Connection, table: sa.Table) -> int:
+    """Allocate the next monotonic insertion-order sequence for a table.
+
+    Runs inside the insert transaction; callers already hold _chain_lock, so
+    MAX+1 cannot race within the single writer process the in-memory audit
+    chain requires. Ordering by capture_seq keeps insertion order even when
+    rows share a created_at timestamp (the uuid4 id is random and must never
+    decide order).
+    """
+
+    current = connection.execute(
+        sa.select(sa.func.coalesce(sa.func.max(table.c.capture_seq), 0))
+    ).scalar_one()
+    return int(current) + 1
 
 
 def _uuid_text_or_none(value: str | None) -> str | None:

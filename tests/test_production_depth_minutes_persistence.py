@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+from civicclerk import minutes as minutes_module
 from civicclerk.minutes import (
     MinutesDraftRepository,
     MinutesSentence,
@@ -13,6 +15,24 @@ from civicclerk.minutes import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def freeze_module_clock(monkeypatch, module) -> datetime:
+    """Pin a module's datetime.now so every insert shares one created_at tick.
+
+    Same-timestamp rows are the production failure mode this hammers: with
+    (created_at, id) ordering the uuid4 id decided the order randomly.
+    """
+
+    frozen = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
+
+    class FrozenDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):  # noqa: ANN001 - mirrors datetime.now signature
+            return frozen if tz is not None else frozen.replace(tzinfo=None)
+
+    monkeypatch.setattr(module, "datetime", FrozenDatetime)
+    return frozen
 
 
 def _source() -> SourceMaterial:
@@ -139,6 +159,37 @@ def test_concurrent_draft_creation_keeps_audit_chain_intact(tmp_path) -> None:
     assert len(repo.list_drafts(meeting_id)) == 200
     assert len(repo.audit_chain.events) == 200
     assert repo.audit_chain.verify()
+
+
+def test_same_timestamp_drafts_preserve_insertion_order(tmp_path, monkeypatch) -> None:
+    """Drafts created within one timestamp tick must list in insertion order."""
+
+    freeze_module_clock(monkeypatch, minutes_module)
+    repo = MinutesDraftRepository(db_url=f"sqlite:///{tmp_path / 'same-tick.db'}")
+    meeting_id = str(uuid4())
+
+    drafts = []
+    for index in range(24):
+        draft = repo.create_draft(
+            meeting_id=meeting_id,
+            model="ollama/gemma4",
+            prompt_version="minutes_draft@0.1.0",
+            human_approver="clerk@example.gov",
+            source_materials=[_source()],
+            sentences=[
+                MinutesSentence(
+                    text=f"Cited sentence #{index}.",
+                    citations=("motion-sidewalk-contract",),
+                )
+            ],
+        )
+        assert hasattr(draft, "public_dict"), getattr(draft, "message", draft)
+        drafts.append(draft)
+
+    assert [d.id for d in repo.list_drafts(meeting_id)] == [d.id for d in drafts]
+    assert [d.id for d in repo.list_recent(limit=24)] == [
+        d.id for d in reversed(drafts)
+    ]
 
 
 def test_migration_0013_adds_model_and_posted_at_and_extends_chain() -> None:

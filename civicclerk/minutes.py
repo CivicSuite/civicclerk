@@ -86,6 +86,7 @@ minutes_table = sa.Table(
     sa.Column("posted_at", sa.DateTime(timezone=True), nullable=True),
     sa.Column("signed_by", sa.String(255), nullable=True),
     sa.Column("document_ref", sa.Text(), nullable=True),
+    sa.Column("capture_seq", sa.BigInteger(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     schema="civicclerk",
@@ -225,6 +226,7 @@ class MinutesDraftRepository:
                 "updated_at": now,
             }
             with self.engine.begin() as connection:
+                values["capture_seq"] = _minutes_next_capture_seq(connection)
                 connection.execute(minutes_table.insert().values(**values))
             # Append only after the transaction commits so a failed insert
             # never leaves a phantom sealed event on the chain.
@@ -248,7 +250,7 @@ class MinutesDraftRepository:
         statement = (
             sa.select(minutes_table)
             .where(minutes_table.c.meeting_id == parsed)
-            .order_by(minutes_table.c.created_at.asc(), minutes_table.c.id.asc())
+            .order_by(minutes_table.c.capture_seq.asc())
         )
         with self.engine.begin() as connection:
             rows = connection.execute(statement).mappings().all()
@@ -259,7 +261,7 @@ class MinutesDraftRepository:
 
         statement = (
             sa.select(minutes_table)
-            .order_by(minutes_table.c.created_at.desc(), minutes_table.c.id.desc())
+            .order_by(minutes_table.c.capture_seq.desc())
             .limit(limit)
         )
         with self.engine.begin() as connection:
@@ -308,6 +310,22 @@ def _validate_create_inputs(
         source_materials=source_materials,
         sentences=sentences,
     )
+
+
+def _minutes_next_capture_seq(connection: sa.Connection) -> int:
+    """Allocate the next monotonic insertion-order sequence for minutes rows.
+
+    Runs inside the insert transaction; callers already hold _chain_lock, so
+    MAX+1 cannot race within the single writer process the in-memory audit
+    chain requires. Ordering by capture_seq keeps insertion order even when
+    rows share a created_at timestamp (the uuid4 id is random and must never
+    decide order).
+    """
+
+    current = connection.execute(
+        sa.select(sa.func.coalesce(sa.func.max(minutes_table.c.capture_seq), 0))
+    ).scalar_one()
+    return int(current) + 1
 
 
 def _minutes_uuid_text_or_none(value: str | None) -> str | None:

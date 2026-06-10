@@ -1,17 +1,38 @@
 from __future__ import annotations
 
 import importlib.util
+import inspect
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
 import sqlalchemy as sa
 
+from civicclerk import motion_vote as motion_vote_module
 from civicclerk.motion_vote import MotionVoteRepository
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def freeze_module_clock(monkeypatch, module) -> datetime:
+    """Pin a module's datetime.now so every insert shares one created_at tick.
+
+    Same-timestamp rows are the production failure mode this hammers: with
+    (created_at, id) ordering the uuid4 id decided the order randomly.
+    """
+
+    frozen = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
+
+    class FrozenDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):  # noqa: ANN001 - mirrors datetime.now signature
+            return frozen if tz is not None else frozen.replace(tzinfo=None)
+
+    monkeypatch.setattr(module, "datetime", FrozenDatetime)
+    return frozen
 
 
 def test_motions_votes_action_items_persist_across_repository_instances(tmp_path) -> None:
@@ -241,6 +262,87 @@ def test_failed_insert_leaves_no_phantom_audit_event(tmp_path) -> None:
 
     assert repo.audit_chain.events == []
     assert repo.audit_chain.verify()
+
+
+def test_same_timestamp_captures_preserve_insertion_order(tmp_path, monkeypatch) -> None:
+    """Rows captured within one timestamp tick must list in insertion order.
+
+    Before capture_seq, list reads tiebroke (created_at, id) on a random
+    uuid4, so this test failed with near-certainty (1/24! chance of passing).
+    """
+
+    freeze_module_clock(monkeypatch, motion_vote_module)
+    repo = MotionVoteRepository(db_url=f"sqlite:///{tmp_path / 'same-tick.db'}")
+    meeting_id = str(uuid4())
+
+    motions = [
+        repo.capture_motion(
+            meeting_id=meeting_id,
+            text=f"Motion #{index}.",
+            actor="clerk@example.gov",
+        )
+        for index in range(24)
+    ]
+    assert [m.id for m in repo.list_motions(meeting_id)] == [m.id for m in motions]
+
+    votes = [
+        repo.capture_vote(
+            motion_id=motions[0].id,
+            voter_name=f"Council Member {index}",
+            vote="aye",
+            actor="clerk@example.gov",
+        )
+        for index in range(24)
+    ]
+    assert [v.id for v in repo.list_votes(motions[0].id)] == [v.id for v in votes]
+
+    action_items = [
+        repo.create_action_item(
+            meeting_id=meeting_id,
+            description=f"Action item #{index}.",
+            actor="clerk@example.gov",
+        )
+        for index in range(24)
+    ]
+    assert [a.id for a in repo.list_action_items(meeting_id)] == [
+        a.id for a in action_items
+    ]
+
+    recent = repo.list_recent_outcomes(limit=24)
+    assert [s.motion_id for s in recent] == [m.id for m in reversed(motions)]
+
+
+def test_migration_0015_adds_capture_seq_with_legacy_backfill() -> None:
+    path = (
+        ROOT
+        / "civicclerk"
+        / "migrations"
+        / "versions"
+        / "civicclerk_0015_capture_seq.py"
+    )
+    assert path.exists(), "Missing migration: civicclerk_0015_capture_seq.py"
+    spec = importlib.util.spec_from_file_location("civicclerk_0015_capture_seq", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.revision == "civicclerk_0015_capture_seq"
+    assert module.down_revision == "civicclerk_0014_public_records"
+    assert callable(module.upgrade)
+    assert callable(module.downgrade)
+
+    upgrade_source = inspect.getsource(module.upgrade)
+    for table_name in (
+        "motions",
+        "votes",
+        "action_items",
+        "minutes",
+        "public_meeting_records",
+        "public_comments",
+    ):
+        assert f'"{table_name}"' in inspect.getsource(module) or table_name in upgrade_source
+    assert "capture_seq" in upgrade_source
+    # Legacy rows must keep their best-known order when backfilled.
+    assert "created_at" in upgrade_source and "row_number" in upgrade_source
 
 
 def test_migration_0012_adds_action_item_actor_and_extends_chain() -> None:

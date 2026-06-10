@@ -103,6 +103,7 @@ public_meeting_records_table = sa.Table(
     sa.Column("minutes_adopted_at", sa.String(120), nullable=True),
     sa.Column("minutes_signed_by", sa.String(255), nullable=True),
     sa.Column("closed_session_notes", sa.Text(), nullable=True),
+    sa.Column("capture_seq", sa.BigInteger(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     schema="civicclerk",
@@ -121,6 +122,7 @@ public_comments_table = sa.Table(
     sa.Column("status", sa.String(80), nullable=False),
     sa.Column("submitted_at", sa.DateTime(timezone=True), nullable=True),
     sa.Column("moderation_notes", sa.Text(), nullable=True),
+    sa.Column("capture_seq", sa.BigInteger(), nullable=False),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     schema="civicclerk",
@@ -305,6 +307,9 @@ class PublicArchiveRepository:
                 "updated_at": now,
             }
             with self.engine.begin() as connection:
+                values["capture_seq"] = _archive_next_capture_seq(
+                    connection, public_meeting_records_table
+                )
                 connection.execute(public_meeting_records_table.insert().values(**values))
             # Append only after the transaction commits so a failed insert
             # never leaves a phantom sealed event on the chain.
@@ -321,10 +326,7 @@ class PublicArchiveRepository:
         statement = (
             sa.select(public_meeting_records_table)
             .where(public_meeting_records_table.c.visibility == PUBLIC_VISIBILITY)
-            .order_by(
-                public_meeting_records_table.c.created_at.asc(),
-                public_meeting_records_table.c.id.asc(),
-            )
+            .order_by(public_meeting_records_table.c.capture_seq.asc())
         )
         with self.engine.begin() as connection:
             rows = connection.execute(statement).mappings().all()
@@ -350,8 +352,7 @@ class PublicArchiveRepository:
     def search(self, *, query: str, include_closed: bool = False) -> list[PublicMeetingRecord]:
         normalized_query = normalize_search_query(query)
         statement = sa.select(public_meeting_records_table).order_by(
-            public_meeting_records_table.c.created_at.asc(),
-            public_meeting_records_table.c.id.asc(),
+            public_meeting_records_table.c.capture_seq.asc()
         )
         if not include_closed:
             statement = statement.where(
@@ -431,6 +432,9 @@ class PublicCommentRepository:
                 "updated_at": now,
             }
             with self.engine.begin() as connection:
+                values["capture_seq"] = _archive_next_capture_seq(
+                    connection, public_comments_table
+                )
                 connection.execute(public_comments_table.insert().values(**values))
             # Append only after the transaction commits so a failed insert
             # never leaves a phantom sealed event on the chain.
@@ -448,7 +452,7 @@ class PublicCommentRepository:
         statement = (
             sa.select(public_comments_table)
             .where(public_comments_table.c.public_record_id == parsed)
-            .order_by(public_comments_table.c.created_at.asc(), public_comments_table.c.id.asc())
+            .order_by(public_comments_table.c.capture_seq.asc())
         )
         with self.engine.begin() as connection:
             rows = connection.execute(statement).mappings().all()
@@ -456,7 +460,7 @@ class PublicCommentRepository:
 
     def list_all(self) -> list[PublicCommentRecord]:
         statement = sa.select(public_comments_table).order_by(
-            public_comments_table.c.created_at.asc(), public_comments_table.c.id.asc()
+            public_comments_table.c.capture_seq.asc()
         )
         with self.engine.begin() as connection:
             rows = connection.execute(statement).mappings().all()
@@ -506,6 +510,22 @@ def _record_matches(
         ]
     )
     return search_text_matches_query(text=searchable_text, query=query)
+
+
+def _archive_next_capture_seq(connection: sa.Connection, table: sa.Table) -> int:
+    """Allocate the next monotonic insertion-order sequence for a table.
+
+    Runs inside the insert transaction; callers already hold _chain_lock, so
+    MAX+1 cannot race within the single writer process the in-memory audit
+    chain requires. Ordering by capture_seq keeps insertion order even when
+    rows share a created_at timestamp (the uuid4 id is random and must never
+    decide order).
+    """
+
+    current = connection.execute(
+        sa.select(sa.func.coalesce(sa.func.max(table.c.capture_seq), 0))
+    ).scalar_one()
+    return int(current) + 1
 
 
 def _archive_uuid_text_or_none(value: str | None) -> str | None:

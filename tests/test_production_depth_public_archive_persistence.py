@@ -1,18 +1,42 @@
 from __future__ import annotations
 
 import importlib.util
+import inspect
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+from civicclerk import public_archive as public_archive_module
 from civicclerk.public_archive import (
     PublicArchiveRepository,
     PublicCommentRepository,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def freeze_module_clock(monkeypatch, module) -> datetime:
+    """Pin a module's datetime.now so every insert shares one created_at tick.
+
+    Same-timestamp rows are the production failure mode this hammers: with
+    (created_at, id) ordering the uuid4 id decided the order randomly.
+    """
+
+    frozen = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
+
+    class FrozenDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):  # noqa: ANN001 - mirrors datetime.now signature
+            return frozen if tz is not None else frozen.replace(tzinfo=None)
+
+        @classmethod
+        def fromisoformat(cls, value):  # noqa: ANN001 - mirrors datetime API
+            return datetime.fromisoformat(value)
+
+    monkeypatch.setattr(module, "datetime", FrozenDatetime)
+    return frozen
 
 
 def test_public_records_persist_across_repository_instances(tmp_path) -> None:
@@ -235,6 +259,47 @@ def test_concurrent_comment_submissions_keep_audit_chain_intact(tmp_path) -> Non
     assert repo.audit_chain.verify()
 
 
+def test_same_timestamp_publishes_and_comments_preserve_insertion_order(
+    tmp_path, monkeypatch
+) -> None:
+    """Records and comments inserted within one tick must list in insertion order."""
+
+    freeze_module_clock(monkeypatch, public_archive_module)
+    db_url = f"sqlite:///{tmp_path / 'same-tick.db'}"
+    archive = PublicArchiveRepository(db_url=db_url)
+
+    records = [
+        archive.publish(
+            meeting_id=str(uuid4()),
+            title=f"Sidewalk Hearing #{index}",
+            visibility="public",
+            posted_agenda=f"Agenda #{index} covering sidewalk repairs.",
+            posted_packet=f"Packet #{index}.",
+            approved_minutes=f"Minutes #{index}.",
+            public_comment_enabled=True,
+        )
+        for index in range(24)
+    ]
+    assert [r.id for r in archive.public_calendar()] == [r.id for r in records]
+    assert [r.id for r in archive.search(query="sidewalk")] == [r.id for r in records]
+
+    comments_repo = PublicCommentRepository(db_url=db_url)
+    comments = [
+        comments_repo.submit(
+            public_record=records[0],
+            commenter_name=f"Resident {index}",
+            comment=f"Comment #{index}.",
+            submitted_at="2026-06-10T12:00:00+00:00",
+        )
+        for index in range(24)
+    ]
+    assert all(comment is not None for comment in comments)
+    assert [c.id for c in comments_repo.list_for_record(records[0].id)] == [
+        c.id for c in comments
+    ]
+    assert [c.id for c in comments_repo.list_all()] == [c.id for c in comments]
+
+
 def test_migration_0014_creates_public_meeting_records_and_extends_chain() -> None:
     path = (
         ROOT
@@ -252,3 +317,6 @@ def test_migration_0014_creates_public_meeting_records_and_extends_chain() -> No
     assert module.down_revision == "civicclerk_0013_minutes_model"
     assert callable(module.upgrade)
     assert callable(module.downgrade)
+    # Spec review: the upgrade must actually target the public_meeting_records
+    # table, not merely declare the revision chain.
+    assert "public_meeting_records" in inspect.getsource(module.upgrade)
