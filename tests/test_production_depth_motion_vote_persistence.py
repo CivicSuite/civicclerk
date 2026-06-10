@@ -166,8 +166,8 @@ def test_concurrent_motion_capture_keeps_audit_chain_intact(tmp_path) -> None:
     # Force frequent thread switches so unsynchronized read-last-hash-then-append
     # interleavings surface deterministically instead of once a month in production.
     original_interval = sys.getswitchinterval()
-    sys.setswitchinterval(1e-6)
     try:
+        sys.setswitchinterval(1e-6)
         with ThreadPoolExecutor(max_workers=8) as pool:
             list(pool.map(capture_batch, range(8)))
     finally:

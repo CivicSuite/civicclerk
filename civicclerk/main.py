@@ -1679,12 +1679,15 @@ async def capture_vote(motion_id: str, payload: VoteCreate) -> dict:
     """Capture an immutable vote for a motion."""
     if motion_votes.get_motion(motion_id) is None:
         raise HTTPException(status_code=404, detail="Motion not found.")
-    return motion_votes.capture_vote(
+    vote = motion_votes.capture_vote(
         motion_id=motion_id,
         voter_name=payload.voter_name,
         vote=payload.vote,
         actor=payload.actor,
-    ).public_dict()
+    )
+    if vote is None:
+        raise HTTPException(status_code=404, detail="Motion not found.")
+    return vote.public_dict()
 
 
 @app.get("/motions/{motion_id}/votes")
@@ -1754,13 +1757,16 @@ async def create_action_item(meeting_id: str, payload: ActionItemCreate) -> dict
                 "fix": "Use a motion captured for this meeting as source_motion_id.",
             },
         )
-    return motion_votes.create_action_item(
+    action_item = motion_votes.create_action_item(
         meeting_id=meeting_id,
         description=payload.description,
         assigned_to=payload.assigned_to,
         source_motion_id=payload.source_motion_id,
         actor=payload.actor,
-    ).public_dict()
+    )
+    if action_item is None:
+        raise HTTPException(status_code=404, detail="Source motion not found.")
+    return action_item.public_dict()
 
 
 @app.get("/meetings/{meeting_id}/action-items")
