@@ -201,6 +201,7 @@ action_items = sa.Table(
     sa.Column("status", sa.String(80), nullable=False),
     sa.Column("assigned_to", sa.String(255), nullable=True),
     sa.Column("source_motion_id", UUID(as_uuid=True), nullable=True),
+    sa.Column("actor", sa.String(255), nullable=True),
     *timestamps(),
     sa.ForeignKeyConstraint(["meeting_id"], ["civicclerk.meetings.id"]),
     sa.ForeignKeyConstraint(["source_motion_id"], ["civicclerk.motions.id"]),
