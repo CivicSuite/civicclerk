@@ -39,6 +39,21 @@ def test_getters_treat_blank_env_as_unset(monkeypatch, blank) -> None:
     assert isinstance(main_module._get_public_comments(), PublicCommentStore)
 
 
+@pytest.mark.parametrize("blank", ["", "  "], ids=["empty", "whitespace"])
+def test_legacy_getters_treat_blank_env_as_unset(monkeypatch, blank) -> None:
+    """Blank DB-URL env vars must mean in-memory fallback, not :memory: SQLite.
+
+    Same contract the four Phase 1 getters carry; these two legacy getters
+    have real store fallbacks a blank value used to bypass.
+    """
+
+    monkeypatch.setenv("CIVICCLERK_AGENDA_ITEM_DB_URL", blank)
+    monkeypatch.setenv("CIVICCLERK_MEETING_DB_URL", blank)
+
+    assert main_module._get_agenda_items() is main_module.agenda_items
+    assert main_module._get_meeting_store() is main_module.meetings
+
+
 def test_getters_select_repositories_when_env_set(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("CIVICCLERK_MOTION_VOTE_DB_URL", f"sqlite:///{tmp_path / 'mv.db'}")
     monkeypatch.setenv("CIVICCLERK_MINUTES_DB_URL", f"sqlite:///{tmp_path / 'mn.db'}")

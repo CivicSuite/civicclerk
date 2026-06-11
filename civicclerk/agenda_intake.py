@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -10,7 +11,7 @@ from uuid import uuid4
 import sqlalchemy as sa
 from sqlalchemy import Engine, create_engine
 
-from civiccore.audit import AuditActor, AuditHashChain, AuditSubject
+from civiccore.audit import AuditActor, AuditHashChain, AuditSubject, record_event
 
 
 class AgendaReadinessStatus(StrEnum):
@@ -107,6 +108,11 @@ class AgendaIntakeRepository:
                 connection.execute(sa.text("CREATE SCHEMA IF NOT EXISTS civicclerk"))
         metadata.create_all(self.engine)
         self.audit_chain = AuditHashChain()
+        # Serializes seal+insert+append so concurrent writers cannot fork the
+        # hash chain, and a failed insert leaves no phantom event (same
+        # contract as the Phase 1 repositories in motion_vote/minutes/
+        # public_archive).
+        self._chain_lock = threading.Lock()
 
     def submit(
         self,
@@ -137,19 +143,22 @@ class AgendaIntakeRepository:
             "created_at": now,
             "updated_at": now,
         }
-        event = self.audit_chain.record_event(
-            actor=AuditActor(actor_id=submitted_by, actor_type="staff"),
-            action="agenda_intake.submitted",
-            subject=AuditSubject(subject_id=item_id, subject_type="agenda_intake_item"),
-            source_module="civicclerk",
-            metadata={
-                "department_name": department_name,
-                "source_count": len(source_references),
-            },
-        )
-        values["last_audit_hash"] = event.current_hash or ""
-        with self.engine.begin() as connection:
-            connection.execute(agenda_intake_queue.insert().values(**values))
+        with self._chain_lock:
+            event = record_event(
+                self.audit_chain.events,
+                actor=AuditActor(actor_id=submitted_by, actor_type="staff"),
+                action="agenda_intake.submitted",
+                subject=AuditSubject(subject_id=item_id, subject_type="agenda_intake_item"),
+                source_module="civicclerk",
+                metadata={
+                    "department_name": department_name,
+                    "source_count": len(source_references),
+                },
+            )
+            values["last_audit_hash"] = event.current_hash or ""
+            with self.engine.begin() as connection:
+                connection.execute(agenda_intake_queue.insert().values(**values))
+            self.audit_chain.events.append(event)
         return self.get(item_id) or _row_to_item(values)
 
     def get(self, item_id: str) -> AgendaIntakeItem | None:
@@ -185,30 +194,33 @@ class AgendaIntakeRepository:
         )
         status = "READY_FOR_CLERK" if ready else "NEEDS_REVISION"
         now = datetime.now(UTC)
-        event = self.audit_chain.record_event(
-            actor=AuditActor(actor_id=reviewer, actor_type="clerk"),
-            action="agenda_intake.reviewed",
-            subject=AuditSubject(subject_id=item_id, subject_type="agenda_intake_item"),
-            source_module="civicclerk",
-            metadata={
-                "ready": ready,
-                "readiness_status": readiness_status,
-                "notes": notes,
-            },
-        )
-        with self.engine.begin() as connection:
-            connection.execute(
-                agenda_intake_queue.update()
-                .where(agenda_intake_queue.c.id == item_id)
-                .values(
-                    status=status,
-                    readiness_status=readiness_status,
-                    reviewer=reviewer,
-                    review_notes=notes,
-                    last_audit_hash=event.current_hash or "",
-                    updated_at=now,
-                )
+        with self._chain_lock:
+            event = record_event(
+                self.audit_chain.events,
+                actor=AuditActor(actor_id=reviewer, actor_type="clerk"),
+                action="agenda_intake.reviewed",
+                subject=AuditSubject(subject_id=item_id, subject_type="agenda_intake_item"),
+                source_module="civicclerk",
+                metadata={
+                    "ready": ready,
+                    "readiness_status": readiness_status,
+                    "notes": notes,
+                },
             )
+            with self.engine.begin() as connection:
+                connection.execute(
+                    agenda_intake_queue.update()
+                    .where(agenda_intake_queue.c.id == item_id)
+                    .values(
+                        status=status,
+                        readiness_status=readiness_status,
+                        reviewer=reviewer,
+                        review_notes=notes,
+                        last_audit_hash=event.current_hash or "",
+                        updated_at=now,
+                    )
+                )
+            self.audit_chain.events.append(event)
         return self.get(item_id)
 
     def promote_to_agenda_item(
@@ -225,30 +237,33 @@ class AgendaIntakeRepository:
         if existing is None:
             return None
         now = datetime.now(UTC)
-        event = self.audit_chain.record_event(
-            actor=AuditActor(actor_id=reviewer, actor_type="clerk"),
-            action="agenda_intake.promoted_to_agenda_item",
-            subject=AuditSubject(subject_id=item_id, subject_type="agenda_intake_item"),
-            source_module="civicclerk",
-            metadata={
-                "agenda_item_id": agenda_item_id,
-                "notes": notes,
-                "source_count": len(existing.source_references),
-            },
-        )
-        with self.engine.begin() as connection:
-            connection.execute(
-                agenda_intake_queue.update()
-                .where(agenda_intake_queue.c.id == item_id)
-                .values(
-                    status="PROMOTED_TO_AGENDA",
-                    promoted_agenda_item_id=agenda_item_id,
-                    promoted_at=now,
-                    promotion_audit_hash=event.current_hash or "",
-                    last_audit_hash=event.current_hash or "",
-                    updated_at=now,
-                )
+        with self._chain_lock:
+            event = record_event(
+                self.audit_chain.events,
+                actor=AuditActor(actor_id=reviewer, actor_type="clerk"),
+                action="agenda_intake.promoted_to_agenda_item",
+                subject=AuditSubject(subject_id=item_id, subject_type="agenda_intake_item"),
+                source_module="civicclerk",
+                metadata={
+                    "agenda_item_id": agenda_item_id,
+                    "notes": notes,
+                    "source_count": len(existing.source_references),
+                },
             )
+            with self.engine.begin() as connection:
+                connection.execute(
+                    agenda_intake_queue.update()
+                    .where(agenda_intake_queue.c.id == item_id)
+                    .values(
+                        status="PROMOTED_TO_AGENDA",
+                        promoted_agenda_item_id=agenda_item_id,
+                        promoted_at=now,
+                        promotion_audit_hash=event.current_hash or "",
+                        last_audit_hash=event.current_hash or "",
+                        updated_at=now,
+                    )
+                )
+            self.audit_chain.events.append(event)
         return self.get(item_id)
 
 

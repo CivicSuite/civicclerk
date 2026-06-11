@@ -3390,7 +3390,7 @@ def _resolve_packet_export_path(bundle_name: str) -> Path:
 
 def _get_agenda_intake_repository() -> AgendaIntakeRepository:
     global _agenda_intake_db_url, _agenda_intake_repository
-    db_url = os.environ.get("CIVICCLERK_AGENDA_INTAKE_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_AGENDA_INTAKE_DB_URL") or "").strip() or None
     if _agenda_intake_repository is None or db_url != _agenda_intake_db_url:
         _agenda_intake_db_url = db_url
         _agenda_intake_repository = AgendaIntakeRepository(db_url=db_url)
@@ -3399,7 +3399,7 @@ def _get_agenda_intake_repository() -> AgendaIntakeRepository:
 
 def _get_agenda_items() -> AgendaItemRepository | AgendaItemStore:
     global _agenda_item_db_url, _agenda_item_repository
-    db_url = os.environ.get("CIVICCLERK_AGENDA_ITEM_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_AGENDA_ITEM_DB_URL") or "").strip() or None
     if db_url is None:
         return agenda_items
     if _agenda_item_repository is None or db_url != _agenda_item_db_url:
@@ -3410,7 +3410,7 @@ def _get_agenda_items() -> AgendaItemRepository | AgendaItemStore:
 
 def _get_packet_assembly_repository() -> PacketAssemblyRepository:
     global _packet_assembly_db_url, _packet_assembly_repository
-    db_url = os.environ.get("CIVICCLERK_PACKET_ASSEMBLY_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_PACKET_ASSEMBLY_DB_URL") or "").strip() or None
     if _packet_assembly_repository is None or db_url != _packet_assembly_db_url:
         _packet_assembly_db_url = db_url
         _packet_assembly_repository = PacketAssemblyRepository(db_url=db_url)
@@ -3419,7 +3419,7 @@ def _get_packet_assembly_repository() -> PacketAssemblyRepository:
 
 def _get_notice_checklist_repository() -> NoticeChecklistRepository:
     global _notice_checklist_db_url, _notice_checklist_repository
-    db_url = os.environ.get("CIVICCLERK_NOTICE_CHECKLIST_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_NOTICE_CHECKLIST_DB_URL") or "").strip() or None
     if _notice_checklist_repository is None or db_url != _notice_checklist_db_url:
         _notice_checklist_db_url = db_url
         _notice_checklist_repository = NoticeChecklistRepository(db_url=db_url)
@@ -3428,7 +3428,7 @@ def _get_notice_checklist_repository() -> NoticeChecklistRepository:
 
 def _get_meeting_body_repository() -> MeetingBodyRepository:
     global _meeting_body_db_url, _meeting_body_repository
-    db_url = os.environ.get("CIVICCLERK_MEETING_BODY_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_MEETING_BODY_DB_URL") or "").strip() or None
     if _meeting_body_repository is None or db_url != _meeting_body_db_url:
         _meeting_body_db_url = db_url
         _meeting_body_repository = MeetingBodyRepository(db_url=db_url)
@@ -3437,7 +3437,7 @@ def _get_meeting_body_repository() -> MeetingBodyRepository:
 
 def _get_meeting_store() -> MeetingStore:
     global _meeting_db_url, _meeting_store
-    db_url = os.environ.get("CIVICCLERK_MEETING_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_MEETING_DB_URL") or "").strip() or None
     if db_url is None:
         return meetings
     if _meeting_store is None or db_url != _meeting_db_url:
@@ -3448,7 +3448,7 @@ def _get_meeting_store() -> MeetingStore:
 
 def _get_vendor_sync_repository() -> VendorSyncRepository:
     global _vendor_sync_db_url, _vendor_sync_repository
-    db_url = os.environ.get("CIVICCLERK_VENDOR_SYNC_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_VENDOR_SYNC_DB_URL") or "").strip() or None
     if _vendor_sync_repository is None or db_url != _vendor_sync_db_url:
         _vendor_sync_db_url = db_url
         _vendor_sync_repository = VendorSyncRepository(db_url=db_url)
