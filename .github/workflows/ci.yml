@@ -68,6 +68,11 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
+      - name: Install Playwright Chromium (a11y + e2e)
+        # Must precede the axe gate: hosted runners start with no browser
+        # cache (the old self-hosted machine masked this ordering bug).
+        run: npx playwright install --with-deps chromium
+        working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
       - name: Accessibility gate (axe critical/serious)
         run: npm run a11y:ci
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
@@ -155,9 +160,6 @@ jobs:
         run: python scripts/check-civiccore-placeholder-imports.py
       - name: Verify browser QA evidence
         run: python scripts/verify-browser-qa.py
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-        working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
       - name: Run Playwright user flows
         run: npm run test:e2e
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
