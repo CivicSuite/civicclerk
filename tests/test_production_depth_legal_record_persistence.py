@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import sqlalchemy as sa
 from httpx import ASGITransport, AsyncClient
 
@@ -24,9 +25,6 @@ _RESTART_GLOBALS = (
     "_meeting_store",
     "_meeting_db_url",
 )
-
-
-import pytest
 
 
 @pytest.fixture(autouse=True)

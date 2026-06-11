@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 import sqlalchemy as sa
 
-from civicclerk.agenda_intake import AgendaIntakeRepository, agenda_intake_queue
+from civicclerk.agenda_intake import AgendaIntakeRepository
 
 
 def test_concurrent_submissions_keep_audit_chain_intact(tmp_path) -> None:
