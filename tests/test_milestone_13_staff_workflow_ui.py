@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.exc import SQLAlchemyError
 
 import civicclerk.main as main_module
 from civicclerk.main import app
@@ -395,6 +396,34 @@ async def test_staff_minutes_panel_uses_live_minutes_rows() -> None:
     assert f"Meeting {meeting.json()['id']} minutes draft" in response.text
     assert "DRAFT" in response.text
     assert "Human review must approve the cited draft before public posting." in response.text
+
+
+async def test_staff_outcomes_panel_handles_unavailable_motion_store(monkeypatch) -> None:
+    class BrokenMotionVotes:
+        def list_recent_outcomes(self, *, limit: int = 5):
+            raise SQLAlchemyError("motion store unreachable")
+
+    monkeypatch.setattr(main_module, "_get_motion_votes", lambda: BrokenMotionVotes())
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "Meeting outcomes store unavailable" in response.text
+    assert "Check CIVICCLERK_MOTION_VOTE_DB_URL and database reachability" in response.text
+
+
+async def test_staff_minutes_panel_handles_unavailable_minutes_store(monkeypatch) -> None:
+    class BrokenMinutesDrafts:
+        def list_recent(self, *, limit: int = 5):
+            raise SQLAlchemyError("minutes store unreachable")
+
+    monkeypatch.setattr(main_module, "_get_minutes_drafts", lambda: BrokenMinutesDrafts())
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
+        response = await client.get("/staff")
+
+    assert response.status_code == 200
+    assert "Minutes drafts store unavailable" in response.text
+    assert "Check CIVICCLERK_MINUTES_DB_URL and database reachability" in response.text
 
 
 async def test_favicon_is_public_and_empty() -> None:

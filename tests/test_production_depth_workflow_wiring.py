@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from httpx import ASGITransport, AsyncClient
 
 import civicclerk.main as main_module
@@ -19,6 +20,18 @@ def test_getters_fall_back_to_in_memory_stores_without_env(monkeypatch) -> None:
     monkeypatch.delenv("CIVICCLERK_MOTION_VOTE_DB_URL", raising=False)
     monkeypatch.delenv("CIVICCLERK_MINUTES_DB_URL", raising=False)
     monkeypatch.delenv("CIVICCLERK_PUBLIC_ARCHIVE_DB_URL", raising=False)
+
+    assert isinstance(main_module._get_motion_votes(), MotionVoteStore)
+    assert isinstance(main_module._get_minutes_drafts(), MinutesDraftStore)
+    assert isinstance(main_module._get_public_archive(), PublicArchiveStore)
+    assert isinstance(main_module._get_public_comments(), PublicCommentStore)
+
+
+@pytest.mark.parametrize("blank", ["", "  "], ids=["empty", "whitespace"])
+def test_getters_treat_blank_env_as_unset(monkeypatch, blank) -> None:
+    monkeypatch.setenv("CIVICCLERK_MOTION_VOTE_DB_URL", blank)
+    monkeypatch.setenv("CIVICCLERK_MINUTES_DB_URL", blank)
+    monkeypatch.setenv("CIVICCLERK_PUBLIC_ARCHIVE_DB_URL", blank)
 
     assert isinstance(main_module._get_motion_votes(), MotionVoteStore)
     assert isinstance(main_module._get_minutes_drafts(), MinutesDraftStore)
@@ -128,6 +141,46 @@ def test_demo_seed_is_idempotent_for_db_backed_workflow_stores(tmp_path) -> None
     assert second["motion_count"] == first["motion_count"] == 1
     assert second["minutes_draft_count"] == first["minutes_draft_count"] == 1
     assert second["public_record_count"] == first["public_record_count"] == 1
+
+
+def test_demo_seed_split_env_does_not_duplicate_motion_or_minutes_records(tmp_path) -> None:
+    """Motion/minutes DBs persist while meetings stay in-memory: a restart hands
+    the seed fresh meeting ids, so dedupe must key on demo content, not meeting id."""
+    from datetime import UTC, datetime
+
+    from civicclerk.agenda_intake import AgendaIntakeRepository
+    from civicclerk.agenda_lifecycle import AgendaItemStore
+    from civicclerk.demo_seed import seed_demo_data
+    from civicclerk.meeting_body import MeetingBodyRepository
+    from civicclerk.meeting_lifecycle import MeetingStore
+    from civicclerk.notice_checklist import NoticeChecklistRepository
+    from civicclerk.packet_assembly import PacketAssemblyRepository
+
+    shared = f"sqlite:///{tmp_path / 'split-seed.db'}"
+
+    def run_seed() -> None:
+        # Fresh in-memory meeting store per run simulates a restarted process
+        # whose meeting env var is unset while motion/minutes env vars are set.
+        seed_demo_data(
+            meeting_bodies=MeetingBodyRepository(db_url=shared),
+            meetings=MeetingStore(),
+            agenda_intake=AgendaIntakeRepository(db_url=shared),
+            agenda_items=AgendaItemStore(),
+            packet_assemblies=PacketAssemblyRepository(db_url=shared),
+            notice_checklists=NoticeChecklistRepository(db_url=shared),
+            motion_votes=MotionVoteRepository(db_url=shared),
+            minutes_drafts=MinutesDraftRepository(db_url=shared),
+            public_archive=PublicArchiveRepository(db_url=shared),
+            now=datetime(2026, 6, 10, 12, 0, tzinfo=UTC),
+        )
+
+    run_seed()
+    run_seed()
+
+    motion_repo = MotionVoteRepository(db_url=shared)
+    minutes_repo = MinutesDraftRepository(db_url=shared)
+    assert len(motion_repo.list_recent_outcomes(limit=50)) == 1
+    assert len(minutes_repo.list_recent(limit=50)) == 1
 
 
 def test_demo_seed_docstring_no_longer_claims_in_memory_only() -> None:

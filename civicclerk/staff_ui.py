@@ -177,7 +177,9 @@ def render_staff_dashboard(
     notice_checklist_records: Sequence[object] = (),
     notice_checklist_available: bool = True,
     meeting_outcome_records: Sequence[object] = (),
+    meeting_outcomes_available: bool = True,
     minutes_draft_records: Sequence[object] = (),
+    minutes_drafts_available: bool = True,
 ) -> str:
     """Render the current staff workflow screens as dependency-free HTML."""
     screen_cards_data = _screen_cards_with_live_intake(
@@ -188,7 +190,9 @@ def render_staff_dashboard(
         notice_checklist_records=notice_checklist_records,
         notice_checklist_available=notice_checklist_available,
         meeting_outcome_records=meeting_outcome_records,
+        meeting_outcomes_available=meeting_outcomes_available,
         minutes_draft_records=minutes_draft_records,
+        minutes_drafts_available=minutes_drafts_available,
     )
     nav_buttons = "\n".join(
         f"""
@@ -935,7 +939,9 @@ def _screen_cards_with_live_intake(
     notice_checklist_records: Sequence[object],
     notice_checklist_available: bool,
     meeting_outcome_records: Sequence[object],
+    meeting_outcomes_available: bool,
     minutes_draft_records: Sequence[object],
+    minutes_drafts_available: bool,
 ) -> list[dict]:
     screen_cards = [dict(card) for card in SCREEN_CARDS]
     screen_cards[0]["rows"] = _agenda_intake_rows(
@@ -952,9 +958,11 @@ def _screen_cards_with_live_intake(
     )
     screen_cards[3]["rows"] = _meeting_outcome_rows(
         meeting_outcome_records=meeting_outcome_records,
+        meeting_outcomes_available=meeting_outcomes_available,
     )
     screen_cards[4]["rows"] = _minutes_draft_rows(
         minutes_draft_records=minutes_draft_records,
+        minutes_drafts_available=minutes_drafts_available,
     )
     return screen_cards
 
@@ -1108,7 +1116,17 @@ def _bool_field(item: object, name: str) -> bool | None:
 def _meeting_outcome_rows(
     *,
     meeting_outcome_records: Sequence[object],
+    meeting_outcomes_available: bool,
 ) -> list[tuple[str, str, str, str]]:
+    if not meeting_outcomes_available:
+        return [
+            (
+                "IT",
+                "Meeting outcomes store unavailable",
+                "ERROR",
+                "Check CIVICCLERK_MOTION_VOTE_DB_URL and database reachability, then reload the staff desk.",
+            )
+        ]
     if not meeting_outcome_records:
         return [
             (
@@ -1154,7 +1172,17 @@ def _next_outcome_step(vote_count: int, action_item_count: int, status: str) -> 
 def _minutes_draft_rows(
     *,
     minutes_draft_records: Sequence[object],
+    minutes_drafts_available: bool,
 ) -> list[tuple[str, str, str, str]]:
+    if not minutes_drafts_available:
+        return [
+            (
+                "IT",
+                "Minutes drafts store unavailable",
+                "ERROR",
+                "Check CIVICCLERK_MINUTES_DB_URL and database reachability, then reload the staff desk.",
+            )
+        ]
     if not minutes_draft_records:
         return [
             (

@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 from typing import TypedDict
 
 import sqlalchemy as sa
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError
 
 from civicclerk.agenda_intake import AgendaIntakeRepository
 from civicclerk.agenda_lifecycle import AgendaItemRepository, AgendaItemStore
@@ -25,6 +25,11 @@ from civicclerk.public_archive import (
 
 DEMO_CLERK = "brookfield.clerk@example.gov"
 DEMO_CITY = "City of Brookfield"
+# Store-level dedupe markers: when motion/minutes stores persist but the
+# meeting store is in-memory, every restart hands the seed fresh meeting ids,
+# so per-meeting lookups alone would append orphan demo rows on each restart.
+DEMO_MOTION_TEXT = "Move to approve the Oak Street sidewalk repair contract award."
+DEMO_MINUTES_SENTENCE = "Council approved the Oak Street sidewalk repair contract award by a 3-1 vote."
 
 
 class DemoSeedSummary(TypedDict):
@@ -315,10 +320,15 @@ def _ensure_meeting_outcomes(
 ) -> None:
     if store.list_motions(meeting_id):
         return
+    if any(outcome.text == DEMO_MOTION_TEXT for outcome in store.list_recent_outcomes(limit=50)):
+        # Split-env restart: the motion store persisted but the in-memory
+        # meeting store handed out a fresh meeting id. Skip instead of
+        # appending an orphan duplicate of the demo motion.
+        return
     motion = store.capture_motion(
         meeting_id=meeting_id,
         agenda_item_id=agenda_item_id,
-        text="Move to approve the Oak Street sidewalk repair contract award.",
+        text=DEMO_MOTION_TEXT,
         actor=DEMO_CLERK,
     )
     for voter_name, vote in (
@@ -347,10 +357,19 @@ def _ensure_minutes_draft(
 ) -> None:
     if store.list_drafts(meeting_id):
         return
+    if any(
+        sentence.text == DEMO_MINUTES_SENTENCE
+        for draft in store.list_recent(limit=50)
+        for sentence in draft.sentences
+    ):
+        # Split-env restart: the minutes store persisted but the in-memory
+        # meeting store handed out a fresh meeting id. Skip instead of
+        # appending an orphan duplicate of the demo draft.
+        return
     source = SourceMaterial(
         source_id="motion-sidewalk-contract",
         label="Captured motion and roll-call vote",
-        text="Council approved the Oak Street sidewalk repair contract award by a 3-1 vote.",
+        text=DEMO_MINUTES_SENTENCE,
     )
     store.create_draft(
         meeting_id=meeting_id,
@@ -360,7 +379,7 @@ def _ensure_minutes_draft(
         source_materials=[source],
         sentences=[
             MinutesSentence(
-                text="Council approved the Oak Street sidewalk repair contract award by a 3-1 vote.",
+                text=DEMO_MINUTES_SENTENCE,
                 citations=("motion-sidewalk-contract",),
             )
         ],
@@ -384,7 +403,7 @@ def _ensure_archive_meeting_referent(repo: PublicArchiveRepository, meeting_id: 
             ).first()
             if existing is None:
                 connection.execute(meetings_table.insert().values(id=meeting_id))
-    except SQLAlchemyError:
+    except IntegrityError:
         pass
 
 

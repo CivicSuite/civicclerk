@@ -581,6 +581,18 @@ async def staff_dashboard() -> str:
     except SQLAlchemyError:
         notice_checklist_records = []
         notice_checklist_available = False
+    try:
+        meeting_outcome_records = _get_motion_votes().list_recent_outcomes()
+        meeting_outcomes_available = True
+    except SQLAlchemyError:
+        meeting_outcome_records = []
+        meeting_outcomes_available = False
+    try:
+        minutes_draft_records = _get_minutes_drafts().list_recent()
+        minutes_drafts_available = True
+    except SQLAlchemyError:
+        minutes_draft_records = []
+        minutes_drafts_available = False
     return render_staff_dashboard(
         cockpit_items=cockpit_items,
         agenda_intake_items=intake_items,
@@ -589,8 +601,10 @@ async def staff_dashboard() -> str:
         packet_assembly_available=packet_assembly_available,
         notice_checklist_records=notice_checklist_records,
         notice_checklist_available=notice_checklist_available,
-        meeting_outcome_records=_get_motion_votes().list_recent_outcomes(),
-        minutes_draft_records=_get_minutes_drafts().list_recent(),
+        meeting_outcome_records=meeting_outcome_records,
+        meeting_outcomes_available=meeting_outcomes_available,
+        minutes_draft_records=minutes_draft_records,
+        minutes_drafts_available=minutes_drafts_available,
     )
 
 
@@ -3443,7 +3457,7 @@ def _get_vendor_sync_repository() -> VendorSyncRepository:
 
 def _get_motion_votes() -> MotionVoteRepository | MotionVoteStore:
     global _motion_vote_db_url, _motion_vote_repository
-    db_url = os.environ.get("CIVICCLERK_MOTION_VOTE_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_MOTION_VOTE_DB_URL") or "").strip() or None
     if db_url is None:
         return motion_votes
     if _motion_vote_repository is None or db_url != _motion_vote_db_url:
@@ -3454,7 +3468,7 @@ def _get_motion_votes() -> MotionVoteRepository | MotionVoteStore:
 
 def _get_minutes_drafts() -> MinutesDraftRepository | MinutesDraftStore:
     global _minutes_draft_db_url, _minutes_draft_repository
-    db_url = os.environ.get("CIVICCLERK_MINUTES_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_MINUTES_DB_URL") or "").strip() or None
     if db_url is None:
         return minutes_drafts
     if _minutes_draft_repository is None or db_url != _minutes_draft_db_url:
@@ -3465,7 +3479,7 @@ def _get_minutes_drafts() -> MinutesDraftRepository | MinutesDraftStore:
 
 def _get_public_archive() -> PublicArchiveRepository | PublicArchiveStore:
     global _public_archive_db_url, _public_archive_repository
-    db_url = os.environ.get("CIVICCLERK_PUBLIC_ARCHIVE_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_PUBLIC_ARCHIVE_DB_URL") or "").strip() or None
     if db_url is None:
         return public_archive
     if _public_archive_repository is None or db_url != _public_archive_db_url:
@@ -3476,7 +3490,7 @@ def _get_public_archive() -> PublicArchiveRepository | PublicArchiveStore:
 
 def _get_public_comments() -> PublicCommentRepository | PublicCommentStore:
     global _public_comment_db_url, _public_comment_repository
-    db_url = os.environ.get("CIVICCLERK_PUBLIC_ARCHIVE_DB_URL")
+    db_url = (os.environ.get("CIVICCLERK_PUBLIC_ARCHIVE_DB_URL") or "").strip() or None
     if db_url is None:
         return public_comments
     if _public_comment_repository is None or db_url != _public_comment_db_url:
