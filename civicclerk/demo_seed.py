@@ -5,15 +5,22 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import TypedDict
 
+import sqlalchemy as sa
+from sqlalchemy.exc import SQLAlchemyError
+
 from civicclerk.agenda_intake import AgendaIntakeRepository
 from civicclerk.agenda_lifecycle import AgendaItemRepository, AgendaItemStore
 from civicclerk.meeting_body import MeetingBodyRepository
 from civicclerk.meeting_lifecycle import MeetingStore
-from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
-from civicclerk.motion_vote import MotionVoteStore
+from civicclerk.minutes import MinutesDraftRepository, MinutesDraftStore, MinutesSentence, SourceMaterial
+from civicclerk.motion_vote import MotionVoteRepository, MotionVoteStore
 from civicclerk.notice_checklist import NoticeChecklistRepository
 from civicclerk.packet_assembly import PacketAssemblyRepository
-from civicclerk.public_archive import PublicArchiveStore
+from civicclerk.public_archive import (
+    PublicArchiveRepository,
+    PublicArchiveStore,
+    meetings_table,
+)
 
 
 DEMO_CLERK = "brookfield.clerk@example.gov"
@@ -43,17 +50,20 @@ def seed_demo_data(
     agenda_items: AgendaItemRepository | AgendaItemStore,
     packet_assemblies: PacketAssemblyRepository,
     notice_checklists: NoticeChecklistRepository,
-    motion_votes: MotionVoteStore,
-    minutes_drafts: MinutesDraftStore,
-    public_archive: PublicArchiveStore,
+    motion_votes: MotionVoteRepository | MotionVoteStore,
+    minutes_drafts: MinutesDraftRepository | MinutesDraftStore,
+    public_archive: PublicArchiveRepository | PublicArchiveStore,
     now: datetime | None = None,
 ) -> DemoSeedSummary:
     """Populate the current runtime with deterministic Brookfield demo work.
 
-    The seed is intentionally idempotent for database-backed records so a
-    restarted Compose stack does not create duplicate staff work. The current
-    motion, minutes, and public archive stores are in-memory, so they are seeded
-    once per API process when empty.
+    The seed is idempotent for every store it touches: each helper looks up
+    existing records before creating new ones, so a restarted Compose stack
+    does not duplicate staff work. Motion, minutes, and public archive data
+    seed through the same lookup-before-create pattern whether the runtime
+    wires the in-memory stores or the database-backed repositories
+    (CIVICCLERK_MOTION_VOTE_DB_URL, CIVICCLERK_MINUTES_DB_URL,
+    CIVICCLERK_PUBLIC_ARCHIVE_DB_URL).
     """
 
     anchor = now or datetime.now(UTC)
@@ -119,13 +129,13 @@ def seed_demo_data(
         scheduled_start=upcoming.scheduled_start or anchor + timedelta(days=8),
     )
 
-    _seed_in_memory_outcomes(
+    _ensure_meeting_outcomes(
         motion_votes,
         meeting_id=completed.id,
         agenda_item_id=intake.promoted_agenda_item_id,
     )
-    _seed_in_memory_minutes(minutes_drafts, meeting_id=completed.id)
-    _seed_in_memory_public_archive(public_archive, meeting_id=completed.id)
+    _ensure_minutes_draft(minutes_drafts, meeting_id=completed.id)
+    _ensure_public_archive_record(public_archive, meeting_id=completed.id)
 
     return {
         "city": DEMO_CITY,
@@ -297,8 +307,8 @@ def _ensure_notice(
     ) or record
 
 
-def _seed_in_memory_outcomes(
-    store: MotionVoteStore,
+def _ensure_meeting_outcomes(
+    store: MotionVoteRepository | MotionVoteStore,
     *,
     meeting_id: str,
     agenda_item_id: str | None,
@@ -332,7 +342,9 @@ def _seed_in_memory_outcomes(
     )
 
 
-def _seed_in_memory_minutes(store: MinutesDraftStore, *, meeting_id: str) -> None:
+def _ensure_minutes_draft(
+    store: MinutesDraftRepository | MinutesDraftStore, *, meeting_id: str
+) -> None:
     if store.list_drafts(meeting_id):
         return
     source = SourceMaterial(
@@ -355,9 +367,34 @@ def _seed_in_memory_minutes(store: MinutesDraftStore, *, meeting_id: str) -> Non
     )
 
 
-def _seed_in_memory_public_archive(store: PublicArchiveStore, *, meeting_id: str) -> None:
+def _ensure_archive_meeting_referent(repo: PublicArchiveRepository, meeting_id: str) -> None:
+    """Best-effort insert of the civicclerk.meetings referent for the demo publish.
+
+    PublicArchiveRepository.publish() pre-checks the canonical civicclerk.meetings
+    table (migration 0014 FK), while the demo meeting itself lives in the runtime
+    meeting_records table. On fresh local databases the mirrored id-only meetings
+    table accepts this insert; on fully migrated databases whose meetings table
+    enforces NOT NULL business columns the insert fails harmlessly and publish()
+    returns None, so the seed skips the demo archive record instead of crashing.
+    """
+    try:
+        with repo.engine.begin() as connection:
+            existing = connection.execute(
+                sa.select(meetings_table.c.id).where(meetings_table.c.id == meeting_id)
+            ).first()
+            if existing is None:
+                connection.execute(meetings_table.insert().values(id=meeting_id))
+    except SQLAlchemyError:
+        pass
+
+
+def _ensure_public_archive_record(
+    store: PublicArchiveRepository | PublicArchiveStore, *, meeting_id: str
+) -> None:
     if store.public_calendar():
         return
+    if isinstance(store, PublicArchiveRepository):
+        _ensure_archive_meeting_referent(store, meeting_id)
     store.publish(
         meeting_id=meeting_id,
         title="Brookfield City Council Prior Meeting",

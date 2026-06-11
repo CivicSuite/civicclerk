@@ -1058,6 +1058,7 @@
             "type": "string"
           },
           "commenter_name": {
+            "maxLength": 255,
             "minLength": 1,
             "title": "Commenter Name",
             "type": "string"

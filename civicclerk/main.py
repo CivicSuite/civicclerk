@@ -51,8 +51,8 @@ from civicclerk.connectors import ConnectorImportError, import_meeting_payload
 from civicclerk.integration_contracts import integration_readiness_payload
 from civicclerk.meeting_body import MeetingBodyRepository
 from civicclerk.meeting_lifecycle import MeetingScheduleUpdateError, MeetingStore
-from civicclerk.minutes import MinutesDraftStore, MinutesSentence, SourceMaterial
-from civicclerk.motion_vote import MotionVoteStore
+from civicclerk.minutes import MinutesDraftRepository, MinutesDraftStore, MinutesSentence, SourceMaterial
+from civicclerk.motion_vote import MotionVoteRepository, MotionVoteStore
 from civicclerk.notice_checklist import NoticeChecklistRepository
 from civicclerk.oidc_auth import (
     authorize_oidc_staff_session_cookie,
@@ -70,7 +70,13 @@ from civicclerk.packet_notice import (
     PacketStore,
     evaluate_notice_compliance,
 )
-from civicclerk.public_archive import PublicArchiveStore, PublicCommentStore, can_view_closed_sessions
+from civicclerk.public_archive import (
+    PublicArchiveRepository,
+    PublicArchiveStore,
+    PublicCommentRepository,
+    PublicCommentStore,
+    can_view_closed_sessions,
+)
 from civicclerk.public_ui import render_public_portal
 from civicclerk.staff_ui import build_staff_cockpit_items, render_staff_dashboard
 from civicclerk.vendor_live_sync import VendorSyncRunResult
@@ -165,6 +171,14 @@ _meeting_store: MeetingStore | None = None
 _meeting_db_url: str | None = None
 _vendor_sync_repository: VendorSyncRepository | None = None
 _vendor_sync_db_url: str | None = None
+_motion_vote_repository: MotionVoteRepository | None = None
+_motion_vote_db_url: str | None = None
+_minutes_draft_repository: MinutesDraftRepository | None = None
+_minutes_draft_db_url: str | None = None
+_public_archive_repository: PublicArchiveRepository | None = None
+_public_archive_db_url: str | None = None
+_public_comment_repository: PublicCommentRepository | None = None
+_public_comment_db_url: str | None = None
 
 
 async def seed_demo_data_when_requested() -> None:
@@ -181,9 +195,9 @@ async def seed_demo_data_when_requested() -> None:
         agenda_items=_get_agenda_items(),
         packet_assemblies=_get_packet_assembly_repository(),
         notice_checklists=_get_notice_checklist_repository(),
-        motion_votes=motion_votes,
-        minutes_drafts=minutes_drafts,
-        public_archive=public_archive,
+        motion_votes=_get_motion_votes(),
+        minutes_drafts=_get_minutes_drafts(),
+        public_archive=_get_public_archive(),
     )
 
 
@@ -575,8 +589,8 @@ async def staff_dashboard() -> str:
         packet_assembly_available=packet_assembly_available,
         notice_checklist_records=notice_checklist_records,
         notice_checklist_available=notice_checklist_available,
-        meeting_outcome_records=motion_votes.list_recent_outcomes(),
-        minutes_draft_records=minutes_drafts.list_recent(),
+        meeting_outcome_records=_get_motion_votes().list_recent_outcomes(),
+        minutes_draft_records=_get_minutes_drafts().list_recent(),
     )
 
 
@@ -1622,7 +1636,7 @@ async def capture_motion(meeting_id: str, payload: MotionCreate) -> dict:
     meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
-    return motion_votes.capture_motion(
+    return _get_motion_votes().capture_motion(
         meeting_id=meeting_id,
         agenda_item_id=payload.agenda_item_id,
         text=payload.text,
@@ -1640,7 +1654,7 @@ async def list_motions(meeting_id: str) -> dict[str, list[dict]]:
     return {
         "motions": [
             motion.public_dict()
-            for motion in motion_votes.list_motions(meeting_id)
+            for motion in _get_motion_votes().list_motions(meeting_id)
         ]
     }
 
@@ -1649,7 +1663,7 @@ async def list_motions(meeting_id: str) -> dict[str, list[dict]]:
 @app.patch("/motions/{motion_id}")
 async def reject_motion_mutation(motion_id: str) -> None:
     """Reject edits to captured motions; corrections must be append-only."""
-    if motion_votes.get_motion(motion_id) is None:
+    if _get_motion_votes().get_motion(motion_id) is None:
         raise HTTPException(status_code=404, detail="Motion not found.")
     raise HTTPException(
         status_code=409,
@@ -1663,7 +1677,7 @@ async def reject_motion_mutation(motion_id: str) -> None:
 @app.post("/motions/{motion_id}/corrections", status_code=201)
 async def correct_motion(motion_id: str, payload: MotionCorrectionCreate) -> dict:
     """Create an append-only correction record for a captured motion."""
-    correction = motion_votes.correct_motion(
+    correction = _get_motion_votes().correct_motion(
         original_motion_id=motion_id,
         text=payload.text,
         actor=payload.actor,
@@ -1677,9 +1691,10 @@ async def correct_motion(motion_id: str, payload: MotionCorrectionCreate) -> dic
 @app.post("/motions/{motion_id}/votes", status_code=201)
 async def capture_vote(motion_id: str, payload: VoteCreate) -> dict:
     """Capture an immutable vote for a motion."""
-    if motion_votes.get_motion(motion_id) is None:
+    store = _get_motion_votes()
+    if store.get_motion(motion_id) is None:
         raise HTTPException(status_code=404, detail="Motion not found.")
-    vote = motion_votes.capture_vote(
+    vote = store.capture_vote(
         motion_id=motion_id,
         voter_name=payload.voter_name,
         vote=payload.vote,
@@ -1693,12 +1708,13 @@ async def capture_vote(motion_id: str, payload: VoteCreate) -> dict:
 @app.get("/motions/{motion_id}/votes")
 async def list_votes(motion_id: str) -> dict[str, list[dict]]:
     """List captured votes and correction records for a motion."""
-    if motion_votes.get_motion(motion_id) is None:
+    store = _get_motion_votes()
+    if store.get_motion(motion_id) is None:
         raise HTTPException(status_code=404, detail="Motion not found.")
     return {
         "votes": [
             vote.public_dict()
-            for vote in motion_votes.list_votes(motion_id)
+            for vote in store.list_votes(motion_id)
         ]
     }
 
@@ -1707,7 +1723,7 @@ async def list_votes(motion_id: str) -> dict[str, list[dict]]:
 @app.patch("/votes/{vote_id}")
 async def reject_vote_mutation(vote_id: str) -> None:
     """Reject edits to captured votes; corrections must be append-only."""
-    if motion_votes.get_vote(vote_id) is None:
+    if _get_motion_votes().get_vote(vote_id) is None:
         raise HTTPException(status_code=404, detail="Vote not found.")
     raise HTTPException(
         status_code=409,
@@ -1721,7 +1737,7 @@ async def reject_vote_mutation(vote_id: str) -> None:
 @app.post("/votes/{vote_id}/corrections", status_code=201)
 async def correct_vote(vote_id: str, payload: VoteCorrectionCreate) -> dict:
     """Create an append-only correction record for a captured vote."""
-    correction = motion_votes.correct_vote(
+    correction = _get_motion_votes().correct_vote(
         original_vote_id=vote_id,
         vote=payload.vote,
         actor=payload.actor,
@@ -1746,7 +1762,8 @@ async def create_action_item(meeting_id: str, payload: ActionItemCreate) -> dict
                 "fix": "Capture the related motion first, then send its id as source_motion_id.",
             },
         )
-    source_motion = motion_votes.get_motion(payload.source_motion_id)
+    store = _get_motion_votes()
+    source_motion = store.get_motion(payload.source_motion_id)
     if source_motion is None:
         raise HTTPException(status_code=404, detail="Source motion not found.")
     if source_motion.meeting_id != meeting_id:
@@ -1757,7 +1774,7 @@ async def create_action_item(meeting_id: str, payload: ActionItemCreate) -> dict
                 "fix": "Use a motion captured for this meeting as source_motion_id.",
             },
         )
-    action_item = motion_votes.create_action_item(
+    action_item = store.create_action_item(
         meeting_id=meeting_id,
         description=payload.description,
         assigned_to=payload.assigned_to,
@@ -1778,7 +1795,7 @@ async def list_action_items(meeting_id: str) -> dict[str, list[dict]]:
     return {
         "action_items": [
             action_item.public_dict()
-            for action_item in motion_votes.list_action_items(meeting_id)
+            for action_item in _get_motion_votes().list_action_items(meeting_id)
         ]
     }
 
@@ -1967,7 +1984,7 @@ async def create_ordinance_resolution_handoff(
 
     _require_meeting_or_404(meeting_id)
     if payload.source_motion_id is not None:
-        motion = motion_votes.get_motion(payload.source_motion_id)
+        motion = _get_motion_votes().get_motion(payload.source_motion_id)
         if motion is None:
             raise HTTPException(status_code=404, detail="Source motion not found.")
         if motion.meeting_id != meeting_id:
@@ -2060,7 +2077,7 @@ async def create_minutes_draft(meeting_id: str, payload: MinutesDraftCreate) -> 
     meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
-    result = minutes_drafts.create_draft(
+    result = _get_minutes_drafts().create_draft(
         meeting_id=meeting_id,
         model=payload.model,
         prompt_version=payload.prompt_version,
@@ -2107,7 +2124,7 @@ async def create_minutes_ai_assist(meeting_id: str, payload: MinutesAiAssistCrea
             detail=_minutes_ai_unavailable_detail(str(exc)),
         ) from exc
     source_ids = [source.source_id for source in payload.source_materials]
-    result = minutes_drafts.create_draft(
+    result = _get_minutes_drafts().create_draft(
         meeting_id=meeting_id,
         model=payload.model,
         prompt_version=payload.prompt_version,
@@ -2147,7 +2164,7 @@ async def list_minutes_drafts(meeting_id: str) -> dict[str, list[dict]]:
     return {
         "drafts": [
             draft.public_dict()
-            for draft in minutes_drafts.list_drafts(meeting_id)
+            for draft in _get_minutes_drafts().list_drafts(meeting_id)
         ]
     }
 
@@ -2155,7 +2172,7 @@ async def list_minutes_drafts(meeting_id: str) -> dict[str, list[dict]]:
 @app.post("/minutes/{minute_id}/post")
 async def reject_automatic_minutes_posting(minute_id: str) -> None:
     """Reject automatic public posting of AI-drafted minutes."""
-    if minutes_drafts.get_draft(minute_id) is None:
+    if _get_minutes_drafts().get_draft(minute_id) is None:
         raise HTTPException(status_code=404, detail="Minutes draft not found.")
     raise HTTPException(
         status_code=409,
@@ -2213,7 +2230,7 @@ async def publish_public_record(
     meeting = _get_meeting_store().get(meeting_id)
     if meeting is None:
         raise HTTPException(status_code=404, detail="Meeting not found.")
-    record = public_archive.publish(
+    record = _get_public_archive().publish(
         meeting_id=meeting_id,
         title=payload.title,
         visibility=payload.visibility,
@@ -2226,6 +2243,19 @@ async def publish_public_record(
         minutes_signed_by=payload.minutes_signed_by,
         closed_session_notes=payload.closed_session_notes,
     )
+    if record is None:
+        # The DB-backed archive pre-checks the meetings table in its own
+        # database and returns None when the parent row is missing there.
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "Meeting not found in the public archive database.",
+                "fix": (
+                    "Point CIVICCLERK_PUBLIC_ARCHIVE_DB_URL at the same database as "
+                    "CIVICCLERK_MEETING_DB_URL so published records reference real meetings."
+                ),
+            },
+        )
     return record.public_dict()
 
 
@@ -2369,7 +2399,7 @@ async def list_vendor_live_sync_runs(source_id: str) -> dict[str, object]:
 @app.get("/public/meetings")
 async def public_meetings() -> dict[str, int | list[dict]]:
     """Return public meeting calendar records only."""
-    records = [record.public_dict() for record in public_archive.public_calendar()]
+    records = [record.public_dict() for record in _get_public_archive().public_calendar()]
     return {
         "total_count": len(records),
         "meetings": records,
@@ -2379,7 +2409,7 @@ async def public_meetings() -> dict[str, int | list[dict]]:
 @app.get("/public/meetings/{record_id}")
 async def public_meeting_detail(record_id: str) -> dict:
     """Return one public meeting record without revealing restricted records."""
-    record = public_archive.public_detail(record_id)
+    record = _get_public_archive().public_detail(record_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Public meeting record not found.")
     return record.public_dict()
@@ -2388,7 +2418,7 @@ async def public_meeting_detail(record_id: str) -> dict:
 @app.get("/public/meetings/{record_id}/{document_kind}.txt")
 async def public_meeting_download(record_id: str, document_kind: str) -> Response:
     """Download one public-safe agenda, packet, or adopted-minutes text file."""
-    record = public_archive.public_detail(record_id)
+    record = _get_public_archive().public_detail(record_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Public meeting record not found.")
     documents = {
@@ -2415,10 +2445,10 @@ async def public_meeting_download(record_id: str, document_kind: str) -> Respons
 @app.post("/public/meetings/{record_id}/comments", status_code=201)
 async def submit_public_comment(record_id: str, payload: PublicCommentCreate) -> dict:
     """Accept a resident comment only for public records with comment intake enabled."""
-    record = public_archive.public_detail(record_id)
+    record = _get_public_archive().public_detail(record_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Public meeting record not found.")
-    comment = public_comments.submit(
+    comment = _get_public_comments().submit(
         public_record=record,
         commenter_name=payload.commenter_name,
         comment=payload.comment,
@@ -2442,10 +2472,10 @@ async def submit_public_comment(record_id: str, payload: PublicCommentCreate) ->
 @app.get("/public/meetings/{record_id}/comments")
 async def list_public_comments(record_id: str) -> dict[str, int | list[dict]]:
     """List resident comments collected for a public record."""
-    record = public_archive.public_detail(record_id)
+    record = _get_public_archive().public_detail(record_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Public meeting record not found.")
-    comments = [comment.public_dict() for comment in public_comments.list_for_record(record.id)]
+    comments = [comment.public_dict() for comment in _get_public_comments().list_for_record(record.id)]
     return {"total_count": len(comments), "comments": comments}
 
 
@@ -2453,7 +2483,7 @@ async def list_public_comments(record_id: str) -> dict[str, int | list[dict]]:
 async def list_public_comment_review_queue() -> dict[str, object]:
     """List resident comments awaiting staff review across public records."""
 
-    comments = [comment.public_dict() for comment in public_comments.list_all()]
+    comments = [comment.public_dict() for comment in _get_public_comments().list_all()]
     return {
         "total_count": len(comments),
         "comments": comments,
@@ -2472,7 +2502,7 @@ async def public_archive_search(
     include_closed = principal is not None and can_view_closed_sessions(principal.roles)
     results = [
         record.public_dict(include_closed=include_closed)
-        for record in public_archive.search(query=q, include_closed=include_closed)
+        for record in _get_public_archive().search(query=q, include_closed=include_closed)
     ]
     return {
         "total_count": len(results),
@@ -3409,3 +3439,47 @@ def _get_vendor_sync_repository() -> VendorSyncRepository:
         _vendor_sync_db_url = db_url
         _vendor_sync_repository = VendorSyncRepository(db_url=db_url)
     return _vendor_sync_repository
+
+
+def _get_motion_votes() -> MotionVoteRepository | MotionVoteStore:
+    global _motion_vote_db_url, _motion_vote_repository
+    db_url = os.environ.get("CIVICCLERK_MOTION_VOTE_DB_URL")
+    if db_url is None:
+        return motion_votes
+    if _motion_vote_repository is None or db_url != _motion_vote_db_url:
+        _motion_vote_db_url = db_url
+        _motion_vote_repository = MotionVoteRepository(db_url=db_url)
+    return _motion_vote_repository
+
+
+def _get_minutes_drafts() -> MinutesDraftRepository | MinutesDraftStore:
+    global _minutes_draft_db_url, _minutes_draft_repository
+    db_url = os.environ.get("CIVICCLERK_MINUTES_DB_URL")
+    if db_url is None:
+        return minutes_drafts
+    if _minutes_draft_repository is None or db_url != _minutes_draft_db_url:
+        _minutes_draft_db_url = db_url
+        _minutes_draft_repository = MinutesDraftRepository(db_url=db_url)
+    return _minutes_draft_repository
+
+
+def _get_public_archive() -> PublicArchiveRepository | PublicArchiveStore:
+    global _public_archive_db_url, _public_archive_repository
+    db_url = os.environ.get("CIVICCLERK_PUBLIC_ARCHIVE_DB_URL")
+    if db_url is None:
+        return public_archive
+    if _public_archive_repository is None or db_url != _public_archive_db_url:
+        _public_archive_db_url = db_url
+        _public_archive_repository = PublicArchiveRepository(db_url=db_url)
+    return _public_archive_repository
+
+
+def _get_public_comments() -> PublicCommentRepository | PublicCommentStore:
+    global _public_comment_db_url, _public_comment_repository
+    db_url = os.environ.get("CIVICCLERK_PUBLIC_ARCHIVE_DB_URL")
+    if db_url is None:
+        return public_comments
+    if _public_comment_repository is None or db_url != _public_comment_db_url:
+        _public_comment_db_url = db_url
+        _public_comment_repository = PublicCommentRepository(db_url=db_url)
+    return _public_comment_repository
