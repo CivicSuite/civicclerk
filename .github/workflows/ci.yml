@@ -23,7 +23,11 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: [self-hosted, linux, x64]
+    # Hosted runner: free and unlimited on public repos, Docker preinstalled
+    # (the pgvector migration test needs it), and ephemeral VMs are the right
+    # place to execute pull-request code. Self-hosted runners remain for the
+    # umbrella repo's evidence gates only.
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: civicclerk-checkout-${{ github.run_id }}
