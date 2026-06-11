@@ -17,6 +17,10 @@ VERSION = "1.0.3"
 
 async def test_staff_ui_endpoint_renders_accessible_workflow_foundation() -> None:
     main_module.motion_votes = main_module.MotionVoteStore()
+    # Same isolation for minutes: the empty-state asserts below fail if an
+    # earlier test file (e.g. milestone 7 under custom ordering) left drafts
+    # in the module-level store.
+    main_module.minutes_drafts = main_module.MinutesDraftStore()
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         response = await client.get("/staff")
