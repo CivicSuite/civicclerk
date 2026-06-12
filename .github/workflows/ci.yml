@@ -77,7 +77,7 @@ jobs:
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
       - name: Install Playwright Chromium (a11y + e2e)
         timeout-minutes: 15
-        run: npx playwright install chromium
+        run: npx playwright install --only-shell chromium
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
       - name: Accessibility gate (axe critical/serious)
         run: npm run a11y:ci
