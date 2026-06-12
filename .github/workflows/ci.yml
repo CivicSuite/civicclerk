@@ -23,6 +23,7 @@ concurrency:
 
 jobs:
   verify:
+    timeout-minutes: 120
     # Hosted runner: free and unlimited on public repos, Docker preinstalled
     # (the pgvector migration test needs it), and ephemeral VMs are the right
     # place to execute pull-request code. Self-hosted runners remain for the
@@ -68,10 +69,15 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
-      - name: Install Playwright Chromium (a11y + e2e)
+      - name: Install Playwright system dependencies
         # Must precede the axe gate: hosted runners start with no browser
         # cache (the old self-hosted machine masked this ordering bug).
-        run: npx playwright install --with-deps chromium
+        timeout-minutes: 15
+        run: npx playwright install-deps chromium
+        working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
+      - name: Install Playwright Chromium (a11y + e2e)
+        timeout-minutes: 15
+        run: npx playwright install chromium
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend
       - name: Accessibility gate (axe critical/serious)
         run: npm run a11y:ci
