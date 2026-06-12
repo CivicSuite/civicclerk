@@ -355,8 +355,11 @@ The runtime foundation now pins to the published `civiccore` 1.2.0 wheel from th
 schedule-edit audit entries use `CIVICCLERK_MEETING_DB_URL` when set; meeting body records use
 `CIVICCLERK_MEETING_BODY_DB_URL` when set; packet assembly records use
 `CIVICCLERK_PACKET_ASSEMBLY_DB_URL` when set; notice checklist records use
-`CIVICCLERK_NOTICE_CHECKLIST_DB_URL` when set. If unset, each repository uses
-an in-memory SQLite database suitable for local smoke checks.
+`CIVICCLERK_NOTICE_CHECKLIST_DB_URL` when set; motion, vote, and action-item
+records use `CIVICCLERK_MOTION_VOTE_DB_URL` when set; minutes draft records use
+`CIVICCLERK_MINUTES_DB_URL` when set; public archive records and resident
+comments use `CIVICCLERK_PUBLIC_ARCHIVE_DB_URL` when set. If unset, each
+repository uses an in-memory SQLite database suitable for local smoke checks.
 
 ### Fresh-machine install rehearsal
 

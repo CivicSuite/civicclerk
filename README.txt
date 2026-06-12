@@ -20,6 +20,21 @@ or in-process boundary validation; adversarial mock checks are supplemental
 regression coverage and are not a substitute for claiming a live production
 deployment.
 
+Persistence Phase 1 update: motions, votes, action items, minutes drafts,
+public archive records, and resident comments now persist to the configured
+database when `CIVICCLERK_MOTION_VOTE_DB_URL`, `CIVICCLERK_MINUTES_DB_URL`,
+and `CIVICCLERK_PUBLIC_ARCHIVE_DB_URL` are set — set
+`CIVICCLERK_MEETING_DB_URL` as well so the parent meeting records survive
+with them — so the legal record of a meeting survives an API restart. The
+public archive database must also contain the published meeting's referent
+row in `civicclerk.meetings` (migration 0014); the publish endpoint returns
+a self-describing 404 with the fix when it does not. Without those
+variables CivicClerk falls back to in-memory stores and the legal record
+does not survive a restart — do not run a real public meeting without
+database-backed persistence enabled. Minutes adoption/posting write paths,
+transcript records, ordinance/resolution handoffs, posted notice records,
+and packet snapshots remain in-memory pending Persistence Phase 1b.
+
 ## Release Provenance
 
 CivicClerk now wires the strengthened CivicCore release-provenance preflight
