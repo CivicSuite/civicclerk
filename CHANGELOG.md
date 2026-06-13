@@ -4,6 +4,8 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-06-13
+
 ### Added
 - Added the live CivicCode handoff emitter for adopted ordinance/resolution
   handoffs. When `CIVICCODE_INTAKE_URL` and the suite bearer handoff value are
@@ -11,16 +13,27 @@ All notable changes to CivicClerk are documented here.
   intake contract with bearer authorization, records delivered/failed/
   unconfigured status on the local handoff record, and exposes a manual retry
   endpoint for operator-controlled recovery.
+- Added Persistence Phase 1 for the public-meeting legal record: motions,
+  votes, action items, minutes drafts, public archive records, and resident
+  comments can now persist through the configured database-backed repositories,
+  with an HTTP-level restart-survival test covering the full record path.
 
 ### Changed
 - Staff bearer mode now accepts CivicCore suite session bearer tokens for
   `/staff/session` while preserving the legacy configured-token path.
 - Integration-depth readiness metadata now distinguishes live-wire or
   in-process boundary validation from supplemental adversarial mock checks.
+- Moved CivicClerk CI, cleanroom, release-preflight, and release publication
+  jobs to GitHub-hosted `ubuntu-latest` runners; release frontend verification
+  now pins Node 22 and installs only the Playwright headless Chromium shell.
 
 ### Fixed
 - Isolated the static staff workflow UI test from process-local meeting outcome
   records so the full release gate verifies the empty-state contract reliably.
+- Serialized audit-chain writes across the persistence repositories, appended
+  events only after database commits, normalized blank DB URL environment
+  values to in-memory fallback, and gated public comment intake on database
+  truth instead of caller-supplied snapshots.
 
 ## [1.0.3] - 2026-05-23
 

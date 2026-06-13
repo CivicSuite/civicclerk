@@ -11,11 +11,14 @@ import argparse
 import hashlib
 import json
 import shutil
+import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 DEFAULT_REHEARSAL_ROOT = ROOT / ".backup-restore-rehearsal"
 STORE_FILES = {
     "CIVICCLERK_AGENDA_INTAKE_DB_URL": "agenda-intake.db",

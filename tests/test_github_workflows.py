@@ -25,7 +25,7 @@ def test_release_workflow_dispatch_release_tag_contract() -> None:
     release_tag = workflow_dispatch["inputs"]["release_tag"]
 
     assert release_tag["required"] is True
-    assert release_tag["default"] == "v1.0.3"
+    assert release_tag["default"] == "v1.0.4"
 
 
 def test_release_workflow_cleanroom_release_gate_contract() -> None:

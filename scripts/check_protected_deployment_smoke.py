@@ -6,16 +6,18 @@ import argparse
 import asyncio
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import httpx
 
 from civicclerk.main import STAFF_AUTH_TOKEN_ROLES_ENV_VAR, app
 from scripts.check_deployment_readiness import _load_env_file, build_checks
-
-
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def _redacted_headers(headers: dict[str, str]) -> dict[str, str]:

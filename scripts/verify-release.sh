@@ -88,7 +88,7 @@ if [[ -f "frontend/package-lock.json" ]]; then
   echo "==> frontend Playwright user flows"
   (
     cd frontend
-    npx playwright install chromium
+    npx playwright install --only-shell chromium
     npm run test:e2e
   )
 fi
@@ -175,7 +175,7 @@ health = client.get("/health")
 assert health.status_code == 200, health.text
 payload = health.json()
 assert payload["status"] == "ok", payload
-assert payload["version"] == "1.0.3", payload
+assert payload["version"] == "1.0.4", payload
 staff = client.get("/staff")
 assert staff.status_code == 200, staff.text[:300]
 print("RUNTIME-INSTALL-PROOF: PASSED")

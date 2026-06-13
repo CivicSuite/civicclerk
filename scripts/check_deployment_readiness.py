@@ -6,9 +6,14 @@ import argparse
 import asyncio
 import os
 import shlex
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from fastapi import HTTPException
 
@@ -22,7 +27,6 @@ from civicclerk.main import (
 from civiccore import __version__ as CIVICCORE_VERSION
 
 
-ROOT = Path(__file__).resolve().parents[1]
 DIST_ROOT_ENV_VAR = "CIVICCLERK_DEPLOYMENT_PREFLIGHT_DIST_ROOT"
 DATABASE_ENV_VARS = (
     "CIVICCLERK_AGENDA_INTAKE_DB_URL",

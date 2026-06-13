@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from civicclerk import __version__
 
 
-ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_UMBRELLA_ROOT = ROOT.parent / "civicsuite"
 EXPECTED_CIVICCORE_RUNTIME = "1.2.0"
 EXPECTED_RECORDS_VERSION = "1.6.1"
@@ -164,7 +168,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         required_phrases = (
             "CivicCore installs first",
             "CivicRecords AI and CivicClerk are selectable",
-            "CivicClerk reports v1.0.3 with CivicCore v1.2.0",
+            "CivicClerk reports v1.0.4 with CivicCore v1.2.0",
             "--staff-mode bearer --workflow-proof",
             "Package Cleanroom Contract",
             "workflow_proof_requested=true",

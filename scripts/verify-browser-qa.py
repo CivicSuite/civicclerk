@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
-import tomllib
 import json
+import sys
+import tomllib
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from civiccore.verification import validate_release_browser_evidence
 from civicclerk.cc7_completeness import CC7_FRONTEND_PAGES, REQUIRED_VIEW_STATES
 
 
-ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_STATES = ("loading", "success", "empty", "error", "partial")
 REQUIRED_CHECKS = ("keyboard", "focus", "contrast", "console")
 

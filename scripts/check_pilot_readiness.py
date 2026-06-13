@@ -4,8 +4,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from civicclerk import __version__
 from civicclerk.mock_city_environment import (
@@ -17,7 +22,6 @@ from civicclerk.mock_city_environment import (
 from scripts.check_installer_readiness import build_checks as build_installer_checks
 
 
-ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_VERSION = __version__
 DOC_WARNING_FILES = (
     "README.md",
