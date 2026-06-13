@@ -39,3 +39,7 @@ def test_release_workflow_cleanroom_release_gate_contract() -> None:
     assert "system prune" not in workflow_text
     assert "Cleanroom rehearsal: PASSED in workflow run ${WORKFLOW_RUN_ID}" in workflow_text
     assert "Verified clean install of ${WHEEL_URL} from cold caches" in workflow_text
+    assert "Release ${GITHUB_REF_NAME} already exists and is not a draft." in workflow_text
+    assert 'gh release delete "$GITHUB_REF_NAME" --yes' in workflow_text
+    assert "find release-assets -type f -print | sort" in workflow_text
+    assert 'gh release upload "$GITHUB_REF_NAME" "${release_assets[@]}" --clobber' in workflow_text

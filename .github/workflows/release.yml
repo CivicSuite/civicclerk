@@ -272,12 +272,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          if gh release view "$GITHUB_REF_NAME" --json isDraft --jq '.isDraft' >/tmp/civicclerk-release-is-draft 2>/dev/null; then
+            if [ "$(cat /tmp/civicclerk-release-is-draft)" != "true" ]; then
+              echo "::error::Release ${GITHUB_REF_NAME} already exists and is not a draft."
+              exit 1
+            fi
+            gh release delete "$GITHUB_REF_NAME" --yes
+          fi
           gh release create "$GITHUB_REF_NAME" \
             --draft \
             --title "CivicClerk $GITHUB_REF_NAME" \
             --notes-file release-notes.md \
             --verify-tag
-          gh release upload "$GITHUB_REF_NAME" release-assets/* --clobber
+          mapfile -t release_assets < <(find release-assets -type f -print | sort)
+          if [ "${#release_assets[@]}" -eq 0 ]; then
+            echo "::error::No release asset files found under release-assets."
+            exit 1
+          fi
+          gh release upload "$GITHUB_REF_NAME" "${release_assets[@]}" --clobber
 
   release-cleanroom-rehearsal:
     name: cleanroom-rehearsal (release asset)
