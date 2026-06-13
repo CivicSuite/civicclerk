@@ -66,6 +66,27 @@ def test_compose_enables_demo_seed_but_documents_empty_database_escape_hatch() -
     assert "Set to 0 for an empty local rehearsal database." in env_example
 
 
+def test_demo_seed_skips_public_archive_on_migrated_meetings_table(tmp_path) -> None:
+    """A migrated meetings table with NOT NULL business columns rejects the
+    id-only referent insert with IntegrityError; the seed skips, never crashes."""
+    import sqlalchemy as sa
+
+    from civicclerk.demo_seed import _ensure_public_archive_record
+    from civicclerk.public_archive import PublicArchiveRepository
+
+    db_url = f"sqlite:///{tmp_path / 'migrated.db'}"
+    engine = sa.create_engine(db_url)
+    with engine.begin() as connection:
+        connection.execute(
+            sa.text("CREATE TABLE meetings (id TEXT PRIMARY KEY, title TEXT NOT NULL)")
+        )
+    repo = PublicArchiveRepository(db_url=db_url)
+
+    _ensure_public_archive_record(repo, meeting_id="11111111-2222-4333-8444-555555555555")
+
+    assert repo.public_calendar() == []
+
+
 def _stores(tmp_path):
     return {
         "meeting_bodies": MeetingBodyRepository(
