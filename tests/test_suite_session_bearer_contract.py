@@ -8,16 +8,23 @@ from httpx import ASGITransport, AsyncClient
 from civicclerk.main import STAFF_AUTH_MODE_ENV_VAR, STAFF_BEARER_MODE, app
 
 
+def _issue_suite_session_token(**kwargs: object) -> str:
+    try:
+        from civiccore.auth.suite_session import issue_suite_session_token
+    except ModuleNotFoundError:
+        from civicclerk.suite_session_compat import issue_suite_session_token
+
+    return issue_suite_session_token(**kwargs)
+
+
 @pytest.mark.asyncio
 @pytest.mark.uses_civicclerk_default_staff_mode
 async def test_civicclerk_staff_session_accepts_civiccore_suite_bearer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from civiccore.auth.suite_session import issue_suite_session_token
-
     monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_BEARER_MODE)
     monkeypatch.setenv("CIVICCORE_SUITE_SESSION_SECRET", "clerk-suite-session-secret")
-    token = issue_suite_session_token(
+    token = _issue_suite_session_token(
         subject="clerk@example.gov",
         roles=frozenset({"clerk_admin", "meeting_editor"}),
         session_id="clerk-suite-session",
@@ -42,15 +49,13 @@ async def test_civicclerk_staff_logout_revokes_civiccore_suite_bearer(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from civiccore.auth.suite_session import issue_suite_session_token
-
     monkeypatch.setenv(STAFF_AUTH_MODE_ENV_VAR, STAFF_BEARER_MODE)
     monkeypatch.setenv("CIVICCORE_SUITE_SESSION_SECRET", "clerk-suite-session-secret")
     monkeypatch.setenv(
         "CIVICCORE_SUITE_SESSION_REVOCATION_FILE",
         str(tmp_path / "suite-session-revocations.json"),
     )
-    token = issue_suite_session_token(
+    token = _issue_suite_session_token(
         subject="clerk@example.gov",
         roles=frozenset({"clerk_admin", "meeting_editor"}),
         session_id="clerk-suite-session-logout",
