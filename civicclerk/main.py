@@ -138,6 +138,11 @@ CIVICCODE_HANDOFF_FAILED = "EMIT_FAILED"
 CIVICCODE_HANDOFF_UNCONFIGURED = "EMIT_SKIPPED_UNCONFIGURED"
 CIVICCLERK_OLLAMA_BASE_URL_ENV_VAR = "CIVICCLERK_OLLAMA_BASE_URL"
 CIVICCORE_LLM_PROVIDER_ENV_VAR = "CIVICCORE_LLM_PROVIDER"
+LLM_MODEL_ENV_VAR = "LLM_MODEL"
+_LOCAL_MINUTES_NUM_PREDICT = 220
+_LOCAL_MINUTES_NUM_CTX = 3072
+_LOCAL_MINUTES_TIMEOUT_SECONDS = 120.0
+_GEMMA_STOP_TOKENS = ["<end_of_turn>", "<start_of_turn>"]
 DEMO_SEED_ENV_VAR = "CIVICCLERK_DEMO_SEED"
 DEFAULT_STAFF_SSO_PROVIDER = "trusted reverse proxy"
 DEFAULT_STAFF_SSO_PRINCIPAL_HEADER = "X-Forwarded-Email"
@@ -1954,6 +1959,73 @@ def _minutes_assist_prompt(payload: MinutesAiAssistCreate) -> str:
     )
 
 
+def _minutes_runtime_model(payload: MinutesAiAssistCreate) -> str:
+    return (os.getenv(LLM_MODEL_ENV_VAR) or payload.model).strip()
+
+
+def _minutes_gemma_prompt(payload: MinutesAiAssistCreate) -> str:
+    bounded_prompt = (
+        f"{_minutes_assist_prompt(payload)}\n\n"
+        "Return one concise clerk-reviewed minutes draft paragraph in under 220 words. "
+        "Use plain text only. Do not include hidden reasoning or analysis."
+    )
+    return f"<start_of_turn>user\n{bounded_prompt}<end_of_turn>\n<start_of_turn>model\n"
+
+
+def _minutes_generation_payload(payload: MinutesAiAssistCreate) -> dict:
+    return {
+        "model": _minutes_runtime_model(payload),
+        "prompt": _minutes_gemma_prompt(payload),
+        "raw": True,
+        "stream": False,
+        "options": {
+            "temperature": 0.2,
+            "num_predict": _LOCAL_MINUTES_NUM_PREDICT,
+            "num_ctx": _LOCAL_MINUTES_NUM_CTX,
+            "stop": _GEMMA_STOP_TOKENS,
+        },
+    }
+
+
+def _parse_ollama_generate_text(body: str) -> str:
+    """Parse Ollama generate variants seen from product-managed local runtimes."""
+    fragments: list[str] = []
+    for line in body.splitlines():
+        candidate = line.strip()
+        if not candidate:
+            continue
+        try:
+            int(candidate, 16)
+            continue
+        except ValueError:
+            pass
+        try:
+            data = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        response = data.get("response")
+        if isinstance(response, str):
+            fragments.append(response)
+        message = data.get("message")
+        if isinstance(message, dict) and isinstance(message.get("content"), str):
+            fragments.append(message["content"])
+
+    if fragments:
+        return "".join(fragments).strip()
+
+    try:
+        data = json.loads(body)
+    except json.JSONDecodeError:
+        return ""
+    response = data.get("response")
+    if isinstance(response, str):
+        return response.strip()
+    message = data.get("message")
+    if isinstance(message, dict) and isinstance(message.get("content"), str):
+        return message["content"].strip()
+    return ""
+
+
 async def _request_ollama_minutes_text(payload: MinutesAiAssistCreate) -> str:
     provider = (os.getenv(CIVICCORE_LLM_PROVIDER_ENV_VAR) or "ollama").strip().lower()
     if provider != "ollama":
@@ -1961,16 +2033,17 @@ async def _request_ollama_minutes_text(payload: MinutesAiAssistCreate) -> str:
             f"{CIVICCORE_LLM_PROVIDER_ENV_VAR} is '{provider}', not 'ollama'."
         )
     base_url = (os.getenv(CIVICCLERK_OLLAMA_BASE_URL_ENV_VAR) or "http://ollama:11434").strip().rstrip("/")
-    timeout = httpx.Timeout(connect=3.0, read=20.0, write=5.0, pool=3.0)
+    timeout = httpx.Timeout(
+        connect=10.0,
+        read=_LOCAL_MINUTES_TIMEOUT_SECONDS,
+        write=10.0,
+        pool=10.0,
+    )
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 f"{base_url}/api/generate",
-                json={
-                    "model": payload.model,
-                    "prompt": _minutes_assist_prompt(payload),
-                    "stream": False,
-                },
+                json=_minutes_generation_payload(payload),
             )
     except httpx.TimeoutException as exc:
         raise MinutesAssistUnavailableError("Ollama request timed out.") from exc
@@ -1980,10 +2053,7 @@ async def _request_ollama_minutes_text(payload: MinutesAiAssistCreate) -> str:
         raise MinutesAssistUnavailableError(
             f"Ollama returned HTTP {response.status_code}: {response.text[:200]}"
         )
-    try:
-        generated = str(response.json().get("response", "")).strip()
-    except ValueError as exc:
-        raise MinutesAssistUnavailableError("Ollama returned invalid JSON.") from exc
+    generated = _parse_ollama_generate_text(response.text)
     if not generated:
         raise MinutesAssistUnavailableError("Ollama returned an empty minutes draft.")
     return generated

@@ -35,6 +35,47 @@ def _minutes_payload() -> dict[str, object]:
     }
 
 
+def test_minutes_generation_payload_uses_runtime_model_and_gemma_bounds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LLM_MODEL", "civicsuite-gemma4-12b-qat:q4_0")
+    payload = main_module.MinutesAiAssistCreate(**_minutes_payload())
+
+    request = main_module._minutes_generation_payload(payload)
+
+    assert request["model"] == "civicsuite-gemma4-12b-qat:q4_0"
+    assert request["raw"] is True
+    assert request["stream"] is False
+    assert request["prompt"].startswith("<start_of_turn>user\n")
+    assert request["prompt"].endswith("<start_of_turn>model\n")
+    assert "Return one concise clerk-reviewed minutes draft paragraph in under 220 words" in request["prompt"]
+    assert request["options"]["num_predict"] == 220
+    assert request["options"]["num_ctx"] == 3072
+    assert request["options"]["stop"] == ["<end_of_turn>", "<start_of_turn>"]
+
+
+def test_ollama_generate_parser_accepts_installed_runtime_variants() -> None:
+    assert (
+        main_module._parse_ollama_generate_text(
+            '{"model":"civicsuite-gemma4-12b-qat:q4_0","response":"Draft ready.","done":true}'
+        )
+        == "Draft ready."
+    )
+    assert (
+        main_module._parse_ollama_generate_text(
+            '{"message":{"role":"assistant","content":"Minutes draft ready."},"done":true}'
+        )
+        == "Minutes draft ready."
+    )
+    assert (
+        main_module._parse_ollama_generate_text(
+            '94\n{"response":"First ","done":false}\n11\n{"response":"second.","done":true}\n0'
+        )
+        == "First second."
+    )
+    assert main_module._parse_ollama_generate_text('{"done":true}') == ""
+
+
 def test_compose_keeps_api_and_worker_bootable_without_ollama_health_gate() -> None:
     compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
     api_service = _compose_service(compose, "api", "worker")
