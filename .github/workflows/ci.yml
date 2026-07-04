@@ -47,8 +47,6 @@ jobs:
         run: python -m pip install "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v1.2.1/civiccore-1.2.1-py3-none-any.whl#sha256=8dde29408e206048bde63ec14156a8e6329382af4d16b12710d12aa5c27f3f59"
       - name: Install package and test dependencies
         run: python -m pip install -e ".[dev]"
-      - name: Install CivicCore suite-session test override
-        run: python -m pip install --force-reinstall --no-deps "civiccore @ git+https://github.com/CivicSuite/civiccore.git@90ec5417d37d469f2cf01d26ace393f67504a805"
       - name: Install frontend dependencies
         run: npm ci
         working-directory: civicclerk-checkout-${{ github.run_id }}/frontend

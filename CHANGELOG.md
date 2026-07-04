@@ -12,10 +12,12 @@ All notable changes to CivicClerk are documented here.
   `v1.2.1` release wheel. v1.2.1 publishes the `civiccore_0003_local_task_queue`
   Alembic migration line that the local-AI minutes path depends on; the v1.2.0
   wheel predated it. Runtime pin, cleanroom Dockerfile/runner, CI/preflight/
-  release workflows, rehearsal scripts, and current-state docs now target
-  `v1.2.1` and its release-attested wheel; historical records (ADR-0006, the
-  cc-1 cleanroom evidence pack, and prior CHANGELOG entries) remain at the
-  versions they were produced against.
+  release workflows, rehearsal scripts, the freeze-assert tests, and the
+  living current-state docs (README/.txt, USER-MANUAL/.txt) now target
+  `v1.2.1` and its release-attested wheel. Point-in-time records stay at the
+  versions they were produced against: ADR-0006, the cc-1 cleanroom evidence
+  pack, prior CHANGELOG entries, and the v1.0.4 browser-QA docs snapshot
+  (`docs/index.html`, hash-bound to its captured accessibility evidence).
 - Resolved a high-severity `ws` DoS advisory (GHSA-96hv-2xvq-fx4p) in the
   frontend dependency tree via `npm audit fix`.
 
