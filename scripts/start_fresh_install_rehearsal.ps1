@@ -47,7 +47,7 @@ function Write-FreshInstallPlan {
     Write-Output "Smoke check: GET $AppUrl/health"
     Write-Output "Readiness check: GET $AppUrl/staff/auth-readiness"
     Write-Output "Browser check: open $AppUrl/staff"
-    Write-Output "Expected health: {`"status`":`"ok`",`"service`":`"civicclerk`",`"version`":`"1.0.4`",`"civiccore`":`"1.2.0`"}"
+    Write-Output "Expected health: {`"status`":`"ok`",`"service`":`"civicclerk`",`"version`":`"1.0.4`",`"civiccore`":`"1.2.1`"}"
     Write-Output "Expected auth readiness: mode=protected and anonymous staff writes denied"
     Write-Output "If the wheel is missing, build it first with: python -m build"
     Write-Output "If port $AppPort is already in use, stop the existing process or rerun with -AppPort set to an available port."
@@ -135,8 +135,8 @@ try {
         throw "The installed CivicClerk app did not answer $appUrl/health within 20 seconds. Check the app process output and whether port $AppPort is already in use."
     }
 
-    if ($health.status -ne "ok" -or $health.service -ne "civicclerk" -or $health.version -ne "1.0.4" -or $health.civiccore -ne "1.2.0") {
-        throw "Unexpected /health response: $($health | ConvertTo-Json -Compress). Expected CivicClerk 1.0.4 with CivicCore 1.2.0."
+    if ($health.status -ne "ok" -or $health.service -ne "civicclerk" -or $health.version -ne "1.0.4" -or $health.civiccore -ne "1.2.1") {
+        throw "Unexpected /health response: $($health | ConvertTo-Json -Compress). Expected CivicClerk 1.0.4 with CivicCore 1.2.1."
     }
 
     $readiness = Invoke-JsonGet -Url "$appUrl/staff/auth-readiness"

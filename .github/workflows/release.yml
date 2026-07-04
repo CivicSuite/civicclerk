@@ -118,12 +118,12 @@ jobs:
         with:
           python-version: "3.13"
       - name: Install CivicCore freeze release-provenance helper
-        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/v1.2.0/civiccore-1.2.0-py3-none-any.whl
+        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/v1.2.1/civiccore-1.2.1-py3-none-any.whl
       - name: Checkout canonical CivicCore freeze provenance fixtures
         uses: actions/checkout@v6
         with:
           repository: CivicSuite/civiccore
-          ref: v1.2.0
+          ref: v1.2.1
           path: civicclerk-release-${{ github.run_id }}/.tmp-civiccore
       - name: Verify adversarial release provenance fixtures
         run: python scripts/verify-release-provenance.py --fixtures-dir .tmp-civiccore/tests/fixtures/release_provenance
@@ -148,7 +148,7 @@ jobs:
         with:
           node-version: "22"
       - name: Install CivicCore freeze release wheel
-        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/v1.2.0/civiccore-1.2.0-py3-none-any.whl
+        run: python -m pip install https://github.com/CivicSuite/civiccore/releases/download/v1.2.1/civiccore-1.2.1-py3-none-any.whl
       - name: Install package and test dependencies
         run: python -m pip install -e ".[dev]"
       - name: Verify release
@@ -156,7 +156,7 @@ jobs:
       - name: Build release handoff bundle
         run: bash scripts/build_release_handoff_bundle.sh
       - name: Install CivicCore freeze release-provenance helper
-        run: python -m pip install --force-reinstall https://github.com/CivicSuite/civiccore/releases/download/v1.2.0/civiccore-1.2.0-py3-none-any.whl
+        run: python -m pip install --force-reinstall https://github.com/CivicSuite/civiccore/releases/download/v1.2.1/civiccore-1.2.1-py3-none-any.whl
       - name: Resolve release ref
         id: release_ref
         env:

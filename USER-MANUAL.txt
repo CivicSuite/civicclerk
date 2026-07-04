@@ -65,7 +65,7 @@ refusal, and public plain-language meeting explanation,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
 ledgering, accessibility/browser QA gates, provisional CivicClerk v1.0.4 release
-artifacts, CivicCore 1.2.0 freeze-backed packet export bundles, a database-backed
+artifacts, CivicCore 1.2.1 freeze-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
 with source/citation metadata, database-backed agenda item lifecycle records
@@ -349,7 +349,7 @@ destroyed accidentally. `CIVICCLERK_STAFF_AUTH_MODE=protected` is the default an
 
 ### Planned dependency
 
-The runtime foundation now pins to the published `civiccore` 1.2.0 wheel from the `v1.2.0` release asset. Agenda intake uses
+The runtime foundation now pins to the published `civiccore` 1.2.1 wheel from the `v1.2.1` release asset. Agenda intake uses
 `CIVICCLERK_AGENDA_INTAKE_DB_URL` when set; agenda item lifecycle records use
 `CIVICCLERK_AGENDA_ITEM_DB_URL` when set; meeting records, schedule fields, and
 schedule-edit audit entries use `CIVICCLERK_MEETING_DB_URL` when set; meeting body records use
@@ -378,7 +378,7 @@ python -m uvicorn civicclerk.main:app --host 127.0.0.1 --port 8776
 
 Then verify these first-run checks:
 
-- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"1.0.4","civiccore":"1.2.0"}`
+- `GET /health` returns `{"status":"ok","service":"civicclerk","version":"1.0.4","civiccore":"1.2.1"}`
 - `GET /staff/auth-readiness` returns `mode: "protected"` and explains that anonymous staff writes are denied until OIDC, bearer, or trusted-header deployment is configured
 - `GET /staff` renders the first workflow shell without console errors
 
@@ -765,7 +765,7 @@ builds release artifacts and checksums, and publishes CivicClerk v1.0.4.
 CC-7 extends browser QA to every named spec page through
 `node scripts/capture-cc7-browser-qa.mjs`; the verification script requires the
 resulting 200-case ledger before browser-visible changes can merge.
-The current production-depth branch pairs CivicClerk with the published `civiccore` 1.2.0 wheel from the `v1.2.0` release asset
+The current production-depth branch pairs CivicClerk with the published `civiccore` 1.2.1 wheel from the `v1.2.1` release asset
 so packet exports, packet assembly records, notice checklist records, and the
 browser QA release-evidence gate can use shared CivicCore manifests,
 provenance, checksums, audit primitives, and verification helpers.
@@ -795,7 +795,7 @@ filtering for anonymous and under-privileged users. Milestone 9 moves
 policy-bearing prompt text into YAML and adds an evaluation harness.
 Milestone 10 adds source-provenanced connector import normalization for
 Granicus, Legistar, PrimeGov, and NovusAGENDA. Production-depth slices add
-records-ready packet export bundles using CivicCore 1.2.0 freeze provenance, export
+records-ready packet export bundles using CivicCore 1.2.1 freeze provenance, export
 manifest, checksum, and audit primitives; database-backed agenda intake and
 clerk readiness review state; database-backed agenda item lifecycle records with
 durable CivicCore-verifiable transition audit hashes and ready-intake promotion linkage; database-backed meeting records with lifecycle

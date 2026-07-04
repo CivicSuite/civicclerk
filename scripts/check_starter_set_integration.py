@@ -16,7 +16,7 @@ from civicclerk import __version__
 
 
 DEFAULT_UMBRELLA_ROOT = ROOT.parent / "civicsuite"
-EXPECTED_CIVICCORE_RUNTIME = "1.2.0"
+EXPECTED_CIVICCORE_RUNTIME = "1.2.1"
 EXPECTED_RECORDS_VERSION = "1.6.1"
 
 
@@ -168,7 +168,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         required_phrases = (
             "CivicCore installs first",
             "CivicRecords AI and CivicClerk are selectable",
-            "CivicClerk reports v1.0.4 with CivicCore v1.2.0",
+            "CivicClerk reports v1.0.4 with CivicCore v1.2.1",
             "--staff-mode bearer --workflow-proof",
             "Package Cleanroom Contract",
             "workflow_proof_requested=true",
@@ -268,7 +268,7 @@ def _print_plan() -> None:
     print("CivicClerk starter-set integration")
     print("Release evidence checks:")
     print("  1. Umbrella clerk-core profile installs CivicCore, CivicRecords AI, then CivicClerk.")
-    print("  2. CivicClerk is selectable and records its CivicCore 1.2.0 runtime dependency.")
+    print("  2. CivicClerk is selectable and records its CivicCore 1.2.1 runtime dependency.")
     print("  3. CivicRecords AI is paired at v1.6.1.")
     print("  4. Umbrella release contract requires package workflow proof.")
     print("  5. Linux and Windows starter-set archives exist when --require-archives is used.")
