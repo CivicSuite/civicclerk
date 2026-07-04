@@ -4,6 +4,21 @@ All notable changes to CivicClerk are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- Fixed installed local-AI minutes generation for the Windows-Local bundle.
+
+### Changed
+- Advanced the CivicCore dependency freeze from `v1.2.0` to the published
+  `v1.2.1` release wheel. v1.2.1 publishes the `civiccore_0003_local_task_queue`
+  Alembic migration line that the local-AI minutes path depends on; the v1.2.0
+  wheel predated it. Runtime pin, cleanroom Dockerfile/runner, CI/preflight/
+  release workflows, rehearsal scripts, and current-state docs now target
+  `v1.2.1` and its release-attested wheel; historical records (ADR-0006, the
+  cc-1 cleanroom evidence pack, and prior CHANGELOG entries) remain at the
+  versions they were produced against.
+- Resolved a high-severity `ws` DoS advisory (GHSA-96hv-2xvq-fx4p) in the
+  frontend dependency tree via `npm audit fix`.
+
 ## [1.0.4] - 2026-06-13
 
 ### Added

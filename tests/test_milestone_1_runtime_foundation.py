@@ -44,9 +44,9 @@ def test_pyproject_targets_published_civiccore_freeze_release_wheel() -> None:
     dependencies = data["project"]["dependencies"]
 
     assert (
-        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v1.2.0/"
-        "civiccore-1.2.0-py3-none-any.whl"
-        "#sha256=a94ce958e36fb03c8d961e4db4672ce5bcfa25765c57d75886e999cf15703ec7"
+        "civiccore @ https://github.com/CivicSuite/civiccore/releases/download/v1.2.1/"
+        "civiccore-1.2.1-py3-none-any.whl"
+        "#sha256=8dde29408e206048bde63ec14156a8e6329382af4d16b12710d12aa5c27f3f59"
     ) in dependencies
     assert not any(
         "civiccore>=" in dep or "civiccore~=" in dep or dep == "civiccore==0.12.0"

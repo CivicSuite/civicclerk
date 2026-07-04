@@ -4,8 +4,8 @@ set -Eeuo pipefail
 MODE="${1:-online}"
 EVIDENCE_DIR="${CLEANROOM_EVIDENCE_DIR:-/evidence}"
 RUN_LABEL="${CLEANROOM_RUN_LABEL:-cleanroom}"
-CIVICCORE_FREEZE_TAG="${CIVICCORE_FREEZE_TAG:-v1.2.0}"
-CIVICCORE_PACKAGE_VERSION="${CIVICCORE_PACKAGE_VERSION:-1.2.0}"
+CIVICCORE_FREEZE_TAG="${CIVICCORE_FREEZE_TAG:-v1.2.1}"
+CIVICCORE_PACKAGE_VERSION="${CIVICCORE_PACKAGE_VERSION:-1.2.1}"
 CIVICCLERK_DOCKER_HOST_ADDRESS="${CIVICCLERK_DOCKER_HOST_ADDRESS:-host.docker.internal}"
 CIVICCORE_RELEASE_BASE_URL="https://github.com/CivicSuite/civiccore/releases/download/${CIVICCORE_FREEZE_TAG}"
 OIDC_ISSUER="https://token.actions.githubusercontent.com"
@@ -141,7 +141,7 @@ import civiccore
 import civicclerk
 from civicclerk.main import app
 
-assert civiccore.__version__ == "1.2.0"
+assert civiccore.__version__ == "1.2.1"
 assert civicclerk.__version__ == "1.0.4"
 assert app.title == "CivicClerk"
 assert callable(civiccore.validate_manifest)
@@ -222,14 +222,14 @@ manifest = {
         "linux_amd64_sha256": os.environ["CLEANROOM_COSIGN_SHA256"],
     },
     "pinning_rules": {
-        "civiccore_dependency": "v1.2.0 release wheel",
+        "civiccore_dependency": "v1.2.1 release wheel",
         "placeholder_namespaces_forbidden": ["civiccore.catalog", "civiccore.exemptions", "civiccore.scaffold"],
     },
     "network": {
         "allowed_during_provisioning_and_verification": [
             "https://github.com/CivicSuite/civicclerk.git",
             "https://github.com/CivicSuite/civiccore.git",
-            "https://github.com/CivicSuite/civiccore/releases/download/v1.2.0/*",
+            "https://github.com/CivicSuite/civiccore/releases/download/v1.2.1/*",
             "https://api.github.com/repos/CivicSuite/civiccore/*",
             "https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign-linux-amd64",
             "https://pypi.org/*",
