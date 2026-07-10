@@ -147,7 +147,7 @@ def test_connector_import_sync_runner_print_only_is_honest(tmp_path: Path) -> No
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Network calls: disabled" in result.stdout
     assert "Not scheduled live sync" in result.stdout
-    assert "existing CivicClerk connector import contract" in result.stdout
+    assert "existing CivicMeetings connector import contract" in result.stdout
 
 
 def test_scheduled_connector_import_sync_skips_until_enabled(monkeypatch) -> None:

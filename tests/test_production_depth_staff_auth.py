@@ -790,7 +790,7 @@ async def test_invalid_staff_auth_mode_returns_actionable_503(monkeypatch: pytes
         )
 
     assert response.status_code == 503
-    assert response.json()["detail"]["message"] == "CivicClerk staff auth mode is invalid."
+    assert response.json()["detail"]["message"] == "CivicMeetings staff auth mode is invalid."
     assert STAFF_AUTH_MODE_ENV_VAR in response.json()["detail"]["fix"]
 
 

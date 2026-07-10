@@ -1,6 +1,6 @@
 # Security Policy
 
-CivicClerk is not installable yet. Security reports should still be
+CivicMeetings is not installable yet. Security reports should still be
 filed privately because meeting workflows will eventually contain
 privileged and closed-session material.
 

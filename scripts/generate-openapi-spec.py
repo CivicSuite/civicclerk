@@ -1,4 +1,4 @@
-"""Generate the published CivicClerk OpenAPI artifact."""
+"""Generate the published CivicMeetings OpenAPI artifact."""
 
 from __future__ import annotations
 

@@ -63,7 +63,7 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd -- "$script_dir/.." && pwd)"
 restore_suffix="$(printf '%s' "$run_id" | sed -E 's/[^a-zA-Z0-9_]+/_/g')"
 
-echo "CivicClerk Docker/PostgreSQL backup/restore rehearsal profile"
+echo "CivicMeetings Docker/PostgreSQL backup/restore rehearsal profile"
 echo "Rehearsal root: $rehearsal_root"
 echo "Run id: $run_id"
 echo "Python verifier: python scripts/check_docker_backup_restore_rehearsal.py"

@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def _print_plan(args: argparse.Namespace) -> None:
-    print("CivicClerk vendor-network live sync")
+    print("CivicMeetings vendor-network live sync")
     print(f"Source id: {args.source_id}")
     print("Network calls: disabled in print-only mode")
     print(f"Network gate: pass --enable-network or set {NETWORK_ENABLED_ENV_VAR}=true")
@@ -62,7 +62,7 @@ def main() -> int:
         timeout_seconds=args.timeout_seconds,
         output_path=Path(args.output) if args.output else None,
     )
-    print("CivicClerk vendor-network live sync")
+    print("CivicMeetings vendor-network live sync")
     print(f"network_calls={str(report.network_calls).lower()}")
     print(f"records_discovered={report.records_discovered}")
     print(f"records_succeeded={report.records_succeeded}")

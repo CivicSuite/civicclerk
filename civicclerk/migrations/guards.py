@@ -1,4 +1,4 @@
-"""CivicClerk-specific Alembic guards."""
+"""CivicMeetings-specific Alembic guards."""
 
 from __future__ import annotations
 

@@ -17,7 +17,7 @@ from civicclerk.connectors import SUPPORTED_CONNECTORS
 def _print_report(attempts: list[ImportAttempt], output_path: Path | None) -> int:
     imported_count = sum(1 for attempt in attempts if attempt.ok)
     failed_count = len(attempts) - imported_count
-    print("CivicClerk connector import sync")
+    print("CivicMeetings connector import sync")
     print("network_calls=false")
     print(f"imported_count={imported_count}")
     print(f"failed_count={failed_count}")
@@ -32,14 +32,14 @@ def _print_report(attempts: list[ImportAttempt], output_path: Path | None) -> in
 
 
 def _print_plan(connectors: list[str], payload_dir: Path, output_path: Path | None) -> None:
-    print("CivicClerk connector import sync")
+    print("CivicMeetings connector import sync")
     print("Network calls: disabled")
     print("Connectors: " + ", ".join(connectors))
     print(f"Payload source: {payload_dir}")
     print(f"Ledger: {output_path if output_path else 'stdout report only'}")
     print("Steps:")
     print("  1. Read local exported JSON files from <payload-dir>/<connector>.json or <payload-dir>/<connector>/*.json.")
-    print("  2. Normalize each payload through the existing CivicClerk connector import contract.")
+    print("  2. Normalize each payload through the existing CivicMeetings connector import contract.")
     print("  3. Write an import ledger with source provenance, normalized meeting ids, and actionable failures.")
     print("Not scheduled live sync: this runner processes local exports and does not contact vendors.")
 

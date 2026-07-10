@@ -1,8 +1,8 @@
-# CivicClerk Starter-Set Integration
+# CivicMeetings Starter-Set Integration
 
-Status: maintained module-side proof helper for the CivicCore + CivicRecords AI + CivicClerk starter set.
+Status: maintained module-side proof helper for the CivicCore + CivicRecords AI + CivicMeetings starter set.
 
-The umbrella installer owns the generated starter-set packages. CivicClerk owns
+The umbrella installer owns the generated starter-set packages. CivicMeetings owns
 the module contract it contributes to that package: version, CivicCore runtime
 pin, selectability, and honest boundary language.
 
@@ -15,8 +15,8 @@ python scripts\check_starter_set_integration.py --umbrella-root ..\civicsuite --
 The check verifies that:
 
 - the umbrella `clerk-core` profile installs CivicCore first, then CivicRecords
-  AI, then CivicClerk;
-- CivicClerk is selectable at v1.0.2 and records the CivicCore 1.2.1 runtime
+  AI, then CivicMeetings;
+- CivicMeetings is selectable at v1.0.2 and records the CivicCore 1.2.1 runtime
   dependency used by the current module release;
 - CivicRecords AI is paired at v1.6.1;
 - the umbrella release contract requires package workflow proof with
@@ -24,6 +24,6 @@ The check verifies that:
 - Linux and Windows starter-set release archives exist when
   `--require-archives` is used.
 
-This is starter-set install/test evidence. It is not a claim that CivicClerk and
+This is starter-set install/test evidence. It is not a claim that CivicMeetings and
 CivicRecords AI exchange live workflow records through a cross-module business
 API yet, and it is not macOS lifecycle certification.

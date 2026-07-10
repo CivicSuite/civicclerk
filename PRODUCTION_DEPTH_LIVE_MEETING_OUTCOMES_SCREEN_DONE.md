@@ -3,7 +3,7 @@
 ## Scope
 
 This slice adds the fourth live staff workflow screen for meeting outcome
-capture while keeping CivicClerk at version `0.1.0`.
+capture while keeping CivicMeetings at version `0.1.0`.
 
 ## What shipped
 

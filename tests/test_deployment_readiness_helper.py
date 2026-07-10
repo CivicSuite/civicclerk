@@ -40,7 +40,7 @@ def test_deployment_readiness_helper_reports_local_rehearsal_as_not_deployment_r
 
     assert result.returncode == 0, result.stdout + result.stderr
     output = result.stdout
-    assert "CivicClerk deployment readiness preflight" in output
+    assert "CivicMeetings deployment readiness preflight" in output
     assert "deployment_ready=false" in output
     assert "[WARN] staff auth: protected mode denies anonymous staff writes but still needs bearer, OIDC, or trusted-header auth before deployment." in output
     assert "CIVICCLERK_STAFF_AUTH_MODE=bearer" in output
@@ -119,7 +119,7 @@ def test_deployment_readiness_helper_loads_env_file_without_printing_secrets(tmp
     profile.write_text(
         "\n".join(
             [
-                "# CivicClerk deployment profile",
+                "# CivicMeetings deployment profile",
                 "export CIVICCLERK_STAFF_AUTH_MODE=bearer",
                 "CIVICCLERK_STAFF_AUTH_TOKEN_ROLES='{\"secret-token\":[\"clerk_admin\",\"meeting_editor\"]}'",
                 f"CIVICCLERK_AGENDA_INTAKE_DB_URL=sqlite:///{tmp_path / 'intake.db'}",

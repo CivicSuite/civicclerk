@@ -147,7 +147,7 @@ async def test_minutes_draft_api_requires_prompt_version_from_yaml_library() -> 
         rejected = await client.post(f"/meetings/{meeting_id}/minutes/drafts", json=payload)
         assert rejected.status_code == 422
         assert rejected.json()["detail"] == {
-            "message": "Minutes drafts must use a prompt version from the CivicClerk YAML prompt library.",
+            "message": "Minutes drafts must use a prompt version from the CivicMeetings YAML prompt library.",
             "fix": "Use prompt_version 'minutes_draft@0.1.0' or another version returned by the prompt library.",
         }
 

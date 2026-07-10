@@ -1,6 +1,6 @@
-# CC-1 CivicClerk Cleanroom Harness
+# CC-1 CivicMeetings Cleanroom Harness
 
-Status: active CivicClerk productization gate.
+Status: active CivicMeetings productization gate.
 
 Date: 2026-05-05.
 
@@ -8,7 +8,7 @@ Sprint: CC-1.
 
 ## Purpose
 
-CC-1 proves CivicClerk can be built and verified from a clean container while
+CC-1 proves CivicMeetings can be built and verified from a clean container while
 pinning the upstream platform to the CO-7 CivicCore freeze tag,
 `v1.2.1`, rather than moving CivicCore `main`.
 
@@ -16,7 +16,7 @@ The harness is intentionally stricter than a normal CI run:
 
 - the container base image is digest-pinned,
 - Docker builds use `--no-cache --pull`,
-- the target CivicClerk commit is fetched by SHA,
+- the target CivicMeetings commit is fetched by SHA,
 - CivicCore is installed from the `v1.2.1` release asset,
 - CivicCore freeze release assets are downloaded and checked with
   `sha256sum -c SHA256SUMS.txt`,
@@ -26,7 +26,7 @@ The harness is intentionally stricter than a normal CI run:
   release provenance contract,
 - `scripts/check-civiccore-placeholder-imports.py` rejects imports of
   `civiccore.catalog`, `civiccore.exemptions`, and `civiccore.scaffold`,
-- `bash scripts/verify-release.sh` runs the full CivicClerk test apparatus, and
+- `bash scripts/verify-release.sh` runs the full CivicMeetings test apparatus, and
 - the offline phase runs under `docker run --network none`.
 
 The online phase mounts the host Docker socket into the cleanroom container so
@@ -37,7 +37,7 @@ none` and without the socket.
 
 ## Commands
 
-Run from the CivicClerk repository root:
+Run from the CivicMeetings repository root:
 
 ```bash
 CLEANROOM_RUN_COUNT=2 bash scripts/run-civicclerk-cleanroom.sh

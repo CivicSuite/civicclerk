@@ -1,0 +1,1 @@
+{"ts": "2026-07-10T03:48:23.059893+00:00", "event": "plan_created", "brief": "Fix 3 flaky list-ordering tests in civicmeetings (timestamp tie-break nondeterminism)", "count": 4}

@@ -32,7 +32,7 @@ def test_docker_backup_restore_rehearsal_prints_non_destructive_plan(tmp_path: P
 
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk Docker/PostgreSQL backup/restore rehearsal",
+        "CivicMeetings Docker/PostgreSQL backup/restore rehearsal",
         "pg_dump",
         "pg_restore",
         "civicclerk_restore_print_plan",
@@ -82,7 +82,7 @@ def test_docker_backup_restore_rehearsal_powershell_wrapper_prints_expected_plan
 
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk Docker/PostgreSQL backup/restore rehearsal profile",
+        "CivicMeetings Docker/PostgreSQL backup/restore rehearsal profile",
         "Run id: print-plan",
         "Python verifier: python scripts/check_docker_backup_restore_rehearsal.py",
         "Backup dump: backup\\civicclerk-postgres.dump",
@@ -113,7 +113,7 @@ def test_docker_backup_restore_rehearsal_bash_wrapper_prints_expected_plan() -> 
 
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk Docker/PostgreSQL backup/restore rehearsal profile",
+        "CivicMeetings Docker/PostgreSQL backup/restore rehearsal profile",
         "Run id: print-plan",
         "Python verifier: python scripts/check_docker_backup_restore_rehearsal.py",
         "Backup dump: backup/civicclerk-postgres.dump",

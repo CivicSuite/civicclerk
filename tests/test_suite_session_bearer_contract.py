@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Contract tests for CivicClerk accepting CivicCore suite bearer sessions."""
+"""Contract tests for CivicMeetings accepting CivicCore suite bearer sessions."""
 
 import pytest
 from httpx import ASGITransport, AsyncClient

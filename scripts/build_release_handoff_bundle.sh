@@ -9,7 +9,7 @@ usage() {
   cat <<'EOF'
 Usage: bash scripts/build_release_handoff_bundle.sh [--version VERSION] [--output-path PATH] [--print-only]
 
-Builds a non-installer CivicClerk release handoff zip after release artifacts
+Builds a non-installer CivicMeetings release handoff zip after release artifacts
 have been generated with: bash scripts/verify-release.sh
 EOF
 }
@@ -88,7 +88,7 @@ bundle_files=(
   "dist/SHA256SUMS.txt"
 )
 
-echo "CivicClerk release handoff bundle"
+echo "CivicMeetings release handoff bundle"
 echo "Version: $version"
 echo "Output: $output_path"
 echo "Includes:"

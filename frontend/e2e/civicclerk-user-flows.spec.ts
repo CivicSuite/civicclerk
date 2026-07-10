@@ -18,7 +18,7 @@ async function fulfillJson(route: Route, payload: unknown, status = 200) {
   });
 }
 
-async function installCivicClerkApiMocks(page: Page) {
+async function installCivicMeetingsApiMocks(page: Page) {
   await page.route("**/*", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -254,7 +254,7 @@ async function installCivicClerkApiMocks(page: Page) {
         proof_model: "live_or_in_process_boundary_validation",
         network_calls: true,
         dependent_modules_required: true,
-        message: "CivicClerk integration depth requires live-wire or in-process boundary validation.",
+        message: "CivicMeetings integration depth requires live-wire or in-process boundary validation.",
         fix: "Keep adversarial mocks as regression coverage.",
         contracts: [],
       });
@@ -265,7 +265,7 @@ async function installCivicClerkApiMocks(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await installCivicClerkApiMocks(page);
+  await installCivicMeetingsApiMocks(page);
 });
 
 test("clerk proves public notice from dashboard to posting proof", async ({ page }) => {

@@ -8,7 +8,7 @@ Scope: browser-visible staff workflow action for local connector import normaliz
 
 - Added a `Connector Import` staff workflow card to `/staff`.
 - Added a live browser form that posts pasted local export JSON through `/imports/{connector}/meetings`.
-- Preserved the CivicClerk connector guardrail: imports normalize local payloads only and do not call vendor networks in the default local profile.
+- Preserved the CivicMeetings connector guardrail: imports normalize local payloads only and do not call vendor networks in the default local profile.
 - Updated root runtime messaging, README, README.txt, user manual, landing page, changelog, browser-QA gate, tests, screenshots, and completion record.
 
 ## UX Evidence

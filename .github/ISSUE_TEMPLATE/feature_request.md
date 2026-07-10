@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a CivicClerk feature
+about: Suggest a CivicMeetings feature
 title: "[Feature]: "
 labels: enhancement
 assignees: ""

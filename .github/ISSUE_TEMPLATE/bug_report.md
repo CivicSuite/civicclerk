@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a CivicClerk bug or documentation issue
+about: Report a CivicMeetings bug or documentation issue
 title: "[Bug]: "
 labels: bug
 assignees: ""

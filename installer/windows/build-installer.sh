@@ -77,7 +77,7 @@ if command -v wslpath >/dev/null 2>&1 && [[ "$ISS" == /mnt/* ]]; then
 fi
 "$ISCC" "$ISS_ARG" "/DMyAppVersion=$APP_VERSION"
 
-artifact="$OUTPUT_DIR/CivicClerk-$APP_VERSION-Setup.exe"
+artifact="$OUTPUT_DIR/CivicMeetings-$APP_VERSION-Setup.exe"
 if [[ ! -f "$artifact" ]]; then
   echo "Expected installer artifact was not produced: $artifact" >&2
   exit 1

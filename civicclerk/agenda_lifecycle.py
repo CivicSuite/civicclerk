@@ -1,4 +1,4 @@
-"""Agenda item lifecycle enforcement for CivicClerk."""
+"""Agenda item lifecycle enforcement for CivicMeetings."""
 
 from __future__ import annotations
 

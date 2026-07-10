@@ -1,0 +1,34 @@
+{
+ "brief": "Fix 3 flaky list-ordering tests in civicmeetings (timestamp tie-break nondeterminism)",
+ "created": "2026-07-10T03:48:23.058893+00:00",
+ "goals": [
+  {
+   "id": "G001",
+   "title": "G1-baseline",
+   "objective": "10x repeated runs of the 3 flaky tests with per-test failure counts recorded",
+   "status": "pending",
+   "evidence": null
+  },
+  {
+   "id": "G002",
+   "title": "G2-root-cause",
+   "objective": "exact ORDER BY sites and tie mechanism identified with file:line evidence",
+   "status": "pending",
+   "evidence": null
+  },
+  {
+   "id": "G003",
+   "title": "G3-fix",
+   "objective": "deterministic capture_seq secondary sort in notice_checklist, packet_assembly, vendor_sync plus migration 0017",
+   "status": "pending",
+   "evidence": null
+  },
+  {
+   "id": "G004",
+   "title": "G4-proof",
+   "objective": "10x post-fix runs of the 3 tests with 0 failures plus full affected-file test pass",
+   "status": "pending",
+   "evidence": null
+  }
+ ]
+}

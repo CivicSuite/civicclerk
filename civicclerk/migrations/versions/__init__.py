@@ -1,1 +1,1 @@
-"""CivicClerk Alembic migration versions."""
+"""CivicMeetings Alembic migration versions."""

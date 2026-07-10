@@ -2,7 +2,7 @@
 
 ## Scope
 
-Milestone 12 closes the CivicClerk v0.1.0 runtime-foundation sprint. It synchronizes the release version surfaces, adds the release gate and GitHub release workflow, verifies the package build, and preserves browser QA evidence for the user-facing landing page.
+Milestone 12 closes the CivicMeetings v0.1.0 runtime-foundation sprint. It synchronizes the release version surfaces, adds the release gate and GitHub release workflow, verifies the package build, and preserves browser QA evidence for the user-facing landing page.
 
 ## Key Commits
 
@@ -87,5 +87,5 @@ VERIFY-RELEASE: PASSED
 ## Boundaries Honored
 
 - No post-v0.1.0 feature work started.
-- No CivicSuite compatibility matrix edit is included in this branch; that is performed after the CivicClerk v0.1.0 release is published.
+- No CivicSuite compatibility matrix edit is included in this branch; that is performed after the CivicMeetings v0.1.0 release is published.
 - No CivicCore changes are included.

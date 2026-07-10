@@ -18,12 +18,12 @@ DOCKER_GATEWAY_HOSTNAME="${CLEANROOM_DOCKER_GATEWAY_HOSTNAME:-host.docker.intern
 DOCKER_HOST_ADDRESS="${CIVICCLERK_DOCKER_HOST_ADDRESS:-${DOCKER_GATEWAY_HOSTNAME}}"
 
 if ! command -v docker >/dev/null 2>&1; then
-    echo "Docker is required to run the CivicClerk cleanroom harness." >&2
+    echo "Docker is required to run the CivicMeetings cleanroom harness." >&2
     exit 1
 fi
 
 if [ ! -S "${DOCKER_SOCKET_PATH}" ]; then
-    echo "CivicClerk cleanroom requires a Docker socket at ${DOCKER_SOCKET_PATH}." >&2
+    echo "CivicMeetings cleanroom requires a Docker socket at ${DOCKER_SOCKET_PATH}." >&2
     echo "Set CLEANROOM_DOCKER_SOCKET to the host Docker socket so verify-release can run the disposable pgvector migration test." >&2
     exit 1
 fi
@@ -191,7 +191,7 @@ comparison = {
 )
 
 summary = [
-    "# CC-1 CivicClerk Cleanroom Harness Evidence",
+    "# CC-1 CivicMeetings Cleanroom Harness Evidence",
     "",
     f"Target commit: `{target_commit}`",
     f"Run count: {run_count}",

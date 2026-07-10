@@ -48,9 +48,9 @@ Status: complete on branch `milestone-7-minutes-drafting-citations`
 
 ```json
 {
-  "name": "CivicClerk",
+  "name": "CivicMeetings",
   "status": "minutes citation foundation",
-  "message": "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance enforcement are online with immutable motion, vote, action-item, and citation-gated minutes draft capture; archive and UI workflows are not implemented yet.",
+  "message": "CivicMeetings agenda item, meeting lifecycle, packet snapshot, and notice compliance enforcement are online with immutable motion, vote, action-item, and citation-gated minutes draft capture; archive and UI workflows are not implemented yet.",
   "next_step": "Milestone 8: public meeting calendar, detail, and archive"
 }
 ```

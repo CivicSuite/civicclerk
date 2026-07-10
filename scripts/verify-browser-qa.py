@@ -1,4 +1,4 @@
-"""Verify CivicClerk browser QA artifacts and accessibility fixtures."""
+"""Verify CivicMeetings browser QA artifacts and accessibility fixtures."""
 
 from __future__ import annotations
 

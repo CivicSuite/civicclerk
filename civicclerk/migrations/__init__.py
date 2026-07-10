@@ -1,1 +1,1 @@
-"""CivicClerk Alembic migration package."""
+"""CivicMeetings Alembic migration package."""

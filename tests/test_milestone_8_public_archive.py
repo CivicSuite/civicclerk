@@ -278,7 +278,7 @@ async def test_permission_aware_archive_search_for_staff_roles() -> None:
         )
 
     assert underprivileged.status_code == 503
-    assert underprivileged.json()["detail"]["message"] == "CivicClerk archive search staff access auth is not configured."
+    assert underprivileged.json()["detail"]["message"] == "CivicMeetings archive search staff access auth is not configured."
     assert "CIVICCLERK_AUTH_TOKEN_ROLES" in underprivileged.json()["detail"]["fix"]
     assert permitted.status_code == 503
 

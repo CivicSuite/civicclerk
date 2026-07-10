@@ -18,7 +18,7 @@ VERSION = "1.0.4"
 
 def load_pyproject() -> dict:
     pyproject = ROOT / "pyproject.toml"
-    assert pyproject.exists(), "pyproject.toml must exist for the CivicClerk runtime foundation."
+    assert pyproject.exists(), "pyproject.toml must exist for the CivicMeetings runtime foundation."
     return tomllib.loads(pyproject.read_text(encoding="utf-8"))
 
 
@@ -36,7 +36,7 @@ def test_pyproject_declares_runtime_package_and_version() -> None:
 
     assert data["project"]["name"] == "civicclerk"
     assert data["project"]["version"] == VERSION
-    assert "CivicClerk" in data["project"]["description"]
+    assert "CivicMeetings" in data["project"]["description"]
 
 
 def test_pyproject_targets_published_civiccore_freeze_release_wheel() -> None:
@@ -78,7 +78,7 @@ def test_runtime_package_layout_exists() -> None:
 def test_public_fastapi_app_import_path_exists() -> None:
     module = load_app_module()
     assert isinstance(module.app, FastAPI)
-    assert module.app.title == "CivicClerk"
+    assert module.app.title == "CivicMeetings"
 
 
 @pytest.mark.asyncio
@@ -92,7 +92,7 @@ async def test_root_endpoint_explains_current_user_experience() -> None:
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["name"] == "CivicClerk"
+    assert payload["name"] == "CivicMeetings"
     assert payload["status"] == f"v{VERSION} runtime foundation release"
     assert "integrated React clerk console and public portal are now present" in payload["message"]
     assert "notice compliance" in payload["message"]

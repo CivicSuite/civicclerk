@@ -167,11 +167,11 @@ done
 
 expected='{"civiccore": "1.2.1", "service": "civicclerk", "status": "ok", "version": "1.0.4"}'
 if [[ -z "${health}" ]]; then
-  echo "The installed CivicClerk app did not answer ${app_url}/health within 20 seconds. Check the app process output and whether port ${app_port} is already in use." >&2
+  echo "The installed CivicMeetings app did not answer ${app_url}/health within 20 seconds. Check the app process output and whether port ${app_port} is already in use." >&2
   exit 1
 fi
 if [[ "${health}" != "${expected}" ]]; then
-  echo "Unexpected /health response: ${health}. Expected CivicClerk 1.0.4 with CivicCore 1.2.1." >&2
+  echo "Unexpected /health response: ${health}. Expected CivicMeetings 1.0.4 with CivicCore 1.2.1." >&2
   exit 1
 fi
 
@@ -187,8 +187,8 @@ from urllib.request import urlopen
 
 with urlopen(sys.argv[1], timeout=10) as response:
     body = response.read().decode("utf-8")
-    if response.status != 200 or "CivicClerk" not in body:
-        raise SystemExit("Unexpected /staff response. Expected HTTP 200 with the CivicClerk staff workflow shell.")
+    if response.status != 200 or "CivicMeetings" not in body:
+        raise SystemExit("Unexpected /staff response. Expected HTTP 200 with the CivicMeetings staff workflow shell.")
 PY
 
 echo "Fresh install smoke checks passed."

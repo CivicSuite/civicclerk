@@ -1,13 +1,13 @@
 # Milestone 0 Done
 
-Milestone 0 reconciled the CivicClerk scaffold against the upstream CivicSuite unified spec, suite ADRs, and the attached AGENTS.md operating contract. No runtime application code was introduced.
+Milestone 0 reconciled the CivicMeetings scaffold against the upstream CivicSuite unified spec, suite ADRs, and the attached AGENTS.md operating contract. No runtime application code was introduced.
 
 ## Criteria Covered
 
 - Read upstream unified spec sections 4, 5, 9, 15, 16, 17, and 21.
 - Read suite ADR-0001, ADR-0002, and ADR-0003 from `CivicSuite/civicsuite`.
 - Recorded scaffold-vs-spec disagreements with verbatim current text in `docs/RECONCILIATION.md`.
-- Queued v0.1.0-scope open questions as proposed CivicClerk ADRs.
+- Queued v0.1.0-scope open questions as proposed CivicMeetings ADRs.
 - Added `docs/MILESTONES.md` with milestones 0 through 12, acceptance criteria, and test-count ballparks.
 - Replaced the docs verifier with a required-artifact and stale-string gate.
 - Added a placeholder-import CI gate for CivicCore v0.2.0 placeholder packages.

@@ -1,4 +1,4 @@
-# CivicClerk Agent Instructions
+# CivicMeetings Agent Instructions
 
 ## Governing Workflow
 
@@ -11,7 +11,7 @@ before push or merge.
 
 ## Project Purpose
 
-CivicClerk is the CivicSuite module for municipal meeting operations: agenda
+CivicMeetings is the CivicSuite module for municipal meeting operations: agenda
 intake, packet assembly, statutory notice proof, meeting outcomes, minutes,
 public posting, public archives, and CivicCore-backed integration contracts.
 
@@ -26,10 +26,10 @@ public posting, public archives, and CivicCore-backed integration contracts.
 
 ## Operating Priorities
 
-- Productize CivicClerk as part of the CivicSuite starter set with CivicCore
+- Productize CivicMeetings as part of the CivicSuite starter set with CivicCore
   and CivicRecords AI.
-- Keep CivicCore as the shared base tech. CivicClerk may depend on CivicCore;
-  CivicCore must not depend on CivicClerk.
+- Keep CivicCore as the shared base tech. CivicMeetings may depend on CivicCore;
+  CivicCore must not depend on CivicMeetings.
 - Preserve honest public status language. Do not promote provisional or
   mock-only validation as production deployment proof.
 - Favor small, verifiable slices that improve installability, CivicCore

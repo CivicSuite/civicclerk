@@ -1,4 +1,4 @@
-# CivicClerk Persistence Phase 1 Implementation Plan
+# CivicMeetings Persistence Phase 1 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -918,7 +918,7 @@ class MinutesDraftRepository:
         if not is_known_prompt_version(prompt_version):
             expected = expected_prompt_version_hint()
             return MinutesValidationError(
-                message="Minutes drafts must use a prompt version from the CivicClerk YAML prompt library.",
+                message="Minutes drafts must use a prompt version from the CivicMeetings YAML prompt library.",
                 fix=f"Use prompt_version '{expected}' or another version returned by the prompt library.",
             )
 
@@ -2070,7 +2070,7 @@ Persistence Phase 1 update: motions, votes, action items, minutes drafts,
 public archive records, and resident comments now persist to the configured
 database when `CIVICCLERK_MOTION_VOTE_DB_URL`, `CIVICCLERK_MINUTES_DB_URL`,
 and `CIVICCLERK_PUBLIC_ARCHIVE_DB_URL` are set, so the legal record of a
-meeting survives an API restart. Without those variables CivicClerk falls
+meeting survives an API restart. Without those variables CivicMeetings falls
 back to in-memory stores and the legal record does not survive a restart —
 do not run a real public meeting without database-backed persistence
 enabled. Transcript records, ordinance/resolution handoffs, notice records,

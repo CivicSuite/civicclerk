@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail if CivicClerk source imports unreleased CivicCore placeholder packages."""
+"""Fail if CivicMeetings source imports unreleased CivicCore placeholder packages."""
 
 from __future__ import annotations
 

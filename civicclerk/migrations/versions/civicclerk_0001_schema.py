@@ -1,4 +1,4 @@
-"""Create CivicClerk canonical schema."""
+"""Create CivicMeetings canonical schema."""
 
 from __future__ import annotations
 

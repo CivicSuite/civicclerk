@@ -1,11 +1,11 @@
-# CivicClerk User Manual
+# CivicMeetings User Manual
 
-Status: CivicClerk v1.0.4 runtime foundation label is provisional during release recovery
+Status: CivicMeetings v1.0.4 runtime foundation label is provisional during release recovery
 Version: `1.0.4`
 
 ## Release Recovery Notice
 
-CivicClerk is not product-ready for public promotion while the CivicSuite
+CivicMeetings is not product-ready for public promotion while the CivicSuite
 release recovery is active. The current `v1.0.4` recovery patch is the supported release
 until the repo passes the recovery gates: full backend tests, frontend tests,
 tracked Playwright user-flow tests, WSL runtime install proof, consistency
@@ -17,9 +17,9 @@ occurred.
 
 ## Part 1: Non-Technical Overview
 
-### What CivicClerk is
+### What CivicMeetings is
 
-CivicClerk will help city clerks manage the legal record of public
+CivicMeetings will help city clerks manage the legal record of public
 meetings. It is planned to cover agendas, packets, notices, minutes,
 votes, motions, ordinances, resolutions, and public meeting archives.
 
@@ -50,7 +50,7 @@ draft language, but staff remain in control.
 
 ### Current status
 
-CivicClerk currently contains a runtime foundation, canonical schema
+CivicMeetings currently contains a runtime foundation, canonical schema
 metadata, Alembic migration scaffolding, agenda item lifecycle enforcement,
 meeting lifecycle enforcement, packet snapshot versioning, notice
 compliance enforcement, immutable motion capture, immutable vote capture,
@@ -64,7 +64,7 @@ minutes drafting, ordinance/resolution extraction, closed-session safe
 refusal, and public plain-language meeting explanation,
 local-first connector imports for Granicus, Legistar, PrimeGov, and
 NovusAGENDA, no-network vendor live-sync readiness plus durable source/run
-ledgering, accessibility/browser QA gates, provisional CivicClerk v1.0.4 release
+ledgering, accessibility/browser QA gates, provisional CivicMeetings v1.0.4 release
 artifacts, CivicCore 1.2.1 freeze-backed packet export bundles, a database-backed
 agenda intake queue with clerk readiness review, database-backed meeting
 records with lifecycle audit entries, database-backed packet assembly records
@@ -138,7 +138,7 @@ check. OIDC mode uses `CIVICCLERK_STAFF_AUTH_MODE=oidc` plus
 `CIVICCLERK_STAFF_OIDC_REDIRECT_URI`, and
 `CIVICCLERK_STAFF_OIDC_SESSION_COOKIE_SECRET`; `/staff/login` redirects to the
 provider with authorization-code + PKCE parameters, `/staff/oidc/callback`
-validates the returned token, and CivicClerk stores a signed HttpOnly staff
+validates the returned token, and CivicMeetings stores a signed HttpOnly staff
 session cookie rather than the raw OIDC token.
 The React dashboard now makes that session state visible in a Staff Access
 panel. A clerk sees whether the browser is in protected default mode, local open mode, signed in with
@@ -166,7 +166,7 @@ The resident-facing `/public` portal now loads public calendar records,
 public-safe detail, and anonymous archive search from the live public APIs. It
 also explains empty public-record states and keeps closed-session material out
 of anonymous resident views. The React staff workspace now exists under
-`frontend/`. It translates the CivicSuite mockup into the real CivicClerk
+`frontend/`. It translates the CivicSuite mockup into the real CivicMeetings
 frontend direction: staff shell, meeting calendar, meeting detail
 lifecycle ribbon, audit/evidence drawer, and loading/success/empty/error/partial
 states with actionable copy. It now loads the live `/api/meetings` list for
@@ -240,7 +240,7 @@ actionable fix guidance before scheduled vendor-network pulls are enabled.
 
 ### Deployment model
 
-CivicClerk now has the first CivicSuite-style Docker Compose stack for local
+CivicMeetings now has the first CivicSuite-style Docker Compose stack for local
 product rehearsal:
 
 - local Docker-based deployment
@@ -275,7 +275,7 @@ under `CIVICCLERK_CONNECTOR_SYNC_LEDGER_PATH`. This scheduled path still reads
 local files only; it does not contact Granicus, Legistar, PrimeGov, NovusAGENDA,
 or any vendor network.
 
-By default, Compose sets `CIVICCLERK_DEMO_SEED=1`. On API startup, CivicClerk
+By default, Compose sets `CIVICCLERK_DEMO_SEED=1`. On API startup, CivicMeetings
 creates a Brookfield rehearsal dataset with meeting bodies, meetings in multiple
 lifecycle states, one promoted agenda intake item, a finalized packet, a posted
 notice checklist with statutory basis and posting proof, captured motion/vote
@@ -299,7 +299,7 @@ Brookfield demo data instead of an empty shell.
 
 ### Prompt library and approval ceremony
 
-CivicClerk ships nine versioned YAML prompts in `prompts/`: agenda item
+CivicMeetings ships nine versioned YAML prompts in `prompts/`: agenda item
 summary, staff report normalizer, packet completeness reviewer, notice
 compliance reviewer, motion/vote summary, minutes drafter,
 ordinance/resolution extractor, closed-session safe summarizer/refuser, and
@@ -524,7 +524,7 @@ These endpoints validate and record source/run/failure state only. They return
 contact Granicus, Legistar, PrimeGov, NovusAGENDA, or any other vendor network.
 The cursor reset path clears or moves `last_success_cursor_at` locally so the
 next controlled pull can perform a full reconciliation or replay from an
-operator-selected point. CivicClerk saves the operator reason as a
+operator-selected point. CivicMeetings saves the operator reason as a
 `cursor_reset` run-log event and returns that `reset_event` in the API response;
 the reset itself never calls the vendor.
 
@@ -541,7 +541,7 @@ HTTP request, reads credentials from the named env var instead of the URL,
 normalizes returned JSON through the existing connector contract, writes an
 optional report without secrets, and records success or failure in the same
 circuit-breaker ledger. The report includes `delta_request_url`,
-`cursor_param`, `cursor_value`, and `cursor_advanced_at`. CivicClerk advances
+`cursor_param`, `cursor_value`, and `cursor_advanced_at`. CivicMeetings advances
 the persisted `last_success_cursor_at` only after every discovered payload
 normalizes successfully; failed and partial runs leave the cursor unchanged so
 the next pull can retry without skipping records.
@@ -658,7 +658,7 @@ without the print-only flag to execute the rehearsal under
 agenda intake, agenda item, meeting, packet assembly, and notice checklist
 records, copies the databases and export evidence into a backup directory,
 restores them to separate `restored-data` and `restored-exports` directories,
-then reopens the restored records through CivicClerk repositories. If a check
+then reopens the restored records through CivicMeetings repositories. If a check
 fails, keep the run directory, inspect the named file or record, fix the backup
 source or environment variable, and rerun with a new run id.
 
@@ -682,7 +682,7 @@ print-only flag. The helper creates `.docker-backup-restore-rehearsal`, runs
 `pg_restore`, verifies restored application tables, writes
 `backup/civicclerk-docker-backup-manifest.json`, and drops the temporary restore
 database unless `--keep-restore-database` is supplied. It does not drop, clean,
-or overwrite the source CivicClerk database.
+or overwrite the source CivicMeetings database.
 
 If staff access will stay local for a demo or rehearsal, keep
 `CIVICCLERK_STAFF_AUTH_MODE=protected`. If a local rehearsal must stay open, explicitly opt into `CIVICCLERK_STAFF_AUTH_MODE=open`; otherwise move to `oidc`, `bearer`, or `trusted_header` before user testing and use
@@ -697,7 +697,7 @@ If trusted-header testing is happening on one loopback workstation before a
 real reverse proxy is available, use the returned `local_proxy_rehearsal`
 contract, set `CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32`, run
 `python scripts/local_trusted_header_proxy.py`, and send the browser through
-that helper so CivicClerk only trusts loopback proxy traffic during rehearsal.
+that helper so CivicMeetings only trusts loopback proxy traffic during rehearsal.
 If the deployment is moving to a real reverse proxy, use the returned
 `reverse_proxy_reference` block and start from
 `docs/examples/trusted-header-nginx.conf` before replacing the placeholder TLS
@@ -761,11 +761,11 @@ provenance and actionable errors, without requiring outbound runtime calls.
 Milestone 11 adds browser QA evidence and a CI gate for loading, success,
 empty, error, and partial states plus keyboard navigation, focus states,
 contrast, and console checks. Milestone 12 synchronizes version surfaces,
-builds release artifacts and checksums, and publishes CivicClerk v1.0.4.
+builds release artifacts and checksums, and publishes CivicMeetings v1.0.4.
 CC-7 extends browser QA to every named spec page through
 `node scripts/capture-cc7-browser-qa.mjs`; the verification script requires the
 resulting 200-case ledger before browser-visible changes can merge.
-The current production-depth branch pairs CivicClerk with the published `civiccore` 1.2.1 wheel from the `v1.2.1` release asset
+The current production-depth branch pairs CivicMeetings with the published `civiccore` 1.2.1 wheel from the `v1.2.1` release asset
 so packet exports, packet assembly records, notice checklist records, and the
 browser QA release-evidence gate can use shared CivicCore manifests,
 provenance, checksums, audit primitives, and verification helpers.
@@ -774,7 +774,7 @@ provenance, checksums, audit primitives, and verification helpers.
 
 ### Planned module boundaries
 
-CivicClerk owns meeting workflows. It should not become:
+CivicMeetings owns meeting workflows. It should not become:
 
 - electronic voting software
 - livestream hosting
@@ -784,7 +784,7 @@ CivicClerk owns meeting workflows. It should not become:
 ### Initial data model sketch
 
 Milestone 2 defines the canonical schema and Alembic migration foundation
-for these CivicClerk tables. Milestone 3 adds agenda lifecycle enforcement
+for these CivicMeetings tables. Milestone 3 adds agenda lifecycle enforcement
 for agenda items. Milestone 4 adds meeting lifecycle enforcement. Milestone
 5 adds packet snapshot versioning and notice compliance enforcement.
 Milestone 6 adds immutable motion capture, immutable vote capture, and

@@ -157,7 +157,7 @@ def test_installer_readiness_print_only_documents_plan() -> None:
 
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk installer readiness",
+        "CivicMeetings installer readiness",
         "Confirm verify-release.sh produced the wheel",
         "Confirm SHA256SUMS.txt matches",
         "Confirm the release handoff zip exists",

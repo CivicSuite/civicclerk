@@ -1,19 +1,19 @@
 # Milestone 2 Done
 
-Milestone 2 added the CivicClerk canonical schema and Alembic migration scaffold. It does not implement agenda lifecycle enforcement, meeting lifecycle enforcement, public pages, search, permissions, or workflow behavior.
+Milestone 2 added the CivicMeetings canonical schema and Alembic migration scaffold. It does not implement agenda lifecycle enforcement, meeting lifecycle enforcement, public pages, search, permissions, or workflow behavior.
 
 ## Criteria Covered
 
-- `civicclerk.models` defines metadata for all fourteen canonical CivicClerk tables.
+- `civicclerk.models` defines metadata for all fourteen canonical CivicMeetings tables.
 - All module tables use the `civicclerk` schema.
 - Models import and use CivicCore's shared `Base` from `civiccore.db`.
 - No competing SQLAlchemy `DeclarativeBase` or `declarative_base()` is declared.
 - No foreign keys target CivicCore placeholder packages or unreleased CivicCore shared tables.
-- CivicClerk Alembic scaffold exists under `civicclerk/migrations`.
-- Alembic env runs the CivicCore migration baseline before CivicClerk migrations.
+- CivicMeetings Alembic scaffold exists under `civicclerk/migrations`.
+- Alembic env runs the CivicCore migration baseline before CivicMeetings migrations.
 - Alembic env boots from one database URL source and runs CivicCore first
   in an isolated process against the same URL.
-- CivicClerk uses a separate `alembic_version_civicclerk` version table.
+- CivicMeetings uses a separate `alembic_version_civicclerk` version table.
 - First migration creates the `civicclerk` schema and the fourteen canonical tables with idempotent create-table guards.
 - Current-facing docs and CHANGELOG describe the canonical schema and Alembic scaffold without claiming lifecycle/workflow behavior.
 

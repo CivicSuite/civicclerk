@@ -2,7 +2,7 @@
 
 ## Scope
 
-This slice adds database-backed meeting records while keeping CivicClerk at
+This slice adds database-backed meeting records while keeping CivicMeetings at
 version `0.1.0`.
 
 ## What shipped

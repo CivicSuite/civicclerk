@@ -47,13 +47,13 @@ def _write_umbrella_fixture(root: Path) -> None:
         "\n".join(
             [
                 "CivicCore installs first",
-                "CivicRecords AI and CivicClerk are selectable",
-                "CivicClerk reports v1.0.4 with CivicCore v1.2.1",
+                "CivicRecords AI and CivicMeetings are selectable",
+                "CivicMeetings reports v1.0.4 with CivicCore v1.2.1",
                 "--staff-mode bearer --workflow-proof",
                 "Package Cleanroom Contract",
                 "workflow_proof_requested=true",
                 "civicclerk_staff_mode=bearer",
-                "not yet a claim that CivicRecords AI and CivicClerk exchange workflow records",
+                "not yet a claim that CivicRecords AI and CivicMeetings exchange workflow records",
             ]
         ),
         encoding="utf-8",
@@ -86,7 +86,7 @@ def test_starter_set_integration_passes_with_umbrella_contract(tmp_path: Path) -
     assert "starter_set_ready=true" in result.stdout
     assert "release_evidence_ready=true" in result.stdout
     assert "[PASS] clerk-core profile order" in result.stdout
-    assert "[PASS] CivicClerk module contract" in result.stdout
+    assert "[PASS] CivicMeetings module contract" in result.stdout
     assert "[PASS] CivicRecords AI pairing" in result.stdout
     assert "[PASS] starter-set release contract" in result.stdout
     assert "[PASS] starter-set archives" in result.stdout

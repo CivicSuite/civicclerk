@@ -50,7 +50,7 @@
     "tests_failing": 15,
     "files_changed": ["civicclerk/models.py", "TDD_LOG.md"],
     "commit_sha": "c1eb0a3",
-    "notes": "Added canonical SQLAlchemy table metadata for all fourteen CivicClerk tables using CivicCore Base."
+    "notes": "Added canonical SQLAlchemy table metadata for all fourteen CivicMeetings tables using CivicCore Base."
   },
   {
     "milestone": 2,
@@ -60,7 +60,7 @@
     "tests_failing": 1,
     "files_changed": ["civicclerk/migrations/alembic.ini", "civicclerk/migrations/env.py", "civicclerk/migrations/versions/civicclerk_0001_schema.py", "TDD_LOG.md"],
     "commit_sha": "3386c2d",
-    "notes": "Added CivicClerk Alembic scaffold and idempotent first migration for the fourteen canonical tables."
+    "notes": "Added CivicMeetings Alembic scaffold and idempotent first migration for the fourteen canonical tables."
   },
   {
     "milestone": 2,
@@ -330,7 +330,7 @@
     "tests_failing": 0,
     "files_changed": [".github/workflows/release.yml", "CHANGELOG.md", "README.md", "USER-MANUAL.md", "civicclerk/__init__.py", "civicclerk/main.py", "docs/index.html", "docs/screenshots/milestone12-desktop.png", "docs/screenshots/milestone12-mobile.png", "pyproject.toml", "scripts/verify-docs.sh", "scripts/verify-release.sh", "tests/test_milestone_1_runtime_foundation.py", "tests/test_milestone_12_release.py"],
     "commit_sha": "bd7fbae",
-    "notes": "Prepared the CivicClerk v0.1.0 release: synchronized version surfaces, added release workflow and verify-release gate, built wheel/sdist with SHA256 checksums, updated current-facing docs and root endpoint, and captured desktop/mobile browser QA evidence."
+    "notes": "Prepared the CivicMeetings v0.1.0 release: synchronized version surfaces, added release workflow and verify-release gate, built wheel/sdist with SHA256 checksums, updated current-facing docs and root endpoint, and captured desktop/mobile browser QA evidence."
   },
   {
     "milestone": 12,

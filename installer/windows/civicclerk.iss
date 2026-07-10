@@ -2,7 +2,7 @@
   #error MyAppVersion must be supplied with /DMyAppVersion=<semver>
 #endif
 
-#define MyAppName "CivicClerk"
+#define MyAppName "CivicMeetings"
 #define MyAppPublisher "CivicSuite"
 #define MyAppExeName "install.ps1"
 
@@ -11,18 +11,18 @@ AppId={{7B10E5DE-4329-4A18-AB31-33A9A93F5EA1}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={autopf}\CivicSuite\CivicClerk
-DefaultGroupName=CivicSuite\CivicClerk
+DefaultDirName={autopf}\CivicSuite\CivicMeetings
+DefaultGroupName=CivicSuite\CivicMeetings
 DisableProgramGroupPage=yes
 OutputDir=build
-OutputBaseFilename=CivicClerk-{#MyAppVersion}-Setup
+OutputBaseFilename=CivicMeetings-{#MyAppVersion}-Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=lowest
-UninstallDisplayName=CivicClerk
+UninstallDisplayName=CivicMeetings
 
 [Files]
 Source: "..\..\install.ps1"; DestDir: "{app}"; Flags: ignoreversion
@@ -49,22 +49,22 @@ Source: "launch-install.ps1"; DestDir: "{app}\installer\windows"; Flags: ignorev
 Source: "launch-start.ps1"; DestDir: "{app}\installer\windows"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Start CivicClerk"; Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\installer\windows\launch-start.ps1"""; WorkingDir: "{app}"
-Name: "{group}\Install or Repair CivicClerk"; Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\installer\windows\launch-install.ps1"""; WorkingDir: "{app}"
-Name: "{group}\Stop CivicClerk"; Filename: "docker"; Parameters: "compose down"; WorkingDir: "{app}"
-Name: "{group}\Open CivicClerk Staff App"; Filename: "http://127.0.0.1:8080/"
+Name: "{group}\Start CivicMeetings"; Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\installer\windows\launch-start.ps1"""; WorkingDir: "{app}"
+Name: "{group}\Install or Repair CivicMeetings"; Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\installer\windows\launch-install.ps1"""; WorkingDir: "{app}"
+Name: "{group}\Stop CivicMeetings"; Filename: "docker"; Parameters: "compose down"; WorkingDir: "{app}"
+Name: "{group}\Open CivicMeetings Staff App"; Filename: "http://127.0.0.1:8080/"
 Name: "{group}\Installer README"; Filename: "{app}\installer\windows\README.md"
-Name: "{group}\Uninstall CivicClerk"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\Start CivicClerk"; Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\installer\windows\launch-start.ps1"""; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{group}\Uninstall CivicMeetings"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\Start CivicMeetings"; Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\installer\windows\launch-start.ps1"""; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
 
 [Run]
-Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\installer\windows\launch-install.ps1"""; WorkingDir: "{app}"; Description: "Install or repair CivicClerk now"; Flags: postinstall skipifsilent
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\installer\windows\launch-install.ps1"""; WorkingDir: "{app}"; Description: "Install or repair CivicMeetings now"; Flags: postinstall skipifsilent
 
 [UninstallRun]
-Filename: "docker"; Parameters: "compose down"; WorkingDir: "{app}"; Flags: runhidden; RunOnceId: "StopCivicClerkStack"
+Filename: "docker"; Parameters: "compose down"; WorkingDir: "{app}"; Flags: runhidden; RunOnceId: "StopCivicMeetingsStack"
 
 [Code]
 function InitializeSetup(): Boolean;
@@ -75,7 +75,7 @@ begin
     Exit;
   end;
   Result := MsgBox(
-    'CivicClerk is a small free open-source project, so this Windows installer is unsigned. Windows SmartScreen may show "Unknown Publisher" or "Windows protected your PC" because Windows cannot verify a paid publisher certificate. This warning is expected. It is OK to choose "More info" and "Run anyway" when this installer came from the official CivicSuite release source or your IT team built it from verified CivicSuite source.',
+    'CivicMeetings is a small free open-source project, so this Windows installer is unsigned. Windows SmartScreen may show "Unknown Publisher" or "Windows protected your PC" because Windows cannot verify a paid publisher certificate. This warning is expected. It is OK to choose "More info" and "Run anyway" when this installer came from the official CivicSuite release source or your IT team built it from verified CivicSuite source.',
     mbInformation,
     MB_OKCANCEL
   ) = IDOK;
@@ -84,7 +84,7 @@ end;
 function InitializeUninstall(): Boolean;
 begin
   Result := MsgBox(
-    'Uninstalling CivicClerk will stop the Docker Compose stack and remove installed source files. Docker volumes are preserved so meeting data is not erased accidentally. To intentionally delete local rehearsal data, run docker compose down -v from the install directory.',
+    'Uninstalling CivicMeetings will stop the Docker Compose stack and remove installed source files. Docker volumes are preserved so meeting data is not erased accidentally. To intentionally delete local rehearsal data, run docker compose down -v from the install directory.',
     mbInformation,
     MB_OKCANCEL
   ) = IDOK;

@@ -79,7 +79,7 @@ def load_prompt(prompt_id: str) -> PromptDefinition:
     prompt_path = PROMPTS_DIR / f"{prompt_id}.yaml"
     if not prompt_path.exists():
         raise PromptLibraryError(
-            f"Prompt '{prompt_id}' is not present in the CivicClerk YAML prompt library."
+            f"Prompt '{prompt_id}' is not present in the CivicMeetings YAML prompt library."
         )
     return _parse_prompt_yaml(prompt_path.read_text(encoding="utf-8"))
 
@@ -171,7 +171,7 @@ def expected_prompt_version_hint(prompt_id: str = "minutes_draft") -> str:
 
 
 def _parse_prompt_yaml(raw: str) -> PromptDefinition:
-    """Parse the limited YAML shape used by CivicClerk prompt files."""
+    """Parse the limited YAML shape used by CivicMeetings prompt files."""
     lines = raw.splitlines()
     scalar_values: dict[str, str] = {}
     required_variables: list[str] = []
@@ -287,7 +287,7 @@ class _NoDbPromptResult:
 
 
 def _remove_civiccore_prompt_tables_from_shared_metadata() -> None:
-    # CivicClerk intentionally exposes only the canonical civicclerk schema in
+    # CivicMeetings intentionally exposes only the canonical civicclerk schema in
     # shared metadata; the CivicCore resolver ORM tables are owned by CivicCore.
     for table_name in ("prompt_templates", "model_registry"):
         table = CivicCoreBase.metadata.tables.get(table_name)

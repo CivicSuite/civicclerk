@@ -1,4 +1,4 @@
-"""Rehearse CivicClerk backup/restore using local SQLite stores.
+"""Rehearse CivicMeetings backup/restore using local SQLite stores.
 
 The helper creates deterministic source data, copies database and export files
 into a backup directory, restores them to a separate directory, and verifies the
@@ -306,7 +306,7 @@ def _verify_restored_data(
 def _print_plan(run_root: Path, *, strict: bool) -> None:
     restored_data = run_root / "restored-data"
     restored_exports = run_root / "restored-exports"
-    print("CivicClerk backup/restore rehearsal")
+    print("CivicMeetings backup/restore rehearsal")
     print(f"Rehearsal root: {run_root}")
     print("Source stores: source-data/*.db")
     print("Backup manifest: backup/civicclerk-backup-manifest.json")
@@ -344,7 +344,7 @@ def run_rehearsal(run_root: Path, *, strict: bool) -> int:
         print("Fix: keep the rehearsal directory for inspection, resolve the named failure, then rerun with a new --run-id.")
         return 1
 
-    print("CivicClerk backup/restore rehearsal")
+    print("CivicMeetings backup/restore rehearsal")
     print(f"Run root: {run_root}")
     print(f"[PASS] source stores seeded: {len(STORE_FILES)} SQLite databases")
     print(f"[PASS] backup manifest written: {manifest_path.relative_to(run_root).as_posix()}")
@@ -355,13 +355,13 @@ def run_rehearsal(run_root: Path, *, strict: bool) -> int:
             print(f"[FAIL] {failure}")
         print("BACKUP-RESTORE-REHEARSAL: FAILED")
         return 1
-    print("[PASS] restored records reopened through CivicClerk repositories")
+    print("[PASS] restored records reopened through CivicMeetings repositories")
     print("BACKUP-RESTORE-REHEARSAL: PASSED")
     return 0
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run a local CivicClerk backup/restore rehearsal.")
+    parser = argparse.ArgumentParser(description="Run a local CivicMeetings backup/restore rehearsal.")
     parser.add_argument("--rehearsal-root", default=str(DEFAULT_REHEARSAL_ROOT))
     parser.add_argument(
         "--run-id",

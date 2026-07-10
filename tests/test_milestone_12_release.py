@@ -320,7 +320,7 @@ def test_release_handoff_bundle_script_prints_expected_plan() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     output = result.stdout
     for expected in [
-        "CivicClerk release handoff bundle",
+        "CivicMeetings release handoff bundle",
         "Version: 1.0.4",
         "civicclerk-1.0.4-release-handoff.zip",
         "dist/civicclerk-1.0.4-py3-none-any.whl",
@@ -380,7 +380,7 @@ def test_release_handoff_bundle_bash_script_prints_expected_plan() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
     output = result.stdout
     for expected in [
-        "CivicClerk release handoff bundle",
+        "CivicMeetings release handoff bundle",
         "Version: 1.0.4",
         "civicclerk-1.0.4-release-handoff.zip",
         "dist/civicclerk-1.0.4-py3-none-any.whl",
