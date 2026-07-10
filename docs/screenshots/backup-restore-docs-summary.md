@@ -8,7 +8,7 @@ Evidence:
 
 - Desktop screenshot: `docs/screenshots/backup-restore-docs-desktop.png`
 - Mobile-width screenshot: `docs/screenshots/backup-restore-docs-mobile.png`
-- Chrome headless DOM load returned the CivicMeetings document with the backup/restore helper copy present.
+- Chrome headless DOM load returned the CivicClerk document with the backup/restore helper copy present.
 
 Checks:
 

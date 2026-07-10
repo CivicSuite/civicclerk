@@ -1,4 +1,4 @@
-# CivicMeetings v1.0 Playwright Walkthrough
+# CivicClerk v1.0 Playwright Walkthrough
 
 - Tool: Playwright
 - Version: 1.0.2
