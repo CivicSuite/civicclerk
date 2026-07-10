@@ -17,7 +17,7 @@ from civicclerk import __version__
 
 DEFAULT_UMBRELLA_ROOT = ROOT.parent / "civicsuite"
 EXPECTED_CIVICCORE_RUNTIME = "1.2.1"
-EXPECTED_RECORDS_VERSION = "1.6.1"
+EXPECTED_RECORDS_VERSION = "1.7.3"
 
 
 @dataclass(frozen=True)
@@ -102,7 +102,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         checks.append(
             _pass(
                 "clerk-core profile order",
-                "clerk-core installs CivicCore first, then CivicRecords AI, then CivicMeetings.",
+                "clerk-core installs CivicCore first, then CivicSunshine, then CivicMeetings.",
             )
         )
     else:
@@ -149,15 +149,15 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
     if isinstance(records, dict) and records.get("current_version") == EXPECTED_RECORDS_VERSION:
         checks.append(
             _pass(
-                "CivicRecords AI pairing",
-                f"starter set pairs CivicMeetings with CivicRecords AI {EXPECTED_RECORDS_VERSION}.",
+                "CivicSunshine pairing",
+                f"starter set pairs CivicMeetings with CivicSunshine {EXPECTED_RECORDS_VERSION}.",
             )
         )
     else:
         checks.append(
             _fail(
-                "CivicRecords AI pairing",
-                "starter set does not record the expected CivicRecords AI pairing.",
+                "CivicSunshine pairing",
+                "starter set does not record the expected CivicSunshine pairing.",
                 "Update the umbrella manifest or this checker before changing the starter-set pair.",
             )
         )
@@ -167,13 +167,13 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         text = contract_path.read_text(encoding="utf-8")
         required_phrases = (
             "CivicCore installs first",
-            "CivicRecords AI and CivicMeetings are selectable",
+            "CivicSunshine and CivicMeetings are selectable",
             "CivicMeetings reports v1.0.4 with CivicCore v1.2.1",
             "--staff-mode bearer --workflow-proof",
             "Package Cleanroom Contract",
             "workflow_proof_requested=true",
             "civicclerk_staff_mode=bearer",
-            "not yet a claim that CivicRecords AI and CivicMeetings exchange workflow records",
+            "not yet a claim that CivicSunshine and CivicMeetings exchange workflow records",
         )
         missing = [phrase for phrase in required_phrases if phrase not in text]
         if missing:
@@ -267,9 +267,9 @@ def _print_report(checks: list[Check], umbrella_root: Path) -> None:
 def _print_plan() -> None:
     print("CivicMeetings starter-set integration")
     print("Release evidence checks:")
-    print("  1. Umbrella clerk-core profile installs CivicCore, CivicRecords AI, then CivicMeetings.")
+    print("  1. Umbrella clerk-core profile installs CivicCore, CivicSunshine, then CivicMeetings.")
     print("  2. CivicMeetings is selectable and records its CivicCore 1.2.1 runtime dependency.")
-    print("  3. CivicRecords AI is paired at v1.6.1.")
+    print("  3. CivicSunshine is paired at v1.7.3.")
     print("  4. Umbrella release contract requires package workflow proof.")
     print("  5. Linux and Windows starter-set archives exist when --require-archives is used.")
     print("STARTER-SET-INTEGRATION: PLAN")
