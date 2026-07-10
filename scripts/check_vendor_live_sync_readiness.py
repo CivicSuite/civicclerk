@@ -1,4 +1,4 @@
-"""Check CivicClerk vendor live-sync configuration without vendor network calls."""
+"""Check CivicMeetings vendor live-sync configuration without vendor network calls."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from civicclerk.vendor_live_sync import (
 
 
 def _print_plan() -> None:
-    print("CivicClerk vendor live-sync readiness")
+    print("CivicMeetings vendor live-sync readiness")
     print("Network calls: disabled")
     print("Purpose: validate the live-sync source contract before scheduled vendor pulls are enabled.")
     print("Circuit breaker:")
@@ -84,7 +84,7 @@ def main() -> int:
     status = operator_status(state)
     ready = live_sync_config_ready(checks)
 
-    print("CivicClerk vendor live-sync readiness")
+    print("CivicMeetings vendor live-sync readiness")
     print(f"live_sync_ready={str(ready).lower()}")
     print("network_calls=false")
     print(f"health_status={status['health_status']}")

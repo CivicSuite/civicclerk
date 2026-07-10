@@ -45,9 +45,9 @@ Status: complete on branch `milestone-6-motion-vote-action-capture`
 
 ```json
 {
-  "name": "CivicClerk",
+  "name": "CivicMeetings",
   "status": "motion vote action foundation",
-  "message": "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance enforcement are online with immutable motion, vote, and action-item capture; minutes, archive, and UI workflows are not implemented yet.",
+  "message": "CivicMeetings agenda item, meeting lifecycle, packet snapshot, and notice compliance enforcement are online with immutable motion, vote, and action-item capture; minutes, archive, and UI workflows are not implemented yet.",
   "next_step": "Milestone 7: minutes drafting with sentence citations"
 }
 ```

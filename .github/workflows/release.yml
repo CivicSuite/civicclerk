@@ -72,7 +72,7 @@ jobs:
           expected = "${VERSION}"
           print(f"civicclerk.__version__={civicclerk.__version__}")
           if civicclerk.__version__ != expected:
-              raise SystemExit(f"Expected CivicClerk {expected}, got {civicclerk.__version__}")
+              raise SystemExit(f"Expected CivicMeetings {expected}, got {civicclerk.__version__}")
           print(
               "civiccore dependency import ok: "
               f"{CitedSentence.__name__}, {SourceMaterial.__name__}, {validate_cited_sentences.__name__}"
@@ -242,7 +242,7 @@ jobs:
           export WHEEL_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/civicclerk-${VERSION}-py3-none-any.whl"
           export CLEANROOM_TIMESTAMP="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           cat > release-notes.md <<NOTES
-          CivicClerk ${TAG} runtime foundation release. Built by the release workflow after verify-release.sh passed.
+          CivicMeetings ${TAG} runtime foundation release. Built by the release workflow after verify-release.sh passed.
 
           Cleanroom rehearsal: PASSED in workflow run ${WORKFLOW_RUN_ID}.
           Verified clean install of ${WHEEL_URL} from cold caches at ${CLEANROOM_TIMESTAMP}.
@@ -281,7 +281,7 @@ jobs:
           fi
           gh release create "$GITHUB_REF_NAME" \
             --draft \
-            --title "CivicClerk $GITHUB_REF_NAME" \
+            --title "CivicMeetings $GITHUB_REF_NAME" \
             --notes-file release-notes.md \
             --verify-tag
           mapfile -t release_assets < <(find release-assets -type f -print | sort)
@@ -348,7 +348,7 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           WHEEL="$(find .cleanroom-assets -name 'civicclerk-*-py3-none-any.whl' -type f | head -1)"
           if [ -z "$WHEEL" ]; then
-            echo "::error::No CivicClerk wheel downloaded from draft release."
+            echo "::error::No CivicMeetings wheel downloaded from draft release."
             exit 1
           fi
           echo "Cleanroom wheel asset: ${WHEEL}"
@@ -363,7 +363,7 @@ jobs:
           expected = "${VERSION}"
           print(f"civicclerk.__version__={civicclerk.__version__}")
           if civicclerk.__version__ != expected:
-              raise SystemExit(f"Expected CivicClerk {expected}, got {civicclerk.__version__}")
+              raise SystemExit(f"Expected CivicMeetings {expected}, got {civicclerk.__version__}")
           print(
               "civiccore dependency import ok: "
               f"{CitedSentence.__name__}, {SourceMaterial.__name__}, {validate_cited_sentences.__name__}"

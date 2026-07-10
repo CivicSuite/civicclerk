@@ -303,7 +303,7 @@ def _validate_create_inputs(
     if not is_known_prompt_version(prompt_version):
         expected = expected_prompt_version_hint()
         return MinutesValidationError(
-            message="Minutes drafts must use a prompt version from the CivicClerk YAML prompt library.",
+            message="Minutes drafts must use a prompt version from the CivicMeetings YAML prompt library.",
             fix=f"Use prompt_version '{expected}' or another version returned by the prompt library.",
         )
     return validate_minutes_draft(

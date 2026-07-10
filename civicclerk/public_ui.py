@@ -1,4 +1,4 @@
-"""Accessible resident-facing public portal shell for CivicClerk."""
+"""Accessible resident-facing public portal shell for CivicMeetings."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ def render_public_portal() -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CivicClerk Public Portal</title>
+  <title>CivicMeetings Public Portal</title>
   <style>
     :root {{
       --ink: #14231f;
@@ -82,10 +82,10 @@ def render_public_portal() -> str:
 </head>
 <body>
   <a class="skip" href="#portal">Skip to public meeting records</a>
-  <main id="portal" aria-label="CivicClerk public portal shell">
+  <main id="portal" aria-label="CivicMeetings public portal shell">
     <section class="hero">
       <div class="eyebrow">Resident public portal shell</div>
-      <h1>CivicClerk Public Portal</h1>
+      <h1>CivicMeetings Public Portal</h1>
       <p class="status">Status: v{__version__} API-direct public portal fallback. In the Docker/nginx product path, <code>/public</code> opens the React resident portal; this fallback keeps the public calendar and archive APIs visible when operators run the FastAPI service directly.</p>
       <p>Residents can review public meeting records that clerks have published, open a public-safe detail view, and search approved agenda, packet, and minutes text. Anonymous views intentionally exclude closed-session notes and restricted records.</p>
     </section>

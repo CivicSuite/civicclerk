@@ -1,4 +1,4 @@
-"""CivicClerk adapters for the shared CivicCore mock city contracts."""
+"""CivicMeetings adapters for the shared CivicCore mock city contracts."""
 
 from __future__ import annotations
 
@@ -90,7 +90,7 @@ class MockCityHostileCheck:
 
 
 def mock_city_idp_contract() -> MockCityIdpContract:
-    """Return CivicClerk's module-specific view of the shared mock IdP contract."""
+    """Return CivicMeetings' module-specific view of the shared mock IdP contract."""
 
     return MockCityIdpContract(
         provider="Brookfield Entra ID",
@@ -108,7 +108,7 @@ def mock_city_idp_contract() -> MockCityIdpContract:
         staff_email="clerk@brookfield.example.gov",
         staff_roles=("clerk_admin", "meeting_editor"),
         notes=(
-            "Models the authorization-code + PKCE and JWKS/token contract CivicClerk "
+            "Models the authorization-code + PKCE and JWKS/token contract CivicMeetings "
             "must satisfy before replacing mock evidence with a real municipal tenant."
         ),
     )
@@ -133,7 +133,7 @@ def mock_city_idp_hostile_fixtures() -> list[MockCityHostileFixture]:
             target="Brookfield Okta",
             trigger="staff role is supplied through groups instead of roles",
             expected_behavior="accept the token when the configured group claim maps to a staff role",
-            fix="Map the Okta group claim to an allowed CivicClerk staff role before deployment.",
+            fix="Map the Okta group claim to an allowed CivicMeetings staff role before deployment.",
             sample={"provider_family": "okta", "claim": "groups", "expected_status": 200},
         ),
         MockCityHostileFixture(
@@ -151,16 +151,16 @@ def mock_city_idp_hostile_fixtures() -> list[MockCityHostileFixture]:
             target="Brookfield Entra ID",
             trigger="authorization response requires MFA interaction",
             expected_behavior="preserve the interaction_required result and send the clerk back through sign-in",
-            fix="Complete the MFA challenge in the municipal identity provider, then return to CivicClerk.",
+            fix="Complete the MFA challenge in the municipal identity provider, then return to CivicMeetings.",
             sample={"provider_family": "entra", "oauth_error": "interaction_required", "expected_status": 401},
         ),
         MockCityHostileFixture(
             area="idp",
             scenario="clock_skew_not_before",
             target="Brookfield Keycloak",
-            trigger="token nbf is ahead of CivicClerk's host clock",
+            trigger="token nbf is ahead of CivicMeetings' host clock",
             expected_behavior="reject with 401 and point the operator at clock synchronization",
-            fix="Check clock synchronization between CivicClerk and the IdP, then refresh the access token.",
+            fix="Check clock synchronization between CivicMeetings and the IdP, then refresh the access token.",
             sample={"provider_family": "keycloak", "claim": "nbf", "expected_status": 401},
         ),
         MockCityHostileFixture(
@@ -299,7 +299,7 @@ def mock_city_backup_retention_hostile_fixtures() -> list[MockCityHostileFixture
 
 
 def mock_city_hostile_fixtures() -> list[MockCityHostileFixture]:
-    """Return every hostile-mode fixture exposed by the CivicClerk mock-city suite."""
+    """Return every hostile-mode fixture exposed by the CivicMeetings mock-city suite."""
 
     return (
         mock_city_idp_hostile_fixtures()
@@ -309,7 +309,7 @@ def mock_city_hostile_fixtures() -> list[MockCityHostileFixture]:
 
 
 def run_mock_city_idp_contract_suite() -> list[MockCityIdpCheck]:
-    """Validate CivicClerk's mock municipal IdP contract without contacting an IdP."""
+    """Validate CivicMeetings' mock municipal IdP contract without contacting an IdP."""
 
     contract = mock_city_idp_contract()
     config = _mock_city_oidc_config(contract)

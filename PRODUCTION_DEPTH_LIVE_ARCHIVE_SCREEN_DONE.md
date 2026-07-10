@@ -8,7 +8,7 @@ Scope: browser-visible staff workflow action for public-safe archive publishing
 
 - Added a `Public Archive` staff workflow card to `/staff`.
 - Added a live browser form that creates a demo meeting, publishes a public-safe archive record through `/meetings/{id}/public-record`, and verifies visibility through `/public/meetings` plus `/public/archive/search`.
-- Preserved the CivicClerk public-record guardrail: clerks publish public-safe agenda, packet, and approved-minutes text; closed-session material remains outside anonymous public views.
+- Preserved the CivicMeetings public-record guardrail: clerks publish public-safe agenda, packet, and approved-minutes text; closed-session material remains outside anonymous public views.
 - Updated root runtime messaging, README, README.txt, user manual, landing page, changelog, browser-QA gate, tests, screenshots, and completion record.
 
 ## UX Evidence

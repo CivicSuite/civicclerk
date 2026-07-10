@@ -1,4 +1,4 @@
-"""Packet snapshot, export bundle, and notice compliance helpers for CivicClerk."""
+"""Packet snapshot, export bundle, and notice compliance helpers for CivicMeetings."""
 
 from __future__ import annotations
 

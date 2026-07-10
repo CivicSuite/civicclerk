@@ -1,9 +1,9 @@
 $ErrorActionPreference = "Stop"
 
-Write-Host "CivicClerk prerequisite check"
+Write-Host "CivicMeetings prerequisite check"
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    throw "Docker was not found. Install Docker Desktop for Windows, start it, then rerun Install or Repair CivicClerk."
+    throw "Docker was not found. Install Docker Desktop for Windows, start it, then rerun Install or Repair CivicMeetings."
 }
 
 docker --version | Write-Host

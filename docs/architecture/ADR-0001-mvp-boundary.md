@@ -1,11 +1,11 @@
-# ADR-0001: CivicClerk MVP Boundary
+# ADR-0001: CivicMeetings MVP Boundary
 
 Status: Accepted  
 Date: 2026-04-26
 
 ## Decision
 
-CivicClerk starts with meeting administration: meeting bodies, meetings,
+CivicMeetings starts with meeting administration: meeting bodies, meetings,
 agenda intake, packet assembly, notice tracking, motions/votes, minutes,
 and public meeting archives.
 

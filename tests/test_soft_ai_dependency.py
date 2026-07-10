@@ -258,7 +258,7 @@ async def test_minutes_ai_assist_returns_structured_503_when_ollama_unavailable(
 
     assert response.status_code == 503
     detail = response.json()["detail"]
-    assert detail["message"] == "AI assist unavailable; CivicClerk core workflow is still available."
+    assert detail["message"] == "AI assist unavailable; CivicMeetings core workflow is still available."
     assert "Start Ollama" in detail["fix"]
     assert "Manual cited minutes drafting remains available" in detail["fix"]
     assert detail["reason"] == "Ollama request timed out."

@@ -1,4 +1,4 @@
-# CivicClerk React Staff Shell
+# CivicMeetings React Staff Shell
 
 Status: Sprint 4 implementation slice with live agenda intake promotion,
 packet builder draft/finalize workflow, legally explicit notice checklist work,
@@ -17,7 +17,7 @@ mockup's browser-global JSX bundle.
 
 - CivicSuite staff shell with Brookfield branding, left navigation, surface
   switcher, search affordance, and partial-install disclosure.
-- CivicClerk dashboard with priority work, meeting metrics, and clear clerk
+- CivicMeetings dashboard with priority work, meeting metrics, and clear clerk
   next actions.
 - Staff access panel on the dashboard that reads `/staff/session`, shows local
   open mode, OIDC browser-session mode, bearer mode, or trusted-header mode,
@@ -141,7 +141,7 @@ npm run build
 ```
 
 The Vite dev proxy sends `/api/*` to `http://127.0.0.1:8776` by default so it
-matches the documented Windows-first CivicClerk app command. Set
+matches the documented Windows-first CivicMeetings app command. Set
 `CIVICCLERK_API_PROXY_TARGET=http://host:port` before `npm run dev` when the
 FastAPI app is listening somewhere else.
 

@@ -47,7 +47,7 @@ def test_launcher_scripts_have_actionable_failure_paths() -> None:
 
     assert "Install Docker Desktop for Windows" in prereq
     assert "Docker Desktop is not running" in prereq
-    assert "Run the 'Install or Repair CivicClerk' shortcut first" in start
+    assert "Run the 'Install or Repair CivicMeetings' shortcut first" in start
     assert "docker compose up -d" in start
     assert "prereq-check.ps1" in launch_install
     assert "install.ps1" in launch_install
@@ -64,10 +64,10 @@ def test_inno_setup_requires_version_and_bundles_product_sources() -> None:
     assert "More info" in iss
     assert "Run anyway" in iss
     assert "official CivicSuite release source" in iss
-    assert "OutputBaseFilename=CivicClerk-{#MyAppVersion}-Setup" in iss
+    assert "OutputBaseFilename=CivicMeetings-{#MyAppVersion}-Setup" in iss
     assert "PrivilegesRequired=lowest" in iss
-    assert "Install or Repair CivicClerk" in iss
-    assert "Start CivicClerk" in iss
+    assert "Install or Repair CivicMeetings" in iss
+    assert "Start CivicMeetings" in iss
     assert "docker-compose.yml" in iss
     assert "Dockerfile.backend" in iss
     assert "frontend\\*" in iss
@@ -90,7 +90,7 @@ def test_build_script_resolves_version_and_checks_required_sources() -> None:
     assert "Inno Setup compiler was not found" in build
     assert "/mnt/c/Users/${USER:-scott}/AppData/Local/Programs/Inno Setup 6/ISCC.exe" in build
     assert "wslpath -w" in build
-    assert "CivicClerk-$APP_VERSION-Setup.exe" in build
+    assert "CivicMeetings-$APP_VERSION-Setup.exe" in build
     assert "public Windows installers are unsigned" in build
     assert "CIVICCLERK_SIGN_INSTALLER" in build
     assert "CIVICCLERK_SIGNTOOL_PATH" in build
@@ -102,7 +102,7 @@ def test_build_script_resolves_version_and_checks_required_sources() -> None:
 def test_enterprise_installer_signing_readiness_helper_documents_non_secret_contract() -> None:
     script = _read("scripts/check_enterprise_installer_signing.py")
 
-    assert "CivicClerk downstream installer signing readiness" in script
+    assert "CivicMeetings downstream installer signing readiness" in script
     assert "optional downstream" in script
     assert "public CivicSuite installer" in script
     assert "CIVICCLERK_SIGNTOOL_PATH" in script

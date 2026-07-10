@@ -44,7 +44,7 @@ jobs:
           path: civicclerk-cleanroom-${{ github.run_id }}
       - name: Verify Docker is available
         run: docker version
-      - name: Run CivicClerk cleanroom harness
+      - name: Run CivicMeetings cleanroom harness
         run: bash scripts/run-civicclerk-cleanroom.sh "$CC1_SHA" "docs/evidence/cc1-ci-${CC1_SHA}"
       - name: Upload cleanroom evidence
         uses: actions/upload-artifact@v7

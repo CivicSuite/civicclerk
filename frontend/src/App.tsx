@@ -1194,7 +1194,7 @@ export function App() {
       const waitingForStaffSession = staffSessionState !== "error";
       const message =
         staffSessionError ??
-        "CivicClerk is confirming staff access before loading protected meeting work.";
+        "CivicMeetings is confirming staff access before loading protected meeting work.";
       setApiError(message);
       setBodyError(message);
       setPacketError(message);
@@ -1475,7 +1475,7 @@ export function App() {
 
   return (
     <div className="app-shell">
-      <aside className="rail" aria-label="CivicClerk navigation">
+      <aside className="rail" aria-label="CivicMeetings navigation">
         <div className="brand">
           <div className="seal">B</div>
           <div>
@@ -2824,7 +2824,7 @@ function SpecCompletenessWorkspace({
           <div className="panel-heading">
             <div>
               <h2>Integration contract depth</h2>
-              <p>CivicClerk separates live-wire or in-process boundary validation from supplemental adversarial regression checks before any city-specific endpoint is enabled.</p>
+              <p>CivicMeetings separates live-wire or in-process boundary validation from supplemental adversarial regression checks before any city-specific endpoint is enabled.</p>
             </div>
             <StatusBadge
               tone={integrationState === "error" ? "Blocked" : integrationReadiness?.readiness === "ready" ? "Ready" : "Warning"}
@@ -3099,13 +3099,13 @@ function Dashboard({
   return (
     <div className="page-stack">
       <PageHeader
-        eyebrow="CivicClerk staff workspace"
+        eyebrow="CivicMeetings staff workspace"
         title="Good morning, City Clerk."
         description="Today's meeting work is grouped by urgency, public posting risk, and packet readiness."
       />
       <StaffAccessPanel session={staffSession} state={staffSessionState} error={staffSessionError} />
       <div className="metric-grid">
-        <MetricCard label="Meetings this week" value={String(meetings.length)} note="Live from CivicClerk meeting API" />
+        <MetricCard label="Meetings this week" value={String(meetings.length)} note="Live from CivicMeetings meeting API" />
         <MetricCard
           label="Agenda items pending"
           value={String(agendaReviewCount)}
@@ -3176,7 +3176,7 @@ function StaffAccessPanel({
         <div>
           <span className="eyebrow">Staff access</span>
           <h2>Checking staff access</h2>
-          <p>CivicClerk is confirming whether this browser has a live staff session before sensitive clerk actions appear.</p>
+          <p>CivicMeetings is confirming whether this browser has a live staff session before sensitive clerk actions appear.</p>
         </div>
       </section>
     );
@@ -3189,7 +3189,7 @@ function StaffAccessPanel({
           <span className="eyebrow">Staff access</span>
           <h2 id="staff-access-title">Staff sign-in needed</h2>
           <p>
-            {error ?? "CivicClerk could not verify the current staff session."} Use municipal SSO to sign in, ask IT to
+            {error ?? "CivicMeetings could not verify the current staff session."} Use municipal SSO to sign in, ask IT to
             configure bearer or trusted-header staff access, or open <code>/staff/auth-readiness</code> and follow the
             protected-mode fix steps before writing clerk records.
           </p>
@@ -3212,7 +3212,7 @@ function StaffAccessPanel({
     : isBrowserSession
       ? "Signed in with municipal SSO"
       : "Staff access verified";
-  const message = session?.message ?? "CivicClerk verified this browser for staff workflow access.";
+  const message = session?.message ?? "CivicMeetings verified this browser for staff workflow access.";
   const fix = session?.fix ?? "Continue with clerk workflow actions.";
 
   return (
@@ -5694,7 +5694,7 @@ function StateMessage({ state, context, apiError }: { state: ViewState; context:
   const copy = {
     loading: {
       title: `Loading ${context}`,
-      body: "CivicClerk is contacting the API. If this takes more than a few seconds, check the API service and reload the page.",
+      body: "CivicMeetings is contacting the API. If this takes more than a few seconds, check the API service and reload the page.",
       action: "Retry loading",
     },
     empty: {
@@ -5757,7 +5757,7 @@ function StateMessage({ state, context, apiError }: { state: ViewState; context:
   if (context === "minutes draft" && state === "error") {
     copy.body = apiError
       ? `${apiError} Do not accept AI-drafted minutes until every material sentence cites a known source and a human approver is recorded.`
-      : "The minutes draft API did not respond. Do not accept AI-drafted minutes until every material sentence cites a known source and a human approver is recorded; confirm CivicClerk is running, then retry after verifying citation sources.";
+      : "The minutes draft API did not respond. Do not accept AI-drafted minutes until every material sentence cites a known source and a human approver is recorded; confirm CivicMeetings is running, then retry after verifying citation sources.";
   }
   if (context === "public posted meeting" && state === "empty") {
     copy.body = "No public meeting records are posted yet. Staff should publish a public-safe record from the clerk workflow before residents can see agendas, packets, or approved minutes here.";

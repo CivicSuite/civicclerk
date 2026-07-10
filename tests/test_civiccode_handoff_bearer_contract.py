@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Real-wire contract tests for CivicClerk using suite bearer handoff auth."""
+"""Real-wire contract tests for CivicMeetings using suite bearer handoff auth."""
 
 import asyncio
 import json

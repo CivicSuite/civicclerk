@@ -1,4 +1,4 @@
-"""Meeting lifecycle enforcement for CivicClerk.
+"""Meeting lifecycle enforcement for CivicMeetings.
 
 Milestone 4 establishes the meeting state machine and audit contract. Packet
 assembly, notice compliance, minutes drafting, and archival workflow remain

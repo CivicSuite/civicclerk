@@ -5,7 +5,7 @@ Branch: `production-depth/packet-notice-services`
 
 ## Shipped
 
-- CivicClerk now pins `civiccore==0.3.0`.
+- CivicMeetings now pins `civiccore==0.3.0`.
 - Packet snapshots can be exported as records-ready bundles using CivicCore v0.3.0 primitives.
 - Export bundles include `packet.json`, `provenance.json`, `notices.json`, `manifest.json`, and `SHA256SUMS.txt`.
 - Public packet exports reject closed-session, staff-only, and restricted source files with an actionable fix path.

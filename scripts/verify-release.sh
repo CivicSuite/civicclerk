@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CivicClerk release gate.
+# CivicMeetings release gate.
 set -euo pipefail
 
 choose_python() {

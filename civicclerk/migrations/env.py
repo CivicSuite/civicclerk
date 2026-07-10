@@ -20,11 +20,11 @@ target_metadata = Base.metadata
 
 
 def _database_url() -> str:
-    """Resolve the one database URL used by both CivicCore and CivicClerk."""
+    """Resolve the one database URL used by both CivicCore and CivicMeetings."""
     url = config.get_main_option("sqlalchemy.url") or os.environ.get("DATABASE_URL")
     if not url:
         raise RuntimeError(
-            "CivicClerk migrations require a database URL. Set DATABASE_URL or "
+            "CivicMeetings migrations require a database URL. Set DATABASE_URL or "
             "set sqlalchemy.url on the Alembic Config before running upgrade."
         )
     return url

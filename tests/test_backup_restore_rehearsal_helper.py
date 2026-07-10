@@ -68,7 +68,7 @@ def test_backup_restore_rehearsal_verifier_prints_operator_plan(tmp_path: Path) 
         pytest.skip("Bash is installed, but the WSL bash service is unavailable in this environment.")
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk backup/restore rehearsal",
+        "CivicMeetings backup/restore rehearsal",
         "Backup manifest: backup/civicclerk-backup-manifest.json",
         "CIVICCLERK_AGENDA_INTAKE_DB_URL=",
         "CIVICCLERK_AGENDA_ITEM_DB_URL=",
@@ -108,7 +108,7 @@ def test_backup_restore_rehearsal_powershell_wrapper_prints_expected_plan() -> N
         pytest.skip("Bash exists but the WSL/Bash service is unavailable in this environment.")
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk backup/restore rehearsal profile",
+        "CivicMeetings backup/restore rehearsal profile",
         "Run id: print-plan",
         "Python verifier: python scripts/check_backup_restore_rehearsal.py",
         "Backup manifest: backup\\civicclerk-backup-manifest.json",
@@ -139,7 +139,7 @@ def test_backup_restore_rehearsal_bash_wrapper_prints_expected_plan() -> None:
 
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk backup/restore rehearsal profile",
+        "CivicMeetings backup/restore rehearsal profile",
         "Run id: print-plan",
         "Python verifier: python scripts/check_backup_restore_rehearsal.py",
         "Backup manifest: backup/civicclerk-backup-manifest.json",

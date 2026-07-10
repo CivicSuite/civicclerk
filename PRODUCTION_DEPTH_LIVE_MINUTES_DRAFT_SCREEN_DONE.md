@@ -8,7 +8,7 @@ Scope: browser-visible staff workflow action for citation-gated minutes draft cr
 
 - Added a `Minutes Draft` staff workflow card to `/staff`.
 - Added a live browser form that creates a demo meeting and submits a cited draft through `/meetings/{id}/minutes/drafts`.
-- Preserved the CivicClerk minutes guardrail: drafts are created as unadopted and unposted records that require human review before any public posting workflow.
+- Preserved the CivicMeetings minutes guardrail: drafts are created as unadopted and unposted records that require human review before any public posting workflow.
 - Updated root runtime messaging, README, README.txt, user manual, landing page, changelog, browser-QA gate, and staff UI tests to reflect the shipped screen.
 
 ## UX Evidence

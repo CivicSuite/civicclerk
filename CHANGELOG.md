@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to CivicClerk are documented here.
+All notable changes to CivicMeetings (formerly CivicClerk) are documented here.
 
 ## [Unreleased]
 
@@ -8,6 +8,14 @@ All notable changes to CivicClerk are documented here.
 - Fixed installed local-AI minutes generation for the Windows-Local bundle.
 
 ### Changed
+- Renamed the module's public name from CivicClerk to **CivicMeetings** to avoid
+  confusion with CivicPlus's registered CivicClerk(R) product. Brand-layer rename:
+  repository, display names, docs, and installer title. Machine identifiers (the
+  `civicclerk` Python package, database schema, `CIVICCLERK_*` environment
+  variables, and the `/health` service id) are unchanged in this pass, so
+  existing installs and pinned consumers are unaffected. Historical records
+  (ADRs, audit and browser-QA evidence, prior release notes) intentionally keep
+  the name they shipped under.
 - Advanced the CivicCore dependency freeze from `v1.2.0` to the published
   `v1.2.1` release wheel. v1.2.1 publishes the `civiccore_0003_local_task_queue`
   Alembic migration line that the local-AI minutes path depends on; the v1.2.0

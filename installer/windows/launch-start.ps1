@@ -21,7 +21,7 @@ function Read-EnvValue {
 
 Set-Location $AppRoot
 if (-not (Test-Path $EnvPath)) {
-    throw "CivicClerk has not been installed yet. Run the 'Install or Repair CivicClerk' shortcut first so .env and Docker volumes are prepared."
+    throw "CivicMeetings has not been installed yet. Run the 'Install or Repair CivicMeetings' shortcut first so .env and Docker volumes are prepared."
 }
 
 docker compose up -d

@@ -1,4 +1,4 @@
-"""Run CivicClerk prompt evaluations in deterministic offline mode."""
+"""Run CivicMeetings prompt evaluations in deterministic offline mode."""
 
 from __future__ import annotations
 

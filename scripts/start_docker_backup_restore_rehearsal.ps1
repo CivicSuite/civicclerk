@@ -26,7 +26,7 @@ if ($KeepRestoreDatabase) {
     $ArgsList += "--keep-restore-database"
 }
 
-Write-Host "CivicClerk Docker/PostgreSQL backup/restore rehearsal profile"
+Write-Host "CivicMeetings Docker/PostgreSQL backup/restore rehearsal profile"
 Write-Host "Rehearsal root: $RehearsalRoot"
 Write-Host "Run id: $RunId"
 Write-Host "Python verifier: python scripts/check_docker_backup_restore_rehearsal.py"

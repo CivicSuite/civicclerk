@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 
-describe("CivicClerk staff workspace", () => {
+describe("CivicMeetings staff workspace", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
@@ -707,7 +707,7 @@ describe("CivicClerk staff workspace", () => {
               proof_model: "live_or_in_process_boundary_validation",
               network_calls: true,
               dependent_modules_required: true,
-              message: "CivicClerk integration depth requires live-wire or in-process boundary validation.",
+              message: "CivicMeetings integration depth requires live-wire or in-process boundary validation.",
               fix: "Keep adversarial mocks as regression coverage.",
               contracts: [
                 {
@@ -822,7 +822,7 @@ describe("CivicClerk staff workspace", () => {
 
     expect(screen.getByText("CivicSuite")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Good morning, City Clerk." })).toBeInTheDocument();
-    expect(screen.getByText("Live from CivicClerk meeting API")).toBeInTheDocument();
+    expect(screen.getByText("Live from CivicMeetings meeting API")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Meeting runbook" })).toBeInTheDocument();
     expect(screen.getByText("End-to-end clerk runbook")).toBeInTheDocument();
     expect(screen.getAllByText("Notice legally proved").length).toBeGreaterThan(0);

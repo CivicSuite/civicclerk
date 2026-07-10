@@ -1,4 +1,4 @@
-"""Verify CivicClerk's contract inside the CivicSuite starter-set installer."""
+"""Verify CivicMeetings' contract inside the CivicSuite starter-set installer."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ class Check:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Check CivicClerk's CivicSuite starter-set installer contract."
+        description="Check CivicMeetings' CivicSuite starter-set installer contract."
     )
     parser.add_argument(
         "--umbrella-root",
@@ -102,7 +102,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         checks.append(
             _pass(
                 "clerk-core profile order",
-                "clerk-core installs CivicCore first, then CivicRecords AI, then CivicClerk.",
+                "clerk-core installs CivicCore first, then CivicRecords AI, then CivicMeetings.",
             )
         )
     else:
@@ -110,7 +110,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
             _fail(
                 "clerk-core profile order",
                 "clerk-core profile does not resolve to civiccore, civicrecords-ai, civicclerk.",
-                "Fix civicsuite/installer/modules.json before publishing CivicClerk as a starter-set module.",
+                "Fix civicsuite/installer/modules.json before publishing CivicMeetings as a starter-set module.",
             )
         )
 
@@ -124,24 +124,24 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         ):
             checks.append(
                 _pass(
-                    "CivicClerk module contract",
-                    f"CivicClerk is selectable at v{__version__} and depends on CivicCore {EXPECTED_CIVICCORE_RUNTIME}.",
+                    "CivicMeetings module contract",
+                    f"CivicMeetings is selectable at v{__version__} and depends on CivicCore {EXPECTED_CIVICCORE_RUNTIME}.",
                 )
             )
         else:
             checks.append(
                 _fail(
-                    "CivicClerk module contract",
-                    "CivicClerk manifest entry does not match its version, selectability, or CivicCore dependency.",
+                    "CivicMeetings module contract",
+                    "CivicMeetings manifest entry does not match its version, selectability, or CivicCore dependency.",
                     "Update the umbrella module manifest and rerun the starter-set installer verification.",
                 )
             )
     else:
         checks.append(
             _fail(
-                "CivicClerk module contract",
+                "CivicMeetings module contract",
                 "umbrella manifest has no civicclerk module entry.",
-                "Add CivicClerk to civicsuite/installer/modules.json.",
+                "Add CivicMeetings to civicsuite/installer/modules.json.",
             )
         )
 
@@ -150,7 +150,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         checks.append(
             _pass(
                 "CivicRecords AI pairing",
-                f"starter set pairs CivicClerk with CivicRecords AI {EXPECTED_RECORDS_VERSION}.",
+                f"starter set pairs CivicMeetings with CivicRecords AI {EXPECTED_RECORDS_VERSION}.",
             )
         )
     else:
@@ -167,13 +167,13 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
         text = contract_path.read_text(encoding="utf-8")
         required_phrases = (
             "CivicCore installs first",
-            "CivicRecords AI and CivicClerk are selectable",
-            "CivicClerk reports v1.0.4 with CivicCore v1.2.1",
+            "CivicRecords AI and CivicMeetings are selectable",
+            "CivicMeetings reports v1.0.4 with CivicCore v1.2.1",
             "--staff-mode bearer --workflow-proof",
             "Package Cleanroom Contract",
             "workflow_proof_requested=true",
             "civicclerk_staff_mode=bearer",
-            "not yet a claim that CivicRecords AI and CivicClerk exchange workflow records",
+            "not yet a claim that CivicRecords AI and CivicMeetings exchange workflow records",
         )
         missing = [phrase for phrase in required_phrases if phrase not in text]
         if missing:
@@ -181,7 +181,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
                 _fail(
                     "starter-set release contract",
                     "release contract is missing: " + ", ".join(missing),
-                    "Restore the umbrella starter-set release contract before relying on CivicClerk installer evidence.",
+                    "Restore the umbrella starter-set release contract before relying on CivicMeetings installer evidence.",
                 )
             )
         else:
@@ -235,7 +235,7 @@ def build_checks(*, umbrella_root: Path, require_archives: bool) -> list[Check]:
 
 def _payload(checks: list[Check], umbrella_root: Path) -> dict[str, object]:
     return {
-        "product": "CivicClerk",
+        "product": "CivicMeetings",
         "version": __version__,
         "umbrella_root": str(umbrella_root),
         "starter_set_ready": all(check.status in {"PASS", "WARN"} for check in checks),
@@ -248,7 +248,7 @@ def _payload(checks: list[Check], umbrella_root: Path) -> dict[str, object]:
 
 def _print_report(checks: list[Check], umbrella_root: Path) -> None:
     payload = _payload(checks, umbrella_root)
-    print("CivicClerk starter-set integration")
+    print("CivicMeetings starter-set integration")
     print(f"Version: {__version__}")
     print(f"Umbrella root: {umbrella_root}")
     print(f"starter_set_ready={str(payload['starter_set_ready']).lower()}")
@@ -265,10 +265,10 @@ def _print_report(checks: list[Check], umbrella_root: Path) -> None:
 
 
 def _print_plan() -> None:
-    print("CivicClerk starter-set integration")
+    print("CivicMeetings starter-set integration")
     print("Release evidence checks:")
-    print("  1. Umbrella clerk-core profile installs CivicCore, CivicRecords AI, then CivicClerk.")
-    print("  2. CivicClerk is selectable and records its CivicCore 1.2.1 runtime dependency.")
+    print("  1. Umbrella clerk-core profile installs CivicCore, CivicRecords AI, then CivicMeetings.")
+    print("  2. CivicMeetings is selectable and records its CivicCore 1.2.1 runtime dependency.")
     print("  3. CivicRecords AI is paired at v1.6.1.")
     print("  4. Umbrella release contract requires package workflow proof.")
     print("  5. Linux and Windows starter-set archives exist when --require-archives is used.")

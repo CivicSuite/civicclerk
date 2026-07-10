@@ -87,7 +87,7 @@ def integration_contracts() -> list[IntegrationContract]:
                 "unavailable-service fallback",
             ),
             absent_dependency_behavior=(
-                "CivicClerk keeps local public archive search authoritative and returns an "
+                "CivicMeetings keeps local public archive search authoritative and returns an "
                 "actionable unavailable-state contract instead of implying CivicRecords is live."
             ),
             operator_fix=(
@@ -116,7 +116,7 @@ def integration_contracts() -> list[IntegrationContract]:
                 "retry/audit ledger shape",
             ),
             absent_dependency_behavior=(
-                "CivicClerk stores the handoff locally as READY_FOR_CODE_OR_LEGAL_REVIEW and "
+                "CivicMeetings stores the handoff locally as READY_FOR_CODE_OR_LEGAL_REVIEW and "
                 "keeps a file-export path available until CivicCode is reachable."
             ),
             operator_fix=(
@@ -145,7 +145,7 @@ def integration_contracts() -> list[IntegrationContract]:
                 "human codifier review gate",
             ),
             absent_dependency_behavior=(
-                "If CivicCode or a codifier API is absent, CivicClerk produces a checksumed "
+                "If CivicCode or a codifier API is absent, CivicMeetings produces a checksumed "
                 "handoff packet for the clerk/legal/codifier workflow without auto-codifying."
             ),
             operator_fix=(
@@ -174,7 +174,7 @@ def integration_contracts() -> list[IntegrationContract]:
                 "CMS unavailable fallback",
             ),
             absent_dependency_behavior=(
-                "CivicClerk continues to serve its resident portal and produces a CMS-ready "
+                "CivicMeetings continues to serve its resident portal and produces a CMS-ready "
                 "posting preview until a city-specific CMS adapter is configured."
             ),
             operator_fix=(
@@ -204,7 +204,7 @@ def integration_contracts() -> list[IntegrationContract]:
                 "circuit breaker and cursor controls",
             ),
             absent_dependency_behavior=(
-                "CivicClerk records source configuration, health, cursor resets, and run outcomes "
+                "CivicMeetings records source configuration, health, cursor resets, and run outcomes "
                 "without pulling vendor networks until a controlled adapter run is explicitly enabled."
             ),
             operator_fix=(
@@ -262,7 +262,7 @@ def integration_readiness_payload() -> dict[str, object]:
         "contracts": [contract.public_dict() for contract in contracts],
         "checks": [check.public_dict() for check in checks],
         "message": (
-            "CivicClerk integration depth is framed as live-wire or in-process boundary validation; "
+            "CivicMeetings integration depth is framed as live-wire or in-process boundary validation; "
             "mock adversarial checks remain regression coverage, not release-depth proof."
         ),
         "fix": (
@@ -288,14 +288,14 @@ def _check_civicrecords_unavailable_fallback() -> IntegrationCheck:
     fallback = {
         "status": "degraded",
         "local_archive_available": True,
-        "fix": "Continue with CivicClerk local archive search, then retry CivicRecords after IT restores the service.",
+        "fix": "Continue with CivicMeetings local archive search, then retry CivicRecords after IT restores the service.",
     }
     ok = fallback["local_archive_available"] and "retry CivicRecords" in fallback["fix"]
     return IntegrationCheck(
         contract_id="civicrecords-search",
         scenario="dependency_unavailable_fallback",
         ok=ok,
-        message="CivicRecords unavailable mock keeps CivicClerk local archive search available with fix guidance.",
+        message="CivicRecords unavailable mock keeps CivicMeetings local archive search available with fix guidance.",
         fix=str(fallback["fix"]),
     )
 

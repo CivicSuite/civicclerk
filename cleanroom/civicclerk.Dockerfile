@@ -9,8 +9,8 @@ ARG CIVICCORE_FREEZE_REF=v1.2.1
 ARG COSIGN_VERSION=v3.0.6
 ARG COSIGN_SHA256=c956e5dfcac53d52bcf058360d579472f0c1d2d9b69f55209e256fe7783f4c74
 
-LABEL org.opencontainers.image.title="CivicClerk CC-1 cleanroom harness"
-LABEL org.opencontainers.image.description="Pinned cleanroom image for CivicClerk against the CivicCore CO-7 freeze release."
+LABEL org.opencontainers.image.title="CivicMeetings CC-1 cleanroom harness"
+LABEL org.opencontainers.image.description="Pinned cleanroom image for CivicMeetings against the CivicCore CO-7 freeze release."
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

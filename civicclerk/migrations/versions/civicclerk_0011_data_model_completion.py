@@ -1,4 +1,4 @@
-"""Complete CivicClerk canonical data model contracts."""
+"""Complete CivicMeetings canonical data model contracts."""
 
 from __future__ import annotations
 

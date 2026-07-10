@@ -1,8 +1,8 @@
 # GitHub Discussions Seed Posts
 
-## Announcements: CivicClerk scaffold created
+## Announcements: CivicMeetings scaffold created
 
-CivicClerk is now scaffolded under the CivicSuite organization. It is
+CivicMeetings is now scaffolded under the CivicSuite organization. It is
 not installable yet. The first milestone is a UX-first MVP around
 meeting setup, agenda item intake, packet assembly, notice tracking, and
 minutes drafting.
@@ -17,7 +17,7 @@ We are prioritizing clerk workflows first. Useful feedback:
 - minute drafting formats
 - public meeting archive expectations
 
-## Q&A: Is CivicClerk replacing livestream or voting systems?
+## Q&A: Is CivicMeetings replacing livestream or voting systems?
 
-No. CivicClerk records and publishes the legal record; it does not
+No. CivicMeetings records and publishes the legal record; it does not
 conduct votes or host livestreams.

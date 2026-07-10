@@ -1,4 +1,4 @@
-"""Run protected CivicClerk deployment smoke probes from an env profile."""
+"""Run protected CivicMeetings deployment smoke probes from an env profile."""
 
 from __future__ import annotations
 
@@ -81,7 +81,7 @@ async def _run_smoke(*, base_url: str, proxy_client_ip: str) -> int:
 
         if health.status_code != 200:
             print(f"[FAIL] health: expected 200, got {health.status_code}")
-            print("Fix: start the CivicClerk app from the same env profile and retry.")
+            print("Fix: start the CivicMeetings app from the same env profile and retry.")
             return 1
         if readiness.status_code != 200:
             print(f"[FAIL] auth readiness: expected 200, got {readiness.status_code}")
@@ -111,7 +111,7 @@ async def _run_smoke(*, base_url: str, proxy_client_ip: str) -> int:
             json=write_probe.get("body"),
         )
 
-    print("CivicClerk protected deployment smoke")
+    print("CivicMeetings protected deployment smoke")
     print(f"[PASS] health: {health.status_code}")
     print(f"[PASS] auth readiness: mode={readiness_payload.get('mode')} deployment_ready=true")
     print(f"[INFO] session headers: {_redacted_headers(session_headers)}")
@@ -131,7 +131,7 @@ async def _run_smoke(*, base_url: str, proxy_client_ip: str) -> int:
 
 
 def _print_plan(env_file: Path, *, base_url: str, proxy_client_ip: str) -> None:
-    print("CivicClerk protected deployment smoke")
+    print("CivicMeetings protected deployment smoke")
     print(f"Env profile: {env_file}")
     print(f"Base URL: {base_url}")
     print(f"Trusted-header in-process client IP: {proxy_client_ip}")
@@ -167,7 +167,7 @@ def main() -> int:
 
     deployment_ready, failures = _deployment_ready()
     if not deployment_ready:
-        print("CivicClerk protected deployment smoke")
+        print("CivicMeetings protected deployment smoke")
         for failure in failures:
             print(f"[FAIL] readiness: {failure}")
         print("Fix: complete the deployment env profile and rerun check_deployment_readiness.py --strict first.")

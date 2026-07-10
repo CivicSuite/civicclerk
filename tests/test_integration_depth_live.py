@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Live-boundary contract tests for CivicClerk integration depth declarations."""
+"""Live-boundary contract tests for CivicMeetings integration depth declarations."""
 
 from civicclerk.integration_contracts import integration_contracts, integration_readiness_payload
 

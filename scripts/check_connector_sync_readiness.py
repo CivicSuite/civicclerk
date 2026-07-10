@@ -1,4 +1,4 @@
-"""Check CivicClerk connector inputs for future live-sync work without networking."""
+"""Check CivicMeetings connector inputs for future live-sync work without networking."""
 
 from __future__ import annotations
 
@@ -171,7 +171,7 @@ def build_checks(
 
 def _print_report(checks: list[Check]) -> int:
     ready = all(check.status == "PASS" for check in checks)
-    print("CivicClerk connector sync readiness")
+    print("CivicMeetings connector sync readiness")
     print(f"sync_ready={str(ready).lower()}")
     print("network_calls=false")
     for check in checks:
@@ -182,7 +182,7 @@ def _print_report(checks: list[Check]) -> int:
 
 
 def _print_plan(connectors: list[str], payload_dir: Path | None) -> None:
-    print("CivicClerk connector sync readiness")
+    print("CivicMeetings connector sync readiness")
     print("Network calls: disabled")
     print("Connectors: " + ", ".join(connectors))
     print(f"Payload source: {payload_dir if payload_dir else 'built-in sample payloads'}")

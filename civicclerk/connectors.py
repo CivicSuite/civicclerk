@@ -1,4 +1,4 @@
-"""CivicClerk re-exports shared local-first connector import helpers."""
+"""CivicMeetings re-exports shared local-first connector import helpers."""
 
 from civiccore.connectors import (
     ConnectorImportError,

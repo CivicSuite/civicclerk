@@ -1,6 +1,6 @@
-# Contributing to CivicClerk
+# Contributing to CivicMeetings
 
-CivicClerk is a planned CivicSuite module. The first contribution
+CivicMeetings is a planned CivicSuite module. The first contribution
 priority is disciplined MVP delivery: docs, tests, UX evidence, then
 code.
 

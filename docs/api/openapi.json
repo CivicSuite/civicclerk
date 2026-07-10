@@ -1494,8 +1494,8 @@
     }
   },
   "info": {
-    "summary": "Runtime foundation for CivicClerk municipal meeting workflows.",
-    "title": "CivicClerk",
+    "summary": "Runtime foundation for CivicMeetings municipal meeting workflows.",
+    "title": "CivicMeetings",
     "version": "1.0.4"
   },
   "openapi": "3.1.0",
@@ -4552,7 +4552,7 @@
     },
     "/staff/logout": {
       "get": {
-        "description": "Clear the local CivicClerk staff browser session.",
+        "description": "Clear the local CivicMeetings staff browser session.",
         "operationId": "staff_logout_staff_logout_get",
         "responses": {
           "200": {
@@ -4567,7 +4567,7 @@
         "summary": "Staff Logout"
       },
       "post": {
-        "description": "Clear the local CivicClerk staff browser session.",
+        "description": "Clear the local CivicMeetings staff browser session.",
         "operationId": "staff_logout_staff_logout_post",
         "responses": {
           "200": {

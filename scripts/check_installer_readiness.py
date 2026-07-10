@@ -1,4 +1,4 @@
-"""Verify CivicClerk release handoff inputs are ready for installer packaging."""
+"""Verify CivicMeetings release handoff inputs are ready for installer packaging."""
 
 from __future__ import annotations
 
@@ -176,7 +176,7 @@ def build_checks(*, version: str, bundle_path: Path, dist_root: Path) -> list[Ch
 
 def _print_report(checks: list[Check]) -> int:
     ready = all(check.status == "PASS" for check in checks)
-    print("CivicClerk installer readiness")
+    print("CivicMeetings installer readiness")
     print(f"installer_ready={str(ready).lower()}")
     for check in checks:
         print(f"[{check.status}] {check.name}: {check.message}")
@@ -186,7 +186,7 @@ def _print_report(checks: list[Check]) -> int:
 
 
 def _print_plan(version: str, bundle_path: Path, dist_root: Path) -> None:
-    print("CivicClerk installer readiness")
+    print("CivicMeetings installer readiness")
     print(f"Version: {version}")
     print(f"Dist root: {_display(dist_root)}")
     print(f"Handoff bundle: {_display(bundle_path)}")
@@ -200,8 +200,8 @@ def _print_plan(version: str, bundle_path: Path, dist_root: Path) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Verify CivicClerk installer packaging inputs.")
-    parser.add_argument("--version", default=DEFAULT_VERSION, help="CivicClerk version to verify.")
+    parser = argparse.ArgumentParser(description="Verify CivicMeetings installer packaging inputs.")
+    parser.add_argument("--version", default=DEFAULT_VERSION, help="CivicMeetings version to verify.")
     parser.add_argument("--dist-root", default="dist", help="Directory containing release artifacts.")
     parser.add_argument(
         "--bundle",

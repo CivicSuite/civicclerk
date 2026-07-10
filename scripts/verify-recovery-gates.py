@@ -1,4 +1,4 @@
-"""Verify CivicClerk recovery gates that prevent release-status overclaiming."""
+"""Verify CivicMeetings recovery gates that prevent release-status overclaiming."""
 
 from __future__ import annotations
 

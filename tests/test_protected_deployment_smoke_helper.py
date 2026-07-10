@@ -73,8 +73,8 @@ def _write_completed_trusted_header_profile(tmp_path: Path) -> Path:
             [
                 "CIVICCLERK_STAFF_AUTH_MODE=trusted_header",
                 "CIVICCLERK_STAFF_SSO_PROVIDER=Test SSO",
-                "CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER=X-CivicClerk-Staff-Email",
-                "CIVICCLERK_STAFF_SSO_ROLES_HEADER=X-CivicClerk-Staff-Roles",
+                "CIVICCLERK_STAFF_SSO_PRINCIPAL_HEADER=X-CivicMeetings-Staff-Email",
+                "CIVICCLERK_STAFF_SSO_ROLES_HEADER=X-CivicMeetings-Staff-Roles",
                 "CIVICCLERK_STAFF_SSO_TRUSTED_PROXIES=127.0.0.1/32",
                 f"CIVICCLERK_AGENDA_INTAKE_DB_URL=sqlite:///{tmp_path / 'intake.db'}",
                 f"CIVICCLERK_AGENDA_ITEM_DB_URL=sqlite:///{tmp_path / 'items.db'}",
@@ -181,7 +181,7 @@ def test_protected_deployment_smoke_print_only_documents_steps(tmp_path: Path) -
 
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk protected deployment smoke",
+        "CivicMeetings protected deployment smoke",
         "Run strict deployment readiness checks.",
         "GET /health.",
         "GET /staff/auth-readiness.",

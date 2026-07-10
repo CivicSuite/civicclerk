@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CivicClerk documentation gate.
+# CivicMeetings documentation gate.
 # 1) Required artifacts exist.
 # 2) Current-facing docs do not contain known stale drift markers.
 set -u

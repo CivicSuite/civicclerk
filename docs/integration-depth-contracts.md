@@ -1,6 +1,6 @@
-# CivicClerk Integration Depth Contracts
+# CivicMeetings Integration Depth Contracts
 
-CivicClerk reports integration depth as live-wire or in-process boundary
+CivicMeetings reports integration depth as live-wire or in-process boundary
 validation. Adversarial mock checks remain useful regression coverage, but they
 are not labeled as release-depth proof for CivicRecords, CivicCode, city CMS
 adapters, codification adapters, or live agenda-vendor tenants.
@@ -17,7 +17,7 @@ Supported operations:
 - source citation round-trip
 - unavailable-service fallback
 
-If CivicRecords is absent, CivicClerk keeps local public archive search
+If CivicRecords is absent, CivicMeetings keeps local public archive search
 authoritative and returns an actionable unavailable-state contract instead of
 implying CivicRecords is live. Closed-session expansion remains role-gated.
 
@@ -36,7 +36,7 @@ Supported operations:
 - idempotency key generation
 - retry/audit ledger shape
 
-If CivicCode is absent, CivicClerk stores handoffs locally as
+If CivicCode is absent, CivicMeetings stores handoffs locally as
 `READY_FOR_CODE_OR_LEGAL_REVIEW` and keeps a file-export path available until
 CivicCode is reachable.
 
@@ -59,7 +59,7 @@ Supported operations:
 - source packet references
 - human codifier review gate
 
-If CivicCode or a codifier API is absent, CivicClerk produces a checksumed
+If CivicCode or a codifier API is absent, CivicMeetings produces a checksumed
 handoff packet for clerk, legal, and codifier review. It does not auto-codify
 or produce legal advice.
 
@@ -77,7 +77,7 @@ Supported operations:
 - withdrawal/rollback ledger shape
 - CMS unavailable fallback
 
-If a city CMS adapter is absent, CivicClerk continues to serve the resident
+If a city CMS adapter is absent, CivicMeetings continues to serve the resident
 portal and produces a CMS-ready posting preview. Publication is blocked until a
 clerk confirms the preview.
 
@@ -97,7 +97,7 @@ Supported operations:
 - NovusAGENDA delta contract
 - circuit breaker and cursor controls
 
-CivicClerk records source configuration, health, cursor resets, and run
+CivicMeetings records source configuration, health, cursor resets, and run
 outcomes without pulling vendor networks until a controlled adapter run is
 explicitly enabled. The hostile mock suite remains regression coverage for rate
 limits, pagination, schema drift, partial outage, duplicate IDs, and stale

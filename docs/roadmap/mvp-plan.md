@@ -1,9 +1,9 @@
-# CivicClerk MVP Plan
+# CivicMeetings MVP Plan
 
-The first CivicClerk MVP is a vertical slice, not a full Granicus-style
+The first CivicMeetings MVP is a vertical slice, not a full Granicus-style
 replacement.
 
-Current status after CivicClerk v0.1.19: all four MVP sprint goals below are
+Current status after CivicMeetings v0.1.19: all four MVP sprint goals below are
 API-complete, tested, and represented by live-backed `/staff` cockpit panels.
 The runtime foundation, staff workflow HTML reference shell, prompt gates,
 release gates, connector import normalization, public archive filtering, the
@@ -12,7 +12,7 @@ OIDC staff-token validation, protected staff-auth rehearsal, deployment
 preflight, and fresh-install rehearsal helpers are present. The OIDC
 browser-session foundation is now shipped: `/staff/login` starts
 authorization-code + PKCE sign-in, `/staff/oidc/callback` accepts the provider
-callback, CivicClerk issues a signed HttpOnly staff session cookie for
+callback, CivicMeetings issues a signed HttpOnly staff session cookie for
 protected staff APIs, `/staff/session` reports the active identity and roles,
 and the React dashboard staff-access panel makes the current auth mode,
 provider, subject, roles, and sign-in/readiness actions visible to clerks and

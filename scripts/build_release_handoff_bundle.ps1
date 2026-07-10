@@ -48,7 +48,7 @@ $BundleFiles = @(
     "dist/SHA256SUMS.txt"
 )
 
-Write-Host "CivicClerk release handoff bundle"
+Write-Host "CivicMeetings release handoff bundle"
 Write-Host "Version: $Version"
 Write-Host "Output: $OutputPath"
 Write-Host "Includes:"

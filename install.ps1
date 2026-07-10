@@ -74,7 +74,7 @@ function Wait-Http {
 
 Set-Location $Root
 
-Write-Host "CivicClerk Windows Install or Repair"
+Write-Host "CivicMeetings Windows Install or Repair"
 Write-Host "This starts the local Docker Compose product stack with seeded demo data by default."
 
 Write-Step "Checking Docker Desktop prerequisites"
@@ -85,7 +85,7 @@ docker info *> $null
 
 Write-Step "Preparing local environment file"
 if (-not (Test-Path $TemplatePath)) {
-    throw "Missing $TemplatePath. Reinstall or repair the CivicClerk package, then rerun this script."
+    throw "Missing $TemplatePath. Reinstall or repair the CivicMeetings package, then rerun this script."
 }
 if (-not (Test-Path $EnvPath)) {
     $secret = New-HexSecret
@@ -110,10 +110,10 @@ if ($authMode -eq "open") {
 }
 Write-Host "Demo seed mode: $seedMode"
 
-Write-Step "Building and starting CivicClerk"
+Write-Step "Building and starting CivicMeetings"
 docker compose up -d --build
 if ($LASTEXITCODE -ne 0) {
-    throw "Docker Compose did not start every CivicClerk service. Check for port conflicts, then run 'docker compose ps' and 'docker compose logs api frontend' from $Root."
+    throw "Docker Compose did not start every CivicMeetings service. Check for port conflicts, then run 'docker compose ps' and 'docker compose logs api frontend' from $Root."
 }
 
 $runningServices = docker compose ps --status running --services
@@ -127,11 +127,11 @@ foreach ($requiredService in @("api", "frontend")) {
 }
 
 Write-Step "Checking health endpoints"
-Wait-Http -Url "http://127.0.0.1:$apiPort/health" -Name "CivicClerk API"
-Wait-Http -Url "http://127.0.0.1:$webPort/" -Name "CivicClerk staff app"
+Wait-Http -Url "http://127.0.0.1:$apiPort/health" -Name "CivicMeetings API"
+Wait-Http -Url "http://127.0.0.1:$webPort/" -Name "CivicMeetings staff app"
 
 Write-Host ""
-Write-Host "CivicClerk is running."
+Write-Host "CivicMeetings is running."
 Write-Host "Staff app: http://127.0.0.1:$webPort/"
 Write-Host "API health: http://127.0.0.1:$apiPort/health"
 Write-Host "Stop later with: docker compose down"

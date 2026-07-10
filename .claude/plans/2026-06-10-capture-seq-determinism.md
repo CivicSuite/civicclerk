@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-10
 **Branch:** work/clerk-persistence-phase-1
-**Bug:** All four CivicClerk persistence repositories (`civicclerk/motion_vote.py`,
+**Bug:** All four CivicMeetings persistence repositories (`civicclerk/motion_vote.py`,
 `civicclerk/minutes.py`, `civicclerk/public_archive.py`) order list reads by
 `(created_at, id)`. `id` is a random uuid4, so rows inserted within the same
 timestamp tick tiebreak randomly and insertion order is not preserved.

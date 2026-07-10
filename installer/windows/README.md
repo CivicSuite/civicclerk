@@ -1,10 +1,10 @@
-# CivicClerk Windows Installer
+# CivicMeetings Windows Installer
 
-This folder contains the unsigned Windows installer source package for CivicClerk.
+This folder contains the unsigned Windows installer source package for CivicMeetings.
 It wraps the Docker Compose product stack and provides two daily-use shortcuts:
 
-- `Start CivicClerk`: starts the existing Docker Compose stack and opens the staff app.
-- `Install or Repair CivicClerk`: checks Docker Desktop, creates `.env` when needed, builds containers, starts the stack, waits for health checks, and opens the staff app.
+- `Start CivicMeetings`: starts the existing Docker Compose stack and opens the staff app.
+- `Install or Repair CivicMeetings`: checks Docker Desktop, creates `.env` when needed, builds containers, starts the stack, waits for health checks, and opens the staff app.
 
 ## Requirements
 
@@ -24,7 +24,7 @@ Set `CIVICCLERK_VERSION=1.0.1` to override the version read from `pyproject.toml
 
 ## Unsigned Installer Warning
 
-CivicClerk is a small free open-source project. The Windows installer is unsigned, and that is the supported path for this project. Windows SmartScreen may show "Unknown Publisher" or "Windows protected your PC" because Windows cannot verify a paid publisher certificate.
+CivicMeetings is a small free open-source project. The Windows installer is unsigned, and that is the supported path for this project. Windows SmartScreen may show "Unknown Publisher" or "Windows protected your PC" because Windows cannot verify a paid publisher certificate.
 
 That warning is expected. It is OK to choose "More info" and then "Run anyway" when the installer came from the official CivicSuite GitHub release source or your IT team built it from verified CivicSuite source. Do not bypass the warning for installers from email attachments, chat links, mirrors, or any source you cannot verify.
 

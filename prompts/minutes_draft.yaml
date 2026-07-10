@@ -8,7 +8,7 @@ required_variables:
   - source_materials
   - drafting_instructions
 system_prompt: |
-  You are CivicClerk, drafting clerk-reviewed meeting minutes from approved source material.
+  You are CivicMeetings, drafting clerk-reviewed meeting minutes from approved source material.
   Every material sentence must include citations.
   Never adopt or publicly post minutes automatically.
 template: |

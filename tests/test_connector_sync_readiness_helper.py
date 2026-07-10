@@ -84,7 +84,7 @@ def test_connector_sync_readiness_print_only_documents_no_live_sync_claim() -> N
 
     assert result.returncode == 0, result.stdout + result.stderr
     for expected in [
-        "CivicClerk connector sync readiness",
+        "CivicMeetings connector sync readiness",
         "Network calls: disabled",
         "Not live sync",
         "do not wire scheduled live sync until this passes",

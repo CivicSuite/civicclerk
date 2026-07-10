@@ -1,12 +1,12 @@
 # Milestone 1 Done
 
-Milestone 1 created the CivicClerk runtime foundation. It does not implement meeting, agenda, packet, notice, vote, minutes, archive, schema, migration, or frontend workflows.
+Milestone 1 created the CivicMeetings runtime foundation. It does not implement meeting, agenda, packet, notice, vote, minutes, archive, schema, migration, or frontend workflows.
 
 ## Criteria Covered
 
 - FastAPI runtime package exists at `civicclerk.main:app`.
 - Root endpoint explains that the runtime foundation is online and meeting workflows are not implemented yet.
-- `/health` endpoint returns service, status, CivicClerk version, and CivicCore version for IT staff.
+- `/health` endpoint returns service, status, CivicMeetings version, and CivicCore version for IT staff.
 - `pyproject.toml` declares `civicclerk` version `0.1.0.dev0`.
 - Runtime dependency is exactly `civiccore==0.2.0`.
 - CI installs the package, runs `python -m pytest`, runs `scripts/verify-docs.sh`, and runs `scripts/check-civiccore-placeholder-imports.py`.

@@ -143,7 +143,7 @@ class LocalTrustedHeaderProxyHandler(BaseHTTPRequestHandler):
     def _send_proxy_failure(self, upstream_url: str, exc: OSError) -> None:
         message = (
             f"Local trusted-header rehearsal proxy could not reach {upstream_url}. "
-            "Start CivicClerk on the loopback upstream URL, then retry the request."
+            "Start CivicMeetings on the loopback upstream URL, then retry the request."
         )
         payload = message.encode("utf-8")
         self.send_response(502, "Bad Gateway")
@@ -177,12 +177,12 @@ def _parse_upstream_url(url: str) -> str:
 
 def _read_cli_args() -> ProxyConfig:
     parser = argparse.ArgumentParser(
-        description="Loopback-only trusted-header proxy rehearsal helper for CivicClerk."
+        description="Loopback-only trusted-header proxy rehearsal helper for CivicMeetings."
     )
     parser.add_argument(
         "--upstream",
         default=os.environ.get(UPSTREAM_ENV_VAR, DEFAULT_UPSTREAM),
-        help="Loopback CivicClerk upstream URL, for example http://127.0.0.1:8000",
+        help="Loopback CivicMeetings upstream URL, for example http://127.0.0.1:8000",
     )
     parser.add_argument(
         "--listen-host",
@@ -208,12 +208,12 @@ def _read_cli_args() -> ProxyConfig:
     parser.add_argument(
         "--principal-header",
         default=os.environ.get(PRINCIPAL_HEADER_ENV_VAR, DEFAULT_PRINCIPAL_HEADER),
-        help="Trusted principal header name expected by CivicClerk.",
+        help="Trusted principal header name expected by CivicMeetings.",
     )
     parser.add_argument(
         "--roles-header",
         default=os.environ.get(ROLES_HEADER_ENV_VAR, DEFAULT_ROLES_HEADER),
-        help="Trusted roles header name expected by CivicClerk.",
+        help="Trusted roles header name expected by CivicMeetings.",
     )
     args = parser.parse_args()
 

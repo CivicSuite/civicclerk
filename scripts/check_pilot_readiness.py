@@ -1,4 +1,4 @@
-"""Summarize CivicClerk readiness using adversarial mock validation."""
+"""Summarize CivicMeetings readiness using adversarial mock validation."""
 
 from __future__ import annotations
 
@@ -53,9 +53,9 @@ class Check:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Check whether CivicClerk is developer-ready for a municipal pilot handoff."
+        description="Check whether CivicMeetings is developer-ready for a municipal pilot handoff."
     )
-    parser.add_argument("--version", default=DEFAULT_VERSION, help="CivicClerk version to verify.")
+    parser.add_argument("--version", default=DEFAULT_VERSION, help="CivicMeetings version to verify.")
     parser.add_argument("--dist-root", default="dist", help="Directory containing release artifacts.")
     parser.add_argument(
         "--bundle",
@@ -212,7 +212,7 @@ def _display(path: Path) -> str:
 def _payload(checks: list[Check]) -> dict[str, object]:
     developer_ready = all(check.status == "PASS" for check in checks)
     return {
-        "product": "CivicClerk",
+        "product": "CivicMeetings",
         "version": __version__,
         "developer_ready": developer_ready,
         "external_dependencies_pending": False,
@@ -224,7 +224,7 @@ def _payload(checks: list[Check]) -> dict[str, object]:
 
 def _print_report(checks: list[Check]) -> None:
     payload = _payload(checks)
-    print("CivicClerk pilot readiness")
+    print("CivicMeetings pilot readiness")
     print(f"Version: {__version__}")
     print("network_calls=false")
     print(f"developer_ready={str(payload['developer_ready']).lower()}")
@@ -241,7 +241,7 @@ def _print_report(checks: list[Check]) -> None:
 
 
 def _print_plan(version: str, dist_root: Path, bundle_path: Path) -> None:
-    print("CivicClerk pilot readiness")
+    print("CivicMeetings pilot readiness")
     print(f"Version: {version}")
     print("Network calls: none")
     print(f"Dist root: {_display(dist_root)}")

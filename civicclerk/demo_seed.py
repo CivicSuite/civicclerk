@@ -1,4 +1,4 @@
-"""Seed a believable local CivicClerk demo for Docker-based product rehearsal."""
+"""Seed a believable local CivicMeetings demo for Docker-based product rehearsal."""
 
 from __future__ import annotations
 

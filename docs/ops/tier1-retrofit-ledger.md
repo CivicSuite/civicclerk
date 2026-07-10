@@ -1,8 +1,8 @@
-# CivicClerk Tier 1 Retrofit Ledger
+# CivicMeetings Tier 1 Retrofit Ledger
 
 Status: CO-4 ledger, live-release scan current as of 2026-05-05.
 
-This ledger records the CO-4 decision for the CivicClerk release named in the
+This ledger records the CO-4 decision for the CivicMeetings release named in the
 CivicSuite finish directive. It does not rewrite history and does not alter
 public release notes, tags, or assets. The correction action taken here is a
 repo-controlled ledger plus documentation truth update.

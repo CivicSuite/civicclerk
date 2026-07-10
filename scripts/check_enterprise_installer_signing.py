@@ -11,7 +11,7 @@ import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_VERSION = "1.0.4"
-DEFAULT_ARTIFACT = Path("installer/windows/build") / f"CivicClerk-{DEFAULT_VERSION}-Setup.exe"
+DEFAULT_ARTIFACT = Path("installer/windows/build") / f"CivicMeetings-{DEFAULT_VERSION}-Setup.exe"
 SIGNTOOL_ENV_VARS = ("CIVICCLERK_SIGNTOOL_PATH", "SIGNTOOL")
 SHA1_ENV_VAR = "CIVICCLERK_SIGNING_CERT_SHA1"
 PFX_ENV_VAR = "CIVICCLERK_SIGNING_PFX"
@@ -158,7 +158,7 @@ def build_checks(*, artifact: Path) -> list[Check]:
 
 def _print_report(checks: list[Check]) -> int:
     ready = all(check.status == "PASS" for check in checks)
-    print("CivicClerk downstream installer signing readiness")
+    print("CivicMeetings downstream installer signing readiness")
     print(f"signing_ready={str(ready).lower()}")
     for check in checks:
         print(f"[{check.status}] {check.name}: {check.message}")
@@ -168,7 +168,7 @@ def _print_report(checks: list[Check]) -> int:
 
 
 def _print_plan(artifact: Path) -> None:
-    print("CivicClerk downstream installer signing readiness")
+    print("CivicMeetings downstream installer signing readiness")
     print(f"Artifact: {_display(artifact)}")
     print("Required signing inputs:")
     print(f"  1. {SIGNTOOL_ENV_VARS[0]} or {SIGNTOOL_ENV_VARS[1]} pointing to Microsoft signtool.exe.")

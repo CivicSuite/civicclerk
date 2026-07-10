@@ -42,9 +42,9 @@ Status: complete on branch `milestone-8-public-calendar-archive`
 
 ```json
 {
-  "name": "CivicClerk",
+  "name": "CivicMeetings",
   "status": "public archive foundation",
-  "message": "CivicClerk agenda item, meeting lifecycle, packet snapshot, and notice compliance enforcement are online with immutable motion, vote, action-item, and citation-gated minutes draft capture plus permission-aware public calendar and archive endpoints; full UI workflows are not implemented yet.",
+  "message": "CivicMeetings agenda item, meeting lifecycle, packet snapshot, and notice compliance enforcement are online with immutable motion, vote, action-item, and citation-gated minutes draft capture plus permission-aware public calendar and archive endpoints; full UI workflows are not implemented yet.",
   "next_step": "Milestone 9: prompt YAML library and evaluation harness"
 }
 ```
